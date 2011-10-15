@@ -1,0 +1,9 @@
+configurable
+ - file store
+   - type
+   - name
+ - is read only
+ - path characters to reject
+ - case insensitive comparison (normalization)
+ - FileTypeDetector
+ - Paths.get lazily create file system?
