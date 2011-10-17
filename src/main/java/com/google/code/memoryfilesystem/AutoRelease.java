@@ -1,11 +1,11 @@
 package com.google.code.memoryfilesystem;
 
 interface AutoRelease extends AutoCloseable {
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void close();
-	
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void close();
+
 }

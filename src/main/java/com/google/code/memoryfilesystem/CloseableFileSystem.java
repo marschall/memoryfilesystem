@@ -12,119 +12,119 @@ import java.util.Set;
 
 class CloseableFileSystem extends FileSystem {
 
-	private final ClosedFileSystemChecker checker;
+  private final ClosedFileSystemChecker checker;
 
-	private final MemoryFileSystem delegate;
-	
-	CloseableFileSystem(ClosedFileSystemChecker checker, MemoryFileSystem delegate) {
-		this.delegate = delegate;
-		this.checker = checker;
-	}
+  private final MemoryFileSystem delegate;
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void close() throws IOException {
-		this.checker.close();
-		this.delegate.close();
-	}
+  CloseableFileSystem(ClosedFileSystemChecker checker, MemoryFileSystem delegate) {
+    this.delegate = delegate;
+    this.checker = checker;
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean isOpen() {
-		return this.checker.isOpen();
-	}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void close() throws IOException {
+    this.checker.close();
+    this.delegate.close();
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public FileSystemProvider provider() {
-		this.checker.check();
-		return delegate.provider();
-	}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isOpen() {
+    return this.checker.isOpen();
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public boolean isReadOnly() {
-		this.checker.check();
-		return delegate.isReadOnly();
-	}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public FileSystemProvider provider() {
+    this.checker.check();
+    return delegate.provider();
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String getSeparator() {
-		this.checker.check();
-		return delegate.getSeparator();
-	}
+  /**
+   * {@inheritDoc}
+   */
+  public boolean isReadOnly() {
+    this.checker.check();
+    return delegate.isReadOnly();
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Iterable<Path> getRootDirectories() {
-		this.checker.check();
-		return delegate.getRootDirectories();
-	}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public String getSeparator() {
+    this.checker.check();
+    return delegate.getSeparator();
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Iterable<FileStore> getFileStores() {
-		this.checker.check();
-		return delegate.getFileStores();
-	}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Iterable<Path> getRootDirectories() {
+    this.checker.check();
+    return delegate.getRootDirectories();
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Set<String> supportedFileAttributeViews() {
-		this.checker.check();
-		return delegate.supportedFileAttributeViews();
-	}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Iterable<FileStore> getFileStores() {
+    this.checker.check();
+    return delegate.getFileStores();
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Path getPath(String first, String... more) {
-		this.checker.check();
-		return delegate.getPath(first, more);
-	}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Set<String> supportedFileAttributeViews() {
+    this.checker.check();
+    return delegate.supportedFileAttributeViews();
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public PathMatcher getPathMatcher(String syntaxAndPattern) {
-		this.checker.check();
-		return delegate.getPathMatcher(syntaxAndPattern);
-	}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Path getPath(String first, String... more) {
+    this.checker.check();
+    return delegate.getPath(first, more);
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public UserPrincipalLookupService getUserPrincipalLookupService() {
-		this.checker.check();
-		return delegate.getUserPrincipalLookupService();
-	}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public PathMatcher getPathMatcher(String syntaxAndPattern) {
+    this.checker.check();
+    return delegate.getPathMatcher(syntaxAndPattern);
+  }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public WatchService newWatchService() throws IOException {
-		this.checker.check();
-		return delegate.newWatchService();
-	}
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public UserPrincipalLookupService getUserPrincipalLookupService() {
+    this.checker.check();
+    return delegate.getUserPrincipalLookupService();
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public WatchService newWatchService() throws IOException {
+    this.checker.check();
+    return delegate.newWatchService();
+  }
 
 }
