@@ -1,5 +1,6 @@
 package com.google.code.memoryfilesystem;
 
+import java.beans.FeatureDescriptor;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
@@ -17,6 +18,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static java.nio.file.StandardOpenOption.READ;
+import static java.nio.file.StandardOpenOption.WRITE;
+import static java.nio.file.StandardOpenOption.APPEND;
 
 public class FileSystemComptiblity {
 
@@ -38,11 +42,29 @@ public class FileSystemComptiblity {
     //		c1.toRealPath(true);
     c1.toRealPath();
   }
+  
+  @Test
+  public void positionAfterTruncate() throws IOException {
+    Path tempFile = Files.createTempFile("prefix", "suffix");
+    try {
+      ByteBuffer src = ByteBuffer.wrap(new byte[]{1, 2, 3, 4, 5});
+      try (SeekableByteChannel channel = Files.newByteChannel(tempFile, READ, WRITE)) {
+        channel.write(src);
+        assertEquals(5L, channel.position());
+        assertEquals(5L, channel.size());
+        channel.truncate(2L);
+        assertEquals(2L, channel.position());
+        assertEquals(2L, channel.size());
+      }
+    } finally {
+      Files.delete(tempFile);
+    }
+  }
 
   @Test
   public void writeOnly() throws IOException {
     Path path = Paths.get("/home/upnip/temp/task-list.png");
-    try (SeekableByteChannel channel = Files.newByteChannel(path, StandardOpenOption.WRITE)) {
+    try (SeekableByteChannel channel = Files.newByteChannel(path, WRITE)) {
       channel.position(100);
       ByteBuffer buffer = ByteBuffer.allocate(100);
       channel.read(buffer);
@@ -52,7 +74,7 @@ public class FileSystemComptiblity {
   @Test
   public void append() throws IOException {
     Path path = Paths.get("/home/upnip/temp/sample.txt");
-    try (SeekableByteChannel channel = Files.newByteChannel(path, StandardOpenOption.APPEND)) {
+    try (SeekableByteChannel channel = Files.newByteChannel(path, APPEND)) {
       //			channel.position(channel.size());
       System.out.println(channel.position());
       ByteBuffer src = ByteBuffer.wrap(new byte[]{1, 2, 3, 4, 5});

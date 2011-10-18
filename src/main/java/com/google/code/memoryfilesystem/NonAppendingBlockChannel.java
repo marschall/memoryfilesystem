@@ -45,9 +45,10 @@ final class NonAppendingBlockChannel extends BlockChannel {
    */
   @Override
   public SeekableByteChannel truncate(long size) throws IOException {
-    //TODO if append advance
     try (AutoRelease lock = writeLock()) {
       this.memoryContents.truncate(size);
+      // REVIEW, not sure from doc but kinda makes sense
+      this.position = this.memoryContents.size();
     }
     return this;
   }

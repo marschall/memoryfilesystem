@@ -135,6 +135,7 @@ class MemoryContents {
     if (blocksRequired > this.blocksAllocated) {
       for (int i = this.blocksAllocated; i < blocksRequired; ++i) {
         this.blocks[i] = new byte[BLOCK_SIZE];
+        this.blocksAllocated += 1;
       }
     }
   }
