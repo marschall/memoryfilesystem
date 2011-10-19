@@ -98,6 +98,9 @@ class MemoryContents {
         startIndexInBlock = 0;
         currentBlock += 1;
       }
+      if (position > this.size) {
+        this.size = position;
+      }
       this.size += written;
       return written;
     }

@@ -80,6 +80,26 @@ public class FileSystemComptiblity {
   }
 
   @Test
+  public void position() throws IOException {
+    Path path = Files.createTempFile("sample", ".txt");
+    try (SeekableByteChannel channel = Files.newByteChannel(path, WRITE)) {
+      assertEquals(0L, channel.position());
+      
+      channel.position(5L);
+      assertEquals(5L, channel.position());
+      assertEquals(0, channel.size());
+      
+      ByteBuffer src = ByteBuffer.wrap(new byte[]{1, 2, 3, 4, 5});
+      assertEquals(5, channel.write(src));
+      
+      assertEquals(10L, channel.position());
+      assertEquals(10L, channel.size());
+    } finally {
+      Files.delete(path);
+    }
+    
+  }
+  @Test
   public void append() throws IOException {
     Path path = Files.createTempFile("sample", ".txt");
     try (SeekableByteChannel channel = Files.newByteChannel(path, APPEND)) {

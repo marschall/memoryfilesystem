@@ -62,7 +62,7 @@ public class MemoryContentsTest {
     byte[] data = SAMPLE_DATA;
     src.put(data);
     src.rewind();
-    channel.write(src);
+    assertEquals(SAMPLE_DATA.length, channel.write(src));
     return src;
   }
 
@@ -89,6 +89,31 @@ public class MemoryContentsTest {
 
     dst.rewind();
     assertEquals(-1, channel.read(dst));
+  }
+  
+  
+  @Test
+  public void positition() throws IOException {
+    SeekableByteChannel channel = this.contents.newChannel(true, true);
+    
+    assertEquals(0L, channel.position());
+    
+    // set the position bigger than the limit
+    channel.position(5L);
+    assertEquals(5L, channel.position());
+    assertEquals(0, channel.size());
+    
+    // make sure we're at the end
+    ByteBuffer dst = allocate(1);
+    assertEquals(-1, channel.read(dst));
+
+    this.writeTestData(channel);
+    assertEquals(5L + (long) SAMPLE_DATA.length, channel.position());
+    assertEquals(5L + (long) SAMPLE_DATA.length, channel.size());
+    
+    channel.position(channel.position() - (long) SAMPLE_DATA.length);
+    byte[] readBack = readBackSampleData(channel);
+    assertArrayEquals(SAMPLE_DATA, readBack);
   }
   
   @Test
@@ -157,6 +182,7 @@ public class MemoryContentsTest {
     assertEquals(SAMPLE_DATA.length, channel.size());
     assertEquals(SAMPLE_DATA.length, channel.position());
     
+    channel.position(0);
     byte[] readBack = readBackSampleData(channel);
     assertArrayEquals(SAMPLE_DATA, readBack);
     
@@ -197,13 +223,13 @@ public class MemoryContentsTest {
       assertEquals(data + 1, channel.position());
     }
     
+    channel.position(0);
     byte[] readBack = readBackSampleData(channel);
     assertArrayEquals(SAMPLE_DATA, readBack);
   }
 
   private byte[] readBackSampleData(SeekableByteChannel channel) throws IOException {
     ByteBuffer dst = allocate(SAMPLE_DATA.length);
-    channel.position(0);
     assertEquals(SAMPLE_DATA.length, channel.read(dst));
     dst.rewind();
     byte[] readBack = new byte[SAMPLE_DATA.length];
