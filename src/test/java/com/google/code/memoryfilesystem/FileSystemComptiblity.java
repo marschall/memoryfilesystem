@@ -1,26 +1,26 @@
 package com.google.code.memoryfilesystem;
 
-import java.beans.FeatureDescriptor;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.NonReadableChannelException;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
+import static java.nio.file.StandardOpenOption.APPEND;
+import static java.nio.file.StandardOpenOption.READ;
+import static java.nio.file.StandardOpenOption.WRITE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static java.nio.file.StandardOpenOption.READ;
-import static java.nio.file.StandardOpenOption.WRITE;
-import static java.nio.file.StandardOpenOption.APPEND;
 
 public class FileSystemComptiblity {
 
@@ -31,6 +31,7 @@ public class FileSystemComptiblity {
   }
 
   @Test
+  @Ignore("only on Windows")
   public void windows() throws IOException {
     Path c1 = Paths.get("C:\\");
     Path c2 = Paths.get("c:\\");
@@ -63,17 +64,24 @@ public class FileSystemComptiblity {
 
   @Test
   public void writeOnly() throws IOException {
-    Path path = Paths.get("/home/upnip/temp/task-list.png");
+    Path path = Files.createTempFile("task-list", ".png");
     try (SeekableByteChannel channel = Files.newByteChannel(path, WRITE)) {
       channel.position(100);
       ByteBuffer buffer = ByteBuffer.allocate(100);
-      channel.read(buffer);
+      try {
+        channel.read(buffer);
+        fail("should not be readable");
+      } catch (NonReadableChannelException e) {
+        assertTrue(true);
+      }
+    } finally {
+      Files.delete(path);
     }
   }
 
   @Test
   public void append() throws IOException {
-    Path path = Paths.get("/home/upnip/temp/sample.txt");
+    Path path = Files.createTempFile("sample", ".txt");
     try (SeekableByteChannel channel = Files.newByteChannel(path, APPEND)) {
       //			channel.position(channel.size());
       System.out.println(channel.position());
@@ -83,6 +91,8 @@ public class FileSystemComptiblity {
       System.out.println(channel.position());
       //			channel.truncate(channel.size() - 1L);
       //			channel.truncate(1L);
+    } finally {
+      Files.delete(path);
     }
   }
 
