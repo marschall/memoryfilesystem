@@ -10,6 +10,8 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 class MemoryContents {
+	
+  //TODO update m, c, a times
 
   /**
    * The object header size of an array. Two words flags &amp; class oop
@@ -56,7 +58,7 @@ class MemoryContents {
     return autoRelease(this.lock.writeLock());
   }
 
-  public int read(ByteBuffer dst, long position) throws IOException {
+  int read(ByteBuffer dst, long position) throws IOException {
     try (AutoRelease lock = this.readLock()) {
       if (position >= this.size) {
         return -1;
@@ -80,7 +82,7 @@ class MemoryContents {
     }
   }
 
-  public int write(ByteBuffer src, long position) {
+  int write(ByteBuffer src, long position) {
     try (AutoRelease lock = this.writeLock()) {
       long remaining = src.remaining();
       this.ensureCapacity(position + remaining);
@@ -99,6 +101,7 @@ class MemoryContents {
         currentBlock += 1;
       }
       if (position > this.size) {
+        // REVIEW, possibility to fill with random data
         this.size = position;
       }
       this.size += written;
@@ -107,13 +110,13 @@ class MemoryContents {
   }
 
 
-  public int writeAtEnd(ByteBuffer src) {
+  int writeAtEnd(ByteBuffer src) {
     try (AutoRelease lock = this.writeLock()) {
       return this.write(src, this.size);
     }
   }
 
-  public void truncate(long newSize) {
+  void truncate(long newSize) {
     try (AutoRelease lock = this.writeLock()) {
       if (newSize < this.size) {
         this.size = newSize;

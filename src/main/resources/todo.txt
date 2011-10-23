@@ -7,3 +7,7 @@ configurable
  - case insensitive comparison (normalization)
  - FileTypeDetector
  - Paths.get lazily create file system?
+ - fill with random data #position() past end
+ - size() of directory
+ - configure range of setTimes (past 2038)
+ - security manager restrictions
