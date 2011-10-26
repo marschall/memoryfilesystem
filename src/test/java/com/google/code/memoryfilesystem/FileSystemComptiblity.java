@@ -40,7 +40,6 @@ public class FileSystemComptiblity {
     assertEquals("c:\\", c2.toString());
     assertTrue(c1.startsWith(c2));
     assertTrue(c1.startsWith("c:\\"));
-    //		c1.toRealPath(true);
     c1.toRealPath();
   }
   

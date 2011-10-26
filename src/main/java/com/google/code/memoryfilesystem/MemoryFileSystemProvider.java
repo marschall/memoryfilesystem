@@ -253,12 +253,18 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     return (AbstractPath) path;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void checkAccess(Path path, AccessMode... modes) throws IOException {
     // TODO Auto-generated method stub
     throw new UnsupportedOperationException();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public <V extends FileAttributeView> V getFileAttributeView(Path path,
       Class<V> type, LinkOption... options) {
@@ -266,6 +272,9 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     return null;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public <A extends BasicFileAttributes> A readAttributes(Path path,
       Class<A> type, LinkOption... options) throws IOException {
@@ -273,6 +282,9 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     throw new UnsupportedOperationException();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public Map<String, Object> readAttributes(Path path, String attributes,
       LinkOption... options) throws IOException {
@@ -280,10 +292,22 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     return null;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public void setAttribute(Path path, String attribute, Object value,
       LinkOption... options) throws IOException {
     // TODO Auto-generated method stub
+    int colonIndex = attribute.indexOf(':');
+    String viewName;
+    if (colonIndex == -1) {
+      viewName = "basic";
+    } else {
+      viewName = attribute.substring(0, colonIndex);
+    }
+    // TODO check bounds
+    String attributeName = attribute.substring(colonIndex + 1, attribute.length());
     throw new UnsupportedOperationException();
   }
 

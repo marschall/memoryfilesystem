@@ -2,7 +2,6 @@ package com.google.code.memoryfilesystem;
 
 import static com.google.code.memoryfilesystem.AutoReleaseLock.autoRelease;
 
-import java.io.IOException;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;

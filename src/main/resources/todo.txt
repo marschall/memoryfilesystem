@@ -11,3 +11,4 @@ configurable
  - size() of directory
  - configure range of setTimes (past 2038)
  - security manager restrictions
+ - UserDefinedFileAttributeView

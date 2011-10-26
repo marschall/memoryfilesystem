@@ -114,18 +114,7 @@ abstract class Root extends AbstractPath {
   /**
    * {@inheritDoc}
    */
-  //	@Override
-  //FIXME
-  public Path toRealPath(boolean resolveLinks) throws IOException {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-//  @Override
-  //FIXME
+  @Override
   public Path toRealPath(LinkOption... options) throws IOException {
     // TODO Auto-generated function stub
     return null;
