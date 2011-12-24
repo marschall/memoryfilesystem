@@ -1,8 +1,8 @@
 package com.google.code.memoryfilesystem;
 
 import java.io.IOException;
+import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileTime;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -11,10 +11,21 @@ class MemoryDirectory extends MemoryEntry {
   private final ConcurrentMap<String, MemoryEntry> entries;
   
   private final BasicFileAttributes attributes;
+
+  private BasicFileAttributeView basicFileAttributeView;
   
   MemoryDirectory() {
     this.entries = new ConcurrentHashMap<>();
     this.attributes = new MemoryDirectoryFileAttributes();
+    this.basicFileAttributeView = new MemoryDirectoryFileAttributesView();
+  }
+  
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  BasicFileAttributeView getBasicFileAttributeView() {
+    return this.basicFileAttributeView;
   }
   
   class MemoryDirectoryFileAttributesView extends MemoryEntryFileAttributesView {
@@ -29,7 +40,7 @@ class MemoryDirectory extends MemoryEntry {
     
   }
   
-  class MemoryDirectoryFileAttributes extends MemoryEntryFileAttributes {
+  final class MemoryDirectoryFileAttributes extends MemoryEntryFileAttributes {
 
     /**
      * {@inheritDoc}

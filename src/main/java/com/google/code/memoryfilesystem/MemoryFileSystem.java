@@ -133,6 +133,17 @@ class MemoryFileSystem extends FileSystem {
   public Path getPath(String first, String... more) {
     this.checker.check();
     // TODO Auto-generated method stub
+    // TODO check for maximum length
+    // TODO check for valid characters
+    if (more != null && more.length > 0) {
+      
+    } else {
+      for (Path root : this.rootDirectories) {
+        if (root.startsWith(first)) {
+          return root;
+        }
+      }
+    }
     throw new UnsupportedOperationException();
   }
 

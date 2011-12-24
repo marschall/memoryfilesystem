@@ -60,6 +60,8 @@ abstract class MemoryEntry {
     }
   }
   
+  abstract BasicFileAttributeView getBasicFileAttributeView();
+  
   abstract class MemoryEntryFileAttributesView implements BasicFileAttributeView {
     
     /**

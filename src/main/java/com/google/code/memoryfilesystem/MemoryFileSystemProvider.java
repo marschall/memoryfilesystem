@@ -51,7 +51,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   @Override
   public FileSystem newFileSystem(URI uri, Map<String, ?> env) throws IOException {
     this.valideUri(uri);
-    String key = this.getKey(uri);
+    String key = this.getFileSystemKey(uri);
     EnvironmentParser parser = new EnvironmentParser(env);
     MemoryFileSystem fileSystem = createNewFileSystem(key, parser);
     MemoryFileSystem previous = this.fileSystems.putIfAbsent(key, fileSystem);
@@ -121,7 +121,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
    */
   @Override
   public FileSystem getFileSystem(URI uri) {
-    String key = this.getKey(uri);
+    String key = this.getFileSystemKey(uri);
     FileSystem fileSystem = this.fileSystems.get(key);
     if (fileSystem == null) {
       String message = "File system " + uri.getScheme() + ':' + key + " does not exist";
@@ -143,8 +143,25 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     }
   }
 
-  private String getKey(URI uri) {
-    return uri.getSchemeSpecificPart();
+  private String getFileSystemKey(URI uri) {
+    String schemeSpecificPart = uri.getSchemeSpecificPart();
+    int colonIndex = schemeSpecificPart.indexOf("://");
+    if (colonIndex == -1) {
+      return schemeSpecificPart;
+    } else {
+      return schemeSpecificPart.substring(0, colonIndex);
+    }
+  }
+  
+  private String getFileSystemPath(URI uri) {
+    //REVIEW check for getPath() first()?
+    String schemeSpecificPart = uri.getSchemeSpecificPart();
+    int colonIndex = schemeSpecificPart.indexOf("://");
+    if (colonIndex == -1) {
+      return uri.getPath();
+    } else {
+      return schemeSpecificPart.substring(colonIndex + "://".length());
+    }
   }
 
   /**
@@ -152,12 +169,12 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
    */
   @Override
   public Path getPath(URI uri) {
-    String key = getKey(uri);
+    String key = getFileSystemKey(uri);
     MemoryFileSystem fileSystem = this.fileSystems.get(key);
     if (fileSystem == null) {
       throw new FileSystemNotFoundException("memory file system \"" + key + "\" not found");
     }
-    return fileSystem.getPath(uri.getPath());
+    return fileSystem.getPath(getFileSystemPath(uri));
   }
 
   /**
@@ -269,6 +286,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   public <V extends FileAttributeView> V getFileAttributeView(Path path,
       Class<V> type, LinkOption... options) {
     // TODO Auto-generated method stub
+    FileSystem fileSystem = path.getFileSystem();
     return null;
   }
 

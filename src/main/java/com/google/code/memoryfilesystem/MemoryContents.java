@@ -14,7 +14,7 @@ class MemoryContents {
   //TODO update m, c, a times
 
   /**
-   * The object header size of an array. Two words flags &amp; class oop
+   * The object header size of an array. Two words (flags &amp; class oop)
    * plus array size (2 *64 bit + 32 bit on 64 bit, 2 *32 bit + 32 bit on 32 bit).
    */
   private static final int ARRAY_HEADER = 8 + 8 + 4;
