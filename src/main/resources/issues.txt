@@ -1,0 +1,4 @@
+- sometimes you get IOError instead of IOException
+- class(un)loading
+- some methods define throws  ClassCastException
+- attribute access both "typed" and "untyped" (Map<String, Object>)
