@@ -1,6 +1,7 @@
 package com.google.code.memoryfilesystem;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.NonReadableChannelException;
 import java.nio.channels.SeekableByteChannel;
@@ -9,6 +10,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Iterator;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -117,6 +119,24 @@ public class FileSystemComptiblity {
       //			channel.truncate(1L);
     } finally {
       Files.delete(path);
+    }
+  }
+  
+  @Test
+  public void toUri() {
+    FileSystem fileSystem = FileSystems.getDefault();
+    Path path = fileSystem.getPath("Users");
+    URI uri = path.toUri();
+  }
+  
+  @Test
+  public void iterator() {
+    FileSystem fileSystem = FileSystems.getDefault();
+    Path path = fileSystem.getPath("/Users/marschall/Documents");
+    Iterator<Path> iterator = path.iterator();
+    while (iterator.hasNext()) {
+      Path next = (Path) iterator.next();
+      assertFalse(next.isAbsolute());
     }
   }
   

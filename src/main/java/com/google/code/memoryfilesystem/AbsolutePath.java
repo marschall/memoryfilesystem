@@ -8,7 +8,6 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.nio.file.WatchEvent.Kind;
 import java.nio.file.WatchEvent.Modifier;
-import java.util.Iterator;
 import java.util.List;
 
 final class AbsolutePath extends ElementPath {
@@ -143,15 +142,6 @@ final class AbsolutePath extends ElementPath {
   @Override
   public WatchKey register(WatchService watcher, Kind<?>... events)
           throws IOException {
-    // TODO Auto-generated function stub
-    return null;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public Iterator<Path> iterator() {
     // TODO Auto-generated function stub
     return null;
   }

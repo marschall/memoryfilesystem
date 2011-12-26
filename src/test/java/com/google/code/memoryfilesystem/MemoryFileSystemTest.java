@@ -9,6 +9,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.attribute.UserPrincipalLookupService;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
@@ -59,6 +60,46 @@ public class MemoryFileSystemTest {
     }
   }
   
+  
+  @Test
+  public void absoluteIterator() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path usrBin = fileSystem.getPath("/usr/bin");
+      Iterable<String> expected = Arrays.asList("usr", "bin");
+      assertIterator(fileSystem, usrBin, expected);
+    }
+  }
+  
+  @Test
+  public void relativeIterator() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path usrBin = fileSystem.getPath("usr/bin");
+      Iterable<String> expected = Arrays.asList("usr", "bin");
+      assertIterator(fileSystem, usrBin, expected);
+    }
+  }
+  
+  private void assertIterator(FileSystem fileSystem, Path path, Iterable<String> expected) {
+    Iterator<Path> actualIterator = path.iterator();
+    Iterator<String> expectedIterator = expected.iterator();
+    while (actualIterator.hasNext()) {
+      Path actualPath = actualIterator.next();
+      try {
+        actualIterator.remove();
+        fail("path iterator should not support #remove()");
+      } catch (UnsupportedOperationException e) {
+        assertTrue("path iterator #remove() should throw UnsupportedOperationException", true);
+      }
+      
+      assertTrue(expectedIterator.hasNext());
+      String expectedName = (String) expectedIterator.next();
+      Path expectedPath = fileSystem.getPath(expectedName);
+      
+      assertEquals(expectedPath, actualPath);
+      assertFalse(actualPath.isAbsolute());
+    }
+    assertFalse(expectedIterator.hasNext());
+  }
   
   @Test
   public void getFileName() throws IOException {

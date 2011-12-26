@@ -14,3 +14,4 @@ configurable
  - UserDefinedFileAttributeView
  - secondary separator
  - watch service (report error/overflow)
+ - relative path with only one element

@@ -2,6 +2,7 @@ package com.google.code.memoryfilesystem;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import static com.google.code.memoryfilesystem.MemoryFileSystemProvider.SCHEME;
 
 class EmptyRoot extends Root {
 
@@ -44,7 +45,7 @@ class EmptyRoot extends Root {
   @Override
   public URI toUri() {
     try {
-      return new URI(MemoryFileSystemProvider.SCHEME, getMemoryFileSystem().getKey() + ":///", null);
+      return new URI(SCHEME, getMemoryFileSystem().getKey() + ":///", null);
     } catch (URISyntaxException e) {
       throw new AssertionError("could not create URI");
     }

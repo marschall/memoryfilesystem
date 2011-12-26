@@ -8,7 +8,6 @@ import java.nio.file.WatchEvent.Kind;
 import java.nio.file.WatchEvent.Modifier;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
-import java.util.Iterator;
 import java.util.List;
 
 final class RelativePath extends ElementPath {
@@ -103,8 +102,7 @@ final class RelativePath extends ElementPath {
    */
   @Override
   public URI toUri() {
-    // TODO Auto-generated function stub
-    return null;
+    return this.toAbsolutePath().toUri();
   }
 
   /**
@@ -141,15 +139,6 @@ final class RelativePath extends ElementPath {
   @Override
   public WatchKey register(WatchService watcher, Kind<?>... events)
           throws IOException {
-    // TODO Auto-generated function stub
-    return null;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public Iterator<Path> iterator() {
     // TODO Auto-generated function stub
     return null;
   }
