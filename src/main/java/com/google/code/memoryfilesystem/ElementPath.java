@@ -31,4 +31,30 @@ abstract class ElementPath extends AbstractPath {
     }
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public int getNameCount() {
+    return this.nameElements.size();
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean startsWith(String other) {
+    Path path = this.getMemoryFileSystem().getPath(other);
+    return this.startsWith(path);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean endsWith(String other) {
+    Path path = this.getMemoryFileSystem().getPath(other);
+    return this.endsWith(path);
+  }
+
 }

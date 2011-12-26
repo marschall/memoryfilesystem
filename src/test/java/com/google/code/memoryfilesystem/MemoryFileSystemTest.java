@@ -99,6 +99,76 @@ public class MemoryFileSystemTest {
       assertNull(usr.getParent());
     }
   }
+  
+  @Test(expected = IllegalArgumentException.class)
+  public void absoluteGetName0() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path usrBin = fileSystem.getPath("/usr/bin");
+      usrBin.getName(-1);
+    }
+  }
+  
+  @Test(expected = IllegalArgumentException.class)
+  public void absoluteGetNameToLong() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path usrBin = fileSystem.getPath("/usr/bin");
+      usrBin.getName(1);
+    }
+  }
+  
+  @Test
+  public void absoluteGetName() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path usrBin = fileSystem.getPath("/usr/bin");
+      Path usr = fileSystem.getPath("/usr");
+      assertEquals(usr, usrBin.getName(0));
+    }
+  }
+  
+  @Test
+  public void relativeGetName() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path usrBin = fileSystem.getPath("usr/bin");
+      Path usr = fileSystem.getPath("usr");
+      assertEquals(usr, usrBin.getName(0));
+    }
+  }
+  
+  @Test(expected = IllegalArgumentException.class)
+  public void relativeGetName0() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path usrBin = fileSystem.getPath("usr/bin");
+      usrBin.getName(-1);
+    }
+  }
+  
+  @Test(expected = IllegalArgumentException.class)
+  public void relativeGetNameToLong() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path usrBin = fileSystem.getPath("usr/bin");
+      usrBin.getName(1);
+    }
+  }
+  
+  @Test
+  public void emptyPath() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path path = fileSystem.getPath("");
+      assertFalse(path.isAbsolute());
+      assertNull(path.getRoot());
+    }
+  }
+  
+  @Test
+  public void getNameCount() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path usrBin = fileSystem.getPath("/usr/bin");
+      assertEquals(1, usrBin.getNameCount());
+      
+      usrBin = fileSystem.getPath("usr/bin");
+      assertEquals(1, usrBin.getNameCount());
+    }
+  }
 
   @Test
   public void isReadOnly() throws IOException {

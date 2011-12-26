@@ -40,7 +40,9 @@ abstract class AbstractPath implements Path {
    */
   @Override
   public final boolean startsWith(Path other) {
-    assertSameProvider(other);
+    if (!this.isSameFileSystem(other)) {
+      return false;
+    }
     return startsWith((AbstractPath) other);
   }
 
@@ -52,7 +54,9 @@ abstract class AbstractPath implements Path {
    */
   @Override
   public final boolean endsWith(Path other) {
-    assertSameProvider(other);
+    if (!this.isSameFileSystem(other)) {
+      return false;
+    }
     return endsWith((AbstractPath) other);
   }
 
@@ -64,7 +68,7 @@ abstract class AbstractPath implements Path {
    */
   @Override
   public final Path resolve(Path other) {
-    assertSameProvider(other);
+    assertSameFileSystem(other);
     return resolve((AbstractPath) other);
   }
 
@@ -75,7 +79,7 @@ abstract class AbstractPath implements Path {
    */
   @Override
   public final Path resolveSibling(Path other) {
-    assertSameProvider(other);
+    assertSameFileSystem(other);
     return resolveSibling((AbstractPath) other);
   }
 
@@ -87,14 +91,18 @@ abstract class AbstractPath implements Path {
    */
   @Override
   public final Path relativize(Path other) {
-    assertSameProvider(other);
+    assertSameFileSystem(other);
     return relativize((AbstractPath) other);
   }
 
   abstract Path relativize(AbstractPath other);
+  
+  private boolean isSameFileSystem(Path other) {
+    return other.getFileSystem() == this.getFileSystem();
+  }
 
-  private void assertSameProvider(Path other) {
-    if (!(other.getFileSystem() instanceof MemoryFileSystem)) {
+  private void assertSameFileSystem(Path other) {
+    if (this.isSameFileSystem(other)) {
       throw new ProviderMismatchException();
     }
   }

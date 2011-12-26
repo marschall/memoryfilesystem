@@ -53,18 +53,15 @@ final class AbsolutePath extends ElementPath {
    * {@inheritDoc}
    */
   @Override
-  public int getNameCount() {
-    // TODO Auto-generated function stub
-    return 0;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
   public Path getName(int index) {
-    // TODO Auto-generated function stub
-    return null;
+    if (index < 0) {
+      throw new IllegalArgumentException("index must be positive but was " + index);
+    }
+    if (index >= this.getNameCount()) {
+      throw new IllegalArgumentException("index must not be bigger than " + (this.getNameCount() - 1) +  " but was " + index);
+    }
+    List<String> subList = this.getNameElements().subList(0, index + 1);
+    return new AbsolutePath(getMemoryFileSystem(), this.root, subList);
   }
 
   /**
@@ -74,24 +71,6 @@ final class AbsolutePath extends ElementPath {
   public Path subpath(int beginIndex, int endIndex) {
     // TODO Auto-generated function stub
     return null;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public boolean startsWith(String other) {
-    // TODO Auto-generated function stub
-    return false;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public boolean endsWith(String other) {
-    // TODO Auto-generated function stub
-    return false;
   }
 
   /**
