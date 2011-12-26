@@ -12,8 +12,6 @@ class NamedRoot extends Root {
     this.name = name;
   }
 
-
-
   /**
    * {@inheritDoc}
    */
@@ -21,7 +19,6 @@ class NamedRoot extends Root {
   public boolean startsWith(String other) {
     return other.equals(this.name);
   }
-
 
   /**
    * {@inheritDoc}

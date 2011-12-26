@@ -13,6 +13,8 @@ import java.nio.file.Paths;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import static org.junit.Assert.assertNotNull;
+
 import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.READ;
 import static java.nio.file.StandardOpenOption.WRITE;
@@ -40,6 +42,9 @@ public class FileSystemComptiblity {
     assertEquals("c:\\", c2.toString());
     assertTrue(c1.startsWith(c2));
     assertTrue(c1.startsWith("c:\\"));
+    
+    //TODO
+    
     c1.toRealPath();
   }
   
@@ -113,6 +118,90 @@ public class FileSystemComptiblity {
     } finally {
       Files.delete(path);
     }
+  }
+  
+  @Test
+  public void getPath() {
+    FileSystem fileSystem = FileSystems.getDefault();
+    Path path = fileSystem.getPath("/Users/marschall/Documents");
+    assertTrue(Files.exists(path));
+    
+    path = fileSystem.getPath("/", "Users/marschall/Documents");
+    assertTrue(Files.exists(path));
+    
+    path = fileSystem.getPath("/", "/Users/marschall/Documents");
+    assertTrue(Files.exists(path));
+    
+    path = fileSystem.getPath("", "/Users/marschall/Documents");
+    assertTrue(Files.exists(path));
+    
+    path = fileSystem.getPath("/Users", "/marschall/Documents");
+    assertTrue(Files.exists(path));
+    
+    path = fileSystem.getPath("/Users", "marschall/Documents");
+    assertTrue(Files.exists(path));
+    
+    path = fileSystem.getPath("/", "Users/marschall/Documents");
+    assertTrue(Files.exists(path));
+  }
+  
+  @Test
+  public void aboluteGetParent() {
+    
+    FileSystem fileSystem = FileSystems.getDefault();
+    Path usrBin = fileSystem.getPath("/usr/bin");
+    Path usr = fileSystem.getPath("/usr");
+    
+    assertEquals(usr, usrBin.getParent());
+    Path root = fileSystem.getRootDirectories().iterator().next();
+    assertEquals(root, usr.getParent());
+  }
+  
+  @Test
+  public void relativeGetParent() {
+    
+    FileSystem fileSystem = FileSystems.getDefault();
+    Path usrBin = fileSystem.getPath("usr/bin");
+    Path usr = fileSystem.getPath("usr");
+    
+    assertEquals(usr, usrBin.getParent());
+    assertNull(usr.getParent());
+  }
+  
+  @Test
+  public void getFileName() {
+    
+    FileSystem fileSystem = FileSystems.getDefault();
+    Path usrBin = fileSystem.getPath("/usr/bin");
+    Path bin = fileSystem.getPath("bin");
+    
+    Path fileName = usrBin.getFileName();
+    assertEquals(fileName, bin);
+    assertFalse(fileName.isAbsolute());
+  }
+  
+  @Test
+  public void emptyPath() {
+    FileSystem fileSystem = FileSystems.getDefault();
+    Path path = fileSystem.getPath("");
+    assertFalse(path.isAbsolute());
+    assertNull(path.getRoot());
+  }
+  
+  @Test
+  public void relativePath() {
+    FileSystem fileSystem = FileSystems.getDefault();
+    Path path = fileSystem.getPath("Documents");
+    assertFalse(path.isAbsolute());
+    assertNull(path.getRoot());
+  }
+  
+  @Test
+  public void absolutePath() {
+    FileSystem fileSystem = FileSystems.getDefault();
+    Path path = fileSystem.getPath("/Documents");
+    assertTrue(path.isAbsolute());
+    assertNotNull(path.getRoot());
   }
 
   @Test

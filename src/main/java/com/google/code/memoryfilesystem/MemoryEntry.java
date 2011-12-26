@@ -7,6 +7,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import static com.google.code.memoryfilesystem.MemoryFileSystemProperties.BASIC_FILE_ATTRIBUTE_VIEW_NAME;
 
 abstract class MemoryEntry {
   
@@ -69,7 +70,7 @@ abstract class MemoryEntry {
      */
     @Override
     public String name() {
-      return "basic";
+      return BASIC_FILE_ATTRIBUTE_VIEW_NAME;
     }
     
     /**

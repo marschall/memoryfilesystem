@@ -47,8 +47,8 @@ public class EnvironmentBuilder {
 
   public static EnvironmentBuilder newWindows() {
     return new EnvironmentBuilder()
-    .addRoot("C:\\")
-    .setSeprator(MemoryFileSystemProperties.WINDOWS_SEPARATOR);
+      .addRoot("C:\\")
+      .setSeprator(MemoryFileSystemProperties.WINDOWS_SEPARATOR);
   }
 
   public Map<String, ?> build() {

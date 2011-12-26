@@ -12,3 +12,5 @@ configurable
  - configure range of setTimes (past 2038)
  - security manager restrictions
  - UserDefinedFileAttributeView
+ - secondary separator
+ - watch service (report error/overflow)

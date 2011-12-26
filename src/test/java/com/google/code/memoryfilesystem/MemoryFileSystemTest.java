@@ -1,14 +1,7 @@
 package com.google.code.memoryfilesystem;
 
-import static com.google.code.memoryfilesystem.Constants.SAMPLE_ENV;
-import static com.google.code.memoryfilesystem.Constants.SAMPLE_URI;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.ClosedFileSystemException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystemAlreadyExistsException;
@@ -21,6 +14,16 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.junit.Test;
+
+import static com.google.code.memoryfilesystem.Constants.SAMPLE_ENV;
+import static com.google.code.memoryfilesystem.Constants.SAMPLE_URI;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class MemoryFileSystemTest {
 
@@ -55,7 +58,47 @@ public class MemoryFileSystemTest {
       assertNotNull(secondFileSystem);
     }
   }
-
+  
+  
+  @Test
+  public void getFileName() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path usrBin = fileSystem.getPath("/usr/bin");
+      Path bin = fileSystem.getPath("bin");
+      
+      Path fileName = usrBin.getFileName();
+      assertNotNull(fileName);
+      
+      assertEquals(fileName, bin);
+      assertFalse(fileName.isAbsolute());
+    }
+  }
+  
+  @Test
+  public void absoluteGetParent() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path usrBin = fileSystem.getPath("/usr/bin");
+      Path usr = fileSystem.getPath("/usr");
+      
+      assertEquals(usr, usrBin.getParent());
+      assertTrue(usrBin.getParent().isAbsolute());
+      Path root = fileSystem.getRootDirectories().iterator().next();
+      assertEquals(root, usr.getParent());
+      assertTrue(usr.getParent().isAbsolute());
+    }
+  }
+  
+  @Test
+  public void relativeGetParent() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path usrBin = fileSystem.getPath("usr/bin");
+      Path usr = fileSystem.getPath("usr");
+      
+      assertEquals(usr, usrBin.getParent());
+      assertFalse(usrBin.getParent().isAbsolute());
+      assertNull(usr.getParent());
+    }
+  }
 
   @Test
   public void isReadOnly() throws IOException {
@@ -63,9 +106,48 @@ public class MemoryFileSystemTest {
       assertFalse(fileSystem.isReadOnly());
     }
   }
+  
+  @Test
+  public void absolutePaths() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path path = fileSystem.getPath("/");
+      assertTrue(path.isAbsolute());
+      assertSame(path, path.toAbsolutePath());
+      
+      path = fileSystem.getPath("/", "sample");
+      assertTrue(path.isAbsolute());
+      assertSame(path, path.toAbsolutePath());
+      assertNotNull(path.getRoot());
+      assertSame(getRoot(fileSystem), path.getRoot());
+    }
+  }
+  
+  @Test
+  public void relativePaths() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path path = fileSystem.getPath("sample");
+      assertFalse(path.isAbsolute());
+      assertNull(path.getRoot());
+    }
+  }
+  
+  private Path getRoot(FileSystem fileSystem) {
+    Iterable<Path> rootDirectories = fileSystem.getRootDirectories();
+    Iterator<Path> iterator = rootDirectories.iterator();
+    Path root = iterator.next();
+    assertFalse(iterator.hasNext());
+    return root;
+  }
+  
+  @Test
+  public void supportedFileAttributeViews() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      assertEquals(Collections.singleton("basic"), fileSystem.supportedFileAttributeViews());
+    }
+  }
 
   @Test
-  public void u() throws IOException {
+  public void lookupPrincipalByName() throws IOException {
     FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV);
     try {
       UserPrincipalLookupService userPrincipalLookupService = fileSystem.getUserPrincipalLookupService();
@@ -89,6 +171,21 @@ public class MemoryFileSystemTest {
   public void defaultSeparator() throws IOException {
     try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
       assertEquals("/", fileSystem.getSeparator());
+    }
+  }
+  
+  @Test
+  public void windows() throws IOException {
+    URI uri = URI.create("memory:uri");
+    Map<String, ?> env = EnvironmentBuilder.newWindows().build();
+    try (FileSystem fileSystem = FileSystems.newFileSystem(uri, env)) {
+      Path c1 = fileSystem.getPath("C:\\");
+      Path c2 = fileSystem.getPath("c:\\");
+      assertEquals(c1, c2);
+      assertEquals("C:\\", c1.toString());
+      assertEquals("c:\\", c2.toString());
+      assertTrue(c1.startsWith(c2));
+      assertTrue(c1.startsWith("c:\\"));
     }
   }
 

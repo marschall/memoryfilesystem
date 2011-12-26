@@ -26,5 +26,7 @@ public class MemoryFileSystemProperties {
   static final String UNIX_ROOT = "";
 
   static final List<String> DEFAULT_ROOTS = Collections.singletonList(UNIX_ROOT);
+  
+  static final String BASIC_FILE_ATTRIBUTE_VIEW_NAME = "basic";
 
 }

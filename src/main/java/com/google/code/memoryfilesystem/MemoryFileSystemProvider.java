@@ -184,8 +184,10 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   public SeekableByteChannel newByteChannel(Path path,
       Set<? extends OpenOption> options, FileAttribute<?>... attrs)
           throws IOException {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
+
+    AbstractPath abstractPath = this.castPath(path);
+    MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
+    return memoryFileSystem.newByteChannel(abstractPath, options, attrs);
   }
 
   /**
