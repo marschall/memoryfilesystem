@@ -223,6 +223,13 @@ public class FileSystemComptiblity {
     assertTrue(path.isAbsolute());
     assertNotNull(path.getRoot());
   }
+  
+  @Test(expected = IllegalArgumentException.class)
+  public void slash() {
+    FileSystem fileSystem = FileSystems.getDefault();
+    Path path = fileSystem.getPath("/");
+    path.subpath(0, 1);
+  }
 
   @Test
   public void root() {

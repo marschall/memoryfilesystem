@@ -12,6 +12,14 @@ class NamedRoot extends Root {
     super(fileSystem);
     this.name = name;
   }
+  
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  boolean isNamed() {
+    return true;
+  }
 
   /**
    * {@inheritDoc}

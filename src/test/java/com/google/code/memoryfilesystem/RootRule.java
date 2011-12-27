@@ -7,11 +7,11 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 
-import org.junit.rules.MethodRule;
-import org.junit.runners.model.FrameworkMethod;
+import org.junit.rules.TestRule;
+import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-class RootRule implements MethodRule {
+final class RootRule implements TestRule {
 
   private Path root;
 
@@ -20,12 +20,16 @@ class RootRule implements MethodRule {
     return root;
   }
 
-
-
+  /**
+   * {@inheritDoc}
+   */
   @Override
-  public Statement apply(final Statement base, FrameworkMethod method, Object target) {
+  public Statement apply(final Statement base, Description description) {
     return new Statement() {
 
+      /**
+       * {@inheritDoc}
+       */
       @Override
       public void evaluate() throws Throwable {
         try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {

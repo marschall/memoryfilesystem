@@ -3,7 +3,6 @@ package com.google.code.memoryfilesystem;
 import static com.google.code.memoryfilesystem.Constants.SAMPLE_ENV;
 import static com.google.code.memoryfilesystem.Constants.SAMPLE_URI;
 
-import java.nio.file.FileStore;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 
@@ -11,15 +10,14 @@ import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-final class FileStoreRule implements TestRule {
+final class FileSystemRule implements TestRule {
+  
+  private FileSystem fileSystem;
 
-  private FileStore fileStore;
 
-
-  FileStore getFileStore() {
-    return fileStore;
+  FileSystem getFileSystem() {
+    return fileSystem;
   }
-
 
   /**
    * {@inheritDoc}
@@ -33,14 +31,14 @@ final class FileStoreRule implements TestRule {
        */
       @Override
       public void evaluate() throws Throwable {
-        try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
-          fileStore = getFileStore(fileSystem);
+        fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV);
+//        fileSystem = FileSystems.getDefault();
+                
+        try {
           base.evaluate();
+        } finally {
+          fileSystem.close();
         }
-      }
-
-      private FileStore getFileStore(FileSystem fileSystem) {
-        return fileSystem.getFileStores().iterator().next();
       }
 
     };

@@ -6,11 +6,19 @@ import static com.google.code.memoryfilesystem.MemoryFileSystemProvider.SCHEME;
 
 class EmptyRoot extends Root {
 
+  static final String SLASH = "/";
+
   EmptyRoot(MemoryFileSystem fileSystem) {
     super(fileSystem);
   }
 
-
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  boolean isNamed() {
+    return false;
+  }
 
   /**
    * {@inheritDoc}
@@ -18,7 +26,7 @@ class EmptyRoot extends Root {
   @Override
   public boolean startsWith(String other) {
     // intentionally trigger NPE if other is null (default file system behaves the same way)
-    return other.equals("/");
+    return other.equals(SLASH);
   }
 
 
@@ -28,7 +36,7 @@ class EmptyRoot extends Root {
   @Override
   public boolean endsWith(String other) {
     // intentionally trigger NPE if other is null (default file system behaves the same way)
-    return other.equals("/");
+    return other.equals(SLASH);
   }
 
   /**
@@ -36,7 +44,7 @@ class EmptyRoot extends Root {
    */
   @Override
   public String toString() {
-    return "/";
+    return SLASH;
   }
 
   /**

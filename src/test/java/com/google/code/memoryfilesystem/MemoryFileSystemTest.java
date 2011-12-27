@@ -153,7 +153,7 @@ public class MemoryFileSystemTest {
   public void absoluteGetNameToLong() throws IOException {
     try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
       Path usrBin = fileSystem.getPath("/usr/bin");
-      usrBin.getName(1);
+      usrBin.getName(2);
     }
   }
   
@@ -187,7 +187,7 @@ public class MemoryFileSystemTest {
   public void relativeGetNameToLong() throws IOException {
     try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
       Path usrBin = fileSystem.getPath("usr/bin");
-      usrBin.getName(1);
+      usrBin.getName(2);
     }
   }
   
@@ -204,10 +204,10 @@ public class MemoryFileSystemTest {
   public void getNameCount() throws IOException {
     try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
       Path usrBin = fileSystem.getPath("/usr/bin");
-      assertEquals(1, usrBin.getNameCount());
+      assertEquals(2, usrBin.getNameCount());
       
       usrBin = fileSystem.getPath("usr/bin");
-      assertEquals(1, usrBin.getNameCount());
+      assertEquals(2, usrBin.getNameCount());
     }
   }
 
@@ -313,6 +313,14 @@ public class MemoryFileSystemTest {
     Map<String, Object> env = Collections.singletonMap(MemoryFileSystemProperties.DEFAULT_NAME_SEPARATOR_PROPERTY, (Object) "\u2603");
     try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, env)) {
       fail("unicode snow man should not be allowed as separator");
+    }
+  }
+  
+  @Test(expected = IllegalArgumentException.class)
+  public void slash() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path path = fileSystem.getPath("/");
+      path.subpath(0, 1);
     }
   }
 

@@ -103,7 +103,8 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     String separator = parser.getSeparator();
     MemoryFileStore memoryStore = new MemoryFileStore(key, checker);
     MemoryUserPrincipalLookupService userPrincipalLookupService = this.createUserPrincipalLookupService(parser, checker);
-    MemoryFileSystem fileSystem = new MemoryFileSystem(separator, this, memoryStore, userPrincipalLookupService, checker);
+    PathParser pathParser = this.buildPathParser(parser);
+    MemoryFileSystem fileSystem = new MemoryFileSystem(separator, pathParser, this, memoryStore, userPrincipalLookupService, checker);
     fileSystem.setRootDirectories(this.buildRootsDirectories(parser, fileSystem));
     return fileSystem;
   }
@@ -129,13 +130,21 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     }
     return fileSystem;
   }
-
-  private List<Path> buildRootsDirectories(EnvironmentParser parser, MemoryFileSystem fileSystem) {
-    List<String> roots = parser.getRoots();
-    if (roots.size() == 1 && MemoryFileSystemProperties.UNIX_ROOT.equals(roots.get(0))) {
-      return Collections.<Path>singletonList(new EmptyRoot(fileSystem));
+  
+  private PathParser buildPathParser(EnvironmentParser parser) {
+    if (parser.isSingleEmptyRoot()) {
+      return new SingleEmptyRootPathParser();
     } else {
-      List<Path> paths = new ArrayList<>();
+      return new MultipleNamedRootsPathParser();
+    }
+  }
+
+  private List<Root> buildRootsDirectories(EnvironmentParser parser, MemoryFileSystem fileSystem) {
+    if (parser.isSingleEmptyRoot()) {
+      return Collections.<Root>singletonList(new EmptyRoot(fileSystem));
+    } else {
+      List<Root> paths = new ArrayList<>();
+      List<String> roots = parser.getRoots();
       for (String root : roots) {
         paths.add(new NamedRoot(fileSystem, root));
       }

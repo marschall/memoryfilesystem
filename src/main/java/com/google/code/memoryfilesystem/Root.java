@@ -16,6 +16,8 @@ abstract class Root extends AbstractPath {
   Root(MemoryFileSystem fileSystem) {
     super(fileSystem);
   }
+  
+  abstract boolean isNamed();
 
   /**
    * {@inheritDoc}
@@ -70,8 +72,7 @@ abstract class Root extends AbstractPath {
    */
   @Override
   public Path subpath(int beginIndex, int endIndex) {
-    // TODO Auto-generated method stub
-    return null;
+    throw new IllegalArgumentException("can't create subpath of root");
   }
 
 

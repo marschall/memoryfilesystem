@@ -7,19 +7,24 @@ import java.util.Map;
 class EnvironmentParser {
 
   private final Map<String, ?> env;
+  
+  private List<String> roots;
 
   EnvironmentParser(Map<String, ?> env) {
     this.env = env;
   }
 
   List<String> getRoots() {
-    List<String> roots = this.parseStringProperty(MemoryFileSystemProperties.ROOTS_PROPERTY, false);
-    if (roots == null) {
-      return this.getDefaultRoots();
-    } else {
-      this.validateRoots(roots);
-      return roots;
+    
+    if (this.roots == null) {
+      this.roots = this.parseStringProperty(MemoryFileSystemProperties.ROOTS_PROPERTY, false);
+      if (this.roots == null) {
+        this.roots = this.getDefaultRoots();
+      } else {
+        this.validateRoots(roots);
+      }
     }
+    return roots;
   }
 
   List<String> getUserNames() {
@@ -144,6 +149,11 @@ class EnvironmentParser {
           + "\" and \"" + MemoryFileSystemProperties.WINDOWS_SEPARATOR + "\" are valid separators, \""
           + separator + "\" is invalid");
     }
+  }
+  
+  boolean isSingleEmptyRoot() {
+    return this.getRoots().size() == 1
+            && MemoryFileSystemProperties.UNIX_ROOT.equals(this.getRoots().get(0));
   }
 
 }

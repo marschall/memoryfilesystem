@@ -1,5 +1,7 @@
 package com.google.code.memoryfilesystem;
 
+import static com.google.code.memoryfilesystem.MemoryFileSystemProperties.BASIC_FILE_ATTRIBUTE_VIEW_NAME;
+
 import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.FileStore;
@@ -11,13 +13,9 @@ import java.nio.file.WatchService;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.nio.file.spi.FileSystemProvider;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-
-import static com.google.code.memoryfilesystem.MemoryFileSystemProperties.BASIC_FILE_ATTRIBUTE_VIEW_NAME;
 
 class MemoryFileSystem extends FileSystem {
 
@@ -32,12 +30,16 @@ class MemoryFileSystem extends FileSystem {
   private final ClosedFileSystemChecker checker;
 
   private volatile List<Path> rootDirectories;
+  private volatile List<Root> roots;
 
   private final MemoryUserPrincipalLookupService userPrincipalLookupService;
 
-  MemoryFileSystem(String separator, MemoryFileSystemProvider provider, MemoryFileStore store,
+  private final PathParser pathParser;
+
+  MemoryFileSystem(String separator, PathParser pathParser, MemoryFileSystemProvider provider, MemoryFileStore store,
       MemoryUserPrincipalLookupService userPrincipalLookupService, ClosedFileSystemChecker checker) {
     this.separator = separator;
+    this.pathParser = pathParser;
     this.provider = provider;
     this.store = store;
     this.userPrincipalLookupService = userPrincipalLookupService;
@@ -52,11 +54,14 @@ class MemoryFileSystem extends FileSystem {
    * 
    * <p>This is a bit annoying.</p>
    * 
-   * @param rootDirectories the root directories, not {@code null}, should
-   * 	not be modified, no defensive copy will be made
+   * @param rootDirectories the root directories, {@coded List<Root>},
+   *  not {@code null}, should not be modified, no defensive copy will be made
    */
-  void setRootDirectories(List<Path> rootDirectories) {
+  @SuppressWarnings("rawtypes") // generics, sometimes they can be a blessing
+  // and sometimes they can be a curse
+  void setRootDirectories(List rootDirectories) {
     this.rootDirectories = rootDirectories;
+    this.roots = rootDirectories;
   }
 
 
@@ -150,58 +155,9 @@ class MemoryFileSystem extends FileSystem {
     // TODO Auto-generated method stub
     // TODO check for maximum length
     // TODO check for valid characters
-    if (more != null && more.length > 0) {
-      boolean absolute = first.startsWith(this.getSeparator());
-      if (absolute) {
-        List<String> elements = new ArrayList<>(more.length + 1);
-        String firstElementName = first.substring(this.getSeparator().length());
-        elements.add(firstElementName);
-        elements.addAll(Arrays.asList(more));
-        
-        //TODO check for null
-        Path root = this.findRoot(firstElementName);
-        
-        return new AbsolutePath(this, root, elements);
-      } else {
-        List<String> elements = new ArrayList<>(more.length + 1);
-        elements.add(first);
-        elements.addAll(Arrays.asList(more));
-        return new RelativePath(this, elements);
-      }
-      
-    } else {
-      for (Path root : this.rootDirectories) {
-        if (root.startsWith(first)) {
-          return root;
-        }
-      }
-      //TODO unresolved path?
-    }
-    throw new UnsupportedOperationException();
+    return this.pathParser.parse(this.roots, first, more);
   }
   
-  private Path findRoot(String first) {
-    for (Path root : this.rootDirectories) {
-      if (root.startsWith(first)) {
-        return root;
-      }
-    }
-    return null;
-  }
-  
-  static final class ParseResult {
-    
-    private final Path root;
-    
-    private final List<String> elements;
-
-    ParseResult(Path root, List<String> elements) {
-      this.root = root;
-      this.elements = elements;
-    }
-    
-  }
-
   /**
    * {@inheritDoc}
    */
