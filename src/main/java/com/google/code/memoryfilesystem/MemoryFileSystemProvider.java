@@ -26,6 +26,13 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+/**
+ * Creates memory file systems instance.
+ * 
+ * <p>This class should not be used directly. Instead
+ * {@link java.nio.file.FileSystems#newFileSystem(URI, Map)}
+ * should be used.</p>
+ */
 public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   private final ConcurrentMap<String, MemoryFileSystem> fileSystems;

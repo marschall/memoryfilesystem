@@ -6,9 +6,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Provides means of uninstalling a memory 
+ * Provides means of uninstalling a memory file system provider.
  * 
- * @see http://www.bracha.org/classloaders.ps
+ * <p>Uninstalling a file system provider is not intended by </p>
+ * 
+ * <p>See <a href="http://www.bracha.org/classloaders.ps">Dynamic Class Loading
+ * in the Java&trade; Virtual Machine</a> for a good introduction into class loaders.
+ * </p>
  *
  */
 public final class MemoryFileSystemUninstaller {

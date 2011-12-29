@@ -4,13 +4,13 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
 /**
- * Ensures smooth operation in an OSGi container.
+ * Ensures smooth operation in an OSGi&trade; container.
  * 
  * <p>Once this bundle is stopped it will uninstall the the provider
  * preventing any class leaks from happening. See
  * {@link MemoryFileSystemUninstaller} for more information.</p>
  * 
- * <p>This class should only be used by the OSGi runtime.</p>
+ * <p>This class should only be used by the OSGi&trade; runtime.</p>
  */
 public final class Activator implements BundleActivator {
 
