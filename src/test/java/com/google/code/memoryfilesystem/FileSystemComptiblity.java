@@ -141,6 +141,7 @@ public class FileSystemComptiblity {
   }
   
   @Test
+  @Ignore("mac os")
   public void getPath() {
     FileSystem fileSystem = FileSystems.getDefault();
     Path path = fileSystem.getPath("/Users/marschall/Documents");
