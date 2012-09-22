@@ -152,7 +152,6 @@ class MemoryFileSystem extends FileSystem {
   @Override
   public Path getPath(String first, String... more) {
     this.checker.check();
-    // TODO Auto-generated method stub
     // TODO check for maximum length
     // TODO check for valid characters
     return this.pathParser.parse(this.roots, first, more);
@@ -184,6 +183,7 @@ class MemoryFileSystem extends FileSystem {
   public WatchService newWatchService() throws IOException {
     this.checker.check();
     // TODO Auto-generated method stub
+    // TODO make configurable
     throw new UnsupportedOperationException();
   }
 

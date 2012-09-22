@@ -21,6 +21,10 @@ class MemoryContents {
 
   static final int BLOCK_SIZE = 4096 - ARRAY_HEADER; //make sure it fits into a 4k memory region
 
+  // TODO
+  // byte[] first
+  // byte[][] second
+  // byte[][][] third
   private byte[][] blocks;
 
   private long size;

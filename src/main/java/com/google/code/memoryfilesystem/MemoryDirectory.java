@@ -12,7 +12,7 @@ class MemoryDirectory extends MemoryEntry {
   
   private final BasicFileAttributes attributes;
 
-  private BasicFileAttributeView basicFileAttributeView;
+  private final BasicFileAttributeView basicFileAttributeView;
   
   MemoryDirectory() {
     this.entries = new ConcurrentHashMap<>();

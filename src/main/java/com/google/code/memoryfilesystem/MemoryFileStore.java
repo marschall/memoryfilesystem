@@ -2,6 +2,7 @@ package com.google.code.memoryfilesystem;
 
 import java.io.IOException;
 import java.nio.file.FileStore;
+import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.attribute.FileStoreAttributeView;
 
@@ -76,11 +77,9 @@ class MemoryFileStore extends FileStore {
    * {@inheritDoc}
    */
   @Override
-  public boolean supportsFileAttributeView(
-      Class<? extends FileAttributeView> type) {
+  public boolean supportsFileAttributeView(Class<? extends FileAttributeView> type) {
     this.checker.check();
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
+    return type == BasicFileAttributeView.class;
   }
 
   /**
@@ -89,8 +88,7 @@ class MemoryFileStore extends FileStore {
   @Override
   public boolean supportsFileAttributeView(String name) {
     this.checker.check();
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
+    return MemoryFileSystemProperties.BASIC_FILE_ATTRIBUTE_VIEW_NAME.equals(name);
   }
 
   /**

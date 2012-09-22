@@ -11,6 +11,7 @@ import static com.google.code.memoryfilesystem.MemoryFileSystemProperties.BASIC_
 
 abstract class MemoryEntry {
   
+  // protected by read and write locks
   private FileTime lastModifiedTime;
   private FileTime lastAccessTime;
   private FileTime creationTime;

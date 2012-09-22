@@ -6,11 +6,11 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 class MemoryFile extends MemoryEntry {
   
-  private MemoryContents contents;
+  private final MemoryContents contents;
 
   private final BasicFileAttributes attributes;
 
-  private BasicFileAttributeView basicFileAttributeView;
+  private final BasicFileAttributeView basicFileAttributeView;
   
   MemoryFile() {
     this.attributes = new MemoryFileAttributes();
