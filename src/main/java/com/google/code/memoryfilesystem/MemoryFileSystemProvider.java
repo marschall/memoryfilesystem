@@ -315,8 +315,9 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
    */
   @Override
   public <A extends BasicFileAttributes> A readAttributes(Path path, Class<A> type, LinkOption... options) throws IOException {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
+    AbstractPath abstractPath = this.castPath(path);
+    MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
+    return memoryFileSystem.readAttributes(abstractPath, type, options);
   }
 
   /**

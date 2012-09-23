@@ -196,6 +196,9 @@ public class FileSystemComptiblity {
     Path usrBin = fileSystem.getPath("/usr/bin");
     Path bin = fileSystem.getPath("bin");
     
+    assertTrue(Files.isDirectory(usrBin));
+    assertFalse(Files.isRegularFile(usrBin));
+    
     Path fileName = usrBin.getFileName();
     assertEquals(fileName, bin);
     assertFalse(fileName.isAbsolute());

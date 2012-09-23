@@ -96,19 +96,15 @@ abstract class MemoryEntry {
   
   abstract BasicFileAttributeView getBasicFileAttributeView();
   
+  abstract <A extends BasicFileAttributes> A readAttributes(Class<A> type);
+  
   abstract class MemoryEntryFileAttributesView implements BasicFileAttributeView {
     
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String name() {
       return BASIC_FILE_ATTRIBUTE_VIEW_NAME;
     }
     
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void setTimes(FileTime lastModifiedTime, FileTime lastAccessTime, FileTime createTime) {
         MemoryEntry.this.setTimes(lastModifiedTime, lastAccessTime, createTime);
@@ -118,25 +114,16 @@ abstract class MemoryEntry {
   
   abstract class MemoryEntryFileAttributes implements BasicFileAttributes {
     
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public FileTime lastModifiedTime() {
       return MemoryEntry.this.lastModifiedTime();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public FileTime lastAccessTime() {
       return MemoryEntry.this.lastAccessTime();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public FileTime creationTime() {
       return MemoryEntry.this.creationTime();

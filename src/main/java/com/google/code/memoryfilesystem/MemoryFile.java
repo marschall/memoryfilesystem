@@ -18,20 +18,22 @@ class MemoryFile extends MemoryEntry {
     this.contents = new MemoryContents(16);
   }
   
-  /**
-   * {@inheritDoc}
-   */
   @Override
   BasicFileAttributeView getBasicFileAttributeView() {
     return this.basicFileAttributeView;
   }
   
+  <A extends BasicFileAttributes> A readAttributes(Class<A> type) {
+    if (type == BasicFileAttributes.class) {
+      return (A) this.attributes;
+    } else {
+      throw new UnsupportedOperationException("file attribute view" + type + " not supported");
+    }
+  }
+  
   
   class MemoryFileAttributesView extends MemoryEntryFileAttributesView {
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public BasicFileAttributes readAttributes() throws IOException {
       return MemoryFile.this.attributes;
@@ -41,34 +43,21 @@ class MemoryFile extends MemoryEntry {
   
   final class MemoryFileAttributes extends MemoryEntryFileAttributes {
 
-
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean isRegularFile() {
       return true;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean isDirectory() {
       return false;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean isSymbolicLink() {
       return false;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean isOther() {
       return false;

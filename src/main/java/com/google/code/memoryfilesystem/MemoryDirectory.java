@@ -21,12 +21,17 @@ class MemoryDirectory extends MemoryEntry {
     this.basicFileAttributeView = new MemoryDirectoryFileAttributesView();
   }
   
-  /**
-   * {@inheritDoc}
-   */
   @Override
   BasicFileAttributeView getBasicFileAttributeView() {
     return this.basicFileAttributeView;
+  }
+  
+  <A extends BasicFileAttributes> A readAttributes(Class<A> type) {
+    if (type == BasicFileAttributes.class) {
+      return (A) this.attributes;
+    } else {
+      throw new UnsupportedOperationException("file attribute view" + type + " not supported");
+    }
   }
   
   MemoryEntry getEntry(String name) {

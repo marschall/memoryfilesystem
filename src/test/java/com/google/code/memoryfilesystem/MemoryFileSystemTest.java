@@ -381,7 +381,7 @@ public class MemoryFileSystemTest {
       Files.createDirectory(home);
       assertTrue(Files.exists(home));
       assertTrue(Files.isDirectory(home));
-      assertTrue(Files.isRegularFile(home));
+      assertFalse(Files.isRegularFile(home));
     }
   }
 
