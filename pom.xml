@@ -3,7 +3,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.google.code.memoryfilesystem</groupId>
+  <groupId>com.github.marschall</groupId>
   <artifactId>memoryfilesystem</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>bundle</packaging>
@@ -103,10 +103,10 @@
         <extensions>true</extensions>
         <configuration>
           <instructions>
-            <Export-Package>com.google.code.memoryfilesystem;version="${project.version}"</Export-Package>
+            <Export-Package>com.github.marschall.memoryfilesystem;version="${project.version}"</Export-Package>
             <Import-Package>org.osgi.framework;version="[1.0.0,2.0.0)"</Import-Package>
-            <Bundle-SymbolicName>${project.groupId};singleton:=true</Bundle-SymbolicName>
-            <Bundle-Activator>com.google.code.memoryfilesystem.Activator</Bundle-Activator>
+            <Bundle-SymbolicName>${project.groupId}.${project.artifactId};singleton:=true</Bundle-SymbolicName>
+            <Bundle-Activator>com.github.marschall.memoryfilesystem.Activator</Bundle-Activator>
             <Bundle-RequiredExecutionEnvironment>JavaSE-1.7</Bundle-RequiredExecutionEnvironment>
           </instructions>
         </configuration>
@@ -155,16 +155,14 @@
         				<pluginExecution>
         					<pluginExecutionFilter>
         						<groupId>org.jboss.jandex</groupId>
-        						<artifactId>
-        							jandex-maven-plugin
-        						</artifactId>
+        						<artifactId>jandex-maven-plugin</artifactId>
         						<versionRange>[1.0.1,)</versionRange>
         						<goals>
         							<goal>jandex</goal>
         						</goals>
         					</pluginExecutionFilter>
         					<action>
-        						<ignore></ignore>
+        						<ignore/>
         					</action>
         				</pluginExecution>
         			</pluginExecutions>
