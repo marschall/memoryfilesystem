@@ -349,6 +349,7 @@ public class MemoryFileSystemTest {
     }
   }
 
+  
   @Test
   public void createDirectory() throws IOException {
     try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
@@ -356,6 +357,8 @@ public class MemoryFileSystemTest {
       assertFalse(Files.exists(home));
       Files.createDirectory(home);
       assertTrue(Files.exists(home));
+      assertTrue(Files.isDirectory(home));
+      assertTrue(Files.isRegularFile(home));
     }
   }
 

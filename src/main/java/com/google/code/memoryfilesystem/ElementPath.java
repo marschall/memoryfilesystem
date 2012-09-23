@@ -15,7 +15,15 @@ abstract class ElementPath extends AbstractPath {
   }
   
   List<String> getNameElements() {
-    return nameElements;
+    return this.nameElements;
+  }
+  
+  String getNameElement(int index) {
+    return this.nameElements.get(index);
+  }
+  
+  String getLastNameElement() {
+    return this.nameElements.get(this.nameElements.size() - 1);
   }
 
   /**

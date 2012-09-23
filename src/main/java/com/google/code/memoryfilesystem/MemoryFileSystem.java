@@ -4,10 +4,12 @@ import static com.google.code.memoryfilesystem.MemoryFileSystemProperties.BASIC_
 
 import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;
+import java.nio.file.AccessMode;
 import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.FileStore;
 import java.nio.file.FileSystem;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
@@ -80,69 +82,131 @@ class MemoryFileSystem extends FileSystem {
   }
 
 
-
-  void createDirectory(AbstractPath path, FileAttribute<?>[] attrs) throws IOException {
+  void createDirectory(AbstractPath path, FileAttribute<?>... attrs) throws IOException {
     this.checker.check();
-    MemoryDirectory directory = this.getRootDirectory(path);
+    MemoryDirectory rootDirectory = this.getRootDirectory(path);
     
-    
-    Path parent = path.getParent();
-    if (!(parent instanceof ElementPath)) {
-      throw new IOException("operation not supported on roots");
+    Path absolutePath = path.toAbsolutePath();
+    if (!(absolutePath instanceof ElementPath)) {
+      throw new IOException("can not be created");
     }
+    final ElementPath absoluteElementPath = (ElementPath) absolutePath;
+    final Path parent = absolutePath.getParent();
     
-    final ElementPath elementParent = (ElementPath) parent;
-    
-    this.withWriteLockOnLastDo(directory, elementParent, new MemoryDirectoryBlock() {
+    this.withWriteLockOnLastDo(rootDirectory, (AbstractPath) parent, new MemoryEntryBlock() {
       
       @Override
-      public void value(MemoryDirectory directory) throws IOException {
+      public void value(MemoryEntry entry) throws IOException {
+        if (!(entry instanceof MemoryDirectory)) {
+          throw new IOException(parent + " is not a directory");
+        }
         MemoryDirectory newDirectory = new MemoryDirectory();
-        String name = elementParent.getNameElements().get(elementParent.getNameCount());
-        directory.addEntry(name, newDirectory);
+        String name = absoluteElementPath.getLastNameElement();
+        ((MemoryDirectory) entry).addEntry(name, newDirectory);
       }
     });
   }
   
-  private void withWriteLockOnLastDo(MemoryDirectory root, ElementPath path, MemoryDirectoryBlock callback) throws IOException {
-    ElementPath elementPath = (ElementPath) path;
-    try (AutoRelease lock = root.writeLock()) {
-      withWriteLockOnLastDo(root, elementPath, 1, path.getNameCount(), callback);
-    }
-  }
-  
-  interface MemoryDirectoryBlock {
-    
-    void value(MemoryDirectory directory) throws IOException;
-    
+
+  void checkAccess(AbstractPath path, final AccessMode... modes) throws IOException {
+    this.checker.check();
+    MemoryDirectory directory = this.getRootDirectory(path);
+    Path absolutePath = path.toAbsolutePath();
+    this.withReadLockDo(directory, (AbstractPath) absolutePath, new MemoryEntryBlock() {
+      
+      @Override
+      public void value(MemoryEntry entry) throws IOException {
+        entry.checkAccess(modes);
+      }
+    });
   }
   
 
-  private void withWriteLockOnLastDo(MemoryDirectory parent, ElementPath path, int i, int length, MemoryDirectoryBlock callback) throws IOException {
-    MemoryEntry entry = parent.getEntry(path.getNameElements().get(i));
-    if (entry == null) {
-      //TODO construct better error message
-      throw new IOException("directory does not exist");
+  interface MemoryEntryBlock {
+    
+    void value(MemoryEntry entry) throws IOException;
+    
+  }
+  
+  private void withWriteLockOnLastDo(MemoryDirectory root, AbstractPath path, MemoryEntryBlock callback) throws IOException {
+    if (path instanceof Root) {
+      try (AutoRelease lock = root.writeLock()) {
+        callback.value(root);
+      }
+    } else if (path instanceof ElementPath) {
+      ElementPath elementPath = (ElementPath) path;
+      try (AutoRelease lock = root.readLock()) {
+        withWriteLockOnLastDo(root, elementPath, 0, path.getNameCount(), callback);
+      }
+    } else {
+      throw new IllegalArgumentException("unknown path type" + path);
     }
     
-    if (!(entry instanceof MemoryDirectory)) {
+  }
+
+  private void withWriteLockOnLastDo(MemoryEntry parent, ElementPath path, int i, int length, MemoryEntryBlock callback) throws IOException {
+    if ((parent instanceof MemoryDirectory)) {
       //TODO construct better error message
       throw new IOException("not a directory");
     }
-    MemoryDirectory directory = (MemoryDirectory) entry;
+    
+    MemoryEntry entry = ((MemoryDirectory) parent).getEntry(path.getNameElement(i));
+    if (entry == null) {
+      //TODO construct better error message
+      throw new NoSuchFileException("directory does not exist");
+    }
+    
     if (i == length - 1) {
-      try (AutoRelease lock = directory.writeLock()) {
-        callback.value(directory);
+      try (AutoRelease lock = entry.writeLock()) {
+        callback.value(entry);
       }
     } else {
-      try (AutoRelease lock = directory.readLock()) {
-        this.withWriteLockOnLastDo(directory, path, i + 1, length, callback);
+      try (AutoRelease lock = entry.readLock()) {
+        this.withWriteLockOnLastDo(entry, path, i + 1, length, callback);
+      }
+    }
+  }
+  
+
+  private void withReadLockDo(MemoryDirectory root, AbstractPath path, MemoryEntryBlock callback) throws IOException {
+    if (path instanceof Root) {
+      try (AutoRelease lock = root.readLock()) {
+        callback.value(root);
+      }
+    } else if (path instanceof ElementPath) {
+      ElementPath elementPath = (ElementPath) path;
+      try (AutoRelease lock = root.readLock()) {
+        withReadLockDo(root, elementPath, 0, path.getNameCount(), callback);
+      }
+    } else {
+      throw new IllegalArgumentException("unknown path type" + path);
+    }
+  }
+
+  private void withReadLockDo(MemoryEntry parent, ElementPath path, int i, int length, MemoryEntryBlock callback) throws IOException {
+    if (!(parent instanceof MemoryDirectory)) {
+      //TODO construct better error message
+      throw new IOException("not a directory");
+    }
+    
+    MemoryEntry entry = ((MemoryDirectory) parent).getEntry(path.getNameElement(i));
+    if (entry == null) {
+      //TODO construct better error message
+      throw new NoSuchFileException("directory does not exist");
+    }
+    
+    if (i == length - 1) {
+      try (AutoRelease lock = entry.readLock()) {
+        callback.value(entry);
+      }
+    } else {
+      try (AutoRelease lock = entry.readLock()) {
+        this.withReadLockDo(entry, path, i + 1, length, callback);
       }
     }
   }
   
   private MemoryDirectory getRootDirectory(AbstractPath path) throws IOException {
-    AbstractPath absolutePath = (AbstractPath) path.toAbsolutePath();
     MemoryDirectory directory = this.roots.get(path.getRoot());
     if (directory == null) {
       throw new IOException("the root of " + path + " does not exist");

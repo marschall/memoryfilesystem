@@ -102,7 +102,7 @@ abstract class AbstractPath implements Path {
   }
 
   private void assertSameFileSystem(Path other) {
-    if (this.isSameFileSystem(other)) {
+    if (!this.isSameFileSystem(other)) {
       throw new ProviderMismatchException();
     }
   }

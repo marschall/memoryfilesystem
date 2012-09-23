@@ -1,6 +1,7 @@
 package com.google.code.memoryfilesystem;
 
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
@@ -39,7 +40,7 @@ class MemoryDirectory extends MemoryEntry {
       // avoid double look up in common case
       // fix if we broke it
       this.entries.put(name, previous);
-      throw new IOException("entry " + name + " already exists");
+      throw new FileAlreadyExistsException("entry " + name + " already exists");
     }
     this.modified();
   }

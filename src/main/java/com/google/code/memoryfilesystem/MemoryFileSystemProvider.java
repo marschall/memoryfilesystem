@@ -295,8 +295,9 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
    */
   @Override
   public void checkAccess(Path path, AccessMode... modes) throws IOException {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
+    AbstractPath abstractPath = this.castPath(path);
+    MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
+    memoryFileSystem.checkAccess(abstractPath, modes);
   }
 
   /**
