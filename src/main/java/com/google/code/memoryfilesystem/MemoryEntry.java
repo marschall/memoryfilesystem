@@ -1,13 +1,14 @@
 package com.google.code.memoryfilesystem;
 
 import static com.google.code.memoryfilesystem.AutoReleaseLock.autoRelease;
+import static com.google.code.memoryfilesystem.MemoryFileSystemProperties.BASIC_FILE_ATTRIBUTE_VIEW_NAME;
 
+import java.nio.file.AccessMode;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import static com.google.code.memoryfilesystem.MemoryFileSystemProperties.BASIC_FILE_ATTRIBUTE_VIEW_NAME;
 
 abstract class MemoryEntry {
   
@@ -21,18 +22,23 @@ abstract class MemoryEntry {
 
   MemoryEntry() {
     this.lock = new ReentrantReadWriteLock();
+    FileTime now = this.getNow();
+    this.lastAccessTime = now;
+    this.lastModifiedTime = now;
+    this.creationTime = now;
+  }
+  
+  private FileTime getNow() {
     long now = System.currentTimeMillis();
-    this.lastAccessTime = FileTime.fromMillis(now);
-    this.lastModifiedTime = FileTime.fromMillis(now);
-    this.creationTime = FileTime.fromMillis(now);
+    return FileTime.fromMillis(now);
   }
   
 
-  private AutoRelease readLock() {
+  AutoRelease readLock() {
     return autoRelease(this.lock.readLock());
   }
 
-  private AutoRelease writeLock() {
+  AutoRelease writeLock() {
     return autoRelease(this.lock.writeLock());
   }
   
@@ -52,6 +58,32 @@ abstract class MemoryEntry {
     try (AutoRelease lock = this.readLock()) {
       return this.creationTime;
     }
+  }
+  
+  void checkAccess(AccessMode... modes) {
+    try (AutoRelease lock = this.readLock()) {
+      AccessMode unsupported = this.getUnsupported(modes);
+      if (unsupported != null) {
+        throw new UnsupportedOperationException("access mode " + unsupported + " is not supported");
+      }
+      // TODO implement
+    }
+  }
+  
+  private AccessMode getUnsupported(AccessMode... modes) {
+    for (AccessMode mode : modes) {
+      if (!(mode == AccessMode.READ || mode == AccessMode.WRITE || mode == AccessMode.EXECUTE)) {
+        return mode;
+      }
+    }
+    return null;
+  }
+  
+  void modified() {
+    // No write lock because this was to be folded in an operation with a write lock
+    FileTime now = this.getNow();
+    this.lastAccessTime = now;
+    this.lastModifiedTime = now;
   }
   
   void setTimes(FileTime lastModifiedTime, FileTime lastAccessTime, FileTime createTime) {

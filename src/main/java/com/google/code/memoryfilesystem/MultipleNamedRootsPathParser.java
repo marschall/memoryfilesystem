@@ -9,7 +9,7 @@ final class MultipleNamedRootsPathParser implements PathParser {
    * {@inheritDoc}
    */
   @Override
-  public Path parse(List<Root> roots, String first, String... more) {
+  public Path parse(Iterable<Root> roots, String first, String... more) {
     // TODO Auto-generated method stub
     return null;
   }

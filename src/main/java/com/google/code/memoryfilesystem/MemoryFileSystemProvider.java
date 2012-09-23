@@ -18,8 +18,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.spi.FileSystemProvider;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -146,16 +146,17 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     }
   }
 
-  private List<Root> buildRootsDirectories(EnvironmentParser parser, MemoryFileSystem fileSystem) {
+  private Map<Root, MemoryDirectory> buildRootsDirectories(EnvironmentParser parser, MemoryFileSystem fileSystem) {
     if (parser.isSingleEmptyRoot()) {
-      return Collections.<Root>singletonList(new EmptyRoot(fileSystem));
+      Root root = new EmptyRoot(fileSystem);
+      MemoryDirectory directory = new MemoryDirectory();
+      return Collections.singletonMap(root, directory);
     } else {
-      List<Root> paths = new ArrayList<>();
-      List<String> roots = parser.getRoots();
-      for (String root : roots) {
-        paths.add(new NamedRoot(fileSystem, root));
+      Map<Root, MemoryDirectory> paths = new HashMap<>();
+      for (String root : parser.getRoots()) {
+        paths.put(new NamedRoot(fileSystem, root), new MemoryDirectory());
       }
-      return Collections.unmodifiableList(paths);
+      return Collections.unmodifiableMap(paths);
     }
   }
 
@@ -210,20 +211,20 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
    * {@inheritDoc}
    */
   @Override
-  public DirectoryStream<Path> newDirectoryStream(Path dir,
-      Filter<? super Path> filter) throws IOException {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
+  public DirectoryStream<Path> newDirectoryStream(Path dir, Filter<? super Path> filter) throws IOException {
+    AbstractPath abstractPath = this.castPath(dir);
+    MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
+    return memoryFileSystem.newDirectoryStream(abstractPath, filter);
   }
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public void createDirectory(Path dir, FileAttribute<?>... attrs)
-      throws IOException {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
+  public void createDirectory(Path dir, FileAttribute<?>... attrs) throws IOException {
+    AbstractPath abstractPath = this.castPath(dir);
+    MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
+    memoryFileSystem.createDirectory(abstractPath, attrs);
   }
 
   /**
@@ -231,8 +232,9 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
    */
   @Override
   public void delete(Path path) throws IOException {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
+    AbstractPath abstractPath = this.castPath(path);
+    MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
+    memoryFileSystem.delete(abstractPath, path);
   }
 
   /**
@@ -301,19 +303,17 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
    * {@inheritDoc}
    */
   @Override
-  public <V extends FileAttributeView> V getFileAttributeView(Path path,
-      Class<V> type, LinkOption... options) {
+  public <V extends FileAttributeView> V getFileAttributeView(Path path, Class<V> type, LinkOption... options) {
     // TODO Auto-generated method stub
     FileSystem fileSystem = path.getFileSystem();
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public <A extends BasicFileAttributes> A readAttributes(Path path,
-      Class<A> type, LinkOption... options) throws IOException {
+  public <A extends BasicFileAttributes> A readAttributes(Path path, Class<A> type, LinkOption... options) throws IOException {
     // TODO Auto-generated method stub
     throw new UnsupportedOperationException();
   }
@@ -322,8 +322,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
    * {@inheritDoc}
    */
   @Override
-  public Map<String, Object> readAttributes(Path path, String attributes,
-      LinkOption... options) throws IOException {
+  public Map<String, Object> readAttributes(Path path, String attributes, LinkOption... options) throws IOException {
     // TODO Auto-generated method stub
     return null;
   }
@@ -332,8 +331,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
    * {@inheritDoc}
    */
   @Override
-  public void setAttribute(Path path, String attribute, Object value,
-      LinkOption... options) throws IOException {
+  public void setAttribute(Path path, String attribute, Object value, LinkOption... options) throws IOException {
     // TODO Auto-generated method stub
     int colonIndex = attribute.indexOf(':');
     String viewName;

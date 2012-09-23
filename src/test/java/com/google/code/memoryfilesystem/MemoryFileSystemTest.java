@@ -13,9 +13,11 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.ClosedFileSystemException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystemAlreadyExistsException;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.attribute.UserPrincipalLookupService;
@@ -323,6 +325,48 @@ public class MemoryFileSystemTest {
     try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
       Path path = fileSystem.getPath("/");
       path.subpath(0, 1);
+    }
+  }
+  
+  @Test(expected = IOException.class)
+  public void createDirectoryNoParent() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path homePmarscha = fileSystem.getPath("/home/pmarscha");
+      assertFalse(Files.exists(homePmarscha));
+      Files.createDirectory(homePmarscha);
+      assertTrue(Files.exists(homePmarscha));
+    }
+  }
+  
+
+  @Test
+  public void createDirectories() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path homePmarscha = fileSystem.getPath("/home/pmarscha");
+      assertFalse(Files.exists(homePmarscha));
+      Files.createDirectories(homePmarscha);
+      assertTrue(Files.exists(homePmarscha));
+    }
+  }
+
+  @Test
+  public void createDirectory() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path home = fileSystem.getPath("/home");
+      assertFalse(Files.exists(home));
+      Files.createDirectory(home);
+      assertTrue(Files.exists(home));
+    }
+  }
+
+  @Test(expected = FileAlreadyExistsException.class)
+  public void createDirectoryAlreadyExists() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path home = fileSystem.getPath("/home");
+      assertFalse(Files.exists(home));
+      Files.createDirectory(home);
+      assertTrue(Files.exists(home));
+      Files.createDirectory(home);
     }
   }
 

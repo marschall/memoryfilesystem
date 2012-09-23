@@ -10,7 +10,7 @@ final class SingleEmptyRootPathParser implements PathParser {
    * {@inheritDoc}
    */
   @Override
-  public Path parse(List<Root> roots, String first, String... more) {
+  public Path parse(Iterable<Root> roots, String first, String... more) {
     // REVIEW implement #count() to correctly set initial size
     // TODO check for empty path
     List<String> elements = new ArrayList<>();
@@ -20,7 +20,7 @@ final class SingleEmptyRootPathParser implements PathParser {
         this.parseInto(s, elements);
       }
     }
-    Root root = roots.get(0);
+    Root root = roots.iterator().next();
     MemoryFileSystem memoryFileSystem = root.getMemoryFileSystem();
     if (this.isAbsolute(first, more)) {
       if (elements.isEmpty()) {
