@@ -17,25 +17,31 @@ final class RelativePath extends ElementPath {
     super(fileSystem, nameElements);
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public boolean isAbsolute() {
     return false;
   }
+  
+  @Override
+  public String toString() {
+    StringBuilder buffer = new StringBuilder();
+    String separator = this.getFileSystem().getSeparator();
+    boolean first = true;
+    for (String element : this.getNameElements()) {
+      if (!first) {
+        buffer.append(separator);
+      }
+      buffer.append(element);
+      first = false;
+    }
+    return buffer.toString();
+  }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public Path getRoot() {
     return null;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public Path getParent() {
     if (this.getNameElements().size() == 1) {
@@ -46,9 +52,6 @@ final class RelativePath extends ElementPath {
     }
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public Path getName(int index) {
     if (index < 0) {
@@ -61,71 +64,47 @@ final class RelativePath extends ElementPath {
     return new RelativePath(getMemoryFileSystem(), subList);
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public Path subpath(int beginIndex, int endIndex) {
     // TODO Auto-generated function stub
     return null;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public Path normalize() {
     // TODO Auto-generated function stub
     return null;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public Path resolve(String other) {
     // TODO Auto-generated function stub
     return null;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public Path resolveSibling(String other) {
     // TODO Auto-generated function stub
     return null;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public URI toUri() {
     return this.toAbsolutePath().toUri();
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public Path toAbsolutePath() {
     // TODO Auto-generated function stub
     return null;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public Path toRealPath(LinkOption... options) throws IOException {
     // TODO Auto-generated function stub
     return null;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public WatchKey register(WatchService watcher, Kind<?>[] events,
           Modifier... modifiers) throws IOException {
@@ -133,9 +112,6 @@ final class RelativePath extends ElementPath {
     return null;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public WatchKey register(WatchService watcher, Kind<?>... events)
           throws IOException {
@@ -143,63 +119,42 @@ final class RelativePath extends ElementPath {
     return null;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public int compareTo(Path other) {
     // TODO Auto-generated function stub
     return 0;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   boolean startsWith(AbstractPath other) {
     // TODO Auto-generated function stub
     return false;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   boolean endsWith(AbstractPath other) {
     // TODO Auto-generated function stub
     return false;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   Path resolve(AbstractPath other) {
     // TODO Auto-generated function stub
     return null;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   Path resolveSibling(AbstractPath other) {
     // TODO Auto-generated function stub
     return null;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   Path relativize(AbstractPath other) {
     // TODO Auto-generated function stub
     return null;
   }
   
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public boolean equals(Object obj) {
     if (obj == this) {
@@ -212,9 +167,6 @@ final class RelativePath extends ElementPath {
     return this.getNameElements().equals(other.getNameElements());
   }
   
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public int hashCode() {
     return this.getNameElements().hashCode();

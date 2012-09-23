@@ -19,25 +19,32 @@ final class AbsolutePath extends ElementPath {
     this.root = root;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public boolean isAbsolute() {
     return true;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public Path getRoot() {
     return this.root;
   }
+  
+  @Override
+  public String toString() {
+    StringBuilder buffer = new StringBuilder();
+    buffer.append(this.root);
+    boolean first = true;
+    String separator = this.getFileSystem().getSeparator();
+    for (String element : this.getNameElements()) {
+      if (!first) {
+        buffer.append(separator);
+      }
+      buffer.append(element);
+      first = false;
+    }
+    return buffer.toString();
+  }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public Path getParent() {
     if (this.getNameElements().size() == 1) {

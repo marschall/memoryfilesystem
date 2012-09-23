@@ -13,41 +13,26 @@ class NamedRoot extends Root {
     this.name = name;
   }
   
-  /**
-   * {@inheritDoc}
-   */
   @Override
   boolean isNamed() {
     return true;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public boolean startsWith(String other) {
     return other.equals(this.name);
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public boolean endsWith(String other) {
     return other.equals(this.name);
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public String toString() {
     return this.name;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public URI toUri() {
     try {

@@ -280,6 +280,29 @@ public class MemoryFileSystemTest {
       fileSystem.close();
     }
   }
+  
+  @Test
+  public void pathToString() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path path = fileSystem.getPath("/");
+      assertEquals("/", path.toString());
+      
+      path = fileSystem.getPath("/home");
+      assertEquals("/home", path.toString());
+
+      path = fileSystem.getPath("/home/pmarscha");
+      assertEquals("/home/pmarscha", path.toString());
+      
+      path = fileSystem.getPath("home");
+      assertEquals("home", path.toString());
+      
+      path = fileSystem.getPath("home/pmarscha");
+      assertEquals("home/pmarscha", path.toString());
+      
+      path = fileSystem.getPath("home/./../pmarscha");
+      assertEquals("home/./../pmarscha", path.toString());
+    }
+  }
 
   @Test
   public void defaultSeparator() throws IOException {

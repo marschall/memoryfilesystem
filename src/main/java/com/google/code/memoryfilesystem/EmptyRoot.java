@@ -11,18 +11,12 @@ class EmptyRoot extends Root {
   EmptyRoot(MemoryFileSystem fileSystem) {
     super(fileSystem);
   }
-
-  /**
-   * {@inheritDoc}
-   */
+  
   @Override
   boolean isNamed() {
     return false;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public boolean startsWith(String other) {
     // intentionally trigger NPE if other is null (default file system behaves the same way)
@@ -30,26 +24,17 @@ class EmptyRoot extends Root {
   }
 
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public boolean endsWith(String other) {
     // intentionally trigger NPE if other is null (default file system behaves the same way)
     return other.equals(SLASH);
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public String toString() {
     return SLASH;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public URI toUri() {
     try {
