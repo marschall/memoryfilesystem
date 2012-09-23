@@ -20,9 +20,7 @@ final class RootRule implements TestRule {
     return root;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public Statement apply(final Statement base, Description description) {
     return new Statement() {

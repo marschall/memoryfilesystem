@@ -35,9 +35,7 @@ final class MemoryUserPrincipalLookupService extends UserPrincipalLookupService 
     this.stringTransformer = stringTransformer;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public UserPrincipal lookupPrincipalByName(String name) throws IOException {
     this.checker.check();
@@ -50,9 +48,7 @@ final class MemoryUserPrincipalLookupService extends UserPrincipalLookupService 
     }
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public GroupPrincipal lookupPrincipalByGroupName(String groupName) throws IOException {
     this.checker.check();

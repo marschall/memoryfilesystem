@@ -26,9 +26,7 @@ abstract class ElementPath extends AbstractPath {
     return this.nameElements.get(this.nameElements.size() - 1);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public Path getFileName() {
     if (this.nameElements.isEmpty()) {
@@ -41,35 +39,27 @@ abstract class ElementPath extends AbstractPath {
     }
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public int getNameCount() {
     return this.nameElements.size();
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public boolean startsWith(String other) {
     Path path = this.getMemoryFileSystem().getPath(other);
     return this.startsWith(path);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public boolean endsWith(String other) {
     Path path = this.getMemoryFileSystem().getPath(other);
     return this.endsWith(path);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public Iterator<Path> iterator() {
     return new ElementIterator(getMemoryFileSystem(), this.nameElements.iterator());

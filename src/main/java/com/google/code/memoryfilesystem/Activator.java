@@ -14,17 +14,13 @@ import org.osgi.framework.BundleContext;
  */
 public final class Activator implements BundleActivator {
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public void start(BundleContext context) {
     // do nothing
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public void stop(BundleContext context) {
     //REVIEW close all file systems?

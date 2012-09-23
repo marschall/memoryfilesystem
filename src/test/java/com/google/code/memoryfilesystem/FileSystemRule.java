@@ -19,9 +19,7 @@ final class FileSystemRule implements TestRule {
     return fileSystem;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public Statement apply(final Statement base, Description description) {
     return new Statement() {

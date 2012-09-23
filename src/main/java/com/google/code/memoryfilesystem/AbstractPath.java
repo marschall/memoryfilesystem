@@ -13,9 +13,7 @@ abstract class AbstractPath implements Path {
     this.fileSystem = fileSystem;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public FileSystem getFileSystem() {
     return this.fileSystem;
@@ -26,18 +24,14 @@ abstract class AbstractPath implements Path {
   }
 
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public File toFile() {
     throw new UnsupportedOperationException("memory file system does not support #toFile()");
   }
 
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public final boolean startsWith(Path other) {
     if (!this.isSameFileSystem(other)) {
@@ -49,9 +43,7 @@ abstract class AbstractPath implements Path {
   abstract boolean startsWith(AbstractPath other);
 
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public final boolean endsWith(Path other) {
     if (!this.isSameFileSystem(other)) {
@@ -63,9 +55,7 @@ abstract class AbstractPath implements Path {
   abstract boolean endsWith(AbstractPath other);
 
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public final Path resolve(Path other) {
     assertSameFileSystem(other);
@@ -74,9 +64,7 @@ abstract class AbstractPath implements Path {
 
   abstract Path resolve(AbstractPath other);
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public final Path resolveSibling(Path other) {
     assertSameFileSystem(other);
@@ -86,9 +74,7 @@ abstract class AbstractPath implements Path {
   abstract Path resolveSibling(AbstractPath other);
 
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public final Path relativize(Path other) {
     assertSameFileSystem(other);

@@ -19,75 +19,57 @@ abstract class Root extends AbstractPath {
   
   abstract boolean isNamed();
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public boolean isAbsolute() {
     return true;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public Path getRoot() {
     return this;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public Path getFileName() {
     return null;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public Path getParent() {
     return null;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public int getNameCount() {
     return 0;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public Path getName(int index) {
     throw new IllegalArgumentException("root does not have any name elements");
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public Path subpath(int beginIndex, int endIndex) {
     throw new IllegalArgumentException("can't create subpath of root");
   }
 
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public Path normalize() {
     return this;
   }
 
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public Path resolve(String other) {
     // TODO Auto-generated method stub
@@ -95,35 +77,27 @@ abstract class Root extends AbstractPath {
   }
 
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public Path resolveSibling(String other) {
     // TODO Auto-generated method stub
     return null;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public Path toAbsolutePath() {
     return this;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public Path toRealPath(LinkOption... options) throws IOException {
     // TODO Auto-generated function stub
     return null;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public WatchKey register(WatchService watcher, Kind<?>[] events,
       Modifier... modifiers) throws IOException {
@@ -131,9 +105,7 @@ abstract class Root extends AbstractPath {
     return null;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public WatchKey register(WatchService watcher, Kind<?>... events)
       throws IOException {
@@ -141,17 +113,13 @@ abstract class Root extends AbstractPath {
     return null;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public Iterator<Path> iterator() {
     return Collections.emptyIterator();
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public int compareTo(Path other) {
     // TODO Auto-generated method stub

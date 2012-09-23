@@ -5,9 +5,7 @@ import java.util.List;
 
 final class MultipleNamedRootsPathParser implements PathParser {
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public Path parse(Iterable<Root> roots, String first, String... more) {
     // TODO Auto-generated method stub

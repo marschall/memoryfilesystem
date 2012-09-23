@@ -16,9 +16,7 @@ final class NonAppendingBlockChannel extends BlockChannel {
     this.writable = writable;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   void writeCheck() {
     if (!this.writable) {
@@ -27,9 +25,7 @@ final class NonAppendingBlockChannel extends BlockChannel {
   }
 
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public int write(ByteBuffer src) throws IOException {
     try (AutoRelease lock = writeLock()) {
@@ -40,9 +36,7 @@ final class NonAppendingBlockChannel extends BlockChannel {
   }
 
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public SeekableByteChannel truncate(long size) throws IOException {
     try (AutoRelease lock = writeLock()) {

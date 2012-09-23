@@ -11,9 +11,7 @@ final class AutoReleaseLock implements AutoRelease {
     this.lock = lock;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public void close() {
     this.lock.unlock();

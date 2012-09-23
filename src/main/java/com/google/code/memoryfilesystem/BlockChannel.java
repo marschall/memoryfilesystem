@@ -54,17 +54,13 @@ abstract class BlockChannel implements SeekableByteChannel {
     return autoRelease(this.lock);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public boolean isOpen() {
     return this.checker.isOpen();
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public int read(ByteBuffer dst) throws IOException {
     try (AutoRelease lock = readLock()) {
@@ -77,18 +73,14 @@ abstract class BlockChannel implements SeekableByteChannel {
   }
 
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public long position() throws IOException {
     this.checker.check();
     return this.position;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public SeekableByteChannel position(long newPosition) throws IOException {
     if (newPosition < 0L) {
@@ -101,18 +93,14 @@ abstract class BlockChannel implements SeekableByteChannel {
     return this;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public long size() throws IOException {
     this.checker.check();
     return this.memoryContents.size();
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public void close() throws IOException {
     // REVIEW the spec of Channel says we should block and wait for the first invocation to finish

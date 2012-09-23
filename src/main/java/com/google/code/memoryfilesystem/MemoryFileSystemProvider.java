@@ -44,17 +44,13 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   static final String SCHEME = "memory";
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public String getScheme() {
     return SCHEME;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public FileSystem newFileSystem(URI uri, Map<String, ?> env) throws IOException {
     this.valideUri(uri);
@@ -124,9 +120,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     return new MemoryUserPrincipalLookupService(userNames, groupNames, nameTransfomer, checker);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public FileSystem getFileSystem(URI uri) {
     String key = this.getFileSystemKey(uri);
@@ -181,9 +175,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     }
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public Path getPath(URI uri) {
     String key = getFileSystemKey(uri);
@@ -194,9 +186,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     return fileSystem.getPath(getFileSystemPath(uri));
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public SeekableByteChannel newByteChannel(Path path,
       Set<? extends OpenOption> options, FileAttribute<?>... attrs)
@@ -207,9 +197,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     return memoryFileSystem.newByteChannel(abstractPath, options, attrs);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public DirectoryStream<Path> newDirectoryStream(Path dir, Filter<? super Path> filter) throws IOException {
     AbstractPath abstractPath = this.castPath(dir);
@@ -217,9 +205,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     return memoryFileSystem.newDirectoryStream(abstractPath, filter);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public void createDirectory(Path dir, FileAttribute<?>... attrs) throws IOException {
     AbstractPath abstractPath = this.castPath(dir);
@@ -227,9 +213,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     memoryFileSystem.createDirectory(abstractPath, attrs);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public void delete(Path path) throws IOException {
     AbstractPath abstractPath = this.castPath(path);
@@ -237,9 +221,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     memoryFileSystem.delete(abstractPath, path);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public void copy(Path source, Path target, CopyOption... options)
       throws IOException {
@@ -247,9 +229,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     throw new UnsupportedOperationException();
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public void move(Path source, Path target, CopyOption... options)
       throws IOException {
@@ -257,27 +237,21 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     throw new UnsupportedOperationException();
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public boolean isSameFile(Path path, Path path2) throws IOException {
     // TODO Auto-generated method stub
     throw new UnsupportedOperationException();
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public boolean isHidden(Path path) throws IOException {
     // TODO Auto-generated method stub
     throw new UnsupportedOperationException();
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public FileStore getFileStore(Path path) throws IOException {
     return this.castPath(path).getMemoryFileSystem().getFileStore();
@@ -290,9 +264,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     return (AbstractPath) path;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public void checkAccess(Path path, AccessMode... modes) throws IOException {
     AbstractPath abstractPath = this.castPath(path);
@@ -300,9 +272,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     memoryFileSystem.checkAccess(abstractPath, modes);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public <V extends FileAttributeView> V getFileAttributeView(Path path, Class<V> type, LinkOption... options) {
     // TODO Auto-generated method stub
@@ -310,9 +280,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     throw new UnsupportedOperationException();
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public <A extends BasicFileAttributes> A readAttributes(Path path, Class<A> type, LinkOption... options) throws IOException {
     AbstractPath abstractPath = this.castPath(path);
@@ -320,18 +288,14 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     return memoryFileSystem.readAttributes(abstractPath, type, options);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public Map<String, Object> readAttributes(Path path, String attributes, LinkOption... options) throws IOException {
     // TODO Auto-generated method stub
     return null;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public void setAttribute(Path path, String attribute, Object value, LinkOption... options) throws IOException {
     // TODO Auto-generated method stub

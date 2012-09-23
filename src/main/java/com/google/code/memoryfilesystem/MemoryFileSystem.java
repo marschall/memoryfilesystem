@@ -241,53 +241,41 @@ class MemoryFileSystem extends FileSystem {
     throw new UnsupportedOperationException();
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public FileSystemProvider provider() {
     this.checker.check();
     return this.provider;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public void close() throws IOException {
     this.checker.close();
     this.provider.close(this);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public boolean isOpen() {
     return this.checker.isOpen();
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public boolean isReadOnly() {
     this.checker.check();
     return this.store.isReadOnly();
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public String getSeparator() {
     this.checker.check();
     return this.separator;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public Iterable<Path> getRootDirectories() {
     this.checker.check();
@@ -295,27 +283,21 @@ class MemoryFileSystem extends FileSystem {
     return (Iterable<Path>) ((Object) this.roots.keySet());
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public Iterable<FileStore> getFileStores() {
     this.checker.check();
     return this.stores;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public Set<String> supportedFileAttributeViews() {
     this.checker.check();
     return Collections.singleton(BASIC_FILE_ATTRIBUTE_VIEW_NAME);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public Path getPath(String first, String... more) {
     this.checker.check();
@@ -324,9 +306,7 @@ class MemoryFileSystem extends FileSystem {
     return this.pathParser.parse(this.roots.keySet(), first, more);
   }
   
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public PathMatcher getPathMatcher(String syntaxAndPattern) {
     this.checker.check();
@@ -334,18 +314,14 @@ class MemoryFileSystem extends FileSystem {
     throw new UnsupportedOperationException();
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public UserPrincipalLookupService getUserPrincipalLookupService() {
     this.checker.check();
     return this.userPrincipalLookupService;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public WatchService newWatchService() throws IOException {
     this.checker.check();

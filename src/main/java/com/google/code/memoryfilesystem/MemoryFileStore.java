@@ -17,36 +17,28 @@ class MemoryFileStore extends FileStore {
     this.checker = checker;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public String name() {
     this.checker.check();
     return this.key;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public String type() {
     this.checker.check();
     return MemoryFileSystemProvider.SCHEME;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public boolean isReadOnly() {
     this.checker.check();
     return false;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public long getTotalSpace() throws IOException {
     this.checker.check();
@@ -54,9 +46,7 @@ class MemoryFileStore extends FileStore {
     throw new UnsupportedOperationException();
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public long getUsableSpace() throws IOException {
     this.checker.check();
@@ -64,36 +54,28 @@ class MemoryFileStore extends FileStore {
     throw new UnsupportedOperationException();
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public long getUnallocatedSpace() throws IOException {
     // TODO Auto-generated method stub
     throw new UnsupportedOperationException();
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public boolean supportsFileAttributeView(Class<? extends FileAttributeView> type) {
     this.checker.check();
     return type == BasicFileAttributeView.class;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public boolean supportsFileAttributeView(String name) {
     this.checker.check();
     return MemoryFileSystemProperties.BASIC_FILE_ATTRIBUTE_VIEW_NAME.equals(name);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public <V extends FileStoreAttributeView> V getFileStoreAttributeView(Class<V> type) {
     this.checker.check();
@@ -101,9 +83,7 @@ class MemoryFileStore extends FileStore {
     throw new UnsupportedOperationException();
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public Object getAttribute(String attribute) throws IOException {
     this.checker.check();

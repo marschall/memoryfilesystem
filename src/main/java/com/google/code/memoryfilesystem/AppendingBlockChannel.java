@@ -14,27 +14,21 @@ final class AppendingBlockChannel extends BlockChannel {
   }
 
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   void writeCheck() {
     // an appending channel is always writable
   }
 
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public SeekableByteChannel truncate(long size) throws IOException {
     throw new IOException("truncation not supported in append mode");
   }
 
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public int write(ByteBuffer src) throws IOException {
     try (AutoRelease lock = writeLock()) {

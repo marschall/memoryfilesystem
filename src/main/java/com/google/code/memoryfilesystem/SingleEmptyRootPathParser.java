@@ -6,9 +6,7 @@ import java.util.List;
 
 final class SingleEmptyRootPathParser implements PathParser {
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public Path parse(Iterable<Root> roots, String first, String... more) {
     // REVIEW implement #count() to correctly set initial size
