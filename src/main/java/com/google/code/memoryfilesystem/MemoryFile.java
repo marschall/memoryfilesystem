@@ -25,6 +25,7 @@ class MemoryFile extends MemoryEntry {
   
   <A extends BasicFileAttributes> A readAttributes(Class<A> type) {
     if (type == BasicFileAttributes.class) {
+      this.accessed();
       return (A) this.attributes;
     } else {
       throw new UnsupportedOperationException("file attribute view" + type + " not supported");

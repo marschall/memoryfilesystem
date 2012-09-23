@@ -86,6 +86,11 @@ abstract class MemoryEntry {
     this.lastModifiedTime = now;
   }
   
+  void accessed() {
+    // No write lock because this was to be folded in an operation with a write lock
+    this.lastAccessTime = this.getNow();
+  }
+  
   void setTimes(FileTime lastModifiedTime, FileTime lastAccessTime, FileTime createTime) {
     try (AutoRelease lock = this.writeLock()) {
       this.lastModifiedTime = lastModifiedTime;

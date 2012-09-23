@@ -55,7 +55,6 @@ abstract class AbstractPath implements Path {
   abstract boolean endsWith(AbstractPath other);
 
 
-
   @Override
   public final Path resolve(Path other) {
     assertSameFileSystem(other);
