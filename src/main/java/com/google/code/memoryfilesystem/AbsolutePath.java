@@ -55,9 +55,7 @@ final class AbsolutePath extends ElementPath {
     }
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public Path getName(int index) {
     if (index < 0) {
@@ -70,71 +68,55 @@ final class AbsolutePath extends ElementPath {
     return new AbsolutePath(getMemoryFileSystem(), this.root, subList);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public Path subpath(int beginIndex, int endIndex) {
     // TODO Auto-generated function stub
     return null;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public Path normalize() {
     // TODO Auto-generated function stub
     return null;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public Path resolve(String other) {
     // TODO Auto-generated function stub
     return null;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public Path resolveSibling(String other) {
     // TODO Auto-generated function stub
     return null;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public URI toUri() {
     // TODO Auto-generated function stub
     return null;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public Path toAbsolutePath() {
     return this;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public Path toRealPath(LinkOption... options) throws IOException {
     // TODO Auto-generated function stub
     return null;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public WatchKey register(WatchService watcher, Kind<?>[] events,
           Modifier... modifiers) throws IOException {
@@ -143,9 +125,7 @@ final class AbsolutePath extends ElementPath {
     return null;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public WatchKey register(WatchService watcher, Kind<?>... events)
           throws IOException {
@@ -153,63 +133,49 @@ final class AbsolutePath extends ElementPath {
     return null;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public int compareTo(Path other) {
     // TODO Auto-generated function stub
     return 0;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   boolean startsWith(AbstractPath other) {
     // TODO Auto-generated function stub
     return false;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   boolean endsWith(AbstractPath other) {
     // TODO Auto-generated function stub
     return false;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   Path resolve(AbstractPath other) {
     // TODO Auto-generated function stub
     return null;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   Path resolveSibling(AbstractPath other) {
     // TODO Auto-generated function stub
     return null;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   Path relativize(AbstractPath other) {
     // TODO Auto-generated function stub
     return null;
   }
   
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public boolean equals(Object obj) {
     if (obj == this) {
@@ -223,9 +189,7 @@ final class AbsolutePath extends ElementPath {
             && this.getNameElements().equals(other.getNameElements());
   }
   
-  /**
-   * {@inheritDoc}
-   */
+
   @Override
   public int hashCode() {
     return this.root.hashCode() ^ this.getNameElements().hashCode();

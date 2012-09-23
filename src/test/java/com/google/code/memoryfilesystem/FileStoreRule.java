@@ -20,17 +20,10 @@ final class FileStoreRule implements TestRule {
     return fileStore;
   }
 
-
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public Statement apply(final Statement base, Description description) {
     return new Statement() {
 
-      /**
-       * {@inheritDoc}
-       */
       @Override
       public void evaluate() throws Throwable {
         try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
