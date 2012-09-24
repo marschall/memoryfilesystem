@@ -63,6 +63,56 @@ public class MemoryFileSystemTest {
     }
   }
   
+  @Test
+  public void resolveAbsoluteOtherAbsolute() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path absolute = fileSystem.getPath("/a/b");
+      
+      assertEquals(absolute, fileSystem.getPath("").resolve(absolute));
+      assertEquals(absolute, fileSystem.getPath("/").resolve(absolute));
+      assertEquals(absolute, fileSystem.getPath("c/d").resolve(absolute));
+      assertEquals(absolute, fileSystem.getPath("/c/d").resolve(absolute));
+    }
+  }
+  
+  @Test
+  public void resolveAbsoluteOtherRelative() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path realtive = fileSystem.getPath("a/b");
+      
+      assertEquals(fileSystem.getPath("a/b"), fileSystem.getPath("").resolve(realtive));
+      assertEquals(fileSystem.getPath("/a/b"), fileSystem.getPath("/").resolve(realtive));
+      assertEquals(fileSystem.getPath("c/d/a/b"), fileSystem.getPath("c/d").resolve(realtive));
+      assertEquals(fileSystem.getPath("/c/d/a/b"), fileSystem.getPath("/c/d").resolve(realtive));
+    }
+  }
+
+  
+  @Test
+  public void resolveAbsoluteOtherAbsoluteString() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      String absolute = "/a/b";
+      Path absolutePath = fileSystem.getPath("/a/b");
+      
+      assertEquals(absolutePath, fileSystem.getPath("").resolve(absolute));
+      assertEquals(absolutePath, fileSystem.getPath("/").resolve(absolute));
+      assertEquals(absolutePath, fileSystem.getPath("c/d").resolve(absolute));
+      assertEquals(absolutePath, fileSystem.getPath("/c/d").resolve(absolute));
+    }
+  }
+  
+  @Test
+  public void resolveAbsoluteOtherRelativeString() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      String realtive = "a/b";
+      
+      assertEquals(fileSystem.getPath("a/b"), fileSystem.getPath("").resolve(realtive));
+      assertEquals(fileSystem.getPath("/a/b"), fileSystem.getPath("/").resolve(realtive));
+      assertEquals(fileSystem.getPath("c/d/a/b"), fileSystem.getPath("c/d").resolve(realtive));
+      assertEquals(fileSystem.getPath("/c/d/a/b"), fileSystem.getPath("/c/d").resolve(realtive));
+    }
+  }
+  
   
   @Test
   public void relativizeAbsolute() throws IOException {

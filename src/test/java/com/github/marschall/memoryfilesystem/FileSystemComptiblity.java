@@ -175,6 +175,8 @@ public class FileSystemComptiblity {
     assertEquals(usr, usrBin.getParent());
     Path root = fileSystem.getRootDirectories().iterator().next();
     assertEquals(root, usr.getParent());
+    
+    System.out.println(fileSystem.getPath("usr/bin").resolve(fileSystem.getPath("a")));
   }
   
   @Test
