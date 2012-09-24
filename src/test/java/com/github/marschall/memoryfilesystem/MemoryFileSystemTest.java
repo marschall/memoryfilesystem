@@ -69,6 +69,116 @@ public class MemoryFileSystemTest {
   
   
   @Test
+  public void relativizeAbsolute() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path first = fileSystem.getPath("/a/b");
+      Path second = fileSystem.getPath("/a/b/c");
+      
+      assertEquals(fileSystem.getPath("c"), first.relativize(second));
+      assertEquals(fileSystem.getPath(".."), second.relativize(first));
+      assertEquals(fileSystem.getPath(""), first.relativize(first));
+      
+      // ---
+      
+      first = fileSystem.getPath("/a/b");
+      second = fileSystem.getPath("/a/b/c/d");
+      
+      assertEquals(fileSystem.getPath("c/d"), first.relativize(second));
+      assertEquals(fileSystem.getPath("../.."), second.relativize(first));
+      assertEquals(fileSystem.getPath(""), first.relativize(first));
+      
+      // ---
+      
+      first = fileSystem.getPath("/a/b");
+      second = fileSystem.getPath("/c");
+      
+      assertEquals(fileSystem.getPath("../../c"), first.relativize(second));
+      assertEquals(fileSystem.getPath("../a/b"), second.relativize(first));
+      assertEquals(fileSystem.getPath(""), first.relativize(first));
+      
+      // ---
+      
+      first = fileSystem.getPath("/a/b");
+      second = fileSystem.getPath("/c/d");
+      
+      assertEquals(fileSystem.getPath("../../c/d"), first.relativize(second));
+      assertEquals(fileSystem.getPath("../../a/b"), second.relativize(first));
+      assertEquals(fileSystem.getPath(""), first.relativize(first));
+    }
+  }
+  
+  @Test(expected = IllegalArgumentException.class)
+  public void relativizeAbsoluteUnsupported1() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path first = fileSystem.getPath("/a/b");
+      Path second = fileSystem.getPath("c");
+      first.relativize(second);
+    }
+  }
+  
+  @Test(expected = IllegalArgumentException.class)
+  public void relativizeAbsoluteUnsupported2() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path first = fileSystem.getPath("/a/b");
+      Path second = fileSystem.getPath("c");
+      second.relativize(first);
+    }
+  }
+  
+  
+  @Test
+  public void relativizeRelative() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path first = fileSystem.getPath("a/b");
+      Path second = fileSystem.getPath("a/b/c");
+      
+      assertEquals(fileSystem.getPath("c"), first.relativize(second));
+      assertEquals(fileSystem.getPath(".."), second.relativize(first));
+      assertEquals(fileSystem.getPath(""), first.relativize(first));
+      
+      // ---
+      
+      first = fileSystem.getPath("a/b");
+      second = fileSystem.getPath("a/b/c/d");
+      
+      assertEquals(fileSystem.getPath("c/d"), first.relativize(second));
+      assertEquals(fileSystem.getPath("../.."), second.relativize(first));
+      assertEquals(fileSystem.getPath(""), first.relativize(first));
+      
+      // ---
+      
+      first = fileSystem.getPath("a/b");
+      second = fileSystem.getPath("c");
+      
+      assertEquals(fileSystem.getPath("../../c"), first.relativize(second));
+      assertEquals(fileSystem.getPath("../a/b"), second.relativize(first));
+      assertEquals(fileSystem.getPath(""), first.relativize(first));
+      
+      // ---
+      
+      first = fileSystem.getPath("a/b");
+      second = fileSystem.getPath("c/d");
+      
+      assertEquals(fileSystem.getPath("../../c/d"), first.relativize(second));
+      assertEquals(fileSystem.getPath("../../a/b"), second.relativize(first));
+      assertEquals(fileSystem.getPath(""), first.relativize(first));
+    }
+  }
+  
+
+  @Test
+  public void relativizeRelativeRoot() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path first = fileSystem.getPath("/");
+      Path second = fileSystem.getPath("/a/b");
+      
+      assertEquals(fileSystem.getPath("a/b"), first.relativize(second));
+      assertEquals(fileSystem.getPath("../.."), second.relativize(first));
+      assertEquals(fileSystem.getPath(""), first.relativize(first));
+    }
+  }
+  
+  @Test
   public void absoluteIterator() throws IOException {
     try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
       Path usrBin = fileSystem.getPath("/usr/bin");

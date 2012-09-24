@@ -1,10 +1,10 @@
 package com.github.marschall.memoryfilesystem;
 
 import java.io.IOException;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.WatchEvent.Kind;
 import java.nio.file.WatchEvent.Modifier;
-import java.nio.file.LinkOption;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.Collections;
@@ -22,6 +22,13 @@ abstract class Root extends AbstractPath {
 
   @Override
   public boolean isAbsolute() {
+    return true;
+  }
+  
+
+  
+  @Override
+  boolean isRoot() {
     return true;
   }
 
@@ -71,17 +78,9 @@ abstract class Root extends AbstractPath {
 
 
   @Override
-  public Path resolve(String other) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-
-
-  @Override
   public Path resolveSibling(String other) {
     // TODO Auto-generated method stub
-    return null;
+    throw new UnsupportedOperationException();
   }
 
 
@@ -94,7 +93,7 @@ abstract class Root extends AbstractPath {
   @Override
   public Path toRealPath(LinkOption... options) throws IOException {
     // TODO Auto-generated function stub
-    return null;
+    throw new UnsupportedOperationException();
   }
 
 
@@ -102,7 +101,7 @@ abstract class Root extends AbstractPath {
   public WatchKey register(WatchService watcher, Kind<?>[] events,
       Modifier... modifiers) throws IOException {
     // TODO Auto-generated method stub
-    return null;
+    throw new UnsupportedOperationException();
   }
 
 
@@ -110,7 +109,7 @@ abstract class Root extends AbstractPath {
   public WatchKey register(WatchService watcher, Kind<?>... events)
       throws IOException {
     // TODO Auto-generated method stub
-    return null;
+    throw new UnsupportedOperationException();
   }
 
 
@@ -123,7 +122,7 @@ abstract class Root extends AbstractPath {
   @Override
   public int compareTo(Path other) {
     // TODO Auto-generated method stub
-    return 0;
+    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -138,20 +137,44 @@ abstract class Root extends AbstractPath {
 
   @Override
   Path resolve(AbstractPath other) {
-    // TODO Auto-generated method stub
-    return null;
+    if (other instanceof ElementPath) {
+      ElementPath otherPath = (ElementPath) other;
+      return new AbsolutePath(this.getMemoryFileSystem(), this, ((ElementPath) other).getNameElements());
+    } else {
+      throw new IllegalArgumentException("can't resolve" + other);
+    }
   }
 
   @Override
   Path resolveSibling(AbstractPath other) {
     // TODO Auto-generated method stub
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   Path relativize(AbstractPath other) {
-    // TODO Auto-generated method stub
-    return null;
+    if (!other.isAbsolute()) {
+      // only support relativization against absolute paths
+      throw new IllegalArgumentException("can only relativize an absolute path against an absolute path");
+    }
+    if (!other.getRoot().equals(this)) {
+      // only support relativization against paths with same root
+      throw new IllegalArgumentException("paths must have the same root");
+    }
+    if (other.equals(this)) {
+      // other is me
+      return new RelativePath(getMemoryFileSystem(), Collections.<String>emptyList());
+    }
+    
+    //TODO normalize
+    if (other instanceof ElementPath) {
+      // normal case
+      ElementPath otherPath = (ElementPath) other;
+      return new RelativePath(this.getMemoryFileSystem(), otherPath.getNameElements());
+    } else {
+      // unknown case
+      throw new IllegalArgumentException("unsupported path argument");
+    }
   }
 
 }

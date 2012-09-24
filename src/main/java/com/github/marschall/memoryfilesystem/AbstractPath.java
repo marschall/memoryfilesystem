@@ -24,12 +24,10 @@ abstract class AbstractPath implements Path {
   }
 
 
-
   @Override
   public File toFile() {
     throw new UnsupportedOperationException("memory file system does not support #toFile()");
   }
-
 
 
   @Override
@@ -58,7 +56,14 @@ abstract class AbstractPath implements Path {
   @Override
   public final Path resolve(Path other) {
     assertSameFileSystem(other);
-    return resolve((AbstractPath) other);
+    AbstractPath otherPath = (AbstractPath) other;
+    if (otherPath.isRoot()) {
+      return other;
+    } else if (other.isAbsolute()) {
+      // TODO totally unspecified, make configurable
+      return other;
+    }
+    return resolve(otherPath);
   }
 
   abstract Path resolve(AbstractPath other);
@@ -71,7 +76,13 @@ abstract class AbstractPath implements Path {
   }
 
   abstract Path resolveSibling(AbstractPath other);
+  
+  abstract boolean isRoot();
 
+  @Override
+  public Path resolve(String other) {
+    return this.resolve(this.fileSystem.getPath(other));
+  }
 
 
   @Override

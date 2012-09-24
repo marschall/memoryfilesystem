@@ -38,6 +38,11 @@ abstract class ElementPath extends AbstractPath {
       return new RelativePath(getMemoryFileSystem(), elements);
     }
   }
+  
+  @Override
+  boolean isRoot() {
+    return false;
+  }
 
 
   @Override

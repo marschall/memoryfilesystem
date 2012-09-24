@@ -8,13 +8,16 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.nio.file.WatchEvent.Kind;
 import java.nio.file.WatchEvent.Modifier;
+import java.util.ArrayList;
 import java.util.List;
+
+import static java.lang.Math.min;
 
 final class AbsolutePath extends ElementPath {
   
-  private final Path root;
+  private final Root root;
 
-  AbsolutePath(MemoryFileSystem fileSystem, Path root, List<String> nameElements) {
+  AbsolutePath(MemoryFileSystem fileSystem, Root root, List<String> nameElements) {
     super(fileSystem, nameElements);
     this.root = root;
   }
@@ -84,23 +87,16 @@ final class AbsolutePath extends ElementPath {
 
 
   @Override
-  public Path resolve(String other) {
-    // TODO Auto-generated function stub
-    return null;
-  }
-
-
-  @Override
   public Path resolveSibling(String other) {
     // TODO Auto-generated function stub
-    return null;
+    throw new UnsupportedOperationException();
   }
 
 
   @Override
   public URI toUri() {
     // TODO Auto-generated function stub
-    return null;
+    throw new UnsupportedOperationException();
   }
 
 
@@ -113,7 +109,7 @@ final class AbsolutePath extends ElementPath {
   @Override
   public Path toRealPath(LinkOption... options) throws IOException {
     // TODO Auto-generated function stub
-    return null;
+    throw new UnsupportedOperationException();
   }
 
 
@@ -122,13 +118,12 @@ final class AbsolutePath extends ElementPath {
           Modifier... modifiers) throws IOException {
     // TODO report bug
     // TODO Auto-generated function stub
-    return null;
+    throw new UnsupportedOperationException();
   }
 
 
   @Override
-  public WatchKey register(WatchService watcher, Kind<?>... events)
-          throws IOException {
+  public WatchKey register(WatchService watcher, Kind<?>... events) throws IOException {
     // TODO Auto-generated function stub
     return null;
   }
@@ -137,7 +132,7 @@ final class AbsolutePath extends ElementPath {
   @Override
   public int compareTo(Path other) {
     // TODO Auto-generated function stub
-    return 0;
+    throw new UnsupportedOperationException();
   }
 
 
@@ -157,8 +152,15 @@ final class AbsolutePath extends ElementPath {
 
   @Override
   Path resolve(AbstractPath other) {
-    // TODO Auto-generated function stub
-    return null;
+    if (other instanceof ElementPath) {
+      ElementPath otherPath = (ElementPath) other;
+      List<String> resolvedElements = new ArrayList<>(this.getNameCount() + otherPath.getNameCount());
+      resolvedElements.addAll(this.getNameElements());
+      resolvedElements.addAll(otherPath.getNameElements());
+      return new AbsolutePath(this.getMemoryFileSystem(), this.root, resolvedElements);
+    } else {
+      throw new IllegalArgumentException("can't resolve" + other);
+    }
   }
 
 
@@ -171,11 +173,47 @@ final class AbsolutePath extends ElementPath {
 
   @Override
   Path relativize(AbstractPath other) {
-    // TODO Auto-generated function stub
-    return null;
+    if (!other.isAbsolute()) {
+      // only support relativization against absolute paths
+      throw new IllegalArgumentException("can only relativize an absolute path against an absolute path");
+    }
+    if (!other.getRoot().equals(this.root)) {
+      // only support relativization against paths with same root
+      throw new IllegalArgumentException("paths must have the same root");
+    }
+    //TODO normalize
+    if (other.equals(this.root)) {
+      // other is my root, easy 
+      return new RelativePath(this.getMemoryFileSystem(), new HomogenousList<String>("..", this.getNameCount()));
+    } else if (other instanceof ElementPath) {
+      // normal case
+      ElementPath otherPath = (ElementPath) other;
+      List<String> relativeElements = new ArrayList<>();
+      int firstDifferenceIndex = firstDifferenceIndex(this.getNameElements(), otherPath.getNameElements());
+      for (int i = firstDifferenceIndex; i < this.getNameCount(); ++i) {
+        relativeElements.add("..");
+      }
+      if (firstDifferenceIndex < other.getNameCount()) {
+        relativeElements.addAll(otherPath.getNameElements().subList(firstDifferenceIndex, otherPath.getNameCount()));
+      }
+      return new RelativePath(this.getMemoryFileSystem(), relativeElements);
+    } else {
+      // unknown case
+      throw new IllegalArgumentException("unsupported path argument");
+    }
   }
   
 
+  private int firstDifferenceIndex(List<?> l1, List<?> l2) {
+    int endIndex = min(l1.size(), l2.size());
+    for (int i = 0; i < endIndex; ++i) {
+      if (!l1.get(i).equals(l2.get(i))) {
+        return i;
+      }
+    }
+    return endIndex;
+  }
+  
   @Override
   public boolean equals(Object obj) {
     if (obj == this) {
@@ -192,6 +230,7 @@ final class AbsolutePath extends ElementPath {
 
   @Override
   public int hashCode() {
+    // TODO disturb context
     return this.root.hashCode() ^ this.getNameElements().hashCode();
   }
 

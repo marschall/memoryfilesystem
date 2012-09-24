@@ -8,6 +8,7 @@ import java.nio.file.WatchEvent.Kind;
 import java.nio.file.WatchEvent.Modifier;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.util.ArrayList;
 import java.util.List;
 
 final class RelativePath extends ElementPath {
@@ -77,12 +78,6 @@ final class RelativePath extends ElementPath {
   }
 
   @Override
-  public Path resolve(String other) {
-    // TODO Auto-generated function stub
-    return null;
-  }
-
-  @Override
   public Path resolveSibling(String other) {
     // TODO Auto-generated function stub
     return null;
@@ -139,8 +134,7 @@ final class RelativePath extends ElementPath {
 
   @Override
   Path resolve(AbstractPath other) {
-    // TODO Auto-generated function stub
-    return null;
+    throw new IllegalArgumentException("resolving against relative paths not supported");
   }
 
   @Override

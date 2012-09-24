@@ -292,7 +292,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   @Override
   public Map<String, Object> readAttributes(Path path, String attributes, LinkOption... options) throws IOException {
     // TODO Auto-generated method stub
-    return null;
+    throw new UnsupportedOperationException();
   }
 
 

@@ -165,7 +165,7 @@ class MemoryFileSystem extends FileSystem {
   }
 
   private void withWriteLockOnLastDo(MemoryEntry parent, ElementPath path, int i, int length, MemoryEntryBlock callback) throws IOException {
-    if ((parent instanceof MemoryDirectory)) {
+    if (!(parent instanceof MemoryDirectory)) {
       //TODO construct better error message
       throw new IOException("not a directory");
     }
