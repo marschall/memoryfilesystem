@@ -1,6 +1,5 @@
 package com.github.marschall.memoryfilesystem;
 
-import static java.lang.Math.min;
 
 import java.io.IOException;
 import java.net.URI;
@@ -187,33 +186,13 @@ final class AbsolutePath extends ElementPath {
       return new RelativePath(this.getMemoryFileSystem(), new HomogenousList<String>("..", this.getNameCount()));
     } else if (other instanceof ElementPath) {
       // normal case
-      ElementPath otherPath = (ElementPath) other;
-      List<String> relativeElements = new ArrayList<>();
-      int firstDifferenceIndex = firstDifferenceIndex(this.getNameElements(), otherPath.getNameElements());
-      for (int i = firstDifferenceIndex; i < this.getNameCount(); ++i) {
-        relativeElements.add("..");
-      }
-      if (firstDifferenceIndex < other.getNameCount()) {
-        relativeElements.addAll(otherPath.getNameElements().subList(firstDifferenceIndex, otherPath.getNameCount()));
-      }
-      return new RelativePath(this.getMemoryFileSystem(), relativeElements);
+      return this.buildRelativePathAgainst(other);
     } else {
       // unknown case
       throw new IllegalArgumentException("unsupported path argument");
     }
   }
-  
 
-  private int firstDifferenceIndex(List<?> l1, List<?> l2) {
-    int endIndex = min(l1.size(), l2.size());
-    for (int i = 0; i < endIndex; ++i) {
-      if (!l1.get(i).equals(l2.get(i))) {
-        return i;
-      }
-    }
-    return endIndex;
-  }
-  
   @Override
   public boolean equals(Object obj) {
     if (obj == this) {

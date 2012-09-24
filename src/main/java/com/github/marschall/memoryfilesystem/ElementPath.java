@@ -1,6 +1,9 @@
   package com.github.marschall.memoryfilesystem;
 
+import static java.lang.Math.min;
+
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -70,6 +73,29 @@ abstract class ElementPath extends AbstractPath {
     return new ElementIterator(getMemoryFileSystem(), this.nameElements.iterator());
   }
   
+  protected int firstDifferenceIndex(List<?> l1, List<?> l2) {
+    int endIndex = min(l1.size(), l2.size());
+    for (int i = 0; i < endIndex; ++i) {
+      if (!l1.get(i).equals(l2.get(i))) {
+        return i;
+      }
+    }
+    return endIndex;
+  }
+
+  Path buildRelativePathAgainst(AbstractPath other) {
+    ElementPath otherPath = (ElementPath) other;
+    List<String> relativeElements = new ArrayList<>();
+    int firstDifferenceIndex = firstDifferenceIndex(this.getNameElements(), otherPath.getNameElements());
+    for (int i = firstDifferenceIndex; i < this.getNameCount(); ++i) {
+      relativeElements.add("..");
+    }
+    if (firstDifferenceIndex < other.getNameCount()) {
+      relativeElements.addAll(otherPath.getNameElements().subList(firstDifferenceIndex, otherPath.getNameCount()));
+    }
+    return new RelativePath(this.getMemoryFileSystem(), relativeElements);
+  }
+
   static final class ElementIterator implements Iterator<Path> {
     
     private final MemoryFileSystem fileSystem;

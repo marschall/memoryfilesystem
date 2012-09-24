@@ -142,8 +142,17 @@ final class RelativePath extends ElementPath {
 
   @Override
   Path relativize(AbstractPath other) {
-    // TODO Auto-generated function stub
-    throw new UnsupportedOperationException();
+    if (other.isAbsolute()) {
+      // only support relativization against relative paths
+      throw new IllegalArgumentException("can only relativize a relative path against a relative path");
+    }
+    if (other instanceof ElementPath) {
+      // normal case
+      return this.buildRelativePathAgainst(other);
+    } else {
+      // unknown case
+      throw new IllegalArgumentException("unsupported path argument");
+    }
   }
   
   @Override
