@@ -176,7 +176,7 @@ final class AbsolutePath extends ElementPath {
     //TODO normalize
     if (other.equals(this.root)) {
       // other is my root, easy 
-      return new RelativePath(this.getMemoryFileSystem(), new HomogenousList<String>("..", this.getNameCount()));
+      return new RelativePath(this.getMemoryFileSystem(), HomogenousList.create("..", this.getNameCount()));
     } else if (other instanceof ElementPath) {
       // normal case
       return this.buildRelativePathAgainst(other);
