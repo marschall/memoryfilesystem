@@ -1,9 +1,9 @@
 package com.github.marschall.memoryfilesystem;
 
+import static com.github.marschall.memoryfilesystem.MemoryFileSystemProvider.SCHEME;
+
 import java.net.URI;
 import java.net.URISyntaxException;
-
-import static com.github.marschall.memoryfilesystem.MemoryFileSystemProvider.SCHEME;
 
 class NamedRoot extends Root {
 

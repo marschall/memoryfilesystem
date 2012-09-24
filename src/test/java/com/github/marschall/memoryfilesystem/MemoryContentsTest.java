@@ -1,7 +1,10 @@
 package com.github.marschall.memoryfilesystem;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -16,14 +19,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-
-import com.github.marschall.memoryfilesystem.MemoryContents;
-
-import static org.junit.Assert.assertSame;
-
-import static org.junit.Assert.fail;
-
-import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
 public class MemoryContentsTest {

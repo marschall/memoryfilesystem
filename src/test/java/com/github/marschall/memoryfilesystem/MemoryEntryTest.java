@@ -1,5 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -14,12 +16,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-
-import com.github.marschall.memoryfilesystem.MemoryDirectory;
-import com.github.marschall.memoryfilesystem.MemoryEntry;
-import com.github.marschall.memoryfilesystem.MemoryFile;
-
-import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
 public class MemoryEntryTest {

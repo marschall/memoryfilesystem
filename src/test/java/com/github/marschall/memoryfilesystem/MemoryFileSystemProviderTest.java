@@ -14,8 +14,6 @@ import java.nio.file.spi.FileSystemProvider;
 
 import org.junit.Test;
 
-import com.github.marschall.memoryfilesystem.MemoryFileSystemProvider;
-
 public class MemoryFileSystemProviderTest {
 
 

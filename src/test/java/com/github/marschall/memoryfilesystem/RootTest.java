@@ -20,8 +20,6 @@ import java.util.Map;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.github.marschall.memoryfilesystem.EnvironmentBuilder;
-
 public class RootTest {
 
 

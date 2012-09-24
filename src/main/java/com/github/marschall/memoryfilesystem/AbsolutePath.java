@@ -1,17 +1,17 @@
 package com.github.marschall.memoryfilesystem;
 
+import static java.lang.Math.min;
+
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
-import java.nio.file.WatchKey;
-import java.nio.file.WatchService;
 import java.nio.file.WatchEvent.Kind;
 import java.nio.file.WatchEvent.Modifier;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
 import java.util.ArrayList;
 import java.util.List;
-
-import static java.lang.Math.min;
 
 final class AbsolutePath extends ElementPath {
   
@@ -75,14 +75,14 @@ final class AbsolutePath extends ElementPath {
   @Override
   public Path subpath(int beginIndex, int endIndex) {
     // TODO Auto-generated function stub
-    return null;
+    throw new UnsupportedOperationException();
   }
 
 
   @Override
   public Path normalize() {
     // TODO Auto-generated function stub
-    return null;
+    throw new UnsupportedOperationException();
   }
 
 
@@ -125,7 +125,7 @@ final class AbsolutePath extends ElementPath {
   @Override
   public WatchKey register(WatchService watcher, Kind<?>... events) throws IOException {
     // TODO Auto-generated function stub
-    return null;
+    throw new UnsupportedOperationException();
   }
 
 
@@ -139,14 +139,14 @@ final class AbsolutePath extends ElementPath {
   @Override
   boolean startsWith(AbstractPath other) {
     // TODO Auto-generated function stub
-    return false;
+    throw new UnsupportedOperationException();
   }
 
 
   @Override
   boolean endsWith(AbstractPath other) {
     // TODO Auto-generated function stub
-    return false;
+    throw new UnsupportedOperationException();
   }
 
 
@@ -167,7 +167,7 @@ final class AbsolutePath extends ElementPath {
   @Override
   Path resolveSibling(AbstractPath other) {
     // TODO Auto-generated function stub
-    return null;
+    throw new UnsupportedOperationException();
   }
 
 

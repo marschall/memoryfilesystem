@@ -29,10 +29,6 @@ import java.util.Map;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.github.marschall.memoryfilesystem.EnvironmentBuilder;
-import com.github.marschall.memoryfilesystem.MemoryFileSystem;
-import com.github.marschall.memoryfilesystem.MemoryFileSystemProperties;
-
 public class MemoryFileSystemTest {
 
 

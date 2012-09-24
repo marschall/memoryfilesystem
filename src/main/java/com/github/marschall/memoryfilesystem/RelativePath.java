@@ -8,7 +8,6 @@ import java.nio.file.WatchEvent.Kind;
 import java.nio.file.WatchEvent.Modifier;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
-import java.util.ArrayList;
 import java.util.List;
 
 final class RelativePath extends ElementPath {
@@ -68,19 +67,19 @@ final class RelativePath extends ElementPath {
   @Override
   public Path subpath(int beginIndex, int endIndex) {
     // TODO Auto-generated function stub
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public Path normalize() {
     // TODO Auto-generated function stub
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public Path resolveSibling(String other) {
     // TODO Auto-generated function stub
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -91,45 +90,43 @@ final class RelativePath extends ElementPath {
   @Override
   public Path toAbsolutePath() {
     // TODO Auto-generated function stub
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public Path toRealPath(LinkOption... options) throws IOException {
     // TODO Auto-generated function stub
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
-  public WatchKey register(WatchService watcher, Kind<?>[] events,
-          Modifier... modifiers) throws IOException {
+  public WatchKey register(WatchService watcher, Kind<?>[] events, Modifier... modifiers) throws IOException {
     // TODO Auto-generated function stub
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
-  public WatchKey register(WatchService watcher, Kind<?>... events)
-          throws IOException {
+  public WatchKey register(WatchService watcher, Kind<?>... events) throws IOException {
     // TODO Auto-generated function stub
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public int compareTo(Path other) {
     // TODO Auto-generated function stub
-    return 0;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   boolean startsWith(AbstractPath other) {
     // TODO Auto-generated function stub
-    return false;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   boolean endsWith(AbstractPath other) {
     // TODO Auto-generated function stub
-    return false;
+    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -140,13 +137,13 @@ final class RelativePath extends ElementPath {
   @Override
   Path resolveSibling(AbstractPath other) {
     // TODO Auto-generated function stub
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   Path relativize(AbstractPath other) {
     // TODO Auto-generated function stub
-    return null;
+    throw new UnsupportedOperationException();
   }
   
   @Override

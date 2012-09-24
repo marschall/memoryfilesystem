@@ -21,8 +21,6 @@ import java.util.Iterator;
 import org.junit.Rule;
 import org.junit.Test;
 
-import com.github.marschall.memoryfilesystem.MemoryFileSystemProvider;
-
 public class MemoryFileStoreTest {
 
   @Rule

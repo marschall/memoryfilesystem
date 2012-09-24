@@ -11,8 +11,6 @@ import java.nio.file.FileSystems;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.github.marschall.memoryfilesystem.MemoryFileSystemUninstaller;
-
 public class MemoryFileSystemUninstallerTest {
   
   @Test

@@ -14,11 +14,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.github.marschall.memoryfilesystem.AbsolutePath;
-import com.github.marschall.memoryfilesystem.PathParser;
-import com.github.marschall.memoryfilesystem.Root;
-import com.github.marschall.memoryfilesystem.SingleEmptyRootPathParser;
-
 @RunWith(Parameterized.class)
 public class SingleEmptyRootPathParserTest {
 

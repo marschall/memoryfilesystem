@@ -13,11 +13,6 @@ import java.util.Locale;
 
 import org.junit.Test;
 
-import com.github.marschall.memoryfilesystem.ClosedFileSystemChecker;
-import com.github.marschall.memoryfilesystem.MemoryUserPrincipalLookupService;
-import com.github.marschall.memoryfilesystem.StringTransformer;
-import com.github.marschall.memoryfilesystem.StringTransformers;
-
 public class MemoryUserPrincipalLookupServiceTest {
 
   @Test

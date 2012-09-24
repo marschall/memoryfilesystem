@@ -7,9 +7,6 @@ import java.util.Collections;
 
 import org.junit.Test;
 
-import com.github.marschall.memoryfilesystem.EnvironmentBuilder;
-import com.github.marschall.memoryfilesystem.EnvironmentParser;
-
 public class EnvironmentParserTest {
 
   @Test

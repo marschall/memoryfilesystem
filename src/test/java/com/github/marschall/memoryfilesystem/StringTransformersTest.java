@@ -6,9 +6,6 @@ import java.util.Locale;
 
 import org.junit.Test;
 
-import com.github.marschall.memoryfilesystem.StringTransformer;
-import com.github.marschall.memoryfilesystem.StringTransformers;
-
 public class StringTransformersTest {
 
   @Test

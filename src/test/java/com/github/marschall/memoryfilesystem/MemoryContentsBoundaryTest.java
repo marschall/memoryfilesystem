@@ -1,5 +1,8 @@
 package com.github.marschall.memoryfilesystem;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
@@ -11,12 +14,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-
-import com.github.marschall.memoryfilesystem.MemoryContents;
-
-import static org.junit.Assert.assertArrayEquals;
-
-import static org.junit.Assert.assertEquals;
 
 
 @RunWith(Parameterized.class)
