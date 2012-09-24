@@ -78,12 +78,6 @@ final class RelativePath extends ElementPath {
   }
 
   @Override
-  public Path resolveSibling(String other) {
-    // TODO Auto-generated function stub
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public URI toUri() {
     return this.toAbsolutePath().toUri();
   }

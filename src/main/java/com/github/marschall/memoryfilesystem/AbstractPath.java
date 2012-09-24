@@ -83,6 +83,11 @@ abstract class AbstractPath implements Path {
   public Path resolve(String other) {
     return this.resolve(this.fileSystem.getPath(other));
   }
+  
+  @Override
+  public Path resolveSibling(String other) {
+    return this.resolveSibling(this.fileSystem.getPath(other));
+  }
 
 
   @Override

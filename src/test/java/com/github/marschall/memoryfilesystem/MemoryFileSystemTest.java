@@ -113,6 +113,33 @@ public class MemoryFileSystemTest {
     }
   }
   
+
+  @Test
+  public void resolveSiblingAgainstRoot() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path root = fileSystem.getPath("/");
+      
+      assertEquals(fileSystem.getPath("a"), root.resolveSibling(fileSystem.getPath("a")));
+      assertEquals(fileSystem.getPath("a/b"), root.resolveSibling(fileSystem.getPath("a/b")));
+      assertEquals(fileSystem.getPath("/a"), root.resolveSibling(fileSystem.getPath("/a")));
+      assertEquals(fileSystem.getPath("/a/b"), root.resolveSibling(fileSystem.getPath("/a/b")));
+      assertEquals(fileSystem.getPath(""), root.resolveSibling(fileSystem.getPath("")));
+    }
+  }
+  
+  @Test
+  public void resolveSiblingAgainstRootString() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path root = fileSystem.getPath("/");
+      
+      assertEquals(fileSystem.getPath("a"), root.resolveSibling("a"));
+      assertEquals(fileSystem.getPath("a/b"), root.resolveSibling("a/b"));
+      assertEquals(fileSystem.getPath("/a"), root.resolveSibling("/a"));
+      assertEquals(fileSystem.getPath("/a/b"), root.resolveSibling("/a/b"));
+      assertEquals(fileSystem.getPath(""), root.resolveSibling(""));
+    }
+  }
+  
   
   @Test
   public void relativizeAbsolute() throws IOException {

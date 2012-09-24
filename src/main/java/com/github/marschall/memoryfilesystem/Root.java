@@ -76,14 +76,6 @@ abstract class Root extends AbstractPath {
   }
 
 
-
-  @Override
-  public Path resolveSibling(String other) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
-  }
-
-
   @Override
   public Path toAbsolutePath() {
     return this;
@@ -139,7 +131,7 @@ abstract class Root extends AbstractPath {
   Path resolve(AbstractPath other) {
     if (other instanceof ElementPath) {
       ElementPath otherPath = (ElementPath) other;
-      return new AbsolutePath(this.getMemoryFileSystem(), this, ((ElementPath) other).getNameElements());
+      return new AbsolutePath(this.getMemoryFileSystem(), this, otherPath.getNameElements());
     } else {
       throw new IllegalArgumentException("can't resolve" + other);
     }
@@ -147,8 +139,7 @@ abstract class Root extends AbstractPath {
 
   @Override
   Path resolveSibling(AbstractPath other) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
+    return other;
   }
 
   @Override
