@@ -2,22 +2,7 @@ package com.github.marschall.memoryfilesystem;
 
 import java.nio.file.ClosedFileSystemException;
 
-final class ClosedFileSystemChecker {
-
-  private volatile boolean open;
-
-
-  ClosedFileSystemChecker() {
-    this.open = true;
-  }
-
-  boolean isOpen() {
-    return this.open;
-  }
-
-  void close() {
-    this.open = false;
-  }
+final class ClosedFileSystemChecker extends ClosedChecker {
 
   void check() {
     if (!open) {
