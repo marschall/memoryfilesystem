@@ -64,6 +64,39 @@ public class MemoryFileSystemTest {
   }
   
   @Test
+  public void normalizeRoot() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path root = fileSystem.getPath("/");
+      
+      assertEquals(root, root.normalize());
+    }
+  }
+  
+  @Test
+  public void normalizeAbsolute() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      
+      assertEquals(fileSystem.getPath("/a"), fileSystem.getPath("/a").normalize());
+      assertEquals(fileSystem.getPath("/a"), fileSystem.getPath("/a/.").normalize());
+      assertEquals(fileSystem.getPath("/"), fileSystem.getPath("/a/..").normalize());
+      assertEquals(fileSystem.getPath("/"), fileSystem.getPath("/a/../..").normalize());
+      assertEquals(fileSystem.getPath("/a/b"), fileSystem.getPath("/../a/b").normalize());
+    }
+  }
+  
+  @Test
+  public void normalizeRelative() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      
+      assertEquals(fileSystem.getPath("a"), fileSystem.getPath("a").normalize());
+      assertEquals(fileSystem.getPath("a"), fileSystem.getPath("a/.").normalize());
+      assertEquals(fileSystem.getPath(""), fileSystem.getPath("a/..").normalize());
+      assertEquals(fileSystem.getPath("../.."), fileSystem.getPath("../..").normalize());
+      assertEquals(fileSystem.getPath("../.."), fileSystem.getPath(".././..").normalize());
+    }
+  }
+  
+  @Test
   public void resolveAbsoluteOtherAbsolute() throws IOException {
     try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
       Path absolute = fileSystem.getPath("/a/b");
