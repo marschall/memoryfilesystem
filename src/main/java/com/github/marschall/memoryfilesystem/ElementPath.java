@@ -3,7 +3,6 @@
 import static java.lang.Math.min;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -85,14 +84,16 @@ abstract class ElementPath extends AbstractPath {
 
   Path buildRelativePathAgainst(AbstractPath other) {
     ElementPath otherPath = (ElementPath) other;
-    List<String> relativeElements = new ArrayList<>();
     int firstDifferenceIndex = firstDifferenceIndex(this.getNameElements(), otherPath.getNameElements());
-    for (int i = firstDifferenceIndex; i < this.getNameCount(); ++i) {
-      relativeElements.add("..");
+    List<String> first = Collections.emptyList();
+    if (firstDifferenceIndex < this.getNameCount()) {
+      first = HomogenousList.create("..", this.getNameCount() - firstDifferenceIndex);
     }
+    List<String> second = Collections.emptyList();
     if (firstDifferenceIndex < other.getNameCount()) {
-      relativeElements.addAll(otherPath.getNameElements().subList(firstDifferenceIndex, otherPath.getNameCount()));
+      second = otherPath.getNameElements().subList(firstDifferenceIndex, otherPath.getNameCount());
     }
+    List<String> relativeElements = CompositeList.create(first, second);
     return new RelativePath(this.getMemoryFileSystem(), relativeElements);
   }
 

@@ -9,7 +9,6 @@ import java.nio.file.WatchEvent.Kind;
 import java.nio.file.WatchEvent.Modifier;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
-import java.util.ArrayList;
 import java.util.List;
 
 final class AbsolutePath extends ElementPath {
@@ -146,9 +145,7 @@ final class AbsolutePath extends ElementPath {
   Path resolve(AbstractPath other) {
     if (other instanceof ElementPath) {
       ElementPath otherPath = (ElementPath) other;
-      List<String> resolvedElements = new ArrayList<>(this.getNameCount() + otherPath.getNameCount());
-      resolvedElements.addAll(this.getNameElements());
-      resolvedElements.addAll(otherPath.getNameElements());
+      List<String> resolvedElements = CompositeList.create(this.getNameElements(), otherPath.getNameElements());
       return new AbsolutePath(this.getMemoryFileSystem(), this.root, resolvedElements);
     } else {
       throw new IllegalArgumentException("can't resolve" + other);
