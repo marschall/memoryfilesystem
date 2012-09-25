@@ -1,6 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
 import java.util.AbstractList;
+import java.util.Collections;
 import java.util.List;
 import java.util.RandomAccess;
 
@@ -38,10 +39,29 @@ final class CompositeList<E> extends AbstractList<E> implements RandomAccess {
   @Override
   public List<E> subList(int fromIndex, int toIndex) {
     int firstSize = this.first.size();
+    int size = this.size();
+    if (fromIndex == 0 && toIndex == size) {
+      return this;
+    }
+    if (toIndex == fromIndex) {
+      return Collections.emptyList();
+    }
+    if (toIndex - fromIndex == 1) {
+      return Collections.singletonList(this.get(fromIndex));
+    }
+    
     if (toIndex <= firstSize) {
-      return this.first.subList(fromIndex, toIndex);
-    } else if (fromIndex <= firstSize) {
-      return this.second.subList(fromIndex - firstSize, toIndex - firstSize);
+      if (fromIndex == 0 && toIndex == firstSize) {
+        return this.first;
+      } else {
+        return this.first.subList(fromIndex, toIndex);
+      }
+    } else if (fromIndex >= firstSize) {
+      if (fromIndex == firstSize && toIndex == size) {
+        return this.second;
+      } else {
+        return this.second.subList(fromIndex - firstSize, toIndex - firstSize);
+      }
     } else {
       return super.subList(fromIndex, toIndex);
     }

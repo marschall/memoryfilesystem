@@ -49,6 +49,11 @@ final class HomogenousList<E> extends AbstractList<E> implements RandomAccess {
     if (fromIndex > toIndex) {
       throw new IllegalArgumentException("indices out of range");
     }
+    
+    if (fromIndex == 0 && toIndex == size) {
+      return this;
+    }
+    
     return create(this.element, toIndex - fromIndex);
   }
   
