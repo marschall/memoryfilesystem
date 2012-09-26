@@ -78,9 +78,22 @@ public class MemoryFileSystemTest {
       
       assertEquals(fileSystem.getPath("/a"), fileSystem.getPath("/a").normalize());
       assertEquals(fileSystem.getPath("/a"), fileSystem.getPath("/a/.").normalize());
+      assertEquals(fileSystem.getPath("/a/b/c"), fileSystem.getPath("/a/b/./c").normalize());
+      assertEquals(fileSystem.getPath("/a/b/c"), fileSystem.getPath("/a/b/c/.").normalize());
+      assertEquals(fileSystem.getPath("/a/b/c"), fileSystem.getPath("/./a/b/c").normalize());
+      assertEquals(fileSystem.getPath("/a/b/c"), fileSystem.getPath("/a/./b/c/.").normalize());
+      assertEquals(fileSystem.getPath("/a"), fileSystem.getPath("/./a").normalize());
+      assertEquals(fileSystem.getPath("/"), fileSystem.getPath("/.").normalize());
+      assertEquals(fileSystem.getPath("/a"), fileSystem.getPath("/a/.").normalize());
       assertEquals(fileSystem.getPath("/"), fileSystem.getPath("/a/..").normalize());
+      assertEquals(fileSystem.getPath("/a"), fileSystem.getPath("/a/b/..").normalize());
+      assertEquals(fileSystem.getPath("/a/c"), fileSystem.getPath("/a/b/../c").normalize());
       assertEquals(fileSystem.getPath("/"), fileSystem.getPath("/a/../..").normalize());
+      assertEquals(fileSystem.getPath("/"), fileSystem.getPath("/..").normalize());
+      assertEquals(fileSystem.getPath("/"), fileSystem.getPath("/../..").normalize());
       assertEquals(fileSystem.getPath("/a/b"), fileSystem.getPath("/../a/b").normalize());
+      assertEquals(fileSystem.getPath("/a/b"), fileSystem.getPath("/../../a/b").normalize());
+      assertEquals(fileSystem.getPath("/c"), fileSystem.getPath("/a/b/../../c").normalize());
     }
   }
   
@@ -93,6 +106,7 @@ public class MemoryFileSystemTest {
       assertEquals(fileSystem.getPath(""), fileSystem.getPath("a/..").normalize());
       assertEquals(fileSystem.getPath("../.."), fileSystem.getPath("../..").normalize());
       assertEquals(fileSystem.getPath("../.."), fileSystem.getPath(".././..").normalize());
+      assertEquals(fileSystem.getPath("../../a/b/c"), fileSystem.getPath("../../a/b/c").normalize());
     }
   }
   

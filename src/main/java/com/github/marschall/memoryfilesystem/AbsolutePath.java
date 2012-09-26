@@ -9,6 +9,8 @@ import java.nio.file.WatchEvent.Kind;
 import java.nio.file.WatchEvent.Modifier;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 final class AbsolutePath extends ElementPath {
@@ -79,8 +81,73 @@ final class AbsolutePath extends ElementPath {
 
   @Override
   public Path normalize() {
-    // TODO Auto-generated function stub
-    throw new UnsupportedOperationException();
+    List<String> nameElements = this.getNameElements();
+    int nameElementsSize = nameElements.size();
+    List<String> normalized = nameElements;
+    boolean modified = false;
+    
+    for (int i = 0; i < nameElementsSize; ++i) {
+      String each = nameElements.get(i);
+      
+      if (each.equals(".")) {
+        if (!modified) {
+          if (nameElementsSize == 1) {
+            normalized = Collections.emptyList();
+            modified = true;
+            break;
+          }
+          if (nameElementsSize == 2) {
+            String element = i == 0 ? nameElements.get(1) : nameElements.get(0);
+            normalized = Collections.singletonList(element);
+            modified = true;
+            break;
+          }
+          
+          normalized = new ArrayList<>(nameElementsSize - 1);
+          if (i > 0) {
+            normalized.addAll(nameElements.subList(0, i));
+          }
+          modified = true;
+        }
+        continue;
+      }
+      
+      if (each.equals("..")) {
+        if (modified) {
+          if (!normalized.isEmpty()) {
+            normalized.remove(normalized.size() - 1);
+          }
+        } else {
+          if (nameElementsSize == 1) {
+            normalized = Collections.emptyList();
+            modified = true;
+            break;
+          } else {
+            normalized = new ArrayList<>(nameElementsSize - 1);
+            if (i > 1) {
+              normalized.addAll(nameElements.subList(0, i - 1));
+            }
+          }
+          modified = true;
+        }
+        continue;
+      }
+      
+      if (modified) {
+        normalized.add(each);
+      }
+      
+    }
+
+    if (modified) {
+      if (normalized.isEmpty()) {
+        return this.getRoot();
+      } else {
+        return new AbsolutePath(this.getMemoryFileSystem(), this.root, normalized);
+      }
+    } else {
+      return this;
+    }
   }
 
 
