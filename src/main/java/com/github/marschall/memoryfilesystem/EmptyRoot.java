@@ -44,5 +44,8 @@ class EmptyRoot extends Root {
       throw new AssertionError("could not create URI");
     }
   }
+  
+  // no need to define equals and hashCode since
+  // identity is fine since there is only one empty root per file system
 
 }

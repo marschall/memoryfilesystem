@@ -21,13 +21,9 @@ final class SingleEmptyRootPathParser implements PathParser {
     Root root = roots.iterator().next();
     MemoryFileSystem memoryFileSystem = root.getMemoryFileSystem();
     if (this.isAbsolute(first, more)) {
-      if (elements.isEmpty()) {
-        return root;
-      } else {
-        return new AbsolutePath(memoryFileSystem, root, elements);
-      }
+      return AbstractPath.createAboslute(memoryFileSystem, root, elements);
     } else {
-      return new RelativePath(memoryFileSystem, elements);
+      return AbsolutePath.createRealative(memoryFileSystem, elements);
     }
   }
   

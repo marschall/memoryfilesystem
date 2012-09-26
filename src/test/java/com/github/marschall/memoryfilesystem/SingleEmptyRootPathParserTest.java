@@ -65,7 +65,7 @@ public class SingleEmptyRootPathParserTest {
   public void setUp() {
     parser = new SingleEmptyRootPathParser();
     Root root = (Root) rule.getFileSystem().getRootDirectories().iterator().next();
-    expected = new AbsolutePath(root.getMemoryFileSystem(), root, Arrays.asList("a", "b", "c"));
+    expected = AbstractPath.createAboslute(root.getMemoryFileSystem(), root, Arrays.asList("a", "b", "c"));
   }
   
   @Test

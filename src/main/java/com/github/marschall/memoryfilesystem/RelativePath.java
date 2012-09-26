@@ -8,9 +8,10 @@ import java.nio.file.WatchEvent.Kind;
 import java.nio.file.WatchEvent.Modifier;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.util.ArrayList;
 import java.util.List;
 
-final class RelativePath extends ElementPath {
+final class RelativePath extends NonEmptyPath {
   
 
   RelativePath(MemoryFileSystem fileSystem, List<String> nameElements) {
@@ -48,7 +49,7 @@ final class RelativePath extends ElementPath {
       return null;
     } else {
       List<String> subList = this.getNameElements().subList(0, this.getNameElements().size() - 1);
-      return new RelativePath(getMemoryFileSystem(), subList);
+      return AbsolutePath.createRealative(getMemoryFileSystem(), subList);
     }
   }
 
@@ -61,7 +62,7 @@ final class RelativePath extends ElementPath {
       throw new IllegalArgumentException("index must not be bigger than " + (this.getNameCount() - 1) +  " but was " + index);
     }
     List<String> subList = this.getNameElements().subList(0, index + 1);
-    return new RelativePath(getMemoryFileSystem(), subList);
+    return AbsolutePath.createRealative(getMemoryFileSystem(), subList);
   }
 
   @Override
@@ -72,8 +73,13 @@ final class RelativePath extends ElementPath {
 
   @Override
   public Path normalize() {
-    // TODO Auto-generated function stub
-    throw new UnsupportedOperationException();
+    List<String> normalized = this.normalizeElements();
+    boolean modified = normalized != this.getNameElements();
+    if (modified) {
+      return AbsolutePath.createRealative(this.getMemoryFileSystem(), normalized);
+    } else {
+      return this;
+    }
   }
 
   @Override
@@ -128,7 +134,7 @@ final class RelativePath extends ElementPath {
     if (other instanceof ElementPath) {
       ElementPath otherPath = (ElementPath) other;
       List<String> resolvedElements = CompositeList.create(this.getNameElements(), otherPath.getNameElements());
-      return new RelativePath(this.getMemoryFileSystem(), resolvedElements);
+      return AbsolutePath.createRealative(this.getMemoryFileSystem(), resolvedElements);
     } else {
       throw new IllegalArgumentException("can't resolve" + other);
     }
@@ -170,6 +176,33 @@ final class RelativePath extends ElementPath {
   @Override
   public int hashCode() {
     return this.getNameElements().hashCode();
+  }
+
+  protected List<String> handleDotDotNormalizationNotYetModified(List<String> nameElements,
+          int nameElementsSize, int i) {
+    // copy everything preceding the element before ".." unless it's ".."
+    if (i > 0 && nameElements.get(i - 1) != "..") {
+      List<String> normalized = new ArrayList<>(nameElementsSize - 1);
+      if (i > 1) {
+        normalized.addAll(nameElements.subList(0, i - 1));
+      }
+      return normalized;
+    } else {
+      return nameElements;
+    }
+    
+  }
+
+  protected void handleDotDotNormalizationAlreadyModified(List<String> normalized) {
+    int lastIndex = normalized.size() - 1;
+    if (!normalized.get(lastIndex).equals("..")) {
+      // "../.." has to be preserved
+      normalized.remove(lastIndex);
+    }
+  }
+
+  protected List<String> handleSingleDotDot(List<String> normalized) {
+    return normalized;
   }
 
 }

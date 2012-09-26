@@ -130,8 +130,9 @@ abstract class Root extends AbstractPath {
   @Override
   Path resolve(AbstractPath other) {
     if (other instanceof ElementPath) {
+      // TODO root?
       ElementPath otherPath = (ElementPath) other;
-      return new AbsolutePath(this.getMemoryFileSystem(), this, otherPath.getNameElements());
+      return AbstractPath.createAboslute(this.getMemoryFileSystem(), this, otherPath.getNameElements());
     } else {
       throw new IllegalArgumentException("can't resolve" + other);
     }
@@ -154,14 +155,14 @@ abstract class Root extends AbstractPath {
     }
     if (other.equals(this)) {
       // other is me
-      return new RelativePath(getMemoryFileSystem(), Collections.<String>emptyList());
+      return AbsolutePath.createRealative(getMemoryFileSystem(), Collections.<String>emptyList());
     }
     
     //TODO normalize
     if (other instanceof ElementPath) {
       // normal case
       ElementPath otherPath = (ElementPath) other;
-      return new RelativePath(this.getMemoryFileSystem(), otherPath.getNameElements());
+      return AbsolutePath.createRealative(this.getMemoryFileSystem(), otherPath.getNameElements());
     } else {
       // unknown case
       throw new IllegalArgumentException("unsupported path argument");

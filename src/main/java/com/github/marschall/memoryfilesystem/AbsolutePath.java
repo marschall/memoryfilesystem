@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-final class AbsolutePath extends ElementPath {
+final class AbsolutePath extends NonEmptyPath {
   
   private final Root root;
 
@@ -54,7 +54,7 @@ final class AbsolutePath extends ElementPath {
       return this.root;
     } else {
       List<String> subList = this.getNameElements().subList(0, this.getNameElements().size() - 1);
-      return new AbsolutePath(getMemoryFileSystem(), this.root, subList);
+      return AbstractPath.createAboslute(getMemoryFileSystem(), this.root, subList);
     }
   }
 
@@ -68,7 +68,7 @@ final class AbsolutePath extends ElementPath {
       throw new IllegalArgumentException("index must not be bigger than " + (this.getNameCount() - 1) +  " but was " + index);
     }
     List<String> subList = this.getNameElements().subList(0, index + 1);
-    return new AbsolutePath(getMemoryFileSystem(), this.root, subList);
+    return AbstractPath.createAboslute(getMemoryFileSystem(), this.root, subList);
   }
 
 
@@ -77,74 +77,34 @@ final class AbsolutePath extends ElementPath {
     // TODO Auto-generated function stub
     throw new UnsupportedOperationException();
   }
+  
+  @Override
+  protected List<String> handleSingleDotDot(List<String> normalized) {
+    return Collections.emptyList();
+  }
+  
+  @Override
+  protected void handleDotDotNormalizationAlreadyModified(List<String> normalized) {
+    normalized.remove(normalized.size() - 1);
+  }
+  
+  @Override
+  protected List<String> handleDotDotNormalizationNotYetModified(List<String> nameElements, int nameElementsSize, int i) {
+    // copy everything preceding the element before ".."
+    List<String> normalized = new ArrayList<>(nameElementsSize - 1);
+    if (i > 1) {
+      normalized.addAll(nameElements.subList(0, i - 1));
+    }
+    return normalized;
+  }
 
 
   @Override
   public Path normalize() {
-    List<String> nameElements = this.getNameElements();
-    int nameElementsSize = nameElements.size();
-    List<String> normalized = nameElements;
-    boolean modified = false;
-    
-    for (int i = 0; i < nameElementsSize; ++i) {
-      String each = nameElements.get(i);
-      
-      if (each.equals(".")) {
-        if (!modified) {
-          if (nameElementsSize == 1) {
-            normalized = Collections.emptyList();
-            modified = true;
-            break;
-          }
-          if (nameElementsSize == 2) {
-            String element = i == 0 ? nameElements.get(1) : nameElements.get(0);
-            normalized = Collections.singletonList(element);
-            modified = true;
-            break;
-          }
-          
-          normalized = new ArrayList<>(nameElementsSize - 1);
-          if (i > 0) {
-            normalized.addAll(nameElements.subList(0, i));
-          }
-          modified = true;
-        }
-        continue;
-      }
-      
-      if (each.equals("..")) {
-        if (modified) {
-          if (!normalized.isEmpty()) {
-            normalized.remove(normalized.size() - 1);
-          }
-        } else {
-          if (nameElementsSize == 1) {
-            normalized = Collections.emptyList();
-            modified = true;
-            break;
-          } else {
-            normalized = new ArrayList<>(nameElementsSize - 1);
-            if (i > 1) {
-              normalized.addAll(nameElements.subList(0, i - 1));
-            }
-          }
-          modified = true;
-        }
-        continue;
-      }
-      
-      if (modified) {
-        normalized.add(each);
-      }
-      
-    }
-
+    List<String> normalized = this.normalizeElements();
+    boolean modified = normalized != this.getNameElements();
     if (modified) {
-      if (normalized.isEmpty()) {
-        return this.getRoot();
-      } else {
-        return new AbsolutePath(this.getMemoryFileSystem(), this.root, normalized);
-      }
+      return AbstractPath.createAboslute(this.getMemoryFileSystem(), this.root, normalized);
     } else {
       return this;
     }
@@ -211,9 +171,10 @@ final class AbsolutePath extends ElementPath {
   @Override
   Path resolve(AbstractPath other) {
     if (other instanceof ElementPath) {
+      // TODO root?
       ElementPath otherPath = (ElementPath) other;
       List<String> resolvedElements = CompositeList.create(this.getNameElements(), otherPath.getNameElements());
-      return new AbsolutePath(this.getMemoryFileSystem(), this.root, resolvedElements);
+      return AbstractPath.createAboslute(this.getMemoryFileSystem(), this.root, resolvedElements);
     } else {
       throw new IllegalArgumentException("can't resolve" + other);
     }
@@ -240,7 +201,7 @@ final class AbsolutePath extends ElementPath {
     //TODO normalize
     if (other.equals(this.root)) {
       // other is my root, easy 
-      return new RelativePath(this.getMemoryFileSystem(), HomogenousList.create("..", this.getNameCount()));
+      return AbsolutePath.createRealative(this.getMemoryFileSystem(), HomogenousList.create("..", this.getNameCount()));
     } else if (other instanceof ElementPath) {
       // normal case
       return this.buildRelativePathAgainst(other);

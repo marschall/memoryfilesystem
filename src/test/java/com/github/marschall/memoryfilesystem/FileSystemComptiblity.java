@@ -25,6 +25,7 @@ import java.util.Iterator;
 import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class FileSystemComptiblity {
 
   @Test
@@ -177,6 +178,17 @@ public class FileSystemComptiblity {
     assertEquals(root, usr.getParent());
     
     System.out.println(fileSystem.getPath("usr/bin").resolve(fileSystem.getPath("a")));
+    System.out.println(fileSystem.getPath("/").resolveSibling(fileSystem.getPath("a")));
+    System.out.println(fileSystem.getPath("/").resolveSibling(fileSystem.getPath("")));
+    
+    System.out.println(fileSystem.getPath("/../../..").normalize());
+    System.out.println(fileSystem.getPath("/../a/b").normalize());
+    System.out.println(fileSystem.getPath("../../..").normalize());
+    System.out.println(fileSystem.getPath(".././../..").normalize());
+    System.out.println(fileSystem.getPath("../../a/b/c").normalize());
+    System.out.println(fileSystem.getPath("a/b/..").normalize());
+    System.out.println(fileSystem.getPath("a/..").normalize());
+    System.out.println(fileSystem.getPath("..").normalize());
   }
   
   @Test

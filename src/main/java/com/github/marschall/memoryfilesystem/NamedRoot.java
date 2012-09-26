@@ -42,5 +42,24 @@ class NamedRoot extends Root {
       throw new AssertionError("could not create URI");
     }
   }
+  
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == this) {
+      return true;
+    }
+    if (!(obj instanceof NamedRoot)) {
+      return false;
+    }
+    NamedRoot other = (NamedRoot) obj;
+    return this.getFileSystem().equals(other.getFileSystem())
+            && this.name.equals(other.name);
+  }
+  
+  @Override
+  public int hashCode() {
+    // TODO pertube context
+    return this.getFileSystem().hashCode() ^ this.name.hashCode();
+  }
 
 }
