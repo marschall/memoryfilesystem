@@ -7,6 +7,9 @@ import java.nio.file.ProviderMismatchException;
 import java.util.List;
 
 abstract class AbstractPath implements Path {
+  
+  // TODO think about #isRoot and #isEmpty to replace the instanceof checks
+  // TODO think about a visitor (visitRelative visitEmpty visitRoot) to replace instanceof checks
 
   private final MemoryFileSystem fileSystem;
 
