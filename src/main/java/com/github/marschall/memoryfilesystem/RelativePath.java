@@ -9,7 +9,6 @@ import java.nio.file.WatchEvent.Modifier;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 final class RelativePath extends NonEmptyPath {

@@ -1,8 +1,11 @@
 package com.github.marschall.memoryfilesystem;
 
 
+import static com.github.marschall.memoryfilesystem.MemoryFileSystemProvider.SCHEME;
+
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.WatchEvent.Kind;
@@ -109,8 +112,25 @@ final class AbsolutePath extends NonEmptyPath {
 
   @Override
   public URI toUri() {
-    // TODO Auto-generated function stub
-    throw new UnsupportedOperationException();
+    //TODO estimate size.
+    StringBuilder schemeSpecificPart = new StringBuilder();
+    schemeSpecificPart.append(this.getMemoryFileSystem().getKey());
+    schemeSpecificPart.append("://");
+    for (String element : this.getNameElements()) {
+      schemeSpecificPart.append('/');
+      schemeSpecificPart.append(element);
+    }
+    try {
+      return new URI(SCHEME, schemeSpecificPart.toString(), null);
+    } catch (URISyntaxException e) {
+      throw new AssertionError("could not create URI");
+    }
+  }
+  
+  public static void main(String[] args) throws URISyntaxException {
+    URI uri = new URI("memory", "authority", "/a/b", null, null);
+    System.out.println(uri);
+    
   }
 
 

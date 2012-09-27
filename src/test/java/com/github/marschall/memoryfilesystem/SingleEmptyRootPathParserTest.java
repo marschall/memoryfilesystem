@@ -70,7 +70,6 @@ public class SingleEmptyRootPathParserTest {
   
   @Test
   public void test() {
-//    Path actual = rule.getFileSystem().getPath(first, more);
     Root root = (Root) rule.getFileSystem().getRootDirectories().iterator().next();
     Path actual = this.parser.parse(Collections.singletonList(root), first, more);
     assertEquals(expected, actual);

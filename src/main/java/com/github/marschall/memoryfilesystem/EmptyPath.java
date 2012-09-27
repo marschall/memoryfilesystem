@@ -73,8 +73,7 @@ final class EmptyPath extends ElementPath {
 
   @Override
   public URI toUri() {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
+    return this.toAbsolutePath().toUri();
   }
 
   @Override
