@@ -10,6 +10,10 @@ public class EnvironmentBuilder {
   //TODO principal transfomer
 
   private final List<String> roots;
+  
+  private final List<String> users;
+  
+  private final List<String> groups;
 
   private String separator;
 
@@ -18,6 +22,8 @@ public class EnvironmentBuilder {
 
   private EnvironmentBuilder() {
     this.roots = new ArrayList<>();
+    this.users = new ArrayList<>();
+    this.groups = new ArrayList<>();
   }
 
   public EnvironmentBuilder addRoot(String root) {
@@ -27,6 +33,16 @@ public class EnvironmentBuilder {
 
   public EnvironmentBuilder setSeprator(String separator) {
     this.separator = separator;
+    return this;
+  }
+  
+  public EnvironmentBuilder addUser(String userName) {
+    this.users.add(userName);
+    return this;
+  }
+  
+  public EnvironmentBuilder addGroup(String groupName) {
+    this.groups.add(groupName);
     return this;
   }
 
@@ -42,15 +58,34 @@ public class EnvironmentBuilder {
   public static EnvironmentBuilder newUnix() {
     return new EnvironmentBuilder()
     .addRoot(MemoryFileSystemProperties.UNIX_ROOT)
-    .setSeprator(MemoryFileSystemProperties.UNIX_SEPARATOR);
+    .setSeprator(MemoryFileSystemProperties.UNIX_SEPARATOR)
+    .addUser(getSystemUserName())
+    .addGroup(getSystemUserName())
+    .setCurrentWorkingDirectory("/home/" + getSystemUserName());
+  }
+  
+  public static EnvironmentBuilder newMacOs() {
+    return new EnvironmentBuilder()
+    .addRoot(MemoryFileSystemProperties.UNIX_ROOT)
+    .setSeprator(MemoryFileSystemProperties.UNIX_SEPARATOR)
+    .addUser(getSystemUserName())
+    .addGroup(getSystemUserName())
+    .setCurrentWorkingDirectory("/Users/" + getSystemUserName());
   }
 
   public static EnvironmentBuilder newWindows() {
     return new EnvironmentBuilder()
       .addRoot("C:\\")
-      .setSeprator(MemoryFileSystemProperties.WINDOWS_SEPARATOR);
+      .setSeprator(MemoryFileSystemProperties.WINDOWS_SEPARATOR)
+      .addUser(getSystemUserName())
+      .addGroup(getSystemUserName())
+      .setCurrentWorkingDirectory("C:\\Users\\" + getSystemUserName());
   }
 
+  static String getSystemUserName() {
+    return System.getProperty("user.name");
+  }
+  
   public Map<String, ?> build() {
     Map<String, Object> env = new HashMap<>();
     if (!this.roots.isEmpty()) {

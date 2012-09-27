@@ -12,14 +12,14 @@ public class EnvironmentParserTest {
   @Test
   public void empty() {
     EnvironmentParser parser = parse(EnvironmentBuilder.newEmpty());
-    assertEquals(Collections.singletonList(""), parser.getRoots());
+    assertEquals(Collections.singletonList("/"), parser.getRoots());
     assertEquals("/", parser.getSeparator());
   }
 
   @Test
   public void unix() {
     EnvironmentParser parser = parse(EnvironmentBuilder.newUnix());
-    assertEquals(Collections.singletonList(""), parser.getRoots());
+    assertEquals(Collections.singletonList("/"), parser.getRoots());
     assertEquals("/", parser.getSeparator());
   }
 

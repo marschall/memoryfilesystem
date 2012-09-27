@@ -92,8 +92,7 @@ final class RelativePath extends NonEmptyPath {
 
   @Override
   public Path toAbsolutePath() {
-    // TODO Auto-generated function stub
-    throw new UnsupportedOperationException();
+    return this.getMemoryFileSystem().getDefaultPath().resolve(this);
   }
 
   @Override

@@ -30,10 +30,29 @@ class EnvironmentParser {
   List<String> getUserNames() {
     List<String> userNames = this.parseStringProperty(MemoryFileSystemProperties.USERS_PROPERTY, false);
     if (userNames == null) {
-      return Collections.singletonList(System.getProperty("user.name"));
+      return Collections.singletonList(getSystemUserName());
     } else {
       return userNames;
     }
+  }
+  
+  
+  String getDefaultDirectory() {
+    Object value = env.get(MemoryFileSystemProperties.CURRENT_WORKING_DIRECTORY_PROPERTY);
+    if (value != null) {
+      if (value instanceof String) {
+        return (String) value;
+      } else {
+        throw new IllegalArgumentException(MemoryFileSystemProperties.CURRENT_WORKING_DIRECTORY_PROPERTY + " must be a "
+                + String.class + " but was " + value.getClass());
+      }
+    } else {
+      return this.getRoots().get(0);
+    }
+  }
+
+  String getSystemUserName() {
+    return System.getProperty("user.name");
   }
 
   List<String> getGroupNames() {
@@ -119,12 +138,13 @@ class EnvironmentParser {
   }
 
   private boolean isUnixRoot(String root) {
-    return root.isEmpty();
+    return MemoryFileSystemProperties.UNIX_ROOT.equals(root);
   }
 
   private List<String> getDefaultRoots() {
     return MemoryFileSystemProperties.DEFAULT_ROOTS;
-  } 
+  }
+
 
   String getSeparator() {
     Object property = env.get(MemoryFileSystemProperties.DEFAULT_NAME_SEPARATOR_PROPERTY);

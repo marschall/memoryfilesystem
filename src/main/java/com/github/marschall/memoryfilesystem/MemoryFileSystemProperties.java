@@ -23,7 +23,7 @@ public class MemoryFileSystemProperties {
 
   public static final String PRINCIPAL_TRANSFORMER_PROPERTY = "princial.transformer";
 
-  static final String UNIX_ROOT = "";
+  static final String UNIX_ROOT = "/";
 
   static final List<String> DEFAULT_ROOTS = Collections.singletonList(UNIX_ROOT);
   

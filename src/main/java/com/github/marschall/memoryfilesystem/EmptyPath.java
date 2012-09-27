@@ -78,8 +78,7 @@ final class EmptyPath extends ElementPath {
 
   @Override
   public Path toAbsolutePath() {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
+    return this.getMemoryFileSystem().getDefaultPath();
   }
 
   @Override

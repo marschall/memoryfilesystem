@@ -37,6 +37,8 @@ class MemoryFileSystem extends FileSystem {
   private final ClosedFileSystemChecker checker;
 
   private volatile Map<Root, MemoryDirectory> roots;
+  
+  private volatile Path defaultPath;
 
   private final MemoryUserPrincipalLookupService userPrincipalLookupService;
 
@@ -65,6 +67,25 @@ class MemoryFileSystem extends FileSystem {
    */
   void setRootDirectories(Map<Root, MemoryDirectory> rootDirectories) {
     this.roots = rootDirectories;
+  }
+  
+  /**
+   * Sets the current working directory.
+   * 
+   * <p>This is used to resolve relative paths. This has to be set
+   * after {@link #setRootDirectories(Map)}</p>.
+   * 
+   * @param currentWorkingDirectory the default directory path
+   */
+  void setCurrentWorkingDirectory(String currentWorkingDirectory) {
+    this.defaultPath = this.getPath(currentWorkingDirectory);
+    if (!this.defaultPath.isAbsolute()) {
+      throw new IllegalArgumentException("current working directory must be absolute");
+    }
+  }
+  
+  Path getDefaultPath() {
+    return this.defaultPath;
   }
 
 
