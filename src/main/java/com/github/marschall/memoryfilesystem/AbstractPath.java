@@ -4,6 +4,7 @@ import java.io.File;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.nio.file.ProviderMismatchException;
+import java.util.Collections;
 import java.util.List;
 
 abstract class AbstractPath implements Path {
@@ -25,12 +26,20 @@ abstract class AbstractPath implements Path {
     }
   }
   
-  static AbstractPath createRealative(MemoryFileSystem fileSystem, List<String> nameElements) {
+  static AbstractPath createAboslute(MemoryFileSystem fileSystem, Root root, String nameElement) {
+    return createAboslute(fileSystem, root, Collections.singletonList(nameElement));
+  }
+  
+  static AbstractPath createRelative(MemoryFileSystem fileSystem, List<String> nameElements) {
     if (nameElements.isEmpty()) {
       return new EmptyPath(fileSystem);
     } else {
       return new RelativePath(fileSystem, nameElements);
     }
+  }
+  
+  static AbstractPath createRelative(MemoryFileSystem fileSystem, String nameElement) {
+    return createRelative(fileSystem, Collections.singletonList(nameElement));
   }
 
 

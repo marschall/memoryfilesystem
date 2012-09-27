@@ -155,14 +155,14 @@ abstract class Root extends AbstractPath {
     }
     if (other.equals(this)) {
       // other is me
-      return AbsolutePath.createRealative(getMemoryFileSystem(), Collections.<String>emptyList());
+      return createRelative(getMemoryFileSystem(), Collections.<String>emptyList());
     }
     
     //TODO normalize
     if (other instanceof ElementPath) {
       // normal case
       ElementPath otherPath = (ElementPath) other;
-      return AbsolutePath.createRealative(this.getMemoryFileSystem(), otherPath.getNameElements());
+      return createRelative(this.getMemoryFileSystem(), otherPath.getNameElements());
     } else {
       // unknown case
       throw new IllegalArgumentException("unsupported path argument");

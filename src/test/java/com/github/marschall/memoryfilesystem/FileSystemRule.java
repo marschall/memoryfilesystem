@@ -30,7 +30,6 @@ final class FileSystemRule implements TestRule {
       @Override
       public void evaluate() throws Throwable {
         fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV);
-//        fileSystem = FileSystems.getDefault();
                 
         try {
           base.evaluate();

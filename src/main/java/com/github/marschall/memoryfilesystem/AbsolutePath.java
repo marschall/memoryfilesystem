@@ -54,7 +54,7 @@ final class AbsolutePath extends NonEmptyPath {
       return this.root;
     } else {
       List<String> subList = this.getNameElements().subList(0, this.getNameElements().size() - 1);
-      return AbstractPath.createAboslute(getMemoryFileSystem(), this.root, subList);
+      return createAboslute(getMemoryFileSystem(), this.root, subList);
     }
   }
 
@@ -67,8 +67,7 @@ final class AbsolutePath extends NonEmptyPath {
     if (index >= this.getNameCount()) {
       throw new IllegalArgumentException("index must not be bigger than " + (this.getNameCount() - 1) +  " but was " + index);
     }
-    List<String> subList = Collections.singletonList(this.getNameElements().get(index));
-    return AbstractPath.createRealative(getMemoryFileSystem(), subList);
+    return createRelative(getMemoryFileSystem(), this.getNameElements().get(index));
   }
 
 
@@ -76,9 +75,9 @@ final class AbsolutePath extends NonEmptyPath {
   public Path subpath(int beginIndex, int endIndex) {
     this.checkNameRange(beginIndex, endIndex);
     if (endIndex - beginIndex == this.getNameCount()) {
-      return AbstractPath.createRealative(getMemoryFileSystem(), this.getNameElements());
+      return createRelative(getMemoryFileSystem(), this.getNameElements());
     } else {
-      return AbstractPath.createRealative(getMemoryFileSystem(), this.getNameElements().subList(beginIndex, endIndex));
+      return createRelative(getMemoryFileSystem(), this.getNameElements().subList(beginIndex, endIndex));
     }
   }
   
@@ -104,7 +103,7 @@ final class AbsolutePath extends NonEmptyPath {
   
   @Override
   Path newInstance(MemoryFileSystem fileSystem, List<String> pathElements) {
-    return AbstractPath.createAboslute(fileSystem, this.root, pathElements);
+    return createAboslute(fileSystem, this.root, pathElements);
   }
 
 
@@ -171,7 +170,7 @@ final class AbsolutePath extends NonEmptyPath {
       // TODO root?
       ElementPath otherPath = (ElementPath) other;
       List<String> resolvedElements = CompositeList.create(this.getNameElements(), otherPath.getNameElements());
-      return AbstractPath.createAboslute(this.getMemoryFileSystem(), this.root, resolvedElements);
+      return createAboslute(this.getMemoryFileSystem(), this.root, resolvedElements);
     } else {
       throw new IllegalArgumentException("can't resolve" + other);
     }
@@ -198,7 +197,7 @@ final class AbsolutePath extends NonEmptyPath {
     //TODO normalize
     if (other.equals(this.root)) {
       // other is my root, easy 
-      return AbsolutePath.createRealative(this.getMemoryFileSystem(), HomogenousList.create("..", this.getNameCount()));
+      return createRelative(this.getMemoryFileSystem(), HomogenousList.create("..", this.getNameCount()));
     } else if (other instanceof ElementPath) {
       // normal case
       return this.buildRelativePathAgainst(other);

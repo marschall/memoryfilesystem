@@ -50,7 +50,7 @@ final class RelativePath extends NonEmptyPath {
       return null;
     } else {
       List<String> subList = this.getNameElements().subList(0, this.getNameElements().size() - 1);
-      return AbsolutePath.createRealative(getMemoryFileSystem(), subList);
+      return createRelative(getMemoryFileSystem(), subList);
     }
   }
 
@@ -67,8 +67,7 @@ final class RelativePath extends NonEmptyPath {
     if (nameCount == 1) {
       return this;
     } else {
-      List<String> subList = Collections.singletonList(this.getNameElements().get(index));
-      return AbsolutePath.createRealative(getMemoryFileSystem(), subList);
+      return createRelative(getMemoryFileSystem(), this.getNameElements().get(index));
     }
   }
 
@@ -78,13 +77,13 @@ final class RelativePath extends NonEmptyPath {
     if (endIndex - beginIndex == this.getNameCount()) {
       return this;
     } else {
-      return AbstractPath.createRealative(getMemoryFileSystem(), this.getNameElements().subList(beginIndex, endIndex));
+      return createRelative(getMemoryFileSystem(), this.getNameElements().subList(beginIndex, endIndex));
     }
   }
   
   @Override
   Path newInstance(MemoryFileSystem fileSystem, List<String> pathElements) {
-    return AbsolutePath.createRealative(this.getMemoryFileSystem(), pathElements);
+    return createRelative(this.getMemoryFileSystem(), pathElements);
   }
 
   @Override
@@ -139,7 +138,7 @@ final class RelativePath extends NonEmptyPath {
     if (other instanceof ElementPath) {
       ElementPath otherPath = (ElementPath) other;
       List<String> resolvedElements = CompositeList.create(this.getNameElements(), otherPath.getNameElements());
-      return AbsolutePath.createRealative(this.getMemoryFileSystem(), resolvedElements);
+      return createRelative(this.getMemoryFileSystem(), resolvedElements);
     } else {
       throw new IllegalArgumentException("can't resolve" + other);
     }

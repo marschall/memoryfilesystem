@@ -23,7 +23,7 @@ final class SingleEmptyRootPathParser implements PathParser {
     if (this.isAbsolute(first, more)) {
       return AbstractPath.createAboslute(memoryFileSystem, root, elements);
     } else {
-      return AbsolutePath.createRealative(memoryFileSystem, elements);
+      return AbstractPath.createRelative(memoryFileSystem, elements);
     }
   }
   

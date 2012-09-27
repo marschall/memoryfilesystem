@@ -33,8 +33,7 @@ abstract class NonEmptyPath extends ElementPath {
   @Override
   public Path getFileName() {
     String lastElement = nameElements.get(nameElements.size() - 1);
-    List<String> elements = Collections.singletonList(lastElement);
-    return AbsolutePath.createRealative(getMemoryFileSystem(), elements);
+    return createRelative(getMemoryFileSystem(), lastElement);
   }
   
   @Override
@@ -106,7 +105,7 @@ abstract class NonEmptyPath extends ElementPath {
       second = otherPath.getNameElements().subList(firstDifferenceIndex, otherPath.getNameCount());
     }
     List<String> relativeElements = CompositeList.create(first, second);
-    return AbsolutePath.createRealative(this.getMemoryFileSystem(), relativeElements);
+    return createRelative(this.getMemoryFileSystem(), relativeElements);
   }
 
   abstract List<String> handleDotDotNormalizationNotYetModified(List<String> nameElements, int nameElementsSize, int i);
@@ -210,8 +209,7 @@ abstract class NonEmptyPath extends ElementPath {
      */
     @Override
     public Path next() {
-      List<String> elements = Collections.singletonList(this.nameIterator.next());
-      return AbsolutePath.createRealative(fileSystem, elements);
+      return createRelative(fileSystem, this.nameIterator.next());
     }
 
     /**
