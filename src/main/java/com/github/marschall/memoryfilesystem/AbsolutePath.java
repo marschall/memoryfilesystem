@@ -97,17 +97,10 @@ final class AbsolutePath extends NonEmptyPath {
     }
     return normalized;
   }
-
-
+  
   @Override
-  public Path normalize() {
-    List<String> normalized = this.normalizeElements();
-    boolean modified = normalized != this.getNameElements();
-    if (modified) {
-      return AbstractPath.createAboslute(this.getMemoryFileSystem(), this.root, normalized);
-    } else {
-      return this;
-    }
+  Path newInstance(MemoryFileSystem fileSystem, List<String> pathElements) {
+    return AbstractPath.createAboslute(fileSystem, this.root, pathElements);
   }
 
 

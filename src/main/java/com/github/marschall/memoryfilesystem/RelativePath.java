@@ -70,16 +70,10 @@ final class RelativePath extends NonEmptyPath {
     // TODO Auto-generated function stub
     throw new UnsupportedOperationException();
   }
-
+  
   @Override
-  public Path normalize() {
-    List<String> normalized = this.normalizeElements();
-    boolean modified = normalized != this.getNameElements();
-    if (modified) {
-      return AbsolutePath.createRealative(this.getMemoryFileSystem(), normalized);
-    } else {
-      return this;
-    }
+  Path newInstance(MemoryFileSystem fileSystem, List<String> pathElements) {
+    return AbsolutePath.createRealative(this.getMemoryFileSystem(), pathElements);
   }
 
   @Override
@@ -181,7 +175,7 @@ final class RelativePath extends NonEmptyPath {
   protected List<String> handleDotDotNormalizationNotYetModified(List<String> nameElements,
           int nameElementsSize, int i) {
     // copy everything preceding the element before ".." unless it's ".."
-    if (i > 0 && nameElements.get(i - 1) != "..") {
+    if (i > 0 && !nameElements.get(i - 1).equals("..")) {
       List<String> normalized = new ArrayList<>(nameElementsSize - 1);
       if (i > 1) {
         normalized.addAll(nameElements.subList(0, i - 1));
@@ -198,6 +192,9 @@ final class RelativePath extends NonEmptyPath {
     if (!normalized.get(lastIndex).equals("..")) {
       // "../.." has to be preserved
       normalized.remove(lastIndex);
+    } else {
+      // if there is already a ".." just add a ".."
+      normalized.add("..");
     }
   }
 

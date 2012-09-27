@@ -99,7 +99,8 @@ abstract class NonEmptyPath extends ElementPath {
 
   abstract List<String> handleSingleDotDot(List<String> normalized);
 
-  List<String> normalizeElements() {
+  @Override
+  public Path normalize() {
     List<String> nameElements = this.getNameElements();
     int nameElementsSize = nameElements.size();
     List<String> normalized = nameElements;
@@ -146,7 +147,7 @@ abstract class NonEmptyPath extends ElementPath {
           if (nameElementsSize == 1) {
             // path is just "/.."
             normalized = this.handleSingleDotDot(normalized);
-            // be break so no need to set modified
+            modified = normalized != nameElements;
             break;
           } else {
             normalized = this.handleDotDotNormalizationNotYetModified(nameElements, nameElementsSize, i);
@@ -161,8 +162,14 @@ abstract class NonEmptyPath extends ElementPath {
       }
       
     }
-    return normalized;
+    if (modified) {
+      return newInstance(this.getMemoryFileSystem(), normalized);
+    } else {
+      return this;
+    }
   }
+  
+  abstract Path newInstance(MemoryFileSystem fileSystem, List<String> pathElements);
 
   static final class ElementIterator implements Iterator<Path> {
     
