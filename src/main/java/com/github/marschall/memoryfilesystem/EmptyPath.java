@@ -51,8 +51,7 @@ final class EmptyPath extends ElementPath {
 
   @Override
   public Path subpath(int beginIndex, int endIndex) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
+    throw new IllegalArgumentException("can't create a subpath on an empty path");
   }
 
   @Override

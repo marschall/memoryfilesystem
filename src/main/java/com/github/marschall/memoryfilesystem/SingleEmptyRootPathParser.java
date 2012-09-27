@@ -10,7 +10,7 @@ final class SingleEmptyRootPathParser implements PathParser {
   @Override
   public Path parse(Iterable<Root> roots, String first, String... more) {
     // REVIEW implement #count() to correctly set initial size
-    // TODO check for empty path
+    // TODO empty path could be singleton
     List<String> elements = new ArrayList<>();
     this.parseInto(first, elements);
     if (more != null && more.length > 0) {

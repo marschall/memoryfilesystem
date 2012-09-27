@@ -67,15 +67,19 @@ final class AbsolutePath extends NonEmptyPath {
     if (index >= this.getNameCount()) {
       throw new IllegalArgumentException("index must not be bigger than " + (this.getNameCount() - 1) +  " but was " + index);
     }
-    List<String> subList = this.getNameElements().subList(0, index + 1);
-    return AbstractPath.createAboslute(getMemoryFileSystem(), this.root, subList);
+    List<String> subList = Collections.singletonList(this.getNameElements().get(index));
+    return AbstractPath.createRealative(getMemoryFileSystem(), subList);
   }
 
 
   @Override
   public Path subpath(int beginIndex, int endIndex) {
-    // TODO Auto-generated function stub
-    throw new UnsupportedOperationException();
+    this.checkNameRange(beginIndex, endIndex);
+    if (endIndex - beginIndex == this.getNameCount()) {
+      return AbstractPath.createRealative(getMemoryFileSystem(), this.getNameElements());
+    } else {
+      return AbstractPath.createRealative(getMemoryFileSystem(), this.getNameElements().subList(beginIndex, endIndex));
+    }
   }
   
   @Override

@@ -55,6 +55,22 @@ abstract class NonEmptyPath extends ElementPath {
     return this.startsWith(path);
   }
 
+  void checkNameRange(int beginIndex, int endIndex) {
+    int nameCount = this.getNameCount();
+    if (beginIndex < 0) {
+      throw new IllegalArgumentException("beginIndex must not be negative but was " + beginIndex);
+    }
+    if (beginIndex >= nameCount) {
+      throw new IllegalArgumentException("beginIndex must not be bigger than " + nameCount + " but was " + beginIndex);
+    }
+    if (endIndex <= beginIndex) {
+      throw new IllegalArgumentException("endIndex must not be smaller than or equal to " + beginIndex + " but was " + beginIndex);
+    }
+    if (endIndex > nameCount) {
+      throw new IllegalArgumentException("endIndex must not be bigger than " + nameCount + " but was " + beginIndex);
+    }
+  }
+
 
   @Override
   public boolean endsWith(String other) {

@@ -30,6 +30,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 public class MemoryFileSystemTest {
+  
+  //TODO use file system rule where possible
 
 
   @Test
@@ -60,6 +62,32 @@ public class MemoryFileSystemTest {
     // after closing we should be able to create a new one again
     try (FileSystem secondFileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
       assertNotNull(secondFileSystem);
+    }
+  }
+  
+  @Test(expected = IllegalArgumentException.class)
+  public void emptySubPath() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      assertEquals(fileSystem.getPath(""), fileSystem.getPath("").subpath(0, 0));
+    }
+  }
+  
+  @Test
+  public void subPath() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      assertEquals(fileSystem.getPath("a"), fileSystem.getPath("a").subpath(0, 1));
+      assertEquals(fileSystem.getPath("a"), fileSystem.getPath("/a").subpath(0, 1));
+      assertEquals(fileSystem.getPath("b"), fileSystem.getPath("/a/b").subpath(1, 2));
+      assertEquals(fileSystem.getPath("b"), fileSystem.getPath("a/b").subpath(1, 2));
+      assertEquals(fileSystem.getPath("b"), fileSystem.getPath("/a/b/c").subpath(1, 2));
+      assertEquals(fileSystem.getPath("b"), fileSystem.getPath("a/b/c").subpath(1, 2));
+      
+      assertEquals(fileSystem.getPath("a/b"), fileSystem.getPath("a/b").subpath(0, 2));
+      assertEquals(fileSystem.getPath("a/b"), fileSystem.getPath("/a/b").subpath(0, 2));
+      assertEquals(fileSystem.getPath("b/c"), fileSystem.getPath("/a/b/c").subpath(1, 3));
+      assertEquals(fileSystem.getPath("b/c"), fileSystem.getPath("a/b/c").subpath(1, 3));
+      assertEquals(fileSystem.getPath("b/c"), fileSystem.getPath("/a/b/c/d").subpath(1, 3));
+      assertEquals(fileSystem.getPath("b/c"), fileSystem.getPath("a/b/c/c").subpath(1, 3));
     }
   }
   
@@ -397,12 +425,22 @@ public class MemoryFileSystemTest {
     }
   }
   
+  @Test(expected = IllegalArgumentException.class)
+  public void emptyGetName() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path empty = fileSystem.getPath("");
+      empty.getName(0);
+    }
+  }
+  
   @Test
   public void absoluteGetName() throws IOException {
     try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
       Path usrBin = fileSystem.getPath("/usr/bin");
-      Path usr = fileSystem.getPath("/usr");
+      Path usr = fileSystem.getPath("usr");
       assertEquals(usr, usrBin.getName(0));
+      Path bin = fileSystem.getPath("bin");
+      assertEquals(bin, usrBin.getName(1));
     }
   }
   
@@ -412,6 +450,8 @@ public class MemoryFileSystemTest {
       Path usrBin = fileSystem.getPath("usr/bin");
       Path usr = fileSystem.getPath("usr");
       assertEquals(usr, usrBin.getName(0));
+      Path bin = fileSystem.getPath("bin");
+      assertEquals(bin, usrBin.getName(1));
     }
   }
   

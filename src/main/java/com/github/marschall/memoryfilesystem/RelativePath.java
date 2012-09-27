@@ -9,6 +9,7 @@ import java.nio.file.WatchEvent.Modifier;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 final class RelativePath extends NonEmptyPath {
@@ -55,20 +56,30 @@ final class RelativePath extends NonEmptyPath {
 
   @Override
   public Path getName(int index) {
+    int nameCount = this.getNameCount();
     if (index < 0) {
       throw new IllegalArgumentException("index must be positive but was " + index);
     }
-    if (index >= this.getNameCount()) {
-      throw new IllegalArgumentException("index must not be bigger than " + (this.getNameCount() - 1) +  " but was " + index);
+    if (index >= nameCount) {
+      throw new IllegalArgumentException("index must not be bigger than " + (nameCount - 1) +  " but was " + index);
     }
-    List<String> subList = this.getNameElements().subList(0, index + 1);
-    return AbsolutePath.createRealative(getMemoryFileSystem(), subList);
+    
+    if (nameCount == 1) {
+      return this;
+    } else {
+      List<String> subList = Collections.singletonList(this.getNameElements().get(index));
+      return AbsolutePath.createRealative(getMemoryFileSystem(), subList);
+    }
   }
 
   @Override
   public Path subpath(int beginIndex, int endIndex) {
-    // TODO Auto-generated function stub
-    throw new UnsupportedOperationException();
+    this.checkNameRange(beginIndex, endIndex);
+    if (endIndex - beginIndex == this.getNameCount()) {
+      return this;
+    } else {
+      return AbstractPath.createRealative(getMemoryFileSystem(), this.getNameElements().subList(beginIndex, endIndex));
+    }
   }
   
   @Override
