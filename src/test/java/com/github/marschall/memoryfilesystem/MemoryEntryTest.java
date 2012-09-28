@@ -47,7 +47,7 @@ public class MemoryEntryTest {
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
         { new MemoryDirectory() },
-        { new MemoryFile() }
+        { new MemoryFile() },
     });
   }
 

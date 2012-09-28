@@ -38,7 +38,7 @@ public class InvalidUrisTest {
         { URI.create("memory://user:pass@host:666/path?query#fragmet") },
         { URI.create("memory://host") },
         { URI.create("memory:///path") },
-        { URI.create("memory:name//user:pass@host:666/path?query#fragmet") }
+        { URI.create("memory:name//user:pass@host:666/path?query#fragmet") },
     });
   }
 

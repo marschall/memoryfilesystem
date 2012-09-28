@@ -57,7 +57,7 @@ public class SingleEmptyRootPathParserTest {
         { "", new String[]{"", "", "/a/b/c"} },
         { "", new String[]{"", "", "/a/b/c", ""} },
         { "", new String[]{"", "/a/", "b/c", ""} },
-        { "/a/b/c", new String[0] }
+        { "/a/b/c", new String[0] },
     });
   }
 
