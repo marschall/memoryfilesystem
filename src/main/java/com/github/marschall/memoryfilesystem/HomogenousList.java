@@ -39,6 +39,11 @@ final class HomogenousList<E> extends AbstractList<E> implements RandomAccess {
   }
   
   @Override
+  public boolean contains(Object o) {
+    return this.element.equals(o);
+  }
+  
+  @Override
   public List<E> subList(int fromIndex, int toIndex) {
     if (fromIndex < 0) {
       throw new IllegalArgumentException("from index negative");

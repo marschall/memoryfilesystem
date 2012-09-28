@@ -1,7 +1,9 @@
 package com.github.marschall.memoryfilesystem;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -10,6 +12,12 @@ import java.util.List;
 import org.junit.Test;
 
 public class HomogenousListTest {
+  
+  @Test
+  public void contains() {
+    assertTrue(HomogenousList.create("..", 42).contains(".."));
+    assertFalse(HomogenousList.create("..", 42).contains("."));
+  }
 
   @Test
   public void create() {

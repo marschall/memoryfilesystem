@@ -23,6 +23,7 @@ import java.nio.file.spi.FileSystemProvider;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 class MemoryFileSystem extends FileSystem {
 
@@ -331,8 +332,22 @@ class MemoryFileSystem extends FileSystem {
   @Override
   public PathMatcher getPathMatcher(String syntaxAndPattern) {
     this.checker.check();
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
+    int colonIndex = syntaxAndPattern.indexOf(":");
+    if (colonIndex <= 0 || colonIndex == syntaxAndPattern.length() - 1) {
+      throw new IllegalArgumentException("syntaxAndPattern must have form \"syntax:pattern\" but was \"" + syntaxAndPattern + "\"");
+    }
+    
+    String syntax = syntaxAndPattern.substring(0, colonIndex);
+    String pattern = syntaxAndPattern.substring(colonIndex + 1);
+    if (syntax.equalsIgnoreCase(GlobPathMatcher.name())) {
+      return new GlobPathMatcher(pattern);
+    }
+    if (syntax.equalsIgnoreCase(RegexPathMatcher.name())) {
+      Pattern regex = Pattern.compile(pattern);
+      return new RegexPathMatcher(regex);
+    }
+    
+    throw new UnsupportedOperationException("unsupported syntax \"" + syntax + "\"");
   }
 
 

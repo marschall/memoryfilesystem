@@ -13,9 +13,11 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.regex.PatternSyntaxException;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,6 +26,45 @@ public class MemoryFileSystemTest {
 
   @Rule
   public final FileSystemRule rule = new FileSystemRule();
+  
+  @Test(expected = UnsupportedOperationException.class)
+  public void getPathMatcherUnknown() {
+    FileSystem fileSystem = rule.getFileSystem();
+    fileSystem.getPathMatcher("syntax:patten");
+  }
+  
+  @Test(expected = IllegalArgumentException.class)
+  public void getPathMatcherInvalid1() {
+    FileSystem fileSystem = rule.getFileSystem();
+    fileSystem.getPathMatcher("invalid");
+  }
+  
+  @Test(expected = IllegalArgumentException.class)
+  public void getPathMatcherInvalid2() {
+    FileSystem fileSystem = rule.getFileSystem();
+    fileSystem.getPathMatcher("invalid:");
+  }
+  
+  @Test
+  public void getPathMatcherGlob() {
+    FileSystem fileSystem = rule.getFileSystem();
+    PathMatcher matcher = fileSystem.getPathMatcher("glob:*.java");
+    assertTrue(matcher instanceof GlobPathMatcher);
+  }
+  
+  @Test
+  public void getPathMatcherRegex() {
+    FileSystem fileSystem = rule.getFileSystem();
+    PathMatcher matcher = fileSystem.getPathMatcher("regex:.*\\.java");
+    assertTrue(matcher instanceof RegexPathMatcher);
+  }
+  
+  @Test(expected = PatternSyntaxException.class)
+  public void getPathMatcherRegexInvalid() {
+    FileSystem fileSystem = rule.getFileSystem();
+    PathMatcher matcher = fileSystem.getPathMatcher("regex:*\\.java");
+    assertTrue(matcher instanceof RegexPathMatcher);
+  }
 
   @Test(expected = IllegalArgumentException.class)
   public void emptySubPath() throws IOException {
