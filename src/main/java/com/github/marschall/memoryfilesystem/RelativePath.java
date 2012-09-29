@@ -144,8 +144,16 @@ final class RelativePath extends NonEmptyPath {
 
   @Override
   Path resolveSibling(AbstractPath other) {
-    // TODO Auto-generated function stub
-    throw new UnsupportedOperationException();
+    if (other.isAbsolute()) {
+      return other;
+    }
+    if (other instanceof ElementPath) {
+      ElementPath otherPath = (ElementPath) other;
+      List<String> resolvedElements = CompositeList.create(this.getNameElements().subList(0, getNameCount() - 1), otherPath.getNameElements());
+      return createRelative(this.getMemoryFileSystem(), resolvedElements);
+    } else {
+      throw new IllegalArgumentException("can't resolve" + other);
+    }
   }
 
   @Override

@@ -102,7 +102,7 @@ final class EmptyPath extends ElementPath {
 
   @Override
   public Iterator<Path> iterator() {
-    return Collections.<Path>emptyList().iterator();
+    return Collections.emptyIterator();
   }
 
   @Override
@@ -145,8 +145,7 @@ final class EmptyPath extends ElementPath {
 
   @Override
   Path resolveSibling(AbstractPath other) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
+    return other;
   }
 
   @Override

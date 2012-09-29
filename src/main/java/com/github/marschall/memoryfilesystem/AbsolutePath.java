@@ -199,8 +199,16 @@ final class AbsolutePath extends NonEmptyPath {
 
   @Override
   Path resolveSibling(AbstractPath other) {
-    // TODO Auto-generated function stub
-    throw new UnsupportedOperationException();
+    if (other.isAbsolute()) {
+      return other;
+    }
+    if (other instanceof ElementPath) {
+      ElementPath otherPath = (ElementPath) other;
+      List<String> resolvedElements = CompositeList.create(this.getNameElements().subList(0, getNameCount() - 1), otherPath.getNameElements());
+      return createAboslute(this.getMemoryFileSystem(), this.root, resolvedElements);
+    } else {
+      throw new IllegalArgumentException("can't resolve" + other);
+    }
   }
 
 
@@ -214,7 +222,6 @@ final class AbsolutePath extends NonEmptyPath {
       // only support relativization against paths with same root
       throw new IllegalArgumentException("paths must have the same root");
     }
-    //TODO normalize
     if (other.equals(this.root)) {
       // other is my root, easy 
       return createRelative(this.getMemoryFileSystem(), HomogenousList.create("..", this.getNameCount()));
