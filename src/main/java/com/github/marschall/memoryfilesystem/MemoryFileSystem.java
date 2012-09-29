@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import javax.annotation.PreDestroy;
+
 class MemoryFileSystem extends FileSystem {
 
   private final String separator;
@@ -272,6 +274,7 @@ class MemoryFileSystem extends FileSystem {
 
 
   @Override
+  @PreDestroy // closing twice is explicitly allowed by the contract
   public void close() throws IOException {
     this.checker.close();
     this.provider.close(this);

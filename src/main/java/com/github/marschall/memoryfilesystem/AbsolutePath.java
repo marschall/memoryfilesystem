@@ -112,11 +112,17 @@ final class AbsolutePath extends NonEmptyPath {
 
   @Override
   public URI toUri() {
-    //TODO estimate size.
-    StringBuilder schemeSpecificPart = new StringBuilder();
-    schemeSpecificPart.append(this.getMemoryFileSystem().getKey());
+    String fileSystemKey = this.getMemoryFileSystem().getKey();
+    List<String> nameElements = this.getNameElements();
+    int sizeEsitmate =
+            fileSystemKey.length()
+            + 3 // "://".length
+            + nameElements.size() // n * '/'
+            + totalLength(nameElements);
+    StringBuilder schemeSpecificPart = new StringBuilder(sizeEsitmate);
+    schemeSpecificPart.append(fileSystemKey);
     schemeSpecificPart.append("://");
-    for (String element : this.getNameElements()) {
+    for (String element : nameElements) {
       schemeSpecificPart.append('/');
       schemeSpecificPart.append(element);
     }
@@ -126,13 +132,14 @@ final class AbsolutePath extends NonEmptyPath {
       throw new AssertionError("could not create URI");
     }
   }
-  
-  public static void main(String[] args) throws URISyntaxException {
-    URI uri = new URI("memory", "authority", "/a/b", null, null);
-    System.out.println(uri);
-    
-  }
 
+  private static int totalLength(List<String> elements) {
+    int totalLength = 0;
+    for (String each : elements) {
+      totalLength += each.length();
+    }
+    return totalLength;
+  }
 
   @Override
   public Path toAbsolutePath() {

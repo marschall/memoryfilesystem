@@ -65,6 +65,19 @@ final class EmptyPath extends ElementPath {
     // TODO Auto-generated method stub
     throw new UnsupportedOperationException();
   }
+  
+
+  @Override
+  boolean startsWith(AbstractPath other) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  boolean endsWith(AbstractPath other) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException();
+  }
 
   @Override
   public Path normalize() {
@@ -126,17 +139,6 @@ final class EmptyPath extends ElementPath {
     throw new IndexOutOfBoundsException("empty path does not support #getLastNameElement()");
   }
 
-  @Override
-  boolean startsWith(AbstractPath other) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  boolean endsWith(AbstractPath other) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
-  }
 
   @Override
   Path resolve(AbstractPath other) {
