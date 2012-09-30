@@ -151,8 +151,18 @@ final class RelativePath extends NonEmptyPath {
 
   @Override
   boolean endsWith(AbstractPath other) {
-    // TODO Auto-generated function stub
-    throw new UnsupportedOperationException();
+    if (other.isAbsolute()) {
+      return false;
+    }
+    if (other.isRoot()) {
+      return false;
+    }
+    
+    if (other instanceof ElementPath) {
+      return this.endsWithRelativePath(other);
+    } else {
+      throw new IllegalArgumentException("can't check for #startsWith against " + other);
+    }
   }
 
   @Override

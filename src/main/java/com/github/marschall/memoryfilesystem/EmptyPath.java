@@ -61,8 +61,7 @@ final class EmptyPath extends ElementPath {
 
   @Override
   public boolean endsWith(String other) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
+    return "".equals(other);
   }
   
 
@@ -73,8 +72,7 @@ final class EmptyPath extends ElementPath {
 
   @Override
   boolean endsWith(AbstractPath other) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
+    return other == this;
   }
 
   @Override

@@ -186,6 +186,28 @@ abstract class NonEmptyPath extends ElementPath {
   
   abstract Path newInstance(MemoryFileSystem fileSystem, List<String> pathElements);
 
+  protected boolean endsWithRelativePath(AbstractPath other) {
+    ElementPath otherPath = (ElementPath) other;
+    int otherNameCount = otherPath.getNameCount();
+    int thisNameCount = this.getNameCount();
+    if (otherNameCount == 0) {
+      // empty path
+      return false;
+    }
+    
+    if (otherNameCount > thisNameCount) {
+      return false;
+    }
+    // otherNameCount smaller or equal to this.getNameCount()
+    int offset = thisNameCount - otherNameCount;
+    for (int i = 0; i < otherNameCount; ++i) {
+      if (!(this.getNameElement(i + offset)).equals(otherPath.getNameElement(i))) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   static final class ElementIterator implements Iterator<Path> {
     
     private final MemoryFileSystem fileSystem;

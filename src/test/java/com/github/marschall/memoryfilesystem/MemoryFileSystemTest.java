@@ -398,6 +398,51 @@ public class MemoryFileSystemTest {
   }
   
   @Test
+  public void endsWith() {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    
+    assertTrue(fileSystem.getPath("a").endsWith(fileSystem.getPath("a")));
+    assertFalse(fileSystem.getPath("a").endsWith(fileSystem.getPath("a/b")));
+    assertFalse(fileSystem.getPath("a").endsWith(fileSystem.getPath("/a")));
+    assertFalse(fileSystem.getPath("a").endsWith(fileSystem.getPath("/")));
+    assertFalse(fileSystem.getPath("a").endsWith(fileSystem.getPath("")));
+    assertFalse(fileSystem.getPath("a/b").endsWith(fileSystem.getPath("a")));
+    assertTrue(fileSystem.getPath("a/b").endsWith(fileSystem.getPath("b")));
+    assertTrue(fileSystem.getPath("a/b").endsWith(fileSystem.getPath("a/b")));
+    assertFalse(fileSystem.getPath("a/b").endsWith(fileSystem.getPath("/a")));
+    assertFalse(fileSystem.getPath("a/b").endsWith(fileSystem.getPath("/")));
+    assertFalse(fileSystem.getPath("a/b").endsWith(fileSystem.getPath("")));
+    
+    assertTrue(fileSystem.getPath("/a").endsWith(fileSystem.getPath("/a")));
+    assertFalse(fileSystem.getPath("/a").endsWith(fileSystem.getPath("/a/b")));
+    assertTrue(fileSystem.getPath("/a").endsWith(fileSystem.getPath("a")));
+    assertFalse(fileSystem.getPath("/a").endsWith(fileSystem.getPath("/")));
+    assertFalse(fileSystem.getPath("/a").endsWith(fileSystem.getPath("")));
+    assertFalse(fileSystem.getPath("/a/b").endsWith(fileSystem.getPath("/a")));
+    assertTrue(fileSystem.getPath("/a/b").endsWith(fileSystem.getPath("/a/b")));
+    assertFalse(fileSystem.getPath("/a/b").endsWith(fileSystem.getPath("/b")));
+    assertTrue(fileSystem.getPath("/a/b").endsWith(fileSystem.getPath("b")));
+    assertFalse(fileSystem.getPath("/a/b").endsWith(fileSystem.getPath("/a/b/c")));
+    assertFalse(fileSystem.getPath("/a/b").endsWith(fileSystem.getPath("a")));
+    assertFalse(fileSystem.getPath("/a/b").endsWith(fileSystem.getPath("/")));
+    assertFalse(fileSystem.getPath("/a/b").endsWith(fileSystem.getPath("")));
+    
+    assertTrue(fileSystem.getPath("/").endsWith(fileSystem.getPath("/")));
+    assertFalse(fileSystem.getPath("/").endsWith(fileSystem.getPath("")));
+    assertFalse(fileSystem.getPath("/").endsWith(fileSystem.getPath("a")));
+    assertFalse(fileSystem.getPath("/").endsWith(fileSystem.getPath("/a")));
+    assertFalse(fileSystem.getPath("/").endsWith(fileSystem.getPath("a/b")));
+    assertFalse(fileSystem.getPath("/").endsWith(fileSystem.getPath("/a/b")));
+    
+    assertFalse(fileSystem.getPath("").endsWith(fileSystem.getPath("/")));
+    assertTrue(fileSystem.getPath("").endsWith(fileSystem.getPath("")));
+    assertFalse(fileSystem.getPath("").endsWith(fileSystem.getPath("a")));
+    assertFalse(fileSystem.getPath("").endsWith(fileSystem.getPath("/a")));
+    assertFalse(fileSystem.getPath("").endsWith(fileSystem.getPath("a/b")));
+    assertFalse(fileSystem.getPath("").endsWith(fileSystem.getPath("/a/b")));
+  }
+  
+  @Test
   public void startsWith() {
     FileSystem fileSystem = this.rule.getFileSystem();
     
@@ -430,6 +475,13 @@ public class MemoryFileSystemTest {
     assertFalse(fileSystem.getPath("/").startsWith(fileSystem.getPath("/a")));
     assertFalse(fileSystem.getPath("/").startsWith(fileSystem.getPath("a/b")));
     assertFalse(fileSystem.getPath("/").startsWith(fileSystem.getPath("/a/b")));
+    
+    assertFalse(fileSystem.getPath("").startsWith(fileSystem.getPath("/")));
+    assertTrue(fileSystem.getPath("").startsWith(fileSystem.getPath("")));
+    assertFalse(fileSystem.getPath("").startsWith(fileSystem.getPath("a")));
+    assertFalse(fileSystem.getPath("").startsWith(fileSystem.getPath("/a")));
+    assertFalse(fileSystem.getPath("").startsWith(fileSystem.getPath("a/b")));
+    assertFalse(fileSystem.getPath("").startsWith(fileSystem.getPath("/a/b")));
   }
 
   @Test

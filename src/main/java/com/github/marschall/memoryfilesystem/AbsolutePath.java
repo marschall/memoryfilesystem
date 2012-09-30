@@ -186,6 +186,12 @@ final class AbsolutePath extends NonEmptyPath {
       // is other my root?
       return other.equals(this.getRoot());
     }
+    
+    // named roots under windows
+    if (!this.getRoot().startsWith(other.getRoot())) {
+      return false;
+    }
+    
     if (other instanceof ElementPath) {
       ElementPath otherPath = (ElementPath) other;
       int otherNameCount = otherPath.getNameCount();
@@ -207,15 +213,23 @@ final class AbsolutePath extends NonEmptyPath {
 
   @Override
   boolean endsWith(AbstractPath other) {
-    // TODO Auto-generated function stub
-    throw new UnsupportedOperationException();
+    if (other.isAbsolute()) {
+      return this.equals(other);
+    }
+    if (other.isRoot()) {
+      return false;
+    }
+    
+    if (other instanceof ElementPath) {
+      return this.endsWithRelativePath(other);
+    } else {
+      throw new IllegalArgumentException("can't check for #startsWith against " + other);
+    }
   }
-
 
   @Override
   Path resolve(AbstractPath other) {
     if (other instanceof ElementPath) {
-      // TODO root?
       ElementPath otherPath = (ElementPath) other;
       List<String> resolvedElements = CompositeList.create(this.getNameElements(), otherPath.getNameElements());
       return createAboslute(this.getMemoryFileSystem(), this.root, resolvedElements);
