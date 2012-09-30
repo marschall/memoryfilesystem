@@ -11,6 +11,7 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
@@ -135,6 +136,14 @@ public class MemoryFileSystemTest {
     assertEquals(fileSystem.getPath("../../a/b/c"), fileSystem.getPath("../../a/b/c").normalize());
     assertEquals(fileSystem.getPath("../../a/b"), fileSystem.getPath("../../a/b/c/..").normalize());
     assertEquals(fileSystem.getPath("../../a/b"), fileSystem.getPath("../../a/b/c/./..").normalize());
+  }
+  
+  @Test
+  public void resolveRoot() {
+    FileSystem fileSystem = rule.getFileSystem();
+    
+    assertEquals(fileSystem.getPath("/"), fileSystem.getPath("/a").resolve(fileSystem.getPath("/")));
+    assertEquals(fileSystem.getPath("/"), fileSystem.getPath("a").resolve(fileSystem.getPath("/")));
   }
 
   @Test
@@ -387,6 +396,41 @@ public class MemoryFileSystemTest {
       assertFalse(actualPath.isAbsolute());
     }
     assertFalse(expectedIterator.hasNext());
+  }
+  
+  @Test
+  public void startsWith() {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    
+    assertTrue(fileSystem.getPath("a").startsWith(fileSystem.getPath("a")));
+    assertFalse(fileSystem.getPath("a").startsWith(fileSystem.getPath("a/b")));
+    assertFalse(fileSystem.getPath("a").startsWith(fileSystem.getPath("/a")));
+    assertFalse(fileSystem.getPath("a").startsWith(fileSystem.getPath("/")));
+    assertFalse(fileSystem.getPath("a").startsWith(fileSystem.getPath("")));
+    assertTrue(fileSystem.getPath("a/b").startsWith(fileSystem.getPath("a")));
+    assertTrue(fileSystem.getPath("a/b").startsWith(fileSystem.getPath("a/b")));
+    assertFalse(fileSystem.getPath("a/b").startsWith(fileSystem.getPath("/a")));
+    assertFalse(fileSystem.getPath("a/b").startsWith(fileSystem.getPath("/")));
+    assertFalse(fileSystem.getPath("a/b").startsWith(fileSystem.getPath("")));
+    
+    assertTrue(fileSystem.getPath("/a").startsWith(fileSystem.getPath("/a")));
+    assertFalse(fileSystem.getPath("/a").startsWith(fileSystem.getPath("/a/b")));
+    assertFalse(fileSystem.getPath("/a").startsWith(fileSystem.getPath("a")));
+    assertTrue(fileSystem.getPath("/a").startsWith(fileSystem.getPath("/")));
+    assertFalse(fileSystem.getPath("/a").startsWith(fileSystem.getPath("")));
+    assertTrue(fileSystem.getPath("/a/b").startsWith(fileSystem.getPath("/a")));
+    assertTrue(fileSystem.getPath("/a/b").startsWith(fileSystem.getPath("/a/b")));
+    assertFalse(fileSystem.getPath("/a/b").startsWith(fileSystem.getPath("/a/b/c")));
+    assertFalse(fileSystem.getPath("/a/b").startsWith(fileSystem.getPath("a")));
+    assertTrue(fileSystem.getPath("/a/b").startsWith(fileSystem.getPath("/")));
+    assertFalse(fileSystem.getPath("/a/b").startsWith(fileSystem.getPath("")));
+    
+    assertTrue(fileSystem.getPath("/").startsWith(fileSystem.getPath("/")));
+    assertFalse(fileSystem.getPath("/").startsWith(fileSystem.getPath("")));
+    assertFalse(fileSystem.getPath("/").startsWith(fileSystem.getPath("a")));
+    assertFalse(fileSystem.getPath("/").startsWith(fileSystem.getPath("/a")));
+    assertFalse(fileSystem.getPath("/").startsWith(fileSystem.getPath("a/b")));
+    assertFalse(fileSystem.getPath("/").startsWith(fileSystem.getPath("/a/b")));
   }
 
   @Test

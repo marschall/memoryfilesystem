@@ -121,8 +121,32 @@ final class RelativePath extends NonEmptyPath {
 
   @Override
   boolean startsWith(AbstractPath other) {
-    // TODO Auto-generated function stub
-    throw new UnsupportedOperationException();
+    if (other.isAbsolute()) {
+      return false;
+    }
+    if (other.isRoot()) {
+      return false;
+    }
+    if (other instanceof ElementPath) {
+      ElementPath otherPath = (ElementPath) other;
+      int otherNameCount = otherPath.getNameCount();
+      if (otherNameCount == 0) {
+        // empty path
+        return false;
+      }
+      if (otherNameCount > this.getNameCount()) {
+        return false;
+      }
+      // otherNameCount smaller or equal to this.getNameCount()
+      for (int i = 0; i < otherNameCount; ++i) {
+        if (!(this.getNameElement(i)).equals(otherPath.getNameElement(i))) {
+          return false;
+        }
+      }
+      return true;
+    } else {
+      throw new IllegalArgumentException("can't check for #startsWith against " + other);
+    }
   }
 
   @Override

@@ -32,7 +32,7 @@ abstract class AbstractPath implements Path {
   
   static AbstractPath createRelative(MemoryFileSystem fileSystem, List<String> nameElements) {
     if (nameElements.isEmpty()) {
-      return new EmptyPath(fileSystem);
+      return fileSystem.getEmptyPath();
     } else {
       return new RelativePath(fileSystem, nameElements);
     }

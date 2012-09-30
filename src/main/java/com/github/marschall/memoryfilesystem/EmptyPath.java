@@ -56,8 +56,7 @@ final class EmptyPath extends ElementPath {
 
   @Override
   public boolean startsWith(String other) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
+    return "".equals(other);
   }
 
   @Override
@@ -69,8 +68,7 @@ final class EmptyPath extends ElementPath {
 
   @Override
   boolean startsWith(AbstractPath other) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
+    return other == this;
   }
 
   @Override
@@ -170,22 +168,8 @@ final class EmptyPath extends ElementPath {
     }
   }
   
-  @Override
-  public boolean equals(Object obj) {
-    if (obj == this) {
-      return true;
-    }
-    if (!(obj instanceof EmptyPath)) {
-      return false;
-    }
-    EmptyPath other = (EmptyPath) obj;
-    return this.getFileSystem().equals(other.getFileSystem());
-  }
-  
-  @Override
-  public int hashCode() {
-    return this.getFileSystem().hashCode();
-  }
+  // since this is a singleton per file system there is no need to override
+  // #equals and #hashCode
   
   @Override
   public String toString() {

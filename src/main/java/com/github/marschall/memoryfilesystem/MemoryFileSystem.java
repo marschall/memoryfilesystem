@@ -47,6 +47,8 @@ class MemoryFileSystem extends FileSystem {
 
   private final PathParser pathParser;
 
+  private final EmptyPath emptyPath;
+
   MemoryFileSystem(String separator, PathParser pathParser, MemoryFileSystemProvider provider, MemoryFileStore store,
       MemoryUserPrincipalLookupService userPrincipalLookupService, ClosedFileSystemChecker checker) {
     this.separator = separator;
@@ -56,8 +58,12 @@ class MemoryFileSystem extends FileSystem {
     this.userPrincipalLookupService = userPrincipalLookupService;
     this.checker = checker;
     this.stores = Collections.<FileStore>singletonList(store);
+    this.emptyPath = new EmptyPath(this);
   }
 
+  EmptyPath getEmptyPath() {
+    return this.emptyPath;
+  }
 
 
   /**
