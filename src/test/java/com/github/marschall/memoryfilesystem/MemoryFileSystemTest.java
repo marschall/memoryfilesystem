@@ -11,7 +11,6 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
@@ -68,13 +67,13 @@ public class MemoryFileSystemTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void emptySubPath() throws IOException {
+  public void emptySubPath() {
     FileSystem fileSystem = rule.getFileSystem();
     assertEquals(fileSystem.getPath(""), fileSystem.getPath("").subpath(0, 0));
   }
 
   @Test
-  public void subPath() throws IOException {
+  public void subPath() {
     FileSystem fileSystem = rule.getFileSystem();
     assertEquals(fileSystem.getPath("a"), fileSystem.getPath("a").subpath(0, 1));
     assertEquals(fileSystem.getPath("a"), fileSystem.getPath("/a").subpath(0, 1));
@@ -92,7 +91,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void normalizeRoot() throws IOException {
+  public void normalizeRoot() {
     FileSystem fileSystem = rule.getFileSystem();
     Path root = fileSystem.getPath("/");
 
@@ -100,7 +99,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void normalizeAbsolute() throws IOException {
+  public void normalizeAbsolute() {
     FileSystem fileSystem = rule.getFileSystem();
 
     assertEquals(fileSystem.getPath("/a"), fileSystem.getPath("/a").normalize());
@@ -124,7 +123,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void normalizeRelative() throws IOException {
+  public void normalizeRelative() {
     FileSystem fileSystem = rule.getFileSystem();
 
     assertEquals(fileSystem.getPath("a"), fileSystem.getPath("a").normalize());
@@ -147,7 +146,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void resolveAbsoluteOtherAbsolute() throws IOException {
+  public void resolveAbsoluteOtherAbsolute() {
     FileSystem fileSystem = rule.getFileSystem();
     Path absolute = fileSystem.getPath("/a/b");
 
@@ -158,7 +157,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void resolveAbsoluteOtherRelative() throws IOException {
+  public void resolveAbsoluteOtherRelative() {
     FileSystem fileSystem = rule.getFileSystem();
     Path realtive = fileSystem.getPath("a/b");
 
@@ -170,7 +169,7 @@ public class MemoryFileSystemTest {
 
 
   @Test
-  public void resolveAbsoluteOtherAbsoluteString() throws IOException {
+  public void resolveAbsoluteOtherAbsoluteString() {
     FileSystem fileSystem = rule.getFileSystem();
     String absolute = "/a/b";
     Path absolutePath = fileSystem.getPath("/a/b");
@@ -182,7 +181,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void resolveAbsoluteOtherRelativeString() throws IOException {
+  public void resolveAbsoluteOtherRelativeString() {
     FileSystem fileSystem = rule.getFileSystem();
     String realtive = "a/b";
 
@@ -193,7 +192,7 @@ public class MemoryFileSystemTest {
   }
   
   @Test
-  public void resolveSibling() throws IOException {
+  public void resolveSibling() {
     FileSystem fileSystem = rule.getFileSystem();
     assertEquals(fileSystem.getPath("b"), fileSystem.getPath("a").resolveSibling(fileSystem.getPath("b")));
     
@@ -231,7 +230,7 @@ public class MemoryFileSystemTest {
 
 
   @Test
-  public void resolveSiblingAgainstRoot() throws IOException {
+  public void resolveSiblingAgainstRoot() {
     FileSystem fileSystem = rule.getFileSystem();
     Path root = fileSystem.getPath("/");
 
@@ -243,7 +242,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void resolveSiblingAgainstRootString() throws IOException {
+  public void resolveSiblingAgainstRootString() {
     FileSystem fileSystem = rule.getFileSystem();
     Path root = fileSystem.getPath("/");
 
@@ -256,7 +255,7 @@ public class MemoryFileSystemTest {
 
 
   @Test
-  public void relativizeAbsolute() throws IOException {
+  public void relativizeAbsolute() {
     FileSystem fileSystem = rule.getFileSystem();
     Path first = fileSystem.getPath("/a/b");
     Path second = fileSystem.getPath("/a/b/c");
@@ -294,7 +293,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void relativizeAbsoluteUnsupported1() throws IOException {
+  public void relativizeAbsoluteUnsupported1() {
     FileSystem fileSystem = rule.getFileSystem();
     Path first = fileSystem.getPath("/a/b");
     Path second = fileSystem.getPath("c");
@@ -302,7 +301,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void relativizeAbsoluteUnsupported2() throws IOException {
+  public void relativizeAbsoluteUnsupported2() {
     FileSystem fileSystem = rule.getFileSystem();
     Path first = fileSystem.getPath("/a/b");
     Path second = fileSystem.getPath("c");
@@ -311,7 +310,7 @@ public class MemoryFileSystemTest {
 
 
   @Test
-  public void relativizeRelative() throws IOException {
+  public void relativizeRelative() {
     FileSystem fileSystem = rule.getFileSystem();
     Path first = fileSystem.getPath("a/b");
     Path second = fileSystem.getPath("a/b/c");
@@ -350,7 +349,7 @@ public class MemoryFileSystemTest {
 
 
   @Test
-  public void relativizeRelativeRoot() throws IOException {
+  public void relativizeRelativeRoot() {
     FileSystem fileSystem = rule.getFileSystem();
     Path first = fileSystem.getPath("/");
     Path second = fileSystem.getPath("/a/b");
@@ -361,7 +360,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void absoluteIterator() throws IOException {
+  public void absoluteIterator() {
     FileSystem fileSystem = rule.getFileSystem();
     Path usrBin = fileSystem.getPath("/usr/bin");
     Iterable<String> expected = Arrays.asList("usr", "bin");
@@ -369,7 +368,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void relativeIterator() throws IOException {
+  public void relativeIterator() {
     FileSystem fileSystem = rule.getFileSystem();
     Path usrBin = fileSystem.getPath("usr/bin");
     Iterable<String> expected = Arrays.asList("usr", "bin");
@@ -434,7 +433,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void getFileName() throws IOException {
+  public void getFileName() {
     FileSystem fileSystem = rule.getFileSystem();
     Path usrBin = fileSystem.getPath("/usr/bin");
     Path bin = fileSystem.getPath("bin");
@@ -447,7 +446,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void absoluteGetParent() throws IOException {
+  public void absoluteGetParent() {
     FileSystem fileSystem = rule.getFileSystem();
     Path usrBin = fileSystem.getPath("/usr/bin");
     Path usr = fileSystem.getPath("/usr");
@@ -460,7 +459,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void relativeGetParent() throws IOException {
+  public void relativeGetParent() {
     FileSystem fileSystem = rule.getFileSystem();
     Path usrBin = fileSystem.getPath("usr/bin");
     Path usr = fileSystem.getPath("usr");
@@ -471,28 +470,28 @@ public class MemoryFileSystemTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void absoluteGetName0() throws IOException {
+  public void absoluteGetName0() {
     FileSystem fileSystem = rule.getFileSystem();
     Path usrBin = fileSystem.getPath("/usr/bin");
     usrBin.getName(-1);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void absoluteGetNameToLong() throws IOException {
+  public void absoluteGetNameToLong() {
     FileSystem fileSystem = rule.getFileSystem();
     Path usrBin = fileSystem.getPath("/usr/bin");
     usrBin.getName(2);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void emptyGetName() throws IOException {
+  public void emptyGetName() {
     FileSystem fileSystem = rule.getFileSystem();
     Path empty = fileSystem.getPath("");
     empty.getName(0);
   }
 
   @Test
-  public void absoluteGetName() throws IOException {
+  public void absoluteGetName() {
     FileSystem fileSystem = rule.getFileSystem();
     Path usrBin = fileSystem.getPath("/usr/bin");
     Path usr = fileSystem.getPath("usr");
@@ -502,7 +501,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void relativeGetName() throws IOException {
+  public void relativeGetName() {
     FileSystem fileSystem = rule.getFileSystem();
     Path usrBin = fileSystem.getPath("usr/bin");
     Path usr = fileSystem.getPath("usr");
@@ -512,21 +511,21 @@ public class MemoryFileSystemTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void relativeGetName0() throws IOException {
+  public void relativeGetName0() {
     FileSystem fileSystem = rule.getFileSystem();
     Path usrBin = fileSystem.getPath("usr/bin");
     usrBin.getName(-1);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void relativeGetNameToLong() throws IOException {
+  public void relativeGetNameToLong() {
     FileSystem fileSystem = rule.getFileSystem();
     Path usrBin = fileSystem.getPath("usr/bin");
     usrBin.getName(2);
   }
 
   @Test
-  public void emptyPath() throws IOException {
+  public void emptyPath() {
     FileSystem fileSystem = rule.getFileSystem();
     Path path = fileSystem.getPath("");
     assertFalse(path.isAbsolute());
@@ -534,7 +533,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void getNameCount() throws IOException {
+  public void getNameCount() {
     FileSystem fileSystem = rule.getFileSystem();
     Path usrBin = fileSystem.getPath("/usr/bin");
     assertEquals(2, usrBin.getNameCount());
@@ -544,13 +543,13 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void isReadOnly() throws IOException {
+  public void isReadOnly() {
     FileSystem fileSystem = rule.getFileSystem();
     assertFalse(fileSystem.isReadOnly());
   }
 
   @Test
-  public void absolutePaths() throws IOException {
+  public void absolutePaths() {
     FileSystem fileSystem = rule.getFileSystem();
     Path path = fileSystem.getPath("/");
     assertTrue(path.isAbsolute());
@@ -564,7 +563,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void relativePaths() throws IOException {
+  public void relativePaths() {
     FileSystem fileSystem = rule.getFileSystem();
     Path path = fileSystem.getPath("sample");
     assertFalse(path.isAbsolute());
@@ -580,13 +579,13 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void supportedFileAttributeViews() throws IOException {
+  public void supportedFileAttributeViews() {
     FileSystem fileSystem = rule.getFileSystem();
     assertEquals(Collections.singleton("basic"), fileSystem.supportedFileAttributeViews());
   }
 
   @Test
-  public void pathToString() throws IOException {
+  public void pathToString() {
     FileSystem fileSystem = rule.getFileSystem();
     Path path = fileSystem.getPath("/");
     assertEquals("/", path.toString());
@@ -608,14 +607,14 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void defaultSeparator() throws IOException {
+  public void defaultSeparator() {
     FileSystem fileSystem = rule.getFileSystem();
     assertEquals("/", fileSystem.getSeparator());
   }
 
 
   @Test(expected = IllegalArgumentException.class)
-  public void slash() throws IOException {
+  public void slash() {
     FileSystem fileSystem = rule.getFileSystem();
     Path path = fileSystem.getPath("/");
     path.subpath(0, 1);
@@ -663,7 +662,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void getRootDirectories() throws IOException {
+  public void getRootDirectories() {
     FileSystem fileSystem = rule.getFileSystem();
     Iterator<Path> directories = fileSystem.getRootDirectories().iterator();
     assertTrue(directories.hasNext());
