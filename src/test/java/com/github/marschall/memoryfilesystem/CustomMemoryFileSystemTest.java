@@ -20,15 +20,13 @@ import java.nio.file.attribute.UserPrincipalLookupService;
 import java.util.Collections;
 import java.util.Map;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class CustomMemoryFileSystemTest {
 
   @Test
   public void lookupPrincipalByName() throws IOException {
-    FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV);
-    try {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
       UserPrincipalLookupService userPrincipalLookupService = fileSystem.getUserPrincipalLookupService();
       String userName = System.getProperty("user.name");
       UserPrincipal user = userPrincipalLookupService.lookupPrincipalByName(userName);
@@ -41,22 +39,26 @@ public class CustomMemoryFileSystemTest {
       } catch (ClosedFileSystemException e) {
         // should reach here
       }
-    } finally {
-      fileSystem.close();
     }
   }
 
   @Test
-  @Ignore("FIXME") //FIXME
   public void windows() throws IOException {
     URI uri = URI.create("memory:uri");
     Map<String, ?> env = EnvironmentBuilder.newWindows().build();
     try (FileSystem fileSystem = FileSystems.newFileSystem(uri, env)) {
       Path c1 = fileSystem.getPath("C:\\");
       Path c2 = fileSystem.getPath("c:\\");
-      assertEquals(c1, c2);
       assertEquals("C:\\", c1.toString());
       assertEquals("c:\\", c2.toString());
+      assertTrue(c1.startsWith(c2));
+      assertTrue(c1.startsWith("c:\\"));
+      assertEquals(c1, c2);
+      
+      c1 = fileSystem.getPath("C:\\TEMP");
+      c2 = fileSystem.getPath("c:\\");
+      assertEquals("C:\\TEMP", c1.toString());
+      assertEquals("c:\\temp", c2.toString());
       assertTrue(c1.startsWith(c2));
       assertTrue(c1.startsWith("c:\\"));
     }

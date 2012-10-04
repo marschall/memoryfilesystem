@@ -21,7 +21,7 @@ public class MemoryFileSystemProperties {
 
   public static final String GROUPS_PROPERTY = "groups";
 
-  public static final String PRINCIPAL_TRANSFORMER_PROPERTY = "princial.transformer";
+  public static final String PATH_TRANSFORMER_PROPERTY = "path.transformer";
 
   static final String UNIX_ROOT = "/";
 

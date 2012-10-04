@@ -7,8 +7,6 @@ import java.util.Map;
 
 public class EnvironmentBuilder {
 
-  //TODO principal transfomer
-
   private final List<String> roots;
   
   private final List<String> users;
@@ -18,6 +16,8 @@ public class EnvironmentBuilder {
   private String separator;
 
   private String currentWorkingDirectory;
+  
+  private StringTransformer pathTransformer;
 
 
   private EnvironmentBuilder() {
@@ -48,6 +48,11 @@ public class EnvironmentBuilder {
 
   public EnvironmentBuilder setCurrentWorkingDirectory(String currentWorkingDirectory) {
     this.currentWorkingDirectory = currentWorkingDirectory;
+    return this;
+  }
+  
+  public EnvironmentBuilder setPathTransformer(StringTransformer pathTransformer) {
+    this.pathTransformer = pathTransformer;
     return this;
   }
 
@@ -96,6 +101,9 @@ public class EnvironmentBuilder {
     }
     if (this.currentWorkingDirectory != null) {
       env.put(MemoryFileSystemProperties.CURRENT_WORKING_DIRECTORY_PROPERTY, this.currentWorkingDirectory);
+    }
+    if (this.pathTransformer != null) {
+      env.put(MemoryFileSystemProperties.PATH_TRANSFORMER_PROPERTY, this.pathTransformer);
     }
     return env;
   }

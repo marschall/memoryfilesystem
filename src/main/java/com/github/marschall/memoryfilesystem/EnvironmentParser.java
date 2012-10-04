@@ -15,7 +15,6 @@ class EnvironmentParser {
   }
 
   List<String> getRoots() {
-    
     if (this.roots == null) {
       this.roots = this.parseStringProperty(MemoryFileSystemProperties.ROOTS_PROPERTY, false);
       if (this.roots == null) {
@@ -36,6 +35,19 @@ class EnvironmentParser {
     }
   }
   
+  StringTransformer getPathTransformer() {
+    Object value = env.get(MemoryFileSystemProperties.PATH_TRANSFORMER_PROPERTY);
+    if (value != null) {
+      if (value instanceof StringTransformer) {
+        return (StringTransformer) value;
+      } else {
+        throw new IllegalArgumentException(MemoryFileSystemProperties.PATH_TRANSFORMER_PROPERTY + " must be a "
+                + StringTransformer.class + " but was " + value.getClass());
+      }
+    } else {
+      return StringTransformers.IDENTIY;
+    }
+  }
   
   String getDefaultDirectory() {
     Object value = env.get(MemoryFileSystemProperties.CURRENT_WORKING_DIRECTORY_PROPERTY);
@@ -66,13 +78,13 @@ class EnvironmentParser {
   }
 
   StringTransformer getPrincipalNameTransfomer() {
-    Object transfomer = this.env.get(MemoryFileSystemProperties.PRINCIPAL_TRANSFORMER_PROPERTY);
+    Object transfomer = this.env.get(MemoryFileSystemProperties.PATH_TRANSFORMER_PROPERTY);
     if (transfomer == null) {
       return StringTransformers.IDENTIY;
     } else if (transfomer instanceof StringTransformer) {
       return (StringTransformer) transfomer;
     } else {
-      throw new IllegalArgumentException(MemoryFileSystemProperties.PRINCIPAL_TRANSFORMER_PROPERTY + " must be a "
+      throw new IllegalArgumentException(MemoryFileSystemProperties.PATH_TRANSFORMER_PROPERTY + " must be a "
           + StringTransformer.class + " but was " + transfomer.getClass());
     }
   }

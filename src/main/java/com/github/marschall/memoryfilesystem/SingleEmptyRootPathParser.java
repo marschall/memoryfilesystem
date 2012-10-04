@@ -3,44 +3,65 @@ package com.github.marschall.memoryfilesystem;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-final class SingleEmptyRootPathParser implements PathParser {
+final class SingleEmptyRootPathParser extends PathParser {
 
+  SingleEmptyRootPathParser(String separator) {
+    super(separator);
+  }
 
   @Override
-  public Path parse(Iterable<Root> roots, String first, String... more) {
-    // REVIEW implement #count() to correctly set initial size
-    // TODO empty path could be singleton
-    List<String> elements = new ArrayList<>();
+  public Path parse(Map<String, Root> roots, String first, String... more) {
+    List<String> elements = new ArrayList<>(count(first, more));
     this.parseInto(first, elements);
     if (more != null && more.length > 0) {
       for (String s : more) {
         this.parseInto(s, elements);
       }
     }
-    Root root = roots.iterator().next();
+    Root root = roots.values().iterator().next();
     MemoryFileSystem memoryFileSystem = root.getMemoryFileSystem();
-    if (this.isAbsolute(first, more)) {
+    if (this.startWithSeparator(first, more)) {
       return AbstractPath.createAboslute(memoryFileSystem, root, elements);
     } else {
       return AbstractPath.createRelative(memoryFileSystem, elements);
     }
   }
   
-  private boolean isAbsolute(String first, String... more) {
-    if (!first.isEmpty()) {
-      return first.charAt(0) == '/';
-    }
+  static int count(String first, String... more) {
+    int count = count(first);
     if (more != null && more.length > 0) {
       for (String s : more) {
-        if (!s.isEmpty()) {
-          return s.charAt(0) == '/';
-        }
+        count += count(s);
       }
     }
+    return count;
+  }
+  
+  static int count(String s) {
+    if (s.isEmpty()) {
+      return 0;
+    }
+    int count = 0;
     
-    // only empty strings
-    return false;
+    int fromIndex = 0;
+    int slashIndex = s.indexOf('/', fromIndex);
+    
+    while (slashIndex != -1) {
+      if (slashIndex > fromIndex) {
+        // avoid empty strings for things like //
+        count += 1;
+      }
+      
+      fromIndex = slashIndex + 1;
+      slashIndex  = s.indexOf('/', fromIndex);
+    }
+    if (fromIndex < s.length()) {
+      count += 1;
+    }
+    
+    return count;
   }
   
   private void parseInto(String s, List<String> elements) {
@@ -62,7 +83,6 @@ final class SingleEmptyRootPathParser implements PathParser {
     if (fromIndex < s.length()) {
       elements.add(s.substring(fromIndex));
     }
-    
   }
 
 }

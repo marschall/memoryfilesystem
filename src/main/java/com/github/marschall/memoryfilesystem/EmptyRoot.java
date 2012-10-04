@@ -30,6 +30,11 @@ class EmptyRoot extends Root {
     // intentionally trigger NPE if other is null (default file system behaves the same way)
     return other.equals(SLASH);
   }
+  
+  @Override
+  String getKey() {
+    return SLASH;
+  }
 
   @Override
   public String toString() {

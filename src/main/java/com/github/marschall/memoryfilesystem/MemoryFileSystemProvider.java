@@ -104,10 +104,11 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   private MemoryFileSystem createNewFileSystem(String key, EnvironmentParser parser) {
     ClosedFileSystemChecker checker = new ClosedFileSystemChecker();
     String separator = parser.getSeparator();
+    StringTransformer pathTransformer = parser.getPathTransformer();
     MemoryFileStore memoryStore = new MemoryFileStore(key, checker);
     MemoryUserPrincipalLookupService userPrincipalLookupService = this.createUserPrincipalLookupService(parser, checker);
     PathParser pathParser = this.buildPathParser(parser);
-    MemoryFileSystem fileSystem = new MemoryFileSystem(separator, pathParser, this, memoryStore, userPrincipalLookupService, checker);
+    MemoryFileSystem fileSystem = new MemoryFileSystem(separator, pathParser, this, memoryStore, userPrincipalLookupService, checker, pathTransformer);
     fileSystem.setRootDirectories(this.buildRootsDirectories(parser, fileSystem));
     String defaultDirectory = parser.getDefaultDirectory();
     fileSystem.setCurrentWorkingDirectory(defaultDirectory);
@@ -135,10 +136,11 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   }
   
   private PathParser buildPathParser(EnvironmentParser parser) {
+    String separator = parser.getSeparator();
     if (parser.isSingleEmptyRoot()) {
-      return new SingleEmptyRootPathParser();
+      return new SingleEmptyRootPathParser(separator);
     } else {
-      return new MultipleNamedRootsPathParser();
+      return new MultipleNamedRootsPathParser(separator, parser.getPathTransformer());
     }
   }
 

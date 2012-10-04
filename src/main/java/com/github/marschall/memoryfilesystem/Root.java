@@ -25,6 +25,7 @@ abstract class Root extends AbstractPath {
     return true;
   }
   
+  abstract String getKey();
 
   
   @Override

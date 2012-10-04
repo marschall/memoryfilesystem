@@ -20,7 +20,9 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.nio.file.spi.FileSystemProvider;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -41,6 +43,8 @@ class MemoryFileSystem extends FileSystem {
 
   private volatile Map<Root, MemoryDirectory> roots;
   
+  private volatile Map<String, Root> rootByKey;
+  
   private volatile Path defaultPath;
 
   private final MemoryUserPrincipalLookupService userPrincipalLookupService;
@@ -49,14 +53,17 @@ class MemoryFileSystem extends FileSystem {
 
   private final EmptyPath emptyPath;
 
+  private final StringTransformer pathTransformer;
+
   MemoryFileSystem(String separator, PathParser pathParser, MemoryFileSystemProvider provider, MemoryFileStore store,
-      MemoryUserPrincipalLookupService userPrincipalLookupService, ClosedFileSystemChecker checker) {
+      MemoryUserPrincipalLookupService userPrincipalLookupService, ClosedFileSystemChecker checker, StringTransformer pathTransformer) {
     this.separator = separator;
     this.pathParser = pathParser;
     this.provider = provider;
     this.store = store;
     this.userPrincipalLookupService = userPrincipalLookupService;
     this.checker = checker;
+    this.pathTransformer = pathTransformer;
     this.stores = Collections.<FileStore>singletonList(store);
     this.emptyPath = new EmptyPath(this);
   }
@@ -76,6 +83,25 @@ class MemoryFileSystem extends FileSystem {
    */
   void setRootDirectories(Map<Root, MemoryDirectory> rootDirectories) {
     this.roots = rootDirectories;
+    this.rootByKey = this.buildRootsByKey(rootDirectories.keySet());
+  }
+  
+  private Map<String, Root> buildRootsByKey(Collection<Root> rootDirectories) {
+    if (rootDirectories.isEmpty()) {
+      // REVIEW really?
+      return Collections.emptyMap();
+    } else if (rootDirectories.size() == 1) {
+      Root root = rootDirectories.iterator().next();
+      String key = this.pathTransformer.tranform(root.getKey());
+      return Collections.singletonMap(key, root);
+    } else {
+      Map<String, Root> map = new HashMap<>(rootDirectories.size());
+      for (Root root : rootDirectories) {
+        String key = this.pathTransformer.tranform(root.getKey());
+        map.put(key, root);
+      }
+      return map;
+    }
   }
   
   /**
@@ -334,14 +360,14 @@ class MemoryFileSystem extends FileSystem {
     this.checker.check();
     // TODO check for maximum length
     // TODO check for valid characters
-    return this.pathParser.parse(this.roots.keySet(), first, more);
+    return this.pathParser.parse(this.rootByKey, first, more);
   }
   
 
   @Override
   public PathMatcher getPathMatcher(String syntaxAndPattern) {
     this.checker.check();
-    int colonIndex = syntaxAndPattern.indexOf(":");
+    int colonIndex = syntaxAndPattern.indexOf(':');
     if (colonIndex <= 0 || colonIndex == syntaxAndPattern.length() - 1) {
       throw new IllegalArgumentException("syntaxAndPattern must have form \"syntax:pattern\" but was \"" + syntaxAndPattern + "\"");
     }

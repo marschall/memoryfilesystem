@@ -11,14 +11,30 @@ class NamedRoot extends Root {
 
   NamedRoot(MemoryFileSystem fileSystem, String name) {
     super(fileSystem);
-    this.name = name;
+    this.name = sanitize(name, fileSystem);
+  }
+  
+  static String sanitize(String name, MemoryFileSystem fileSystem) {
+    String sanitized = name;
+    if (sanitized.endsWith(fileSystem.getSeparator()) || sanitized.charAt(sanitized.length() - 1) == '/') {
+      sanitized = sanitized.substring(0, sanitized.length());
+    }
+    if (sanitized.charAt(sanitized.length() - 1) == ':') {
+      sanitized = sanitized.substring(0, sanitized.length());
+    }
+    return sanitized;
+  }
+  
+  @Override
+  String getKey() {
+    return this.name;
   }
   
   @Override
   boolean isNamed() {
     return true;
   }
-
+  
   @Override
   public boolean startsWith(String other) {
     return other.equals(this.name);
@@ -31,13 +47,13 @@ class NamedRoot extends Root {
 
   @Override
   public String toString() {
-    return this.name;
+    return this.name + ':' + this.getFileSystem().getSeparator();
   }
 
   @Override
   public URI toUri() {
     try {
-      return new URI(SCHEME, getMemoryFileSystem().getKey() + "://" + this.name, null);
+      return new URI(SCHEME, getMemoryFileSystem().getKey() + "://" + this.name + ':', null);
     } catch (URISyntaxException e) {
       throw new AssertionError("could not create URI");
     }

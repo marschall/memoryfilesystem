@@ -11,13 +11,13 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class RootTest {
@@ -55,7 +55,6 @@ public class RootTest {
     assertEquals(0, root.getNameCount());
     assertFalse(root.iterator().hasNext());
 
-    //FIXME 
     assertEquals(root.toAbsolutePath(), Paths.get(root.toUri()));
 
     for (int i = -1; i < 2; ++i) {
@@ -90,10 +89,37 @@ public class RootTest {
       }
     }
   }
-
-  @Ignore("FIXME") //FIXME
+  
+  @Test(expected = InvalidPathException.class)
+  public void windowsRootInvalid1() throws IOException {
+    Map<String, ?> env = EnvironmentBuilder.newWindows().build();
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, env)) {
+      fileSystem.getPath("/C:\\");
+    }
+  }
+  
+  @Test(expected = InvalidPathException.class)
+  public void windowsRootInvalid2() throws IOException {
+    Map<String, ?> env = EnvironmentBuilder.newWindows().build();
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, env)) {
+      fileSystem.getPath("\\C:\\");
+    }
+  }
+  
   @Test
-  public void windowsRoot() throws IOException {
+  public void windowsPaths() throws IOException {
+    Map<String, ?> env = EnvironmentBuilder.newWindows().build();
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, env)) {
+      fileSystem.getPath("C:\\");
+      
+      assertEquals("C:\\temp", fileSystem.getPath("C:/temp").toString());
+      assertEquals("C:\\temp", fileSystem.getPath("C:/temp").toString());
+    }
+    
+  }
+
+  @Test
+  public void windowsRootMethods() throws IOException {
     Map<String, ?> env = EnvironmentBuilder.newWindows().addRoot("D:\\").build();
     try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, env)) {
       List<Path> roots = asList(fileSystem.getRootDirectories());
