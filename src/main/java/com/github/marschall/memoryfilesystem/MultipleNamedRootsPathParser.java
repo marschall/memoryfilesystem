@@ -49,7 +49,7 @@ final class MultipleNamedRootsPathParser extends PathParser {
   
   private Root getRoot(MemoryFileSystem memoryFileSystem, Map<String, Root> roots, List<String> elements) {
     String first = elements.get(0);
-    String key = this.pathTransformer.tranform(first.substring(0, 1)); // C: -> C
+    String key = this.pathTransformer.transform(first.substring(0, 1)); // C: -> C
     Root root = roots.get(key);
     if (root != null) {
       return root;

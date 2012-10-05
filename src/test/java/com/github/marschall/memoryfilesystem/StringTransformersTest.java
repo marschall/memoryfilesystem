@@ -11,13 +11,13 @@ public class StringTransformersTest {
   @Test
   public void identiy() {
     StringTransformer transformer = StringTransformers.IDENTIY;
-    assertEquals("aA", transformer.tranform("aA"));
+    assertEquals("aA", transformer.transform("aA"));
   }
 
   @Test
   public void caseInsensitive() {
     StringTransformer transformer = StringTransformers.caseInsensitive(Locale.US);
-    assertEquals("aa", transformer.tranform("aA"));
+    assertEquals("AA", transformer.transform("aA"));
   }
 
 }

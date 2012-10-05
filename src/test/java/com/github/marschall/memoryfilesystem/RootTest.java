@@ -2,6 +2,9 @@ package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_ENV;
 import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_URI;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -127,7 +130,8 @@ public class RootTest {
         Path currentRoot = roots.get(i);
         assertCommonRootProperties(currentRoot);
 
-        assertEquals((char) ('C' + i) + ":\\", currentRoot.toString());
+        // don't assume order
+        assertThat(currentRoot.toString(), anyOf(equalTo("C:\\"), equalTo("D:\\")));
         assertFalse(currentRoot.startsWith(""));
         assertFalse(currentRoot.startsWith("/"));
         assertTrue(currentRoot.startsWith(currentRoot.toString()));

@@ -24,12 +24,12 @@ final class MemoryUserPrincipalLookupService extends UserPrincipalLookupService 
     this.groups = new HashMap<>(groupNames.size());
     for (String userName : userNames) {
       UserPrincipal user = new MemoryUser(userName);
-      String key = stringTransformer.tranform(userName);
+      String key = stringTransformer.transform(userName);
       this.users.put(key, user);
     }
     for (String groupName : groupNames) {
       GroupPrincipal group = new MemoryGroup(groupName);
-      String key = stringTransformer.tranform(groupName);
+      String key = stringTransformer.transform(groupName);
       this.groups.put(key, group);
     }
     this.stringTransformer = stringTransformer;
@@ -39,7 +39,7 @@ final class MemoryUserPrincipalLookupService extends UserPrincipalLookupService 
   @Override
   public UserPrincipal lookupPrincipalByName(String name) throws IOException {
     this.checker.check();
-    String key = this.stringTransformer.tranform(name);
+    String key = this.stringTransformer.transform(name);
     UserPrincipal user = this.users.get(key);
     if (user != null) {
       return user;
@@ -52,7 +52,7 @@ final class MemoryUserPrincipalLookupService extends UserPrincipalLookupService 
   @Override
   public GroupPrincipal lookupPrincipalByGroupName(String groupName) throws IOException {
     this.checker.check();
-    String key = this.stringTransformer.tranform(groupName);
+    String key = this.stringTransformer.transform(groupName);
     GroupPrincipal group = this.groups.get(key);
     if (group != null) {
       return group;

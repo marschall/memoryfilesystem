@@ -2,6 +2,6 @@ package com.github.marschall.memoryfilesystem;
 
 public interface StringTransformer {
 
-  public String tranform(String s);
+  public String transform(String s);
 
 }

@@ -3,6 +3,7 @@ package com.github.marschall.memoryfilesystem;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class EnvironmentBuilder {
@@ -66,7 +67,8 @@ public class EnvironmentBuilder {
     .setSeprator(MemoryFileSystemProperties.UNIX_SEPARATOR)
     .addUser(getSystemUserName())
     .addGroup(getSystemUserName())
-    .setCurrentWorkingDirectory("/home/" + getSystemUserName());
+    .setCurrentWorkingDirectory("/home/" + getSystemUserName())
+    .setPathTransformer(StringTransformers.IDENTIY);
   }
   
   public static EnvironmentBuilder newMacOs() {
@@ -75,7 +77,8 @@ public class EnvironmentBuilder {
     .setSeprator(MemoryFileSystemProperties.UNIX_SEPARATOR)
     .addUser(getSystemUserName())
     .addGroup(getSystemUserName())
-    .setCurrentWorkingDirectory("/Users/" + getSystemUserName());
+    .setCurrentWorkingDirectory("/Users/" + getSystemUserName())
+    .setPathTransformer(StringTransformers.IDENTIY);
   }
 
   public static EnvironmentBuilder newWindows() {
@@ -84,7 +87,8 @@ public class EnvironmentBuilder {
       .setSeprator(MemoryFileSystemProperties.WINDOWS_SEPARATOR)
       .addUser(getSystemUserName())
       .addGroup(getSystemUserName())
-      .setCurrentWorkingDirectory("C:\\Users\\" + getSystemUserName());
+      .setCurrentWorkingDirectory("C:\\Users\\" + getSystemUserName())
+      .setPathTransformer(StringTransformers.caseInsensitive(Locale.getDefault()));
   }
 
   static String getSystemUserName() {

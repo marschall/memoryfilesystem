@@ -138,8 +138,11 @@ final class RelativePath extends NonEmptyPath {
         return false;
       }
       // otherNameCount smaller or equal to this.getNameCount()
+      StringTransformer pathTransformer = this.getMemoryFileSystem().getPathTransformer();
       for (int i = 0; i < otherNameCount; ++i) {
-        if (!(this.getNameElement(i)).equals(otherPath.getNameElement(i))) {
+        String thisElement = pathTransformer.transform(this.getNameElement(i));
+        String otherElement = pathTransformer.transform(otherPath.getNameElement(i));
+        if (!thisElement.equals(otherElement)) {
           return false;
         }
       }
@@ -214,11 +217,12 @@ final class RelativePath extends NonEmptyPath {
       return false;
     }
     ElementPath other = (ElementPath) obj;
-    return this.getNameElements().equals(other.getNameElements());
+    return this.equalElementsAs(other.getNameElements());
   }
   
   @Override
   public int hashCode() {
+    // FIXME violates contract
     return this.getNameElements().hashCode();
   }
 

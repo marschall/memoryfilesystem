@@ -7,27 +7,18 @@ import java.net.URISyntaxException;
 
 class NamedRoot extends Root {
 
-  private final String name;
+  private final char letter;
+  private final String stringValue;
 
   NamedRoot(MemoryFileSystem fileSystem, String name) {
     super(fileSystem);
-    this.name = sanitize(name, fileSystem);
-  }
-  
-  static String sanitize(String name, MemoryFileSystem fileSystem) {
-    String sanitized = name;
-    if (sanitized.endsWith(fileSystem.getSeparator()) || sanitized.charAt(sanitized.length() - 1) == '/') {
-      sanitized = sanitized.substring(0, sanitized.length());
-    }
-    if (sanitized.charAt(sanitized.length() - 1) == ':') {
-      sanitized = sanitized.substring(0, sanitized.length());
-    }
-    return sanitized;
+    this.letter = name.charAt(0);
+    this.stringValue = Character.toString(this.letter) + ':' + fileSystem.getSeparator();
   }
   
   @Override
   String getKey() {
-    return this.name;
+    return Character.toString(letter);
   }
   
   @Override
@@ -37,23 +28,39 @@ class NamedRoot extends Root {
   
   @Override
   public boolean startsWith(String other) {
-    return other.equals(this.name);
+    return this.samePathAs(other);
   }
 
   @Override
   public boolean endsWith(String other) {
-    return other.equals(this.name);
+    return this.samePathAs(other);
+  }
+  
+  private boolean samePathAs(String other) {
+    if (other.length() != 3) {
+      return false;
+    }
+    if (other.charAt(1) != ':') {
+      return false;
+    }
+    char otherLast = other.charAt(2);
+    if (otherLast != '/' && otherLast != getMemoryFileSystem().getSeparator().charAt(0)) {
+      return false;
+    }
+    StringTransformer pathTransformer = this.getMemoryFileSystem().getPathTransformer();
+    return pathTransformer.transform(Character.toString(this.letter))
+            .equals(pathTransformer.transform(Character.toString(other.charAt(0))));
   }
 
   @Override
   public String toString() {
-    return this.name + ':' + this.getFileSystem().getSeparator();
+    return this.stringValue;
   }
 
   @Override
   public URI toUri() {
     try {
-      return new URI(SCHEME, getMemoryFileSystem().getKey() + "://" + this.name + ':', null);
+      return new URI(SCHEME, getMemoryFileSystem().getKey() + "://" + this.letter + ':', null);
     } catch (URISyntaxException e) {
       throw new AssertionError("could not create URI");
     }
@@ -69,13 +76,14 @@ class NamedRoot extends Root {
     }
     NamedRoot other = (NamedRoot) obj;
     return this.getFileSystem().equals(other.getFileSystem())
-            && this.name.equals(other.name);
+            && this.letter == other.letter;
   }
   
   @Override
   public int hashCode() {
     // TODO pertube context
-    return this.getFileSystem().hashCode() ^ this.name.hashCode();
+    // FIXME violates contract
+    return this.getFileSystem().hashCode() ^ this.letter;
   }
 
 }

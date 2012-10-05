@@ -29,6 +29,23 @@ abstract class NonEmptyPath extends ElementPath {
     return this.nameElements.get(this.nameElements.size() - 1);
   }
 
+  boolean equalElementsAs(List<String> otherElements) {
+    int thisSize = this.nameElements.size();
+    if (thisSize != otherElements.size()) {
+      return false;
+    }
+    StringTransformer pathTransformer = this.getMemoryFileSystem().getPathTransformer();
+    for (int i = 0; i < thisSize; i++) {
+      String thisElement = pathTransformer.transform(this.nameElements.get(i));
+      String otherElement = pathTransformer.transform(otherElements.get(i));
+      if (!thisElement.equals(otherElement)) {
+        return false;
+      }
+    }
+    
+    return true;
+  }
+  
 
   @Override
   public Path getFileName() {
@@ -200,8 +217,11 @@ abstract class NonEmptyPath extends ElementPath {
     }
     // otherNameCount smaller or equal to this.getNameCount()
     int offset = thisNameCount - otherNameCount;
+    StringTransformer pathTransformer = this.getMemoryFileSystem().getPathTransformer();
     for (int i = 0; i < otherNameCount; ++i) {
-      if (!(this.getNameElement(i + offset)).equals(otherPath.getNameElement(i))) {
+      String thisElement = pathTransformer.transform(this.getNameElement(i + offset));
+      String otherElement = pathTransformer.transform(otherPath.getNameElement(i));
+      if (!thisElement.equals(otherElement)) {
         return false;
       }
     }

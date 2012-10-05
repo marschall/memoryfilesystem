@@ -92,12 +92,12 @@ class MemoryFileSystem extends FileSystem {
       return Collections.emptyMap();
     } else if (rootDirectories.size() == 1) {
       Root root = rootDirectories.iterator().next();
-      String key = this.pathTransformer.tranform(root.getKey());
+      String key = this.pathTransformer.transform(root.getKey());
       return Collections.singletonMap(key, root);
     } else {
       Map<String, Root> map = new HashMap<>(rootDirectories.size());
       for (Root root : rootDirectories) {
-        String key = this.pathTransformer.tranform(root.getKey());
+        String key = this.pathTransformer.transform(root.getKey());
         map.put(key, root);
       }
       return map;
@@ -204,15 +204,15 @@ class MemoryFileSystem extends FileSystem {
     
   }
   
-  private void withWriteLockOnLastDo(MemoryDirectory root, AbstractPath path, MemoryEntryBlock callback) throws IOException {
+  private <R> R withWriteLockOnLastDo(MemoryDirectory root, AbstractPath path, MemoryEntryBlock<R> callback) throws IOException {
     if (path instanceof Root) {
       try (AutoRelease lock = root.writeLock()) {
-        callback.value(root);
+        return callback.value(root);
       }
     } else if (path instanceof ElementPath) {
       ElementPath elementPath = (ElementPath) path;
       try (AutoRelease lock = root.readLock()) {
-        withWriteLockOnLastDo(root, elementPath, 0, path.getNameCount(), callback);
+        return withWriteLockOnLastDo(root, elementPath, 0, path.getNameCount(), callback);
       }
     } else {
       throw new IllegalArgumentException("unknown path type" + path);
@@ -220,7 +220,7 @@ class MemoryFileSystem extends FileSystem {
     
   }
 
-  private void withWriteLockOnLastDo(MemoryEntry parent, ElementPath path, int i, int length, MemoryEntryBlock callback) throws IOException {
+  private <R> R withWriteLockOnLastDo(MemoryEntry parent, ElementPath path, int i, int length, MemoryEntryBlock<R> callback) throws IOException {
     if (!(parent instanceof MemoryDirectory)) {
       //TODO construct better error message
       throw new IOException("not a directory");
@@ -234,11 +234,11 @@ class MemoryFileSystem extends FileSystem {
     
     if (i == length - 1) {
       try (AutoRelease lock = entry.writeLock()) {
-        callback.value(entry);
+        return callback.value(entry);
       }
     } else {
       try (AutoRelease lock = entry.readLock()) {
-        this.withWriteLockOnLastDo(entry, path, i + 1, length, callback);
+        return this.withWriteLockOnLastDo(entry, path, i + 1, length, callback);
       }
     }
   }
@@ -408,6 +408,10 @@ class MemoryFileSystem extends FileSystem {
 
   FileStore getFileStore() {
     return this.store;
+  }
+
+  StringTransformer getPathTransformer() {
+    return this.pathTransformer;
   }
 
 }

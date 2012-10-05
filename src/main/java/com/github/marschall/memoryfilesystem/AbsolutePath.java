@@ -198,9 +198,12 @@ final class AbsolutePath extends NonEmptyPath {
       if (otherNameCount > this.getNameCount()) {
         return false;
       }
+      StringTransformer pathTransformer = this.getMemoryFileSystem().getPathTransformer();
       // otherNameCount smaller or equal to this.getNameCount()
       for (int i = 0; i < otherNameCount; ++i) {
-        if (!(this.getNameElement(i)).equals(otherPath.getNameElement(i))) {
+        String thisElement = pathTransformer.transform(this.getNameElement(i));
+        String otherElement = pathTransformer.transform(otherPath.getNameElement(i));
+        if (!thisElement.equals(otherElement)) {
           return false;
         }
       }
@@ -286,13 +289,14 @@ final class AbsolutePath extends NonEmptyPath {
     }
     AbsolutePath other = (AbsolutePath) obj;
     return this.root.equals(other.root)
-            && this.getNameElements().equals(other.getNameElements());
+            && this.equalElementsAs(other.getNameElements());
   }
   
 
   @Override
   public int hashCode() {
     // TODO disturb context
+    // FIXME violates contract
     return this.root.hashCode() ^ this.getNameElements().hashCode();
   }
 

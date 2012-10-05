@@ -24,7 +24,7 @@ public final class StringTransformers {
      * {@inheritDoc}
      */
     @Override
-    public String tranform(String s) {
+    public String transform(String s) {
       // Wikipedia says MAC_OS uses NFD
       // http://en.wikipedia.org/wiki/HFS_Plus
       return Normalizer.normalize(s, Form.NFD);
@@ -44,8 +44,8 @@ public final class StringTransformers {
      * {@inheritDoc}
      */
     @Override
-    public String tranform(String s) {
-      return s.toLowerCase(this.locale);
+    public String transform(String s) {
+      return s.toUpperCase(this.locale);
     }
 
   }
@@ -54,7 +54,7 @@ public final class StringTransformers {
      * {@inheritDoc}
      */
     @Override
-    public String tranform(String s) {
+    public String transform(String s) {
       return s;
     }
 
