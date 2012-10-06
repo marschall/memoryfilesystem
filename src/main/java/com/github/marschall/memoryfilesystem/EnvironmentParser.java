@@ -1,5 +1,6 @@
 package com.github.marschall.memoryfilesystem;
 
+import java.text.Collator;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -36,17 +37,43 @@ class EnvironmentParser {
   }
   
   StringTransformer getPathTransformer() {
-    Object value = env.get(MemoryFileSystemProperties.PATH_TRANSFORMER_PROPERTY);
+    return getStringTranformer(MemoryFileSystemProperties.PATH_TRANSFORMER_PROPERTY);
+  }
+
+  StringTransformer getStringTranformer(String property) {
+    Object value = env.get(property);
     if (value != null) {
       if (value instanceof StringTransformer) {
         return (StringTransformer) value;
       } else {
-        throw new IllegalArgumentException(MemoryFileSystemProperties.PATH_TRANSFORMER_PROPERTY + " must be a "
+        throw new IllegalArgumentException(property + " must be a "
                 + StringTransformer.class + " but was " + value.getClass());
       }
     } else {
       return StringTransformers.IDENTIY;
     }
+  }
+  
+
+  Collator getCollator() {
+    String property = MemoryFileSystemProperties.COLLATOR_PROPERTY;
+    Object value = env.get(property);
+    if (value != null) {
+      if (value instanceof Collator) {
+        return (Collator) value;
+      } else {
+        throw new IllegalArgumentException(property + " must be a "
+                + Collator.class + " but was " + value.getClass());
+      }
+    } else {
+      return MemoryFileSystemProperties.caseSensitiveCollator();
+    }
+  }
+  
+  
+
+  StringTransformer getPrincipalNameTransfomer() {
+    return getStringTranformer(MemoryFileSystemProperties.PRINCIPAL_TRANSFORMER_PROPERTY);
   }
   
   String getDefaultDirectory() {
@@ -77,17 +104,6 @@ class EnvironmentParser {
 
   }
 
-  StringTransformer getPrincipalNameTransfomer() {
-    Object transfomer = this.env.get(MemoryFileSystemProperties.PATH_TRANSFORMER_PROPERTY);
-    if (transfomer == null) {
-      return StringTransformers.IDENTIY;
-    } else if (transfomer instanceof StringTransformer) {
-      return (StringTransformer) transfomer;
-    } else {
-      throw new IllegalArgumentException(MemoryFileSystemProperties.PATH_TRANSFORMER_PROPERTY + " must be a "
-          + StringTransformer.class + " but was " + transfomer.getClass());
-    }
-  }
 
   private List<String> parseStringProperty(String key, boolean allowEmpty) {
     Object value = this.env.get(key);
@@ -187,5 +203,6 @@ class EnvironmentParser {
     return this.getRoots().size() == 1
             && MemoryFileSystemProperties.UNIX_ROOT.equals(this.getRoots().get(0));
   }
+
 
 }

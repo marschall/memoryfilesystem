@@ -8,7 +8,10 @@ import java.nio.file.WatchEvent.Kind;
 import java.nio.file.WatchEvent.Modifier;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.text.CollationKey;
+import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 final class RelativePath extends NonEmptyPath {
@@ -138,11 +141,11 @@ final class RelativePath extends NonEmptyPath {
         return false;
       }
       // otherNameCount smaller or equal to this.getNameCount()
-      StringTransformer pathTransformer = this.getMemoryFileSystem().getPathTransformer();
+      Collator collator = this.getMemoryFileSystem().getCollator();
       for (int i = 0; i < otherNameCount; ++i) {
-        String thisElement = pathTransformer.transform(this.getNameElement(i));
-        String otherElement = pathTransformer.transform(otherPath.getNameElement(i));
-        if (!thisElement.equals(otherElement)) {
+        String thisElement = this.getNameElement(i);
+        String otherElement = otherPath.getNameElement(i);
+        if (!collator.equals(thisElement, otherElement)) {
           return false;
         }
       }
@@ -222,8 +225,14 @@ final class RelativePath extends NonEmptyPath {
   
   @Override
   public int hashCode() {
-    // FIXME violates contract
-    return this.getNameElements().hashCode();
+    // TODO expensive, safe
+    Collator collator = this.getMemoryFileSystem().getCollator();
+    int result = 17;
+    for (String each : this.getNameElements()) {
+      CollationKey collationKey = collator.getCollationKey(each);
+      result = 31 * result + Arrays.hashCode(collationKey.toByteArray());
+    }
+    return result;
   }
 
   protected List<String> handleDotDotNormalizationNotYetModified(List<String> nameElements,

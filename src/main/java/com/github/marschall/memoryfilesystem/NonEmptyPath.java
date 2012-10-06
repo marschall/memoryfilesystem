@@ -3,6 +3,7 @@ package com.github.marschall.memoryfilesystem;
 import static java.lang.Math.min;
 
 import java.nio.file.Path;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -34,11 +35,11 @@ abstract class NonEmptyPath extends ElementPath {
     if (thisSize != otherElements.size()) {
       return false;
     }
-    StringTransformer pathTransformer = this.getMemoryFileSystem().getPathTransformer();
+    Collator collator = this.getMemoryFileSystem().getCollator();
     for (int i = 0; i < thisSize; i++) {
-      String thisElement = pathTransformer.transform(this.nameElements.get(i));
-      String otherElement = pathTransformer.transform(otherElements.get(i));
-      if (!thisElement.equals(otherElement)) {
+      String thisElement = this.nameElements.get(i);
+      String otherElement = otherElements.get(i);
+      if (!collator.equals(thisElement, otherElement)) {
         return false;
       }
     }
@@ -217,11 +218,11 @@ abstract class NonEmptyPath extends ElementPath {
     }
     // otherNameCount smaller or equal to this.getNameCount()
     int offset = thisNameCount - otherNameCount;
-    StringTransformer pathTransformer = this.getMemoryFileSystem().getPathTransformer();
+    Collator collator = this.getMemoryFileSystem().getCollator();
     for (int i = 0; i < otherNameCount; ++i) {
-      String thisElement = pathTransformer.transform(this.getNameElement(i + offset));
-      String otherElement = pathTransformer.transform(otherPath.getNameElement(i));
-      if (!thisElement.equals(otherElement)) {
+      String thisElement = this.getNameElement(i + offset);
+      String otherElement = otherPath.getNameElement(i);
+      if (!collator.equals(thisElement, otherElement)) {
         return false;
       }
     }

@@ -18,6 +18,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.spi.FileSystemProvider;
+import java.text.Collator;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -105,10 +106,12 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     ClosedFileSystemChecker checker = new ClosedFileSystemChecker();
     String separator = parser.getSeparator();
     StringTransformer pathTransformer = parser.getPathTransformer();
+    Collator collator = parser.getCollator();
     MemoryFileStore memoryStore = new MemoryFileStore(key, checker);
     MemoryUserPrincipalLookupService userPrincipalLookupService = this.createUserPrincipalLookupService(parser, checker);
     PathParser pathParser = this.buildPathParser(parser);
-    MemoryFileSystem fileSystem = new MemoryFileSystem(separator, pathParser, this, memoryStore, userPrincipalLookupService, checker, pathTransformer);
+    MemoryFileSystem fileSystem = new MemoryFileSystem(separator, pathParser, this, memoryStore,
+            userPrincipalLookupService, checker, pathTransformer, collator);
     fileSystem.setRootDirectories(this.buildRootsDirectories(parser, fileSystem));
     String defaultDirectory = parser.getDefaultDirectory();
     fileSystem.setCurrentWorkingDirectory(defaultDirectory);

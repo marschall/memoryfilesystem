@@ -31,6 +31,17 @@ class EmptyRoot extends Root {
     return other.equals(SLASH);
   }
   
+
+  @Override
+  boolean startsWith(AbstractPath other) {
+    return this == other;
+  }
+
+  @Override
+  boolean endsWith(AbstractPath other) {
+    return this == other;
+  }
+  
   @Override
   String getKey() {
     return SLASH;

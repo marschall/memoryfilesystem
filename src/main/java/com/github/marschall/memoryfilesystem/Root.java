@@ -118,15 +118,6 @@ abstract class Root extends AbstractPath {
     throw new UnsupportedOperationException();
   }
 
-  @Override
-  boolean startsWith(AbstractPath other) {
-    return this == other;
-  }
-
-  @Override
-  boolean endsWith(AbstractPath other) {
-    return this == other;
-  }
 
   @Override
   Path resolve(AbstractPath other) {

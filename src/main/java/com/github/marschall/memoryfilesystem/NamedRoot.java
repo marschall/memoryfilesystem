@@ -4,6 +4,9 @@ import static com.github.marschall.memoryfilesystem.MemoryFileSystemProvider.SCH
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.text.CollationKey;
+import java.text.Collator;
+import java.util.Arrays;
 
 class NamedRoot extends Root {
 
@@ -36,6 +39,29 @@ class NamedRoot extends Root {
     return this.samePathAs(other);
   }
   
+
+  @Override
+  boolean startsWith(AbstractPath other) {
+    return this.samePathAs(other);
+  }
+
+  @Override
+  boolean endsWith(AbstractPath other) {
+    return this.samePathAs(other);
+  }
+  
+
+  private boolean samePathAs(AbstractPath other) {
+    if (!(other instanceof NamedRoot)) {
+      return false;
+    }
+    NamedRoot otherRoot = (NamedRoot) other;
+    //TODO safe collator key
+    Collator collator = this.getMemoryFileSystem().getCollator();
+    return collator.equals(Character.toString(this.letter), Character.toString(otherRoot.letter));
+    
+  }
+  
   private boolean samePathAs(String other) {
     if (other.length() != 3) {
       return false;
@@ -47,9 +73,9 @@ class NamedRoot extends Root {
     if (otherLast != '/' && otherLast != getMemoryFileSystem().getSeparator().charAt(0)) {
       return false;
     }
-    StringTransformer pathTransformer = this.getMemoryFileSystem().getPathTransformer();
-    return pathTransformer.transform(Character.toString(this.letter))
-            .equals(pathTransformer.transform(Character.toString(other.charAt(0))));
+    //TODO safe collator key
+    Collator collator = this.getMemoryFileSystem().getCollator();
+    return collator.equals(Character.toString(this.letter), Character.toString(other.charAt(0)));
   }
 
   @Override
@@ -60,7 +86,7 @@ class NamedRoot extends Root {
   @Override
   public URI toUri() {
     try {
-      return new URI(SCHEME, getMemoryFileSystem().getKey() + "://" + this.letter + ':', null);
+      return new URI(SCHEME, this.getMemoryFileSystem().getKey() + "://" + this.letter + ':', null);
     } catch (URISyntaxException e) {
       throw new AssertionError("could not create URI");
     }
@@ -75,15 +101,24 @@ class NamedRoot extends Root {
       return false;
     }
     NamedRoot other = (NamedRoot) obj;
-    return this.getFileSystem().equals(other.getFileSystem())
-            && this.letter == other.letter;
+    if (!this.getFileSystem().equals(other.getFileSystem())) {
+      return false;
+    }
+    //TODO safe collator key
+    Collator collator = this.getMemoryFileSystem().getCollator();
+    return collator.equals(Character.toString(this.letter), Character.toString(other.letter));
   }
   
   @Override
   public int hashCode() {
-    // TODO pertube context
-    // FIXME violates contract
-    return this.getFileSystem().hashCode() ^ this.letter;
+    // TODO safe expensive
+    MemoryFileSystem memoryFileSystem = this.getMemoryFileSystem();
+    Collator collator = memoryFileSystem.getCollator();
+    int result = 17;
+    result = 31 * result + memoryFileSystem.hashCode();
+    CollationKey collationKey = collator.getCollationKey(Character.toString(this.letter));
+    result = 31 * result + Arrays.hashCode(collationKey.toByteArray());
+    return result;
   }
 
 }

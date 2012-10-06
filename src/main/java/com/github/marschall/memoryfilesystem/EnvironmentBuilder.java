@@ -1,9 +1,9 @@
 package com.github.marschall.memoryfilesystem;
 
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 public class EnvironmentBuilder {
@@ -19,6 +19,10 @@ public class EnvironmentBuilder {
   private String currentWorkingDirectory;
   
   private StringTransformer pathTransformer;
+  
+  private StringTransformer principalTransformer;
+  
+  private Collator collator;
 
 
   private EnvironmentBuilder() {
@@ -56,11 +60,21 @@ public class EnvironmentBuilder {
     this.pathTransformer = pathTransformer;
     return this;
   }
+  
+  public EnvironmentBuilder setPrincipalTransformer(StringTransformer principalTransformer) {
+    this.principalTransformer = principalTransformer;
+    return this;
+  }
+  
+  public EnvironmentBuilder setCollator(Collator collator) {
+    this.collator = collator;
+    return this;
+  }
 
   public static EnvironmentBuilder newEmpty() {
     return new EnvironmentBuilder();
   }
-
+  
   public static EnvironmentBuilder newUnix() {
     return new EnvironmentBuilder()
     .addRoot(MemoryFileSystemProperties.UNIX_ROOT)
@@ -68,7 +82,8 @@ public class EnvironmentBuilder {
     .addUser(getSystemUserName())
     .addGroup(getSystemUserName())
     .setCurrentWorkingDirectory("/home/" + getSystemUserName())
-    .setPathTransformer(StringTransformers.IDENTIY);
+    .setPathTransformer(StringTransformers.IDENTIY)
+    .setCollator(MemoryFileSystemProperties.caseSensitiveCollator());
   }
   
   public static EnvironmentBuilder newMacOs() {
@@ -78,7 +93,8 @@ public class EnvironmentBuilder {
     .addUser(getSystemUserName())
     .addGroup(getSystemUserName())
     .setCurrentWorkingDirectory("/Users/" + getSystemUserName())
-    .setPathTransformer(StringTransformers.IDENTIY);
+    .setPathTransformer(StringTransformers.MAC_OS)
+    .setCollator(MemoryFileSystemProperties.caseSensitiveCollator());
   }
 
   public static EnvironmentBuilder newWindows() {
@@ -88,7 +104,8 @@ public class EnvironmentBuilder {
       .addUser(getSystemUserName())
       .addGroup(getSystemUserName())
       .setCurrentWorkingDirectory("C:\\Users\\" + getSystemUserName())
-      .setPathTransformer(StringTransformers.caseInsensitive(Locale.getDefault()));
+      .setPathTransformer(StringTransformers.IDENTIY)
+      .setCollator(MemoryFileSystemProperties.caseInsensitiveCollator());
   }
 
   static String getSystemUserName() {
@@ -108,6 +125,12 @@ public class EnvironmentBuilder {
     }
     if (this.pathTransformer != null) {
       env.put(MemoryFileSystemProperties.PATH_TRANSFORMER_PROPERTY, this.pathTransformer);
+    }
+    if (this.principalTransformer != null) {
+      env.put(MemoryFileSystemProperties.PRINCIPAL_TRANSFORMER_PROPERTY, this.principalTransformer);
+    }
+    if (this.collator != null) {
+      env.put(MemoryFileSystemProperties.COLLATOR_PROPERTY, this.collator);
     }
     return env;
   }

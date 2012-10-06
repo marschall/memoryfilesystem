@@ -20,6 +20,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.nio.file.spi.FileSystemProvider;
+import java.text.Collator;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -55,8 +56,11 @@ class MemoryFileSystem extends FileSystem {
 
   private final StringTransformer pathTransformer;
 
+  private final Collator collator;
+
   MemoryFileSystem(String separator, PathParser pathParser, MemoryFileSystemProvider provider, MemoryFileStore store,
-      MemoryUserPrincipalLookupService userPrincipalLookupService, ClosedFileSystemChecker checker, StringTransformer pathTransformer) {
+      MemoryUserPrincipalLookupService userPrincipalLookupService, ClosedFileSystemChecker checker, StringTransformer pathTransformer,
+      Collator collator) {
     this.separator = separator;
     this.pathParser = pathParser;
     this.provider = provider;
@@ -64,6 +68,7 @@ class MemoryFileSystem extends FileSystem {
     this.userPrincipalLookupService = userPrincipalLookupService;
     this.checker = checker;
     this.pathTransformer = pathTransformer;
+    this.collator = collator;
     this.stores = Collections.<FileStore>singletonList(store);
     this.emptyPath = new EmptyPath(this);
   }
@@ -410,8 +415,12 @@ class MemoryFileSystem extends FileSystem {
     return this.store;
   }
 
-  StringTransformer getPathTransformer() {
+  private StringTransformer getPathTransformer() {
     return this.pathTransformer;
   }
+  
+  Collator getCollator() {
+    return this.collator;
+  } 
 
 }
