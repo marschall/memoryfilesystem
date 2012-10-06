@@ -20,7 +20,13 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.Normalizer;
+import java.text.Normalizer.Form;
 import java.util.Iterator;
+
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -31,6 +37,62 @@ public class FileSystemComptiblity {
   public void empty() {
     Path path = Paths.get("");
     System.out.println(path.toUri());
+  }
+  
+  @Test
+  public void macOsNormalization() throws IOException {
+    String aUmlaut = "\u00C4";
+    Path aPath = Paths.get(aUmlaut);
+    String normalized = Normalizer.normalize(aUmlaut, Form.NFD);
+    Path nPath = Paths.get(normalized);
+    
+    Path createdFile = null;
+    try { 
+      createdFile = Files.createFile(aPath);
+      assertEquals(1, createdFile.getFileName().toString().length());
+      assertEquals(1, createdFile.toAbsolutePath().getFileName().toString().length());
+      assertEquals(2, createdFile.toRealPath().getFileName().toString().length());
+      
+      assertTrue(Files.exists(aPath));
+      assertTrue(Files.exists(nPath));
+      assertTrue(Files.isSameFile(aPath, nPath));
+      assertTrue(Files.isSameFile(nPath, aPath));
+      assertThat(aPath, not(equalTo(nPath)));
+    } finally {
+      if (createdFile != null) {
+        Files.delete(createdFile);
+      }
+    }
+    
+  }
+  
+  @Test
+  public void macOsComparison() throws IOException {
+    Path aLower = Paths.get("a");
+    Path aUpper = Paths.get("A");
+    assertThat(aLower, not(equalTo(aUpper)));
+    Path createdFile = null;
+    try { 
+      createdFile = Files.createFile(aLower);
+      assertTrue(Files.exists(aLower));
+      assertTrue(Files.exists(aUpper));
+    } finally {
+      if (createdFile != null) {
+        Files.delete(createdFile);
+      }
+    }
+  }
+  
+  @Test
+  public void macOsPaths() {
+    String aUmlaut = "\u00C4";
+    String normalized = Normalizer.normalize(aUmlaut, Form.NFD);
+    assertEquals(1, aUmlaut.length());
+    assertEquals(2, normalized.length());
+    Path aPath = Paths.get("/" + aUmlaut);
+    Path nPath = Paths.get("/" + normalized);
+    assertEquals(1, aPath.getName(0).toString().length());
+    assertThat(aPath, not(equalTo(nPath)));
   }
 
   @Test
