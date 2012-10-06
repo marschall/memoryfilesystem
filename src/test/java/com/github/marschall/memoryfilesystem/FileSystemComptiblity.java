@@ -76,6 +76,7 @@ public class FileSystemComptiblity {
       createdFile = Files.createFile(aLower);
       assertTrue(Files.exists(aLower));
       assertTrue(Files.exists(aUpper));
+      assertTrue(Files.isSameFile(aLower, aUpper));
     } finally {
       if (createdFile != null) {
         Files.delete(createdFile);
