@@ -20,7 +20,7 @@ import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.spi.FileSystemProvider;
 import java.text.Collator;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -153,8 +153,9 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
       MemoryDirectory directory = new MemoryDirectory();
       return Collections.singletonMap(root, directory);
     } else {
-      Map<Root, MemoryDirectory> paths = new HashMap<>();
-      for (String root : parser.getRoots()) {
+      List<String> roots = parser.getRoots();
+      Map<Root, MemoryDirectory> paths = new LinkedHashMap<>(roots.size());
+      for (String root : roots) {
         paths.put(new NamedRoot(fileSystem, root), new MemoryDirectory());
       }
       return Collections.unmodifiableMap(paths);
