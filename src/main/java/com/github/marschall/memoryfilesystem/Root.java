@@ -113,7 +113,7 @@ abstract class Root extends AbstractPath {
 
 
   @Override
-  public int compareTo(Path other) {
+  int compareTo(AbstractPath other) {
     // TODO Auto-generated method stub
     throw new UnsupportedOperationException();
   }

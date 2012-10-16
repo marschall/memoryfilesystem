@@ -4,6 +4,7 @@ import java.io.File;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.nio.file.ProviderMismatchException;
+import java.nio.file.spi.FileSystemProvider;
 import java.util.Collections;
 import java.util.List;
 
@@ -136,6 +137,20 @@ abstract class AbstractPath implements Path {
       throw new ProviderMismatchException();
     }
   }
+  
+  @Override
+  public int compareTo(Path other) {
+    FileSystemProvider thisProvider = this.getFileSystem().provider();
+    FileSystemProvider otherProvider = other.getFileSystem().provider();
+    if (thisProvider != otherProvider) {
+      String message = this + " can only be compared to paths of provider: " + thisProvider
+              + " but " + other + " had provider: " + otherProvider;
+      throw new ClassCastException(message);
+    }
+    return this.compareTo((AbstractPath) other);
+  }
+  
+  abstract int compareTo(AbstractPath other);
 
 
 }

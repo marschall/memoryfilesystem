@@ -229,6 +229,20 @@ public class FileSystemComptiblity {
   }
   
   @Test
+  public void pathOrdering() {
+    FileSystem fileSystem = FileSystems.getDefault();
+    Path root = fileSystem.getPath("/");
+    Path a = fileSystem.getPath("a");
+    Path slashA = fileSystem.getPath("/a");
+    Path slashAA = fileSystem.getPath("/a/a");
+    
+    assertTrue(root.compareTo(a) < 0);
+    assertTrue(root.compareTo(slashA) < 0);
+    assertTrue(a.compareTo(slashA) > 0);
+    assertTrue(slashA.compareTo(slashAA) < 0);
+  }
+  
+  @Test
   public void startsWith() {
     FileSystem fileSystem = FileSystems.getDefault();
     

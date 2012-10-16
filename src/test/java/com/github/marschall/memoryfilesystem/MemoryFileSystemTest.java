@@ -1,5 +1,8 @@
 package com.github.marschall.memoryfilesystem;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -11,6 +14,7 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
@@ -679,6 +683,45 @@ public class MemoryFileSystemTest {
     assertFalse(Files.exists(homePmarscha));
     Files.createDirectory(homePmarscha);
     assertTrue(Files.exists(homePmarscha));
+  }
+  
+  @Test
+  public void pathOrdering() {
+    FileSystem fileSystem = rule.getFileSystem();
+    Path root = fileSystem.getPath("/");
+    Path a = fileSystem.getPath("a");
+    Path slashA = fileSystem.getPath("/a");
+    Path slashAA = fileSystem.getPath("/a/a");
+    
+    assertThat(root, lessThan(a));
+    assertThat(root, lessThan(slashA));
+    assertThat(root, lessThan(slashAA));
+    assertThat(a, greaterThan(root));
+    assertThat(slashA, greaterThan(root));
+    assertThat(slashAA, greaterThan(root));
+    
+    assertEquals(0, root.compareTo(root));
+    assertEquals(0, a.compareTo(a));
+    assertEquals(0, slashA.compareTo(slashA));
+    assertEquals(0, slashA.compareTo(slashA));
+
+    assertThat(slashA, lessThan(a));
+    assertThat(slashAA, lessThan(a));
+    assertThat(a, greaterThan(slashA));
+    assertThat(a, greaterThan(slashAA));
+    
+    assertThat(slashA, lessThan(slashAA));
+    assertThat(slashAA, greaterThan(slashA));
+    
+    //TODO different file systems of same provider
+  }
+  
+  @Test(expected = ClassCastException.class)
+  public void pathOrderingIncompatible() {
+    FileSystem fileSystem = rule.getFileSystem();
+    Path a = fileSystem.getPath("a");
+    Path b = FileSystems.getDefault().getPath("b");
+    a.compareTo(b);
   }
 
 

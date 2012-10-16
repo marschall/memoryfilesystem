@@ -117,7 +117,7 @@ final class RelativePath extends NonEmptyPath {
   }
 
   @Override
-  public int compareTo(Path other) {
+  int compareTo(AbstractPath other) {
     // TODO Auto-generated function stub
     throw new UnsupportedOperationException();
   }
