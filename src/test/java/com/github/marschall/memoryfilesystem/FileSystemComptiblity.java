@@ -25,6 +25,8 @@ import java.text.Normalizer.Form;
 import java.util.Iterator;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -232,6 +234,7 @@ public class FileSystemComptiblity {
   public void pathOrdering() {
     FileSystem fileSystem = FileSystems.getDefault();
     Path root = fileSystem.getPath("/");
+    Path empty = fileSystem.getPath("");
     Path a = fileSystem.getPath("a");
     Path slashA = fileSystem.getPath("/a");
     Path slashAA = fileSystem.getPath("/a/a");
@@ -239,7 +242,11 @@ public class FileSystemComptiblity {
     assertTrue(root.compareTo(a) < 0);
     assertTrue(root.compareTo(slashA) < 0);
     assertTrue(a.compareTo(slashA) > 0);
+    assertThat(a, greaterThan(slashA));
+    assertThat(slashA, lessThan(a));
     assertTrue(slashA.compareTo(slashAA) < 0);
+    
+    assertThat(a, greaterThan(empty));
   }
   
   @Test

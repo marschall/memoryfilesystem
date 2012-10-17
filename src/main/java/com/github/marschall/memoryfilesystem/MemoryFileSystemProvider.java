@@ -110,7 +110,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     MemoryFileStore memoryStore = new MemoryFileStore(key, checker);
     MemoryUserPrincipalLookupService userPrincipalLookupService = this.createUserPrincipalLookupService(parser, checker);
     PathParser pathParser = this.buildPathParser(parser);
-    MemoryFileSystem fileSystem = new MemoryFileSystem(separator, pathParser, this, memoryStore,
+    MemoryFileSystem fileSystem = new MemoryFileSystem(key, separator, pathParser, this, memoryStore,
             userPrincipalLookupService, checker, pathTransformer, collator);
     fileSystem.setRootDirectories(this.buildRootsDirectories(parser, fileSystem));
     String defaultDirectory = parser.getDefaultDirectory();

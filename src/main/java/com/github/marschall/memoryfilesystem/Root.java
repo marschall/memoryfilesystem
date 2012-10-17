@@ -26,7 +26,6 @@ abstract class Root extends AbstractPath {
   }
   
   abstract String getKey();
-
   
   @Override
   boolean isRoot() {
@@ -109,13 +108,6 @@ abstract class Root extends AbstractPath {
   @Override
   public Iterator<Path> iterator() {
     return Collections.emptyIterator();
-  }
-
-
-  @Override
-  int compareTo(AbstractPath other) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
   }
 
 

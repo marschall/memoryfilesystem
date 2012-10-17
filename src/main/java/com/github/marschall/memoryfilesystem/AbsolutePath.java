@@ -172,13 +172,13 @@ final class AbsolutePath extends NonEmptyPath {
     throw new UnsupportedOperationException();
   }
 
-
   @Override
-  int compareTo(AbstractPath other) {
-    // TODO Auto-generated function stub
-    throw new UnsupportedOperationException();
+  int compareToNonRoot(AbstractPath other) {
+    if (!other.isAbsolute()) {
+      return -1;
+    }
+    return this.compareNameElements(((AbsolutePath) other).getNameElements());
   }
-
 
   @Override
   boolean startsWith(AbstractPath other) {
@@ -291,6 +291,7 @@ final class AbsolutePath extends NonEmptyPath {
       return false;
     }
     AbsolutePath other = (AbsolutePath) obj;
+    // takes file system key into account
     return this.root.equals(other.root)
             && this.equalElementsAs(other.getNameElements());
   }

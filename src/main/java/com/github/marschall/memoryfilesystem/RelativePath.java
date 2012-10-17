@@ -115,11 +115,16 @@ final class RelativePath extends NonEmptyPath {
     // TODO Auto-generated function stub
     throw new UnsupportedOperationException();
   }
-
+  
   @Override
-  int compareTo(AbstractPath other) {
-    // TODO Auto-generated function stub
-    throw new UnsupportedOperationException();
+  int compareToNonRoot(AbstractPath other) {
+    if (other.isAbsolute()) {
+      return 1;
+    }
+    if (other.getNameCount() == 0) {
+      return 1;
+    }
+    return this.compareNameElements(((RelativePath) other).getNameElements());
   }
 
   @Override
@@ -220,7 +225,10 @@ final class RelativePath extends NonEmptyPath {
       return false;
     }
     ElementPath other = (ElementPath) obj;
-    return this.equalElementsAs(other.getNameElements());
+    // compareTo take memory file system key into account to ensure 
+    // a.compareTo(b) == 0 iff a.equals(b)
+    return this.getMemoryFileSystem().getKey().equals(other.getMemoryFileSystem().getKey())
+            && this.equalElementsAs(other.getNameElements());
   }
   
   @Override

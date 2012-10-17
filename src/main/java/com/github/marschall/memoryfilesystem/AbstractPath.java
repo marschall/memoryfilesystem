@@ -140,6 +140,10 @@ abstract class AbstractPath implements Path {
   
   @Override
   public int compareTo(Path other) {
+    if (this == other) {
+      return 0;
+    }
+    
     FileSystemProvider thisProvider = this.getFileSystem().provider();
     FileSystemProvider otherProvider = other.getFileSystem().provider();
     if (thisProvider != otherProvider) {
@@ -147,7 +151,15 @@ abstract class AbstractPath implements Path {
               + " but " + other + " had provider: " + otherProvider;
       throw new ClassCastException(message);
     }
-    return this.compareTo((AbstractPath) other);
+    AbstractPath otherPath = (AbstractPath) other;
+    String otherFileSystemKey = otherPath.getMemoryFileSystem().getKey();
+    String thisFileSystemKey = this.getMemoryFileSystem().getKey();
+    // always take case into account
+    int fileSystemComparison = thisFileSystemKey.compareTo(otherFileSystemKey);
+    if (fileSystemComparison != 0) {
+      return fileSystemComparison;
+    }
+    return this.compareTo(otherPath);
   }
   
   abstract int compareTo(AbstractPath other);

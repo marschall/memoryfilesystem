@@ -1,8 +1,12 @@
 package com.github.marschall.memoryfilesystem;
 
+import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_ENV;
+import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_URI;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.lessThan;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -12,6 +16,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -689,31 +694,75 @@ public class MemoryFileSystemTest {
   public void pathOrdering() {
     FileSystem fileSystem = rule.getFileSystem();
     Path root = fileSystem.getPath("/");
+    Path empty = fileSystem.getPath("");
     Path a = fileSystem.getPath("a");
     Path slashA = fileSystem.getPath("/a");
     Path slashAA = fileSystem.getPath("/a/a");
     
+    assertThat(empty, lessThan(a));
+    assertThat(a, greaterThan(empty));
+    
+    assertThat(root, lessThan(empty));
     assertThat(root, lessThan(a));
     assertThat(root, lessThan(slashA));
     assertThat(root, lessThan(slashAA));
+    assertThat(empty, greaterThan(root));
     assertThat(a, greaterThan(root));
     assertThat(slashA, greaterThan(root));
     assertThat(slashAA, greaterThan(root));
     
     assertEquals(0, root.compareTo(root));
+    assertEquals(0, empty.compareTo(empty));
     assertEquals(0, a.compareTo(a));
     assertEquals(0, slashA.compareTo(slashA));
     assertEquals(0, slashA.compareTo(slashA));
 
-    assertThat(slashA, lessThan(a));
-    assertThat(slashAA, lessThan(a));
     assertThat(a, greaterThan(slashA));
     assertThat(a, greaterThan(slashAA));
+    assertThat(slashA, lessThan(a));
+    assertThat(slashAA, lessThan(a));
     
     assertThat(slashA, lessThan(slashAA));
     assertThat(slashAA, greaterThan(slashA));
+  }
+  
+  @Test
+  public void pathOrderingDifferentFileSystem() throws IOException {
+    FileSystem fileSystem1 = rule.getFileSystem();
+    try (FileSystem fileSystem2 = FileSystems.newFileSystem(URI.create("memory:name1"), SAMPLE_ENV)) {
+      Path root1 = fileSystem1.getPath("/");
+      Path root2 = fileSystem2.getPath("/");
+      
+      assertThat(root1, not(equalTo(root2)));
+      assertThat(root2, not(equalTo(root1)));
+      assertThat(root1, lessThan(root2));
+      assertThat(root2, greaterThan(root1));
+      
+      Path empty1 = fileSystem1.getPath("");
+      Path empty2 = fileSystem2.getPath("");
+      
+      assertThat(empty1, not(equalTo(empty2)));
+      assertThat(empty2, not(equalTo(empty1)));
+      assertThat(empty1, lessThan(empty2));
+      assertThat(empty2, greaterThan(empty1));
+      
+      Path realtive1 = fileSystem1.getPath("a");
+      Path realtive2 = fileSystem2.getPath("a");
+      
+      assertThat(realtive1, not(equalTo(realtive2)));
+      assertThat(realtive2, not(equalTo(realtive1)));
+      assertThat(realtive1, lessThan(realtive2));
+      assertThat(realtive2, greaterThan(realtive1));
+      
+      Path absolute1 = fileSystem1.getPath("/a");
+      Path absolute2 = fileSystem2.getPath("/a");
+      
+      assertThat(absolute1, not(equalTo(absolute2)));
+      assertThat(absolute2, not(equalTo(absolute1)));
+      assertThat(absolute1, lessThan(absolute2));
+      assertThat(absolute2, greaterThan(absolute1));
+    }
     
-    //TODO different file systems of same provider
   }
   
   @Test(expected = ClassCastException.class)

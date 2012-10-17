@@ -29,6 +29,29 @@ abstract class NonEmptyPath extends ElementPath {
   String getLastNameElement() {
     return this.nameElements.get(this.nameElements.size() - 1);
   }
+  
+  int compareNameElements(List<String> otherElements) {
+    int thisSize = this.nameElements.size();
+    int otherSize = otherElements.size();
+    Collator collator = this.getMemoryFileSystem().getCollator();
+    for (int i = 0; i < thisSize; i++) {
+      if (i == otherSize) {
+        // bail out before accessing
+        return 1;
+      }
+      String thisElement = this.nameElements.get(i);
+      String otherElement = otherElements.get(i);
+      int comparison = collator.compare(thisElement, otherElement);
+      if (comparison != 0) {
+        return comparison;
+      }
+    }
+    if (otherSize > thisSize) {
+      return -1;
+    } else {
+      return 0;
+    }
+  }
 
   boolean equalElementsAs(List<String> otherElements) {
     int thisSize = this.nameElements.size();

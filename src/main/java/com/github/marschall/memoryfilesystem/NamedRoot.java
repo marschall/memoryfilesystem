@@ -93,6 +93,18 @@ class NamedRoot extends Root {
   }
   
   @Override
+  int compareTo(AbstractPath other) {
+    if (!other.isRoot()) {
+      return -1;
+    }
+    // method is only invoked on methods of the same file system
+    NamedRoot otherRoot = (NamedRoot) other;
+    //TODO safe collator key
+    Collator collator = this.getMemoryFileSystem().getCollator();
+    return collator.compare(Character.toString(this.letter), Character.toString(otherRoot.letter));
+  }
+  
+  @Override
   public boolean equals(Object obj) {
     if (obj == this) {
       return true;

@@ -31,6 +31,8 @@ import java.util.regex.Pattern;
 import javax.annotation.PreDestroy;
 
 class MemoryFileSystem extends FileSystem {
+  
+  private final String key;
 
   private final String separator;
 
@@ -58,9 +60,10 @@ class MemoryFileSystem extends FileSystem {
 
   private final Collator collator;
 
-  MemoryFileSystem(String separator, PathParser pathParser, MemoryFileSystemProvider provider, MemoryFileStore store,
+  MemoryFileSystem(String key, String separator, PathParser pathParser, MemoryFileSystemProvider provider, MemoryFileStore store,
       MemoryUserPrincipalLookupService userPrincipalLookupService, ClosedFileSystemChecker checker, StringTransformer pathTransformer,
       Collator collator) {
+    this.key = key;
     this.separator = separator;
     this.pathParser = pathParser;
     this.provider = provider;
@@ -71,6 +74,10 @@ class MemoryFileSystem extends FileSystem {
     this.collator = collator;
     this.stores = Collections.<FileStore>singletonList(store);
     this.emptyPath = new EmptyPath(this);
+  }
+  
+  String getKey() {
+    return this.key;
   }
 
   EmptyPath getEmptyPath() {
@@ -404,10 +411,6 @@ class MemoryFileSystem extends FileSystem {
     // TODO Auto-generated method stub
     // TODO make configurable
     throw new UnsupportedOperationException();
-  }
-
-  String getKey() {
-    return this.store.getKey();
   }
 
 

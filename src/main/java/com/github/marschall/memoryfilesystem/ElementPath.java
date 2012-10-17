@@ -14,6 +14,16 @@ abstract class ElementPath extends AbstractPath {
   abstract String getNameElement(int index);
   
   abstract String getLastNameElement();
+  
+  @Override
+  int compareTo(AbstractPath other) {
+    if (other.isRoot()) {
+      return 1;
+    }
+    return compareToNonRoot(other);
+  }
+
+  abstract int compareToNonRoot(AbstractPath other);
 
 
 }

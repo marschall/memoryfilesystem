@@ -113,11 +113,10 @@ final class EmptyPath extends ElementPath {
   public Iterator<Path> iterator() {
     return Collections.emptyIterator();
   }
-
+  
   @Override
-  int compareTo(AbstractPath other) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
+  int compareToNonRoot(AbstractPath other) {
+    return -1;
   }
 
   @Override

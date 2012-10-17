@@ -4,6 +4,7 @@ import static com.github.marschall.memoryfilesystem.MemoryFileSystemProvider.SCH
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 
 class EmptyRoot extends Root {
 
@@ -59,6 +60,11 @@ class EmptyRoot extends Root {
     } catch (URISyntaxException e) {
       throw new AssertionError("could not create URI");
     }
+  }
+  
+  @Override
+  int compareTo(AbstractPath other) {
+    return other == this ? 0 : -1;
   }
   
   // no need to define equals and hashCode since
