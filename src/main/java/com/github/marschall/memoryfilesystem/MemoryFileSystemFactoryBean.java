@@ -1,9 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 
 /**
  * A POJO factory bean to create memory file systems.
@@ -32,11 +30,11 @@ import java.nio.file.FileSystems;
  */
 public class MemoryFileSystemFactoryBean {
 
-  private EnvironmentBuilder builder;
+  private MemoryFileSystemBuilder builder;
   private String name;
 
   public MemoryFileSystemFactoryBean() {
-    this.builder = EnvironmentBuilder.newEmpty();
+    this.builder = MemoryFileSystemBuilder.newEmpty();
   }
   
   /**
@@ -66,9 +64,8 @@ public class MemoryFileSystemFactoryBean {
       // TODO generate random name?
       throw new IllegalArgumentException("name must be set");
     }
-    URI uri = URI.create("memory:" + this.name);
     try {
-      return FileSystems.newFileSystem(uri, this.builder.build(), MemoryFileSystemFactoryBean.class.getClassLoader());
+      return this.builder.build(this.name);
     } catch (IOException e) {
       throw new IllegalArgumentException("could not create file system", e);
     }

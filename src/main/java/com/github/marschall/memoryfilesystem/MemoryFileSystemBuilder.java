@@ -1,5 +1,9 @@
 package com.github.marschall.memoryfilesystem;
 
+import java.io.IOException;
+import java.net.URI;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,7 +11,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public class EnvironmentBuilder {
+public final class MemoryFileSystemBuilder {
 
   private final List<String> roots;
   
@@ -29,43 +33,43 @@ public class EnvironmentBuilder {
 
   private Locale locale;
   
-  private EnvironmentBuilder() {
+  private MemoryFileSystemBuilder() {
     this.roots = new ArrayList<>();
     this.users = new ArrayList<>();
     this.groups = new ArrayList<>();
   }
 
-  public EnvironmentBuilder addRoot(String root) {
+  public MemoryFileSystemBuilder addRoot(String root) {
     this.roots.add(root);
     return this;
   }
 
-  public EnvironmentBuilder setSeprator(String separator) {
+  public MemoryFileSystemBuilder setSeprator(String separator) {
     this.separator = separator;
     return this;
   }
   
-  public EnvironmentBuilder addUser(String userName) {
+  public MemoryFileSystemBuilder addUser(String userName) {
     this.users.add(userName);
     return this;
   }
   
-  public EnvironmentBuilder addGroup(String groupName) {
+  public MemoryFileSystemBuilder addGroup(String groupName) {
     this.groups.add(groupName);
     return this;
   }
 
-  public EnvironmentBuilder setCurrentWorkingDirectory(String currentWorkingDirectory) {
+  public MemoryFileSystemBuilder setCurrentWorkingDirectory(String currentWorkingDirectory) {
     this.currentWorkingDirectory = currentWorkingDirectory;
     return this;
   }
   
-  public EnvironmentBuilder setStoreTransformer(StringTransformer storeTransformer) {
+  public MemoryFileSystemBuilder setStoreTransformer(StringTransformer storeTransformer) {
     this.storeTransformer = storeTransformer;
     return this;
   }
   
-  public EnvironmentBuilder setLocale(Locale locale) {
+  public MemoryFileSystemBuilder setLocale(Locale locale) {
     this.locale = locale;
     return this;
   }
@@ -78,7 +82,7 @@ public class EnvironmentBuilder {
     }
   }
   
-  public EnvironmentBuilder setCaseSensitive(boolean caseSensitive) {
+  public MemoryFileSystemBuilder setCaseSensitive(boolean caseSensitive) {
     if (caseSensitive) {
       this.lookUpTransformer = StringTransformers.IDENTIY;
       this.collator = MemoryFileSystemProperties.caseSensitiveCollator(this.getLocale());
@@ -90,17 +94,17 @@ public class EnvironmentBuilder {
     return this;
   }
   
-  public EnvironmentBuilder setCollator(Collator collator) {
+  public MemoryFileSystemBuilder setCollator(Collator collator) {
     this.collator = collator;
     return this;
   }
 
-  public static EnvironmentBuilder newEmpty() {
-    return new EnvironmentBuilder();
+  public static MemoryFileSystemBuilder newEmpty() {
+    return new MemoryFileSystemBuilder();
   }
   
-  public static EnvironmentBuilder newUnix() {
-    return new EnvironmentBuilder()
+  public static MemoryFileSystemBuilder newUnix() {
+    return new MemoryFileSystemBuilder()
     .addRoot(MemoryFileSystemProperties.UNIX_ROOT)
     .setSeprator(MemoryFileSystemProperties.UNIX_SEPARATOR)
     .addUser(getSystemUserName())
@@ -110,8 +114,8 @@ public class EnvironmentBuilder {
     .setCaseSensitive(true);
   }
   
-  public static EnvironmentBuilder newMacOs() {
-    return new EnvironmentBuilder()
+  public static MemoryFileSystemBuilder newMacOs() {
+    return new MemoryFileSystemBuilder()
     .addRoot(MemoryFileSystemProperties.UNIX_ROOT)
     .setSeprator(MemoryFileSystemProperties.UNIX_SEPARATOR)
     .addUser(getSystemUserName())
@@ -121,8 +125,8 @@ public class EnvironmentBuilder {
     .setCaseSensitive(true);
   }
 
-  public static EnvironmentBuilder newWindows() {
-    return new EnvironmentBuilder()
+  public static MemoryFileSystemBuilder newWindows() {
+    return new MemoryFileSystemBuilder()
       .addRoot("C:\\")
       .setSeprator(MemoryFileSystemProperties.WINDOWS_SEPARATOR)
       .addUser(getSystemUserName())
@@ -136,7 +140,14 @@ public class EnvironmentBuilder {
     return System.getProperty("user.name");
   }
   
-  public Map<String, ?> build() {
+  public FileSystem build(String name) throws IOException {
+    Map<String, ?> env = buildEnvironment();
+    URI uri = URI.create("memory:".concat(name));
+    ClassLoader classLoader = MemoryFileSystemBuilder.class.getClassLoader();
+    return FileSystems.newFileSystem(uri, env, classLoader);
+  }
+
+  public Map<String, ?> buildEnvironment() {
     Map<String, Object> env = new HashMap<>();
     if (!this.roots.isEmpty()) {
       env.put(MemoryFileSystemProperties.ROOTS_PROPERTY, this.roots);

@@ -19,7 +19,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.Test;
 
@@ -28,8 +27,7 @@ public class RootTest {
 
   @Test
   public void unixRoot() throws IOException {
-    Map<String, ?> env = EnvironmentBuilder.newUnix().build();
-    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, env)) {
+    try (FileSystem fileSystem = MemoryFileSystemBuilder.newUnix().build("name")) {
       for (Path root : fileSystem.getRootDirectories()) {
         assertCommonRootProperties(root);
 
@@ -95,24 +93,21 @@ public class RootTest {
   
   @Test(expected = InvalidPathException.class)
   public void windowsRootInvalid1() throws IOException {
-    Map<String, ?> env = EnvironmentBuilder.newWindows().build();
-    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, env)) {
+    try (FileSystem fileSystem = MemoryFileSystemBuilder.newWindows().build("name")) {
       fileSystem.getPath("/C:\\");
     }
   }
   
   @Test(expected = InvalidPathException.class)
   public void windowsRootInvalid2() throws IOException {
-    Map<String, ?> env = EnvironmentBuilder.newWindows().build();
-    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, env)) {
+    try (FileSystem fileSystem = MemoryFileSystemBuilder.newWindows().build("name")) {
       fileSystem.getPath("\\C:\\");
     }
   }
   
   @Test
   public void windowsPaths() throws IOException {
-    Map<String, ?> env = EnvironmentBuilder.newWindows().build();
-    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, env)) {
+    try (FileSystem fileSystem = MemoryFileSystemBuilder.newWindows().build("name")) {
       fileSystem.getPath("C:\\");
       
       assertEquals("C:\\temp", fileSystem.getPath("C:/temp").toString());
@@ -123,8 +118,7 @@ public class RootTest {
 
   @Test
   public void windowsRootMethods() throws IOException {
-    Map<String, ?> env = EnvironmentBuilder.newWindows().addRoot("D:\\").build();
-    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, env)) {
+    try (FileSystem fileSystem = MemoryFileSystemBuilder.newWindows().addRoot("D:\\").build("name")) {
       List<Path> roots = asList(fileSystem.getRootDirectories());
       for (int i = 0; i < roots.size(); ++i) {
         Path currentRoot = roots.get(i);

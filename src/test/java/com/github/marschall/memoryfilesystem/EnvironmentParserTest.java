@@ -11,34 +11,34 @@ public class EnvironmentParserTest {
 
   @Test
   public void empty() {
-    EnvironmentParser parser = parse(EnvironmentBuilder.newEmpty());
+    EnvironmentParser parser = parse(MemoryFileSystemBuilder.newEmpty());
     assertEquals(Collections.singletonList("/"), parser.getRoots());
     assertEquals("/", parser.getSeparator());
   }
 
   @Test
   public void unix() {
-    EnvironmentParser parser = parse(EnvironmentBuilder.newUnix());
+    EnvironmentParser parser = parse(MemoryFileSystemBuilder.newUnix());
     assertEquals(Collections.singletonList("/"), parser.getRoots());
     assertEquals("/", parser.getSeparator());
   }
 
   @Test
   public void windows() {
-    EnvironmentParser parser = parse(EnvironmentBuilder.newWindows());
+    EnvironmentParser parser = parse(MemoryFileSystemBuilder.newWindows());
     assertEquals(Collections.singletonList("C:\\"), parser.getRoots());
     assertEquals("\\", parser.getSeparator());
   }
 
   @Test
   public void windowsExtended() {
-    EnvironmentParser parser = parse(EnvironmentBuilder.newWindows().addRoot("D:\\"));
+    EnvironmentParser parser = parse(MemoryFileSystemBuilder.newWindows().addRoot("D:\\"));
     assertEquals(Arrays.asList("C:\\", "D:\\"), parser.getRoots());
     assertEquals("\\", parser.getSeparator());
   }
 
-  private EnvironmentParser parse(EnvironmentBuilder builder) {
-    return new EnvironmentParser(builder.build());
+  private EnvironmentParser parse(MemoryFileSystemBuilder builder) {
+    return new EnvironmentParser(builder.buildEnvironment());
   }
 
 }

@@ -7,14 +7,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.Normalizer;
 import java.text.Normalizer.Form;
-import java.util.Map;
 
 import org.junit.Test;
 
@@ -22,9 +19,7 @@ public class MacOsMemoryFileSystemTest {
 
   @Test
   public void macOsNormalization() throws IOException {
-    URI uri = URI.create("memory:uri");
-    Map<String, ?> env = EnvironmentBuilder.newMacOs().build();
-    try (FileSystem fileSystem = FileSystems.newFileSystem(uri, env)) {
+    try (FileSystem fileSystem = MemoryFileSystemBuilder.newMacOs().build("uri")) {
       String aUmlaut = "\u00C4";
       Path aPath = fileSystem.getPath(aUmlaut);
       String normalized = Normalizer.normalize(aUmlaut, Form.NFD);
@@ -54,9 +49,7 @@ public class MacOsMemoryFileSystemTest {
   
   @Test
   public void macOsComparison() throws IOException {
-    URI uri = URI.create("memory:uri");
-    Map<String, ?> env = EnvironmentBuilder.newMacOs().build();
-    try (FileSystem fileSystem = FileSystems.newFileSystem(uri, env)) {
+    try (FileSystem fileSystem = MemoryFileSystemBuilder.newMacOs().build("uri")) {
       Path aLower = fileSystem.getPath("a");
       Path aUpper = fileSystem.getPath("A");
       assertThat(aLower, not(equalTo(aUpper)));
@@ -76,9 +69,7 @@ public class MacOsMemoryFileSystemTest {
   
   @Test
   public void macOsPaths() throws IOException {
-    URI uri = URI.create("memory:uri");
-    Map<String, ?> env = EnvironmentBuilder.newMacOs().build();
-    try (FileSystem fileSystem = FileSystems.newFileSystem(uri, env)) {
+    try (FileSystem fileSystem = MemoryFileSystemBuilder.newMacOs().build("uri")) {
       String aUmlaut = "\u00C4";
       String normalized = Normalizer.normalize(aUmlaut, Form.NFD);
       assertEquals(1, aUmlaut.length());

@@ -1,8 +1,12 @@
 package com.github.marschall.memoryfilesystem;
 
 import java.io.IOException;
+import java.nio.channels.SeekableByteChannel;
+import java.nio.file.OpenOption;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Set;
 
 class MemoryFile extends MemoryEntry {
   
@@ -72,6 +76,18 @@ class MemoryFile extends MemoryEntry {
       return MemoryFile.this;
     }
     
+  }
+
+  SeekableByteChannel newChannel(Set<? extends OpenOption> options) {
+    // TODO check more options
+    boolean append = options.contains(StandardOpenOption.APPEND);
+    boolean readable = options.contains(StandardOpenOption.READ);
+    if (append) {
+      return this.contents.newAppendingChannel(readable);
+    } else {
+      boolean writable = options.contains(StandardOpenOption.WRITE);
+      return this.contents.newChannel(readable, writable);
+    }
   }
 
 

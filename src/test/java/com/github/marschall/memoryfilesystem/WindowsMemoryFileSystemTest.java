@@ -21,9 +21,7 @@ public class WindowsMemoryFileSystemTest {
   
   @Test
   public void windows() throws IOException {
-    URI uri = URI.create("memory:uri");
-    Map<String, ?> env = EnvironmentBuilder.newWindows().build();
-    try (FileSystem fileSystem = FileSystems.newFileSystem(uri, env)) {
+    try (FileSystem fileSystem = MemoryFileSystemBuilder.newWindows().build("uri")) {
       Path c1 = fileSystem.getPath("C:\\");
       Path c2 = fileSystem.getPath("c:\\");
       assertEquals("C:\\", c1.toString());
@@ -44,8 +42,9 @@ public class WindowsMemoryFileSystemTest {
   public void windowsDiffrentFileSystems() throws IOException {
     URI uri1 = URI.create("memory:uri1");
     URI uri2 = URI.create("memory:uri2");
-    Map<String, ?> env = EnvironmentBuilder.newWindows().build();
-    try (FileSystem fileSystem1 = FileSystems.newFileSystem(uri1, env);
+    Map<String, ?> env = MemoryFileSystemBuilder.newWindows().buildEnvironment();
+    try (
+            FileSystem fileSystem1 = FileSystems.newFileSystem(uri1, env);
             FileSystem fileSystem2 = FileSystems.newFileSystem(uri2, env)) {
       Path c1 = fileSystem1.getPath("C:\\");
       Path c2 = fileSystem2.getPath("C:\\\\");
@@ -61,13 +60,11 @@ public class WindowsMemoryFileSystemTest {
   
   @Test
   public void windowsQuirky() throws IOException {
-    URI uri = URI.create("memory:uri");
-    Map<String, ?> env = EnvironmentBuilder.newWindows().build();
-    try (FileSystem fileSystem = FileSystems.newFileSystem(uri, env)) {
+    try (FileSystem fileSystem = MemoryFileSystemBuilder.newWindows().build("uri")) {
       Path c1 = fileSystem.getPath("C:\\");
       Path c2 = fileSystem.getPath("c:\\");
       assertEquals("c:\\", c2.toString());
-      
+
       c1 = fileSystem.getPath("C:\\TEMP");
       c2 = fileSystem.getPath("c:\\temp");
       assertEquals("c:\\temp", c2.toString());
@@ -77,9 +74,7 @@ public class WindowsMemoryFileSystemTest {
   
   @Test
   public void pathOrdering() throws IOException {
-    URI uri = URI.create("memory:uri");
-    Map<String, ?> env = EnvironmentBuilder.newWindows().build();
-    try (FileSystem fileSystem = FileSystems.newFileSystem(uri, env)) {
+    try (FileSystem fileSystem = MemoryFileSystemBuilder.newWindows().build("uri")) {
       Path lowerA = fileSystem.getPath("a");
       Path upperA = fileSystem.getPath("A");
       

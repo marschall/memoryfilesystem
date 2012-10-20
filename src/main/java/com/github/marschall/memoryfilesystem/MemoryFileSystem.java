@@ -147,9 +147,17 @@ class MemoryFileSystem extends FileSystem {
     boolean isAppend = options.contains(StandardOpenOption.APPEND);
     MemoryDirectory directory = this.getRootDirectory(path);
     
-    throw new UnsupportedOperationException();
+    // TODO locks
+    MemoryFile file = this.getFile(path, options, attrs);
+    return file.newChannel(options);
   }
   
+  private MemoryFile getFile(AbstractPath path,
+          Set<? extends OpenOption> options, FileAttribute<?>[] attrs) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException();
+  }
+
   DirectoryStream<Path> newDirectoryStream(AbstractPath abstractPath, Filter<? super Path> filter) {
     // TODO Auto-generated method stub
     throw new UnsupportedOperationException();
