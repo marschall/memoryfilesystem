@@ -11,11 +11,11 @@ import java.util.RandomAccess;
  * @param <E> the element type
  */
 final class CompositeList<E> extends AbstractList<E> implements RandomAccess {
-  
+
   private final List<E> first;
-  
+
   private final List<E> second;
-  
+
   private CompositeList(List<E> first, List<E> second) {
     this.first = first;
     this.second = second;
@@ -35,7 +35,7 @@ final class CompositeList<E> extends AbstractList<E> implements RandomAccess {
   public int size() {
     return this.first.size() + this.second.size();
   }
-  
+
   @Override
   public List<E> subList(int fromIndex, int toIndex) {
     int firstSize = this.first.size();
@@ -49,7 +49,7 @@ final class CompositeList<E> extends AbstractList<E> implements RandomAccess {
     if (toIndex - fromIndex == 1) {
       return Collections.singletonList(this.get(fromIndex));
     }
-    
+
     if (toIndex <= firstSize) {
       if (fromIndex == 0 && toIndex == firstSize) {
         return this.first;
@@ -66,7 +66,7 @@ final class CompositeList<E> extends AbstractList<E> implements RandomAccess {
       return super.subList(fromIndex, toIndex);
     }
   }
-  
+
   static <E> List<E> create(List<E> first, List<E> second) {
     if (first.isEmpty()) {
       return second;

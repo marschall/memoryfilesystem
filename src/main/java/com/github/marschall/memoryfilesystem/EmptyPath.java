@@ -63,7 +63,7 @@ final class EmptyPath extends ElementPath {
   public boolean endsWith(String other) {
     return "".equals(other);
   }
-  
+
 
   @Override
   boolean startsWith(AbstractPath other) {
@@ -112,7 +112,7 @@ final class EmptyPath extends ElementPath {
   public Iterator<Path> iterator() {
     return Collections.emptyIterator();
   }
-  
+
   @Override
   int compareToNonRoot(AbstractPath other) {
     return -1;
@@ -163,14 +163,14 @@ final class EmptyPath extends ElementPath {
       throw new IllegalArgumentException("unsupported path argument");
     }
   }
-  
+
   // since this is a singleton per file system there is no need to override
   // #equals and #hashCode
-  
+
   @Override
   public String toString() {
     return "";
   }
-  
+
 
 }

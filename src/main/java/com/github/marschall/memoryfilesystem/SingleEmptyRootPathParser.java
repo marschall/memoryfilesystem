@@ -28,7 +28,7 @@ final class SingleEmptyRootPathParser extends PathParser {
       return AbstractPath.createRelative(memoryFileSystem, elements);
     }
   }
-  
+
   static int count(String first, String... more) {
     int count = count(first);
     if (more != null && more.length > 0) {
@@ -38,37 +38,37 @@ final class SingleEmptyRootPathParser extends PathParser {
     }
     return count;
   }
-  
+
   static int count(String s) {
     if (s.isEmpty()) {
       return 0;
     }
     int count = 0;
-    
+
     int fromIndex = 0;
     int slashIndex = s.indexOf('/', fromIndex);
-    
+
     while (slashIndex != -1) {
       if (slashIndex > fromIndex) {
         // avoid empty strings for things like //
         count += 1;
       }
-      
+
       fromIndex = slashIndex + 1;
       slashIndex  = s.indexOf('/', fromIndex);
     }
     if (fromIndex < s.length()) {
       count += 1;
     }
-    
+
     return count;
   }
-  
+
   private void parseInto(String s, List<String> elements) {
     if (s.isEmpty()) {
       return;
     }
-    
+
     int fromIndex = 0;
     int slashIndex = s.indexOf('/', fromIndex);
     while (slashIndex != -1) {
@@ -76,7 +76,7 @@ final class SingleEmptyRootPathParser extends PathParser {
         // avoid empty strings for things like //
         elements.add(s.substring(fromIndex, slashIndex));
       }
-      
+
       fromIndex = slashIndex + 1;
       slashIndex  = s.indexOf('/', fromIndex);
     }

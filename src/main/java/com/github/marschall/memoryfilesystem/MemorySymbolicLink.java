@@ -19,31 +19,31 @@ class MemorySymbolicLink extends MemoryEntry {
     this.attributes = new MemorySymbolicLinkAttributes();
     this.basicFileAttributeView = new MemorySymbolicLinkAttributesView();
   }
-  
+
   Path getTarget() {
     return this.target;
   }
-  
+
   @Override
   BasicFileAttributeView getBasicFileAttributeView() {
     return this.basicFileAttributeView;
   }
-  
+
   @Override
   BasicFileAttributes getBasicFileAttributes() {
     return this.attributes;
   }
-  
-  
+
+
   class MemorySymbolicLinkAttributesView extends MemoryEntryFileAttributesView {
 
     @Override
     public BasicFileAttributes readAttributes() throws IOException {
       return MemorySymbolicLink.this.attributes;
     }
-    
+
   }
-  
+
   final class MemorySymbolicLinkAttributes extends MemoryEntryFileAttributes {
 
     @Override
@@ -77,7 +77,7 @@ class MemorySymbolicLink extends MemoryEntry {
       // REVIEW think about it
       return MemorySymbolicLink.this;
     }
-    
+
   }
 
 }

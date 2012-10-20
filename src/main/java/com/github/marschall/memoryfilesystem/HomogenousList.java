@@ -11,12 +11,12 @@ import java.util.RandomAccess;
  * @param <E> the element type
  */
 final class HomogenousList<E> extends AbstractList<E> implements RandomAccess {
-  
+
   //TODO value is actually constant
   private final E element;
-  
+
   private final int size;
-  
+
   private HomogenousList(E element, int size) {
     this.element = element;
     this.size = size;
@@ -37,12 +37,12 @@ final class HomogenousList<E> extends AbstractList<E> implements RandomAccess {
   public int size() {
     return this.size;
   }
-  
+
   @Override
   public boolean contains(Object o) {
     return this.element.equals(o);
   }
-  
+
   @Override
   public List<E> subList(int fromIndex, int toIndex) {
     if (fromIndex < 0) {
@@ -54,14 +54,14 @@ final class HomogenousList<E> extends AbstractList<E> implements RandomAccess {
     if (fromIndex > toIndex) {
       throw new IllegalArgumentException("indices out of range");
     }
-    
-    if (fromIndex == 0 && toIndex == size) {
+
+    if (fromIndex == 0 && toIndex == this.size) {
       return this;
     }
-    
+
     return create(this.element, toIndex - fromIndex);
   }
-  
+
   static <E> List<E> create(E element, int size) {
     if (size == 0) {
       return Collections.emptyList();
@@ -70,7 +70,7 @@ final class HomogenousList<E> extends AbstractList<E> implements RandomAccess {
     } else {
       return new HomogenousList<E>(element, size);
     }
-    
+
   }
 
 }

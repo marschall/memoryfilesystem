@@ -9,7 +9,7 @@ import java.util.Map;
 class EnvironmentParser {
 
   private final Map<String, ?> env;
-  
+
   private List<String> roots;
 
   EnvironmentParser(Map<String, ?> env) {
@@ -22,31 +22,31 @@ class EnvironmentParser {
       if (this.roots == null) {
         this.roots = this.getDefaultRoots();
       } else {
-        this.validateRoots(roots);
+        this.validateRoots(this.roots);
       }
     }
-    return roots;
+    return this.roots;
   }
 
   List<String> getUserNames() {
     List<String> userNames = this.parseStringProperty(MemoryFileSystemProperties.USERS_PROPERTY, false);
     if (userNames == null) {
-      return Collections.singletonList(getSystemUserName());
+      return Collections.singletonList(this.getSystemUserName());
     } else {
       return userNames;
     }
   }
-  
+
   StringTransformer getStoreTransformer() {
-    return getStringTranformer(MemoryFileSystemProperties.PATH_STORE_TRANSFORMER_PROPERTY);
+    return this.getStringTranformer(MemoryFileSystemProperties.PATH_STORE_TRANSFORMER_PROPERTY);
   }
-  
+
   StringTransformer getLookUpTransformer() {
-    return getStringTranformer(MemoryFileSystemProperties.PATH_LOOKUP_TRANSFORMER_PROPERTY);
+    return this.getStringTranformer(MemoryFileSystemProperties.PATH_LOOKUP_TRANSFORMER_PROPERTY);
   }
 
   StringTransformer getStringTranformer(String property) {
-    Object value = env.get(property);
+    Object value = this.env.get(property);
     if (value != null) {
       if (value instanceof StringTransformer) {
         return (StringTransformer) value;
@@ -58,11 +58,11 @@ class EnvironmentParser {
       return StringTransformers.IDENTIY;
     }
   }
-  
+
 
   Collator getCollator() {
     String property = MemoryFileSystemProperties.COLLATOR_PROPERTY;
-    Object value = env.get(property);
+    Object value = this.env.get(property);
     if (value != null) {
       if (value instanceof Collator) {
         return (Collator) value;
@@ -74,15 +74,15 @@ class EnvironmentParser {
       return MemoryFileSystemProperties.caseSensitiveCollator(Locale.getDefault());
     }
   }
-  
-  
+
+
 
   StringTransformer getPrincipalNameTransfomer() {
-    return getStringTranformer(MemoryFileSystemProperties.PRINCIPAL_TRANSFORMER_PROPERTY);
+    return this.getStringTranformer(MemoryFileSystemProperties.PRINCIPAL_TRANSFORMER_PROPERTY);
   }
-  
+
   String getDefaultDirectory() {
-    Object value = env.get(MemoryFileSystemProperties.CURRENT_WORKING_DIRECTORY_PROPERTY);
+    Object value = this.env.get(MemoryFileSystemProperties.CURRENT_WORKING_DIRECTORY_PROPERTY);
     if (value != null) {
       if (value instanceof String) {
         return (String) value;
@@ -117,7 +117,7 @@ class EnvironmentParser {
     }
     if (!(value instanceof List)) {
       throw new IllegalArgumentException("value of " + key
-          + " must be an instance of " + List.class + " but was " + value.getClass());
+              + " must be an instance of " + List.class + " but was " + value.getClass());
     }
     List<?> values = (List<?>) value;
     if (!allowEmpty && values.isEmpty()) {
@@ -148,12 +148,12 @@ class EnvironmentParser {
     if (roots.size() == 1) {
       String root = roots.get(0);
       if (!this.isUnixRoot(root) && !this.isWindowsRoot(root)) {
-        throw invalidRoot(root);
+        throw this.invalidRoot(root);
       }
     } else {
       for (String root : roots) {
         if (!this.isWindowsRoot(root)) {
-          throw invalidRoot(root);
+          throw this.invalidRoot(root);
         }
       }
     }
@@ -161,13 +161,13 @@ class EnvironmentParser {
 
   private IllegalArgumentException invalidRoot(String root) {
     return new IllegalArgumentException(MemoryFileSystemProperties.ROOTS_PROPERTY + " have to either be \"\" or \"[A-Z]:\\\" (mixing is not allowed)"
-        + " \"" + root + "\"doesn't fit");
+            + " \"" + root + "\"doesn't fit");
   }
 
   private boolean isWindowsRoot(String root) {
     return root.length() == 3
-        && root.charAt(0) >= 'A' && root.charAt(0) <= 'Z'
-        && root.endsWith(":\\");
+            && root.charAt(0) >= 'A' && root.charAt(0) <= 'Z'
+            && root.endsWith(":\\");
   }
 
   private boolean isUnixRoot(String root) {
@@ -180,7 +180,7 @@ class EnvironmentParser {
 
 
   String getSeparator() {
-    Object property = env.get(MemoryFileSystemProperties.DEFAULT_NAME_SEPARATOR_PROPERTY);
+    Object property = this.env.get(MemoryFileSystemProperties.DEFAULT_NAME_SEPARATOR_PROPERTY);
     if (property == null) {
       return MemoryFileSystemProperties.DEFAULT_NAME_SEPARATOR;
     } else if (property instanceof String) {
@@ -189,21 +189,21 @@ class EnvironmentParser {
       return separator;
     } else {
       throw new IllegalArgumentException("the value of the property '"
-          + MemoryFileSystemProperties.DEFAULT_NAME_SEPARATOR_PROPERTY
-          + "' has to be of class " + String.class.getName()
-          + " but was " + property.getClass().getName());
+              + MemoryFileSystemProperties.DEFAULT_NAME_SEPARATOR_PROPERTY
+              + "' has to be of class " + String.class.getName()
+              + " but was " + property.getClass().getName());
     }
   }
 
   private void validateSeparator(String separator) {
     if (!MemoryFileSystemProperties.UNIX_SEPARATOR.equals(separator)
-        && ! MemoryFileSystemProperties.WINDOWS_SEPARATOR.equals(separator)) {
+            && ! MemoryFileSystemProperties.WINDOWS_SEPARATOR.equals(separator)) {
       throw new IllegalArgumentException("only \"" + MemoryFileSystemProperties.UNIX_SEPARATOR
-          + "\" and \"" + MemoryFileSystemProperties.WINDOWS_SEPARATOR + "\" are valid separators, \""
-          + separator + "\" is invalid");
+              + "\" and \"" + MemoryFileSystemProperties.WINDOWS_SEPARATOR + "\" are valid separators, \""
+              + separator + "\" is invalid");
     }
   }
-  
+
   boolean isSingleEmptyRoot() {
     return this.getRoots().size() == 1
             && MemoryFileSystemProperties.UNIX_ROOT.equals(this.getRoots().get(0));

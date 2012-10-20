@@ -15,10 +15,10 @@ final class GlobPathMatcher implements PathMatcher {
     this.patternPath = patternPath;
     List<Pattern> patterns = new ArrayList<>(patternPath.getNameCount());
     for (int i = 0; i < patternPath.getNameCount(); ++i) {
-      patterns.add(convertToPattern(((RelativePath) patternPath).getNameElement(i)));
+      patterns.add(this.convertToPattern(((RelativePath) patternPath).getNameElement(i)));
     }
   }
-  
+
   private Pattern convertToPattern(String element) {
     if (element.equals("**")) {
       // TODO rubber
@@ -35,9 +35,9 @@ final class GlobPathMatcher implements PathMatcher {
           buffer.append('.');
           break;
         case '[':
-          parseRange(stream, buffer, element);
+          this.parseRange(stream, buffer, element);
         case '{':
-          parseGroup(stream, buffer, element);
+          this.parseGroup(stream, buffer, element);
         case '\\':
           if (!stream.hasNext()) {
             throw new PatternSyntaxException("\\must be followed by content", element, element.length() - 1);
@@ -49,7 +49,13 @@ final class GlobPathMatcher implements PathMatcher {
     // TODO Pattern#CANON_EQ ?
     return Pattern.compile(buffer.toString(), Pattern.UNICODE_CASE);
   }
-  
+
+
+  private void appendSafe(char c, StringBuilder buffer) {
+    //TODO check for regex safe
+    buffer.append(c);
+  }
+
   private void parseGroup(Stream stream, StringBuilder buffer, String element) {
     while (stream.hasNext()) {
       char next = stream.next();
@@ -59,7 +65,7 @@ final class GlobPathMatcher implements PathMatcher {
       // TODO parse default
     }
     throw new PatternSyntaxException("{ must be closed by }", element, element.length() - 1);
-    
+
   }
 
   private void parseRange(Stream stream, StringBuilder buffer, String element) {
@@ -70,36 +76,31 @@ final class GlobPathMatcher implements PathMatcher {
       }
       // TODO parse default
     }
-    
+
     throw new PatternSyntaxException("[ must be closed by ]", element, element.length() - 1);
   }
 
-  private void appendSafe(char c, StringBuilder buffer) {
-    //TODO check for regex safe
-    buffer.append(c);
-  }
-  
   static final class Stream {
-    
+
     private final String contents;
     private int position;
-    
+
     Stream(String contents) {
       this.contents = contents;
       this.position = 0;
     }
-    
+
     boolean hasNext() {
-      return position < contents.length();
+      return this.position < this.contents.length();
     }
-    
+
     char next() {
-      char value = contents.charAt(position);
+      char value = this.contents.charAt(this.position);
       this.position += 1;
       return value;
     }
-    
-    
+
+
   }
 
   @Override
@@ -110,7 +111,7 @@ final class GlobPathMatcher implements PathMatcher {
     // TODO Auto-generated method stub
     throw new UnsupportedOperationException();
   }
-  
+
   static String name() {
     return "glob";
   }

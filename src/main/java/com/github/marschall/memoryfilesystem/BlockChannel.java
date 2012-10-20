@@ -63,7 +63,7 @@ abstract class BlockChannel implements SeekableByteChannel {
 
   @Override
   public int read(ByteBuffer dst) throws IOException {
-    try (AutoRelease lock = readLock()) {
+    try (AutoRelease lock = this.readLock()) {
       int read = this.memoryContents.read(dst, this.position);
       if (read != -1) {
         this.position += read;
@@ -85,7 +85,7 @@ abstract class BlockChannel implements SeekableByteChannel {
   public SeekableByteChannel position(long newPosition) throws IOException {
     if (newPosition < 0L) {
       throw new IllegalArgumentException("only a non-negative values are allowed, " + newPosition + " is invalid");
-    }		
+    }
     this.checker.check();
     try (AutoRelease lock = AutoReleaseLock.autoRelease(this.lock)) {
       this.position = newPosition;

@@ -2,12 +2,12 @@ package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_ENV;
 import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_URI;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -42,7 +42,7 @@ public class RootTest {
     }
   }
 
-  private void assertCommonRootProperties(Path root) {
+  private static void assertCommonRootProperties(Path root) {
     assertTrue(root.startsWith(root));
     assertTrue(root.endsWith(root));
 
@@ -90,36 +90,36 @@ public class RootTest {
       }
     }
   }
-  
+
   @Test(expected = InvalidPathException.class)
   public void windowsRootInvalid1() throws IOException {
     try (FileSystem fileSystem = MemoryFileSystemBuilder.newWindows().build("name")) {
       fileSystem.getPath("/C:\\");
     }
   }
-  
+
   @Test(expected = InvalidPathException.class)
   public void windowsRootInvalid2() throws IOException {
     try (FileSystem fileSystem = MemoryFileSystemBuilder.newWindows().build("name")) {
       fileSystem.getPath("\\C:\\");
     }
   }
-  
+
   @Test
   public void windowsPaths() throws IOException {
     try (FileSystem fileSystem = MemoryFileSystemBuilder.newWindows().build("name")) {
       fileSystem.getPath("C:\\");
-      
+
       assertEquals("C:\\temp", fileSystem.getPath("C:/temp").toString());
       assertEquals("C:\\temp", fileSystem.getPath("C:/temp").toString());
     }
-    
+
   }
 
   @Test
   public void windowsRootMethods() throws IOException {
     try (FileSystem fileSystem = MemoryFileSystemBuilder.newWindows().addRoot("D:\\").build("name")) {
-      List<Path> roots = asList(fileSystem.getRootDirectories());
+      List<Path> roots = this.asList(fileSystem.getRootDirectories());
       for (int i = 0; i < roots.size(); ++i) {
         Path currentRoot = roots.get(i);
         assertCommonRootProperties(currentRoot);

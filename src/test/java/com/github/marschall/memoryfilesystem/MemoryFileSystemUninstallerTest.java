@@ -12,7 +12,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 public class MemoryFileSystemUninstallerTest {
-  
+
   @Test
   public void isInstalled() throws Exception {
     try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
@@ -20,7 +20,7 @@ public class MemoryFileSystemUninstallerTest {
     }
     assertTrue(MemoryFileSystemUninstaller.isInstalled());
   }
-  
+
   @Test
   @Ignore("breaks everything")
   public void uninstall() throws Exception {
@@ -28,7 +28,7 @@ public class MemoryFileSystemUninstallerTest {
       //do nothing
     }
     assertTrue(MemoryFileSystemUninstaller.isInstalled());
-    
+
     MemoryFileSystemUninstaller.uninstall();
     assertFalse(MemoryFileSystemUninstaller.isInstalled());
   }

@@ -12,26 +12,26 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class MemoryDirectoryTest {
-  
+
   private MemoryDirectory memoryDirectory;
 
   @Before
   public void setUp() {
-    memoryDirectory = new MemoryDirectory("");
+    this.memoryDirectory = new MemoryDirectory("");
   }
 
 
   @Test
   public void testCheckMethods() throws IOException {
-    BasicFileAttributes attributes = memoryDirectory.getBasicFileAttributeView().readAttributes();
-    
+    BasicFileAttributes attributes = this.memoryDirectory.getBasicFileAttributeView().readAttributes();
+
     assertTrue(attributes.isDirectory());
-    
+
     assertFalse(attributes.isRegularFile());
     assertFalse(attributes.isOther());
     assertFalse(attributes.isSymbolicLink());
     assertEquals(-1L, attributes.size());
-    
+
     assertNotNull(attributes.fileKey());
   }
 

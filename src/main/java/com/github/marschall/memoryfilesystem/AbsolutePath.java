@@ -19,7 +19,7 @@ import java.util.Collections;
 import java.util.List;
 
 final class AbsolutePath extends NonEmptyPath {
-  
+
   private final Root root;
 
   AbsolutePath(MemoryFileSystem fileSystem, Root root, List<String> nameElements) {
@@ -36,7 +36,7 @@ final class AbsolutePath extends NonEmptyPath {
   public Path getRoot() {
     return this.root;
   }
-  
+
   @Override
   public String toString() {
     StringBuilder buffer = new StringBuilder();
@@ -59,7 +59,7 @@ final class AbsolutePath extends NonEmptyPath {
       return this.root;
     } else {
       List<String> subList = this.getNameElements().subList(0, this.getNameElements().size() - 1);
-      return createAboslute(getMemoryFileSystem(), this.root, subList);
+      return createAboslute(this.getMemoryFileSystem(), this.root, subList);
     }
   }
 
@@ -72,7 +72,7 @@ final class AbsolutePath extends NonEmptyPath {
     if (index >= this.getNameCount()) {
       throw new IllegalArgumentException("index must not be bigger than " + (this.getNameCount() - 1) +  " but was " + index);
     }
-    return createRelative(getMemoryFileSystem(), this.getNameElements().get(index));
+    return createRelative(this.getMemoryFileSystem(), this.getNameElements().get(index));
   }
 
 
@@ -80,22 +80,22 @@ final class AbsolutePath extends NonEmptyPath {
   public Path subpath(int beginIndex, int endIndex) {
     this.checkNameRange(beginIndex, endIndex);
     if (endIndex - beginIndex == this.getNameCount()) {
-      return createRelative(getMemoryFileSystem(), this.getNameElements());
+      return createRelative(this.getMemoryFileSystem(), this.getNameElements());
     } else {
-      return createRelative(getMemoryFileSystem(), this.getNameElements().subList(beginIndex, endIndex));
+      return createRelative(this.getMemoryFileSystem(), this.getNameElements().subList(beginIndex, endIndex));
     }
   }
-  
+
   @Override
   protected List<String> handleSingleDotDot(List<String> normalized) {
     return Collections.emptyList();
   }
-  
+
   @Override
   protected void handleDotDotNormalizationAlreadyModified(List<String> normalized) {
     normalized.remove(normalized.size() - 1);
   }
-  
+
   @Override
   protected List<String> handleDotDotNormalizationNotYetModified(List<String> nameElements, int nameElementsSize, int i) {
     // copy everything preceding the element before ".."
@@ -105,7 +105,7 @@ final class AbsolutePath extends NonEmptyPath {
     }
     return normalized;
   }
-  
+
   @Override
   Path newInstance(MemoryFileSystem fileSystem, List<String> pathElements) {
     return createAboslute(fileSystem, this.root, pathElements);
@@ -180,12 +180,12 @@ final class AbsolutePath extends NonEmptyPath {
       // is other my root?
       return other.equals(this.getRoot());
     }
-    
+
     // named roots under windows
     if (!this.getRoot().startsWith(other.getRoot())) {
       return false;
     }
-    
+
     if (other instanceof ElementPath) {
       ElementPath otherPath = (ElementPath) other;
       int otherNameCount = otherPath.getNameCount();
@@ -216,7 +216,7 @@ final class AbsolutePath extends NonEmptyPath {
     if (other.isRoot()) {
       return false;
     }
-    
+
     if (other instanceof ElementPath) {
       return this.endsWithRelativePath(other);
     } else {
@@ -243,7 +243,7 @@ final class AbsolutePath extends NonEmptyPath {
     }
     if (other instanceof ElementPath) {
       ElementPath otherPath = (ElementPath) other;
-      List<String> resolvedElements = CompositeList.create(this.getNameElements().subList(0, getNameCount() - 1), otherPath.getNameElements());
+      List<String> resolvedElements = CompositeList.create(this.getNameElements().subList(0, this.getNameCount() - 1), otherPath.getNameElements());
       return createAboslute(this.getMemoryFileSystem(), this.root, resolvedElements);
     } else {
       throw new IllegalArgumentException("can't resolve" + other);
@@ -262,7 +262,7 @@ final class AbsolutePath extends NonEmptyPath {
       throw new IllegalArgumentException("paths must have the same root");
     }
     if (other.equals(this.root)) {
-      // other is my root, easy 
+      // other is my root, easy
       return createRelative(this.getMemoryFileSystem(), HomogenousList.create("..", this.getNameCount()));
     } else if (other instanceof ElementPath) {
       // normal case
@@ -286,7 +286,7 @@ final class AbsolutePath extends NonEmptyPath {
     return this.root.equals(other.root)
             && this.equalElementsAs(other.getNameElements());
   }
-  
+
 
   @Override
   public int hashCode() {

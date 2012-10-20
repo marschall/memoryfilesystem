@@ -10,8 +10,6 @@ package com.github.marschall.memoryfilesystem;
  */
 public final class UninstallationFailedException extends RuntimeException {
 
-  private static final long serialVersionUID = -2429997282753129531L;
-
   UninstallationFailedException() {
     super();
   }
@@ -27,5 +25,5 @@ public final class UninstallationFailedException extends RuntimeException {
   UninstallationFailedException(String message, Throwable cause) {
     super(message, cause);
   }
-  
+
 }

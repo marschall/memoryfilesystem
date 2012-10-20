@@ -19,23 +19,23 @@ public class MemoryFileSystemProperties {
 
   public static final String ROOTS_PROPERTY = "roots";
 
+  public static final String FILE_ATTRIBUTE_VIEWS_PROPERTY = "file.attrs";
+
   public static final String USERS_PROPERTY = "users";
 
   public static final String GROUPS_PROPERTY = "groups";
 
   public static final String PATH_STORE_TRANSFORMER_PROPERTY = "path.store.transformer";
-  
+
   public static final String PATH_LOOKUP_TRANSFORMER_PROPERTY = "path.lookup.transformer";
-  
+
   public static final String PRINCIPAL_TRANSFORMER_PROPERTY = "princial.transformer";
-  
+
   public static final String COLLATOR_PROPERTY = "collator";
 
   static final String UNIX_ROOT = "/";
 
   static final List<String> DEFAULT_ROOTS = Collections.singletonList(UNIX_ROOT);
-  
-  static final String BASIC_FILE_ATTRIBUTE_VIEW_NAME = "basic";
 
   static Collator caseSensitiveCollator(Locale locale) {
     Collator collator = Collator.getInstance(locale);

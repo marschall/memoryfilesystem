@@ -17,7 +17,7 @@ final class FileStoreRule implements TestRule {
 
 
   FileStore getFileStore() {
-    return fileStore;
+    return this.fileStore;
   }
 
   @Override
@@ -27,7 +27,7 @@ final class FileStoreRule implements TestRule {
       @Override
       public void evaluate() throws Throwable {
         try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
-          fileStore = getFileStore(fileSystem);
+          FileStoreRule.this.fileStore = this.getFileStore(fileSystem);
           base.evaluate();
         }
       }

@@ -11,12 +11,12 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 final class FileSystemRule implements TestRule {
-  
+
   private FileSystem fileSystem;
 
 
   FileSystem getFileSystem() {
-    return fileSystem;
+    return this.fileSystem;
   }
 
 
@@ -29,12 +29,12 @@ final class FileSystemRule implements TestRule {
        */
       @Override
       public void evaluate() throws Throwable {
-        fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV);
-                
+        FileSystemRule.this.fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV);
+
         try {
           base.evaluate();
         } finally {
-          fileSystem.close();
+          FileSystemRule.this.fileSystem.close();
         }
       }
 

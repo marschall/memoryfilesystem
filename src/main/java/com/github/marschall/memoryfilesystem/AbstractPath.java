@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.List;
 
 abstract class AbstractPath implements Path {
-  
+
   // TODO think about #isEmpty to replace the instanceof checks
   // TODO think about a visitor (visitRelative visitEmpty visitRoot) to replace instanceof checks
 
@@ -18,7 +18,7 @@ abstract class AbstractPath implements Path {
   AbstractPath(MemoryFileSystem fileSystem) {
     this.fileSystem = fileSystem;
   }
-  
+
   static AbstractPath createAboslute(MemoryFileSystem fileSystem, Root root, List<String> nameElements) {
     if (nameElements.isEmpty()) {
       return root;
@@ -26,11 +26,11 @@ abstract class AbstractPath implements Path {
       return new AbsolutePath(fileSystem, root, nameElements);
     }
   }
-  
+
   static AbstractPath createAboslute(MemoryFileSystem fileSystem, Root root, String nameElement) {
     return createAboslute(fileSystem, root, Collections.singletonList(nameElement));
   }
-  
+
   static AbstractPath createRelative(MemoryFileSystem fileSystem, List<String> nameElements) {
     if (nameElements.isEmpty()) {
       return fileSystem.getEmptyPath();
@@ -38,7 +38,7 @@ abstract class AbstractPath implements Path {
       return new RelativePath(fileSystem, nameElements);
     }
   }
-  
+
   static AbstractPath createRelative(MemoryFileSystem fileSystem, String nameElement) {
     return createRelative(fileSystem, Collections.singletonList(nameElement));
   }
@@ -65,7 +65,7 @@ abstract class AbstractPath implements Path {
     if (!this.isSameFileSystem(other)) {
       return false;
     }
-    return startsWith((AbstractPath) other);
+    return this.startsWith((AbstractPath) other);
   }
 
   abstract boolean startsWith(AbstractPath other);
@@ -77,7 +77,7 @@ abstract class AbstractPath implements Path {
     if (!this.isSameFileSystem(other)) {
       return false;
     }
-    return endsWith((AbstractPath) other);
+    return this.endsWith((AbstractPath) other);
   }
 
   abstract boolean endsWith(AbstractPath other);
@@ -85,7 +85,7 @@ abstract class AbstractPath implements Path {
 
   @Override
   public final Path resolve(Path other) {
-    assertSameFileSystem(other);
+    this.assertSameFileSystem(other);
     AbstractPath otherPath = (AbstractPath) other;
     if (otherPath.isRoot()) {
       return other;
@@ -93,7 +93,7 @@ abstract class AbstractPath implements Path {
       // TODO totally unspecified, make configurable
       return other;
     }
-    return resolve(otherPath);
+    return this.resolve(otherPath);
   }
 
   abstract Path resolve(AbstractPath other);
@@ -101,19 +101,19 @@ abstract class AbstractPath implements Path {
 
   @Override
   public final Path resolveSibling(Path other) {
-    assertSameFileSystem(other);
-    return resolveSibling((AbstractPath) other);
+    this.assertSameFileSystem(other);
+    return this.resolveSibling((AbstractPath) other);
   }
 
   abstract Path resolveSibling(AbstractPath other);
-  
+
   abstract boolean isRoot();
 
   @Override
   public Path resolve(String other) {
     return this.resolve(this.fileSystem.getPath(other));
   }
-  
+
   @Override
   public Path resolveSibling(String other) {
     return this.resolveSibling(this.fileSystem.getPath(other));
@@ -122,12 +122,12 @@ abstract class AbstractPath implements Path {
 
   @Override
   public final Path relativize(Path other) {
-    assertSameFileSystem(other);
-    return relativize((AbstractPath) other);
+    this.assertSameFileSystem(other);
+    return this.relativize((AbstractPath) other);
   }
 
   abstract Path relativize(AbstractPath other);
-  
+
   private boolean isSameFileSystem(Path other) {
     return other.getFileSystem() == this.getFileSystem();
   }
@@ -137,13 +137,13 @@ abstract class AbstractPath implements Path {
       throw new ProviderMismatchException();
     }
   }
-  
+
   @Override
   public int compareTo(Path other) {
     if (this == other) {
       return 0;
     }
-    
+
     FileSystemProvider thisProvider = this.getFileSystem().provider();
     FileSystemProvider otherProvider = other.getFileSystem().provider();
     if (thisProvider != otherProvider) {
@@ -161,7 +161,7 @@ abstract class AbstractPath implements Path {
     }
     return this.compareTo(otherPath);
   }
-  
+
   abstract int compareTo(AbstractPath other);
 
 

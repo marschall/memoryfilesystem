@@ -57,7 +57,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     this.valideUri(uri);
     String key = this.getFileSystemKey(uri);
     EnvironmentParser parser = new EnvironmentParser(env);
-    MemoryFileSystem fileSystem = createNewFileSystem(key, parser);
+    MemoryFileSystem fileSystem = this.createNewFileSystem(key, parser);
     MemoryFileSystem previous = this.fileSystems.putIfAbsent(key, fileSystem);
     if (previous != null) {
       String message = "File system " + uri.getScheme() + ':' + key + " already exists";
@@ -118,9 +118,9 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     fileSystem.setCurrentWorkingDirectory(defaultDirectory);
     return fileSystem;
   }
-  
+
   private MemoryUserPrincipalLookupService createUserPrincipalLookupService(EnvironmentParser parser,
-      ClosedFileSystemChecker checker) {
+          ClosedFileSystemChecker checker) {
     List<String> userNames = parser.getUserNames();
     List<String> groupNames = parser.getGroupNames();
     StringTransformer nameTransfomer = parser.getPrincipalNameTransfomer();
@@ -138,7 +138,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     }
     return fileSystem;
   }
-  
+
   private PathParser buildPathParser(EnvironmentParser parser) {
     String separator = parser.getSeparator();
     if (parser.isSingleEmptyRoot()) {
@@ -173,7 +173,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
       return schemeSpecificPart.substring(0, colonIndex);
     }
   }
-  
+
   private String getFileSystemPath(URI uri) {
     //REVIEW check for getPath() first()?
     String schemeSpecificPart = uri.getSchemeSpecificPart();
@@ -188,19 +188,19 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   @Override
   public Path getPath(URI uri) {
-    String key = getFileSystemKey(uri);
+    String key = this.getFileSystemKey(uri);
     MemoryFileSystem fileSystem = this.fileSystems.get(key);
     if (fileSystem == null) {
       throw new FileSystemNotFoundException("memory file system \"" + key + "\" not found");
     }
-    return fileSystem.getPath(getFileSystemPath(uri));
+    return fileSystem.getPath(this.getFileSystemPath(uri));
   }
 
 
   @Override
   public SeekableByteChannel newByteChannel(Path path,
-      Set<? extends OpenOption> options, FileAttribute<?>... attrs)
-          throws IOException {
+          Set<? extends OpenOption> options, FileAttribute<?>... attrs)
+                  throws IOException {
 
     AbstractPath abstractPath = this.castPath(path);
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
@@ -222,7 +222,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
     memoryFileSystem.createDirectory(abstractPath, attrs);
   }
-  
+
   @Override
   public void createSymbolicLink(Path link, Path target, FileAttribute<?>... attrs) throws IOException {
     AbstractPath linkPath = this.castPath(link);
@@ -245,7 +245,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   @Override
   public void copy(Path source, Path target, CopyOption... options)
-      throws IOException {
+          throws IOException {
     // TODO Auto-generated method stub
     throw new UnsupportedOperationException();
   }
@@ -253,7 +253,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   @Override
   public void move(Path source, Path target, CopyOption... options)
-      throws IOException {
+          throws IOException {
     // TODO Auto-generated method stub
     throw new UnsupportedOperationException();
   }
@@ -271,8 +271,8 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   @Override
   public boolean isHidden(Path path) throws IOException {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
+    AbstractPath abstractPath = this.castPath(path);
+    return abstractPath.getMemoryFileSystem().isHidden(abstractPath);
   }
 
 
@@ -299,8 +299,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   @Override
   public <V extends FileAttributeView> V getFileAttributeView(Path path, Class<V> type, LinkOption... options) {
-    // TODO Auto-generated method stub
-    FileSystem fileSystem = path.getFileSystem();
+    path.getFileSystem();
     throw new UnsupportedOperationException();
   }
 
@@ -324,14 +323,11 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   public void setAttribute(Path path, String attribute, Object value, LinkOption... options) throws IOException {
     // TODO Auto-generated method stub
     int colonIndex = attribute.indexOf(':');
-    String viewName;
     if (colonIndex == -1) {
-      viewName = "basic";
     } else {
-      viewName = attribute.substring(0, colonIndex);
+      attribute.substring(0, colonIndex);
     }
-    // TODO check bounds
-    String attributeName = attribute.substring(colonIndex + 1, attribute.length());
+    attribute.substring(colonIndex + 1, attribute.length());
     throw new UnsupportedOperationException();
   }
 

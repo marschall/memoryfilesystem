@@ -12,7 +12,7 @@ import java.util.List;
 import org.junit.Test;
 
 public class HomogenousListTest {
-  
+
   @Test
   public void contains() {
     assertTrue(HomogenousList.create("..", 42).contains(".."));
@@ -25,7 +25,7 @@ public class HomogenousListTest {
     assertEquals(Collections.singletonList(".."), HomogenousList.create("..", 1));
     assertEquals(Arrays.asList("..", ".."), HomogenousList.create("..", 2));
   }
-  
+
   @Test
   public void subList() {
     List<String> list = HomogenousList.create("..", 42);
@@ -34,12 +34,12 @@ public class HomogenousListTest {
     assertEquals(Arrays.asList("..", ".."), list.subList(7, 9));
     assertSame(list, list.subList(0, 42));
   }
-  
+
   @Test(expected = IndexOutOfBoundsException.class)
   public void indexUnderflow() {
     HomogenousList.create("..", 42).get(-1);
   }
-  
+
   @Test(expected = IndexOutOfBoundsException.class)
   public void indexOverflow() {
     HomogenousList.create("..", 42).get(42);

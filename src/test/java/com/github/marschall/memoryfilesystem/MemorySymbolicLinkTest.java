@@ -17,21 +17,21 @@ public class MemorySymbolicLinkTest {
 
   @Before
   public void setUp() {
-    memoryFile = new MemorySymbolicLink("", null);
+    this.memoryFile = new MemorySymbolicLink("", null);
   }
 
   @Test
   public void testCheckMethods() throws IOException {
-    BasicFileAttributes attributes = memoryFile.getBasicFileAttributeView().readAttributes();
-    
+    BasicFileAttributes attributes = this.memoryFile.getBasicFileAttributeView().readAttributes();
+
     assertFalse(attributes.isRegularFile());
-    
+
     assertFalse(attributes.isDirectory());
     assertFalse(attributes.isOther());
     assertTrue(attributes.isSymbolicLink());
-    
+
     assertEquals(-1L, attributes.size());
-    
+
     assertNotNull(attributes.fileKey());
   }
 

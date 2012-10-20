@@ -16,7 +16,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.NonReadableChannelException;
 import java.nio.channels.SeekableByteChannel;
@@ -25,9 +24,12 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.text.Normalizer;
 import java.text.Normalizer.Form;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -39,21 +41,31 @@ public class FileSystemComptiblity {
     Path path = Paths.get("");
     System.out.println(path.toUri());
   }
-  
+
+  @Test
+  public void attributeNames() throws IOException {
+    FileSystem fileSystem = FileSystems.getDefault();
+    Path path = fileSystem.getPath("/");
+    Map<String, Object> attributes = Files.readAttributes(path, "posix:*");
+    for (Entry<String, Object> each : attributes.entrySet()) {
+      System.out.printf("%s -> %s%n", each.getKey(), each.getValue());
+    }
+  }
+
   @Test
   public void macOsNormalization() throws IOException {
     String aUmlaut = "\u00C4";
     Path aPath = Paths.get(aUmlaut);
     String normalized = Normalizer.normalize(aUmlaut, Form.NFD);
     Path nPath = Paths.get(normalized);
-    
+
     Path createdFile = null;
-    try { 
+    try {
       createdFile = Files.createFile(aPath);
       assertEquals(1, createdFile.getFileName().toString().length());
       assertEquals(1, createdFile.toAbsolutePath().getFileName().toString().length());
       assertEquals(2, createdFile.toRealPath().getFileName().toString().length());
-      
+
       assertTrue(Files.exists(aPath));
       assertTrue(Files.exists(nPath));
       assertTrue(Files.isSameFile(aPath, nPath));
@@ -64,16 +76,16 @@ public class FileSystemComptiblity {
         Files.delete(createdFile);
       }
     }
-    
+
   }
-  
+
   @Test
   public void macOsComparison() throws IOException {
     Path aLower = Paths.get("a");
     Path aUpper = Paths.get("A");
     assertThat(aLower, not(equalTo(aUpper)));
     Path createdFile = null;
-    try { 
+    try {
       createdFile = Files.createFile(aLower);
       assertTrue(Files.exists(aLower));
       assertTrue(Files.exists(aUpper));
@@ -84,7 +96,15 @@ public class FileSystemComptiblity {
       }
     }
   }
-  
+
+  @Test
+  public void unixRoot() throws IOException {
+    Path root = FileSystems.getDefault().getRootDirectories().iterator().next();
+    BasicFileAttributes attributes = Files.readAttributes(root, BasicFileAttributes.class);
+    assertTrue(attributes.isDirectory());
+    assertFalse(attributes.isRegularFile());
+  }
+
   @Test
   public void macOsPaths() {
     String aUmlaut = "\u00C4";
@@ -107,12 +127,12 @@ public class FileSystemComptiblity {
     assertEquals("c:\\", c2.toString());
     assertTrue(c1.startsWith(c2));
     assertTrue(c1.startsWith("c:\\"));
-    
+
     //TODO
-    
+
     c1.toRealPath();
   }
-  
+
   @Test
   public void positionAfterTruncate() throws IOException {
     Path tempFile = Files.createTempFile("prefix", "suffix");
@@ -153,20 +173,20 @@ public class FileSystemComptiblity {
     Path path = Files.createTempFile("sample", ".txt");
     try (SeekableByteChannel channel = Files.newByteChannel(path, WRITE)) {
       assertEquals(0L, channel.position());
-      
+
       channel.position(5L);
       assertEquals(5L, channel.position());
       assertEquals(0, channel.size());
-      
+
       ByteBuffer src = ByteBuffer.wrap(new byte[]{1, 2, 3, 4, 5});
       assertEquals(5, channel.write(src));
-      
+
       assertEquals(10L, channel.position());
       assertEquals(10L, channel.size());
     } finally {
       Files.delete(path);
     }
-    
+
   }
   @Test
   public void append() throws IOException {
@@ -184,51 +204,51 @@ public class FileSystemComptiblity {
       Files.delete(path);
     }
   }
-  
+
   @Test
   public void toUri() {
     FileSystem fileSystem = FileSystems.getDefault();
     Path path = fileSystem.getPath("Users");
-    URI uri = path.toUri();
+    path.toUri();
   }
-  
+
   @Test
   public void iterator() {
     FileSystem fileSystem = FileSystems.getDefault();
     Path path = fileSystem.getPath("/Users/marschall/Documents");
     Iterator<Path> iterator = path.iterator();
     while (iterator.hasNext()) {
-      Path next = (Path) iterator.next();
+      Path next = iterator.next();
       assertFalse(next.isAbsolute());
     }
   }
-  
+
   @Test
   @Ignore("mac os")
   public void getPath() {
     FileSystem fileSystem = FileSystems.getDefault();
     Path path = fileSystem.getPath("/Users/marschall/Documents");
     assertTrue(Files.exists(path));
-    
+
     path = fileSystem.getPath("/", "Users/marschall/Documents");
     assertTrue(Files.exists(path));
-    
+
     path = fileSystem.getPath("/", "/Users/marschall/Documents");
     assertTrue(Files.exists(path));
-    
+
     path = fileSystem.getPath("", "/Users/marschall/Documents");
     assertTrue(Files.exists(path));
-    
+
     path = fileSystem.getPath("/Users", "/marschall/Documents");
     assertTrue(Files.exists(path));
-    
+
     path = fileSystem.getPath("/Users", "marschall/Documents");
     assertTrue(Files.exists(path));
-    
+
     path = fileSystem.getPath("/", "Users/marschall/Documents");
     assertTrue(Files.exists(path));
   }
-  
+
   @Test
   public void pathOrdering() {
     FileSystem fileSystem = FileSystems.getDefault();
@@ -237,38 +257,38 @@ public class FileSystemComptiblity {
     Path a = fileSystem.getPath("a");
     Path slashA = fileSystem.getPath("/a");
     Path slashAA = fileSystem.getPath("/a/a");
-    
+
     assertTrue(root.compareTo(a) < 0);
     assertTrue(root.compareTo(slashA) < 0);
     assertTrue(a.compareTo(slashA) > 0);
     assertThat(a, greaterThan(slashA));
     assertThat(slashA, lessThan(a));
     assertTrue(slashA.compareTo(slashAA) < 0);
-    
+
     assertThat(a, greaterThan(empty));
   }
-  
+
   @Test
   public void startsWith() {
     FileSystem fileSystem = FileSystems.getDefault();
-    
+
     assertTrue(fileSystem.getPath("a").startsWith(fileSystem.getPath("a")));
     assertFalse(fileSystem.getPath("a").startsWith(fileSystem.getPath("/a")));
     assertFalse(fileSystem.getPath("a").startsWith(fileSystem.getPath("/")));
     assertFalse(fileSystem.getPath("a").startsWith(fileSystem.getPath("")));
-    
+
     assertTrue(fileSystem.getPath("/a").startsWith(fileSystem.getPath("/a")));
     assertFalse(fileSystem.getPath("/a").startsWith(fileSystem.getPath("a")));
     assertTrue(fileSystem.getPath("/a").startsWith(fileSystem.getPath("/")));
     assertFalse(fileSystem.getPath("/a").startsWith(fileSystem.getPath("")));
-    
+
     assertTrue(fileSystem.getPath("/").startsWith(fileSystem.getPath("/")));
     assertFalse(fileSystem.getPath("/").startsWith(fileSystem.getPath("")));
     assertFalse(fileSystem.getPath("/").startsWith(fileSystem.getPath("a")));
     assertFalse(fileSystem.getPath("/").startsWith(fileSystem.getPath("/a")));
     assertFalse(fileSystem.getPath("/").startsWith(fileSystem.getPath("a/b")));
     assertFalse(fileSystem.getPath("/").startsWith(fileSystem.getPath("/a/b")));
-    
+
     assertFalse(fileSystem.getPath("").startsWith(fileSystem.getPath("/")));
     assertTrue(fileSystem.getPath("").startsWith(fileSystem.getPath("")));
     assertFalse(fileSystem.getPath("").startsWith(fileSystem.getPath("a")));
@@ -276,11 +296,11 @@ public class FileSystemComptiblity {
     assertFalse(fileSystem.getPath("").startsWith(fileSystem.getPath("a/b")));
     assertFalse(fileSystem.getPath("").startsWith(fileSystem.getPath("/a/b")));
   }
-  
+
   @Test
   public void endsWith() {
     FileSystem fileSystem = FileSystems.getDefault();
-    
+
     assertTrue(fileSystem.getPath("a").endsWith(fileSystem.getPath("a")));
     assertFalse(fileSystem.getPath("a").endsWith(fileSystem.getPath("a/b")));
     assertFalse(fileSystem.getPath("a").endsWith(fileSystem.getPath("/a")));
@@ -292,7 +312,7 @@ public class FileSystemComptiblity {
     assertFalse(fileSystem.getPath("a/b").endsWith(fileSystem.getPath("/a")));
     assertFalse(fileSystem.getPath("a/b").endsWith(fileSystem.getPath("/")));
     assertFalse(fileSystem.getPath("a/b").endsWith(fileSystem.getPath("")));
-    
+
     assertTrue(fileSystem.getPath("/a").endsWith(fileSystem.getPath("/a")));
     assertFalse(fileSystem.getPath("/a").endsWith(fileSystem.getPath("/a/b")));
     assertTrue(fileSystem.getPath("/a").endsWith(fileSystem.getPath("a")));
@@ -306,14 +326,14 @@ public class FileSystemComptiblity {
     assertFalse(fileSystem.getPath("/a/b").endsWith(fileSystem.getPath("a")));
     assertFalse(fileSystem.getPath("/a/b").endsWith(fileSystem.getPath("/")));
     assertFalse(fileSystem.getPath("/a/b").endsWith(fileSystem.getPath("")));
-    
+
     assertTrue(fileSystem.getPath("/").endsWith(fileSystem.getPath("/")));
     assertFalse(fileSystem.getPath("/").endsWith(fileSystem.getPath("")));
     assertFalse(fileSystem.getPath("/").endsWith(fileSystem.getPath("a")));
     assertFalse(fileSystem.getPath("/").endsWith(fileSystem.getPath("/a")));
     assertFalse(fileSystem.getPath("/").endsWith(fileSystem.getPath("a/b")));
     assertFalse(fileSystem.getPath("/").endsWith(fileSystem.getPath("/a/b")));
-    
+
     assertFalse(fileSystem.getPath("").endsWith(fileSystem.getPath("/")));
     assertTrue(fileSystem.getPath("").endsWith(fileSystem.getPath("")));
     assertFalse(fileSystem.getPath("").endsWith(fileSystem.getPath("a")));
@@ -321,52 +341,52 @@ public class FileSystemComptiblity {
     assertFalse(fileSystem.getPath("").endsWith(fileSystem.getPath("a/b")));
     assertFalse(fileSystem.getPath("").endsWith(fileSystem.getPath("/a/b")));
   }
-  
+
   @Test
   public void resolve() {
     FileSystem fileSystem = FileSystems.getDefault();
-    
+
     assertEquals(fileSystem.getPath("/"), fileSystem.getPath("/a").resolve(fileSystem.getPath("/")));
   }
-  
+
   @Test
   public void resolveSibling() {
     FileSystem fileSystem = FileSystems.getDefault();
-    
+
     assertEquals(fileSystem.getPath("a"), fileSystem.getPath("/").resolveSibling(fileSystem.getPath("a")));
     assertEquals(fileSystem.getPath("b"), fileSystem.getPath("a").resolveSibling(fileSystem.getPath("b")));
     assertEquals(fileSystem.getPath(""), fileSystem.getPath("/").resolveSibling(fileSystem.getPath("")));
-    
+
     assertEquals(fileSystem.getPath("/c/d"), fileSystem.getPath("/a/b").resolveSibling(fileSystem.getPath("/c/d")));
     assertEquals(fileSystem.getPath("/c/d"), fileSystem.getPath("a/b").resolveSibling(fileSystem.getPath("/c/d")));
-    
+
     assertEquals(fileSystem.getPath(""), fileSystem.getPath("a").resolveSibling(fileSystem.getPath("")));
     assertEquals(fileSystem.getPath("/a"), fileSystem.getPath("/a/b").resolveSibling(fileSystem.getPath("")));
     assertEquals(fileSystem.getPath("a"), fileSystem.getPath("a/b").resolveSibling(fileSystem.getPath("")));
     assertEquals(fileSystem.getPath("a/b"), fileSystem.getPath("").resolveSibling(fileSystem.getPath("a/b")));
     assertEquals(fileSystem.getPath("/a/b"), fileSystem.getPath("").resolveSibling(fileSystem.getPath("/a/b")));
-    
+
     assertEquals(fileSystem.getPath("/"), fileSystem.getPath("a/b").resolveSibling(fileSystem.getPath("/")));
     assertEquals(fileSystem.getPath("/"), fileSystem.getPath("/a/b").resolveSibling(fileSystem.getPath("/")));
     assertEquals(fileSystem.getPath("/"), fileSystem.getPath("").resolveSibling(fileSystem.getPath("/")));
-    
+
     assertEquals(fileSystem.getPath("/"), fileSystem.getPath("/a").resolveSibling(fileSystem.getPath("")));
     assertEquals(fileSystem.getPath(""), fileSystem.getPath("a").resolveSibling(fileSystem.getPath("")));
   }
-  
+
   @Test
   public void aboluteGetParent() {
     FileSystem fileSystem = FileSystems.getDefault();
-    
+
     Path usrBin = fileSystem.getPath("/usr/bin");
     Path usr = fileSystem.getPath("/usr");
-    
+
     assertEquals(usr, usrBin.getParent());
     Path root = fileSystem.getRootDirectories().iterator().next();
     assertEquals(root, usr.getParent());
-    
+
     assertEquals(fileSystem.getPath("usr/bin/a"), fileSystem.getPath("usr/bin").resolve(fileSystem.getPath("a")));
-    
+
     assertEquals(fileSystem.getPath("/"), fileSystem.getPath("/../../..").normalize());
     assertEquals(fileSystem.getPath("/a/b"), fileSystem.getPath("/../a/b").normalize());
     assertEquals(fileSystem.getPath("../../.."), fileSystem.getPath("../../..").normalize());
@@ -375,39 +395,39 @@ public class FileSystemComptiblity {
     assertEquals(fileSystem.getPath("a"), fileSystem.getPath("a/b/..").normalize());
     assertEquals(fileSystem.getPath(""), fileSystem.getPath("a/..").normalize());
     assertEquals(fileSystem.getPath(".."), fileSystem.getPath("..").normalize());
-//    System.out.println(fileSystem.getPath("a").subpath(0, 0)); // throws excepption
+    //    System.out.println(fileSystem.getPath("a").subpath(0, 0)); // throws excepption
     assertEquals(fileSystem.getPath("a"), fileSystem.getPath("/a/b").getName(0));
     assertEquals(fileSystem.getPath("b"), fileSystem.getPath("/a/b").getName(1));
     assertEquals(fileSystem.getPath("a"), fileSystem.getPath("a/b").getName(0));
     assertEquals(fileSystem.getPath("b"), fileSystem.getPath("a/b").getName(1));
   }
-  
+
   @Test
   public void relativeGetParent() {
-    
+
     FileSystem fileSystem = FileSystems.getDefault();
     Path usrBin = fileSystem.getPath("usr/bin");
     Path usr = fileSystem.getPath("usr");
-    
+
     assertEquals(usr, usrBin.getParent());
     assertNull(usr.getParent());
   }
-  
+
   @Test
   public void getFileName() {
-    
+
     FileSystem fileSystem = FileSystems.getDefault();
     Path usrBin = fileSystem.getPath("/usr/bin");
     Path bin = fileSystem.getPath("bin");
-    
+
     assertTrue(Files.isDirectory(usrBin));
     assertFalse(Files.isRegularFile(usrBin));
-    
+
     Path fileName = usrBin.getFileName();
     assertEquals(fileName, bin);
     assertFalse(fileName.isAbsolute());
   }
-  
+
   @Test
   public void emptyPath() {
     FileSystem fileSystem = FileSystems.getDefault();
@@ -415,7 +435,7 @@ public class FileSystemComptiblity {
     assertFalse(path.isAbsolute());
     assertNull(path.getRoot());
   }
-  
+
   @Test
   public void relativePath() {
     FileSystem fileSystem = FileSystems.getDefault();
@@ -423,7 +443,7 @@ public class FileSystemComptiblity {
     assertFalse(path.isAbsolute());
     assertNull(path.getRoot());
   }
-  
+
   @Test
   public void absolutePath() {
     FileSystem fileSystem = FileSystems.getDefault();
@@ -431,7 +451,7 @@ public class FileSystemComptiblity {
     assertTrue(path.isAbsolute());
     assertNotNull(path.getRoot());
   }
-  
+
   @Test(expected = IllegalArgumentException.class)
   public void slash() {
     FileSystem fileSystem = FileSystems.getDefault();

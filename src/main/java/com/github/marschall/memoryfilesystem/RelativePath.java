@@ -14,7 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 
 final class RelativePath extends NonEmptyPath {
-  
+
 
   RelativePath(MemoryFileSystem fileSystem, List<String> nameElements) {
     super(fileSystem, nameElements);
@@ -24,7 +24,7 @@ final class RelativePath extends NonEmptyPath {
   public boolean isAbsolute() {
     return false;
   }
-  
+
   @Override
   public String toString() {
     StringBuilder buffer = new StringBuilder();
@@ -51,7 +51,7 @@ final class RelativePath extends NonEmptyPath {
       return null;
     } else {
       List<String> subList = this.getNameElements().subList(0, this.getNameElements().size() - 1);
-      return createRelative(getMemoryFileSystem(), subList);
+      return createRelative(this.getMemoryFileSystem(), subList);
     }
   }
 
@@ -64,11 +64,11 @@ final class RelativePath extends NonEmptyPath {
     if (index >= nameCount) {
       throw new IllegalArgumentException("index must not be bigger than " + (nameCount - 1) +  " but was " + index);
     }
-    
+
     if (nameCount == 1) {
       return this;
     } else {
-      return createRelative(getMemoryFileSystem(), this.getNameElements().get(index));
+      return createRelative(this.getMemoryFileSystem(), this.getNameElements().get(index));
     }
   }
 
@@ -78,10 +78,10 @@ final class RelativePath extends NonEmptyPath {
     if (endIndex - beginIndex == this.getNameCount()) {
       return this;
     } else {
-      return createRelative(getMemoryFileSystem(), this.getNameElements().subList(beginIndex, endIndex));
+      return createRelative(this.getMemoryFileSystem(), this.getNameElements().subList(beginIndex, endIndex));
     }
   }
-  
+
   @Override
   Path newInstance(MemoryFileSystem fileSystem, List<String> pathElements) {
     return createRelative(this.getMemoryFileSystem(), pathElements);
@@ -108,7 +108,7 @@ final class RelativePath extends NonEmptyPath {
     // TODO Auto-generated function stub
     throw new UnsupportedOperationException();
   }
-  
+
   @Override
   int compareToNonRoot(AbstractPath other) {
     if (other.isAbsolute()) {
@@ -161,7 +161,7 @@ final class RelativePath extends NonEmptyPath {
     if (other.isRoot()) {
       return false;
     }
-    
+
     if (other instanceof ElementPath) {
       return this.endsWithRelativePath(other);
     } else {
@@ -187,7 +187,7 @@ final class RelativePath extends NonEmptyPath {
     }
     if (other instanceof ElementPath) {
       ElementPath otherPath = (ElementPath) other;
-      List<String> resolvedElements = CompositeList.create(this.getNameElements().subList(0, getNameCount() - 1), otherPath.getNameElements());
+      List<String> resolvedElements = CompositeList.create(this.getNameElements().subList(0, this.getNameCount() - 1), otherPath.getNameElements());
       return createRelative(this.getMemoryFileSystem(), resolvedElements);
     } else {
       throw new IllegalArgumentException("can't resolve" + other);
@@ -208,7 +208,7 @@ final class RelativePath extends NonEmptyPath {
       throw new IllegalArgumentException("unsupported path argument");
     }
   }
-  
+
   @Override
   public boolean equals(Object obj) {
     if (obj == this) {
@@ -218,12 +218,12 @@ final class RelativePath extends NonEmptyPath {
       return false;
     }
     ElementPath other = (ElementPath) obj;
-    // compareTo take memory file system key into account to ensure 
+    // compareTo take memory file system key into account to ensure
     // a.compareTo(b) == 0 iff a.equals(b)
     return this.getMemoryFileSystem().getKey().equals(other.getMemoryFileSystem().getKey())
             && this.equalElementsAs(other.getNameElements());
   }
-  
+
   @Override
   public int hashCode() {
     // TODO expensive, safe
@@ -236,6 +236,7 @@ final class RelativePath extends NonEmptyPath {
     return result;
   }
 
+  @Override
   protected List<String> handleDotDotNormalizationNotYetModified(List<String> nameElements,
           int nameElementsSize, int i) {
     // copy everything preceding the element before ".." unless it's ".."
@@ -248,9 +249,10 @@ final class RelativePath extends NonEmptyPath {
     } else {
       return nameElements;
     }
-    
+
   }
 
+  @Override
   protected void handleDotDotNormalizationAlreadyModified(List<String> normalized) {
     int lastIndex = normalized.size() - 1;
     if (!normalized.get(lastIndex).equals("..")) {
@@ -262,6 +264,7 @@ final class RelativePath extends NonEmptyPath {
     }
   }
 
+  @Override
   protected List<String> handleSingleDotDot(List<String> normalized) {
     return normalized;
   }

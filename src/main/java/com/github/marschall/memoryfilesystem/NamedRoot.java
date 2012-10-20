@@ -18,17 +18,17 @@ class NamedRoot extends Root {
     this.letter = name.charAt(0);
     this.stringValue = Character.toString(this.letter) + ':' + fileSystem.getSeparator();
   }
-  
+
   @Override
   String getKey() {
-    return Character.toString(letter);
+    return Character.toString(this.letter);
   }
-  
+
   @Override
   boolean isNamed() {
     return true;
   }
-  
+
   @Override
   public boolean startsWith(String other) {
     return this.samePathAs(other);
@@ -38,7 +38,7 @@ class NamedRoot extends Root {
   public boolean endsWith(String other) {
     return this.samePathAs(other);
   }
-  
+
 
   @Override
   boolean startsWith(AbstractPath other) {
@@ -49,7 +49,7 @@ class NamedRoot extends Root {
   boolean endsWith(AbstractPath other) {
     return this.samePathAs(other);
   }
-  
+
 
   private boolean samePathAs(AbstractPath other) {
     if (!(other instanceof NamedRoot)) {
@@ -59,9 +59,9 @@ class NamedRoot extends Root {
     //TODO safe collator key
     Collator collator = this.getMemoryFileSystem().getCollator();
     return collator.equals(Character.toString(this.letter), Character.toString(otherRoot.letter));
-    
+
   }
-  
+
   private boolean samePathAs(String other) {
     if (other.length() != 3) {
       return false;
@@ -70,7 +70,7 @@ class NamedRoot extends Root {
       return false;
     }
     char otherLast = other.charAt(2);
-    if (otherLast != '/' && otherLast != getMemoryFileSystem().getSeparator().charAt(0)) {
+    if (otherLast != '/' && otherLast != this.getMemoryFileSystem().getSeparator().charAt(0)) {
       return false;
     }
     //TODO safe collator key
@@ -91,7 +91,7 @@ class NamedRoot extends Root {
       throw new AssertionError("could not create URI");
     }
   }
-  
+
   @Override
   int compareTo(AbstractPath other) {
     if (!other.isRoot()) {
@@ -103,7 +103,7 @@ class NamedRoot extends Root {
     Collator collator = this.getMemoryFileSystem().getCollator();
     return collator.compare(Character.toString(this.letter), Character.toString(otherRoot.letter));
   }
-  
+
   @Override
   public boolean equals(Object obj) {
     if (obj == this) {
@@ -120,7 +120,7 @@ class NamedRoot extends Root {
     Collator collator = this.getMemoryFileSystem().getCollator();
     return collator.equals(Character.toString(this.letter), Character.toString(other.letter));
   }
-  
+
   @Override
   public int hashCode() {
     // TODO safe expensive

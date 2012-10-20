@@ -13,8 +13,6 @@ final class AppendingBlockChannel extends BlockChannel {
     this.startPosition = startPosition;
   }
 
-
-
   @Override
   void writeCheck() {
     // an appending channel is always writable
@@ -31,7 +29,7 @@ final class AppendingBlockChannel extends BlockChannel {
 
   @Override
   public int write(ByteBuffer src) throws IOException {
-    try (AutoRelease lock = writeLock()) {
+    try (AutoRelease lock = this.writeLock()) {
       int written = this.memoryContents.writeAtEnd(src);
       this.position = this.memoryContents.size();
       return written;

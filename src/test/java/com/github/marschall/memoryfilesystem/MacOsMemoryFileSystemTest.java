@@ -24,14 +24,14 @@ public class MacOsMemoryFileSystemTest {
       Path aPath = fileSystem.getPath(aUmlaut);
       String normalized = Normalizer.normalize(aUmlaut, Form.NFD);
       Path nPath = fileSystem.getPath(normalized);
-      
+
       Path createdFile = null;
-      try { 
+      try {
         createdFile = Files.createFile(aPath);
         assertEquals(1, createdFile.getFileName().toString().length());
         assertEquals(1, createdFile.toAbsolutePath().getFileName().toString().length());
         assertEquals(2, createdFile.toRealPath().getFileName().toString().length());
-        
+
         assertTrue(Files.exists(aPath));
         assertTrue(Files.exists(nPath));
         assertTrue(Files.isSameFile(aPath, nPath));
@@ -42,11 +42,11 @@ public class MacOsMemoryFileSystemTest {
           Files.delete(createdFile);
         }
       }
-      
+
     }
-    
+
   }
-  
+
   @Test
   public void macOsComparison() throws IOException {
     try (FileSystem fileSystem = MemoryFileSystemBuilder.newMacOs().build("uri")) {
@@ -54,7 +54,7 @@ public class MacOsMemoryFileSystemTest {
       Path aUpper = fileSystem.getPath("A");
       assertThat(aLower, not(equalTo(aUpper)));
       Path createdFile = null;
-      try { 
+      try {
         createdFile = Files.createFile(aLower);
         assertTrue(Files.exists(aLower));
         assertTrue(Files.exists(aUpper));
@@ -66,7 +66,7 @@ public class MacOsMemoryFileSystemTest {
       }
     }
   }
-  
+
   @Test
   public void macOsPaths() throws IOException {
     try (FileSystem fileSystem = MemoryFileSystemBuilder.newMacOs().build("uri")) {
@@ -80,5 +80,5 @@ public class MacOsMemoryFileSystemTest {
       assertThat(aPath, not(equalTo(nPath)));
     }
   }
-  
+
 }

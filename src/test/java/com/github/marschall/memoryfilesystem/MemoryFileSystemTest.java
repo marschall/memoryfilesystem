@@ -34,55 +34,55 @@ public class MemoryFileSystemTest {
 
   @Rule
   public final FileSystemRule rule = new FileSystemRule();
-  
+
   @Test(expected = UnsupportedOperationException.class)
   public void getPathMatcherUnknown() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     fileSystem.getPathMatcher("syntax:patten");
   }
-  
+
   @Test(expected = IllegalArgumentException.class)
   public void getPathMatcherInvalid1() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     fileSystem.getPathMatcher("invalid");
   }
-  
+
   @Test(expected = IllegalArgumentException.class)
   public void getPathMatcherInvalid2() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     fileSystem.getPathMatcher("invalid:");
   }
-  
+
   @Test
   public void getPathMatcherGlob() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     PathMatcher matcher = fileSystem.getPathMatcher("glob:*.java");
     assertTrue(matcher instanceof GlobPathMatcher);
   }
-  
+
   @Test
   public void getPathMatcherRegex() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     PathMatcher matcher = fileSystem.getPathMatcher("regex:.*\\.java");
     assertTrue(matcher instanceof RegexPathMatcher);
   }
-  
+
   @Test(expected = PatternSyntaxException.class)
   public void getPathMatcherRegexInvalid() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     PathMatcher matcher = fileSystem.getPathMatcher("regex:*\\.java");
     assertTrue(matcher instanceof RegexPathMatcher);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void emptySubPath() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     assertEquals(fileSystem.getPath(""), fileSystem.getPath("").subpath(0, 0));
   }
 
   @Test
   public void subPath() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     assertEquals(fileSystem.getPath("a"), fileSystem.getPath("a").subpath(0, 1));
     assertEquals(fileSystem.getPath("a"), fileSystem.getPath("/a").subpath(0, 1));
     assertEquals(fileSystem.getPath("b"), fileSystem.getPath("/a/b").subpath(1, 2));
@@ -100,7 +100,7 @@ public class MemoryFileSystemTest {
 
   @Test
   public void normalizeRoot() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path root = fileSystem.getPath("/");
 
     assertEquals(root, root.normalize());
@@ -108,7 +108,7 @@ public class MemoryFileSystemTest {
 
   @Test
   public void normalizeAbsolute() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
 
     assertEquals(fileSystem.getPath("/a"), fileSystem.getPath("/a").normalize());
     assertEquals(fileSystem.getPath("/a"), fileSystem.getPath("/a/.").normalize());
@@ -132,7 +132,7 @@ public class MemoryFileSystemTest {
 
   @Test
   public void normalizeRelative() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
 
     assertEquals(fileSystem.getPath("a"), fileSystem.getPath("a").normalize());
     assertEquals(fileSystem.getPath("a"), fileSystem.getPath("a/.").normalize());
@@ -144,18 +144,18 @@ public class MemoryFileSystemTest {
     assertEquals(fileSystem.getPath("../../a/b"), fileSystem.getPath("../../a/b/c/..").normalize());
     assertEquals(fileSystem.getPath("../../a/b"), fileSystem.getPath("../../a/b/c/./..").normalize());
   }
-  
+
   @Test
   public void resolveRoot() {
-    FileSystem fileSystem = rule.getFileSystem();
-    
+    FileSystem fileSystem = this.rule.getFileSystem();
+
     assertEquals(fileSystem.getPath("/"), fileSystem.getPath("/a").resolve(fileSystem.getPath("/")));
     assertEquals(fileSystem.getPath("/"), fileSystem.getPath("a").resolve(fileSystem.getPath("/")));
   }
 
   @Test
   public void resolveAbsoluteOtherAbsolute() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path absolute = fileSystem.getPath("/a/b");
 
     assertEquals(absolute, fileSystem.getPath("").resolve(absolute));
@@ -166,7 +166,7 @@ public class MemoryFileSystemTest {
 
   @Test
   public void resolveAbsoluteOtherRelative() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path realtive = fileSystem.getPath("a/b");
 
     assertEquals(fileSystem.getPath("a/b"), fileSystem.getPath("").resolve(realtive));
@@ -178,7 +178,7 @@ public class MemoryFileSystemTest {
 
   @Test
   public void resolveAbsoluteOtherAbsoluteString() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     String absolute = "/a/b";
     Path absolutePath = fileSystem.getPath("/a/b");
 
@@ -190,7 +190,7 @@ public class MemoryFileSystemTest {
 
   @Test
   public void resolveAbsoluteOtherRelativeString() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     String realtive = "a/b";
 
     assertEquals(fileSystem.getPath("a/b"), fileSystem.getPath("").resolve(realtive));
@@ -198,12 +198,12 @@ public class MemoryFileSystemTest {
     assertEquals(fileSystem.getPath("c/d/a/b"), fileSystem.getPath("c/d").resolve(realtive));
     assertEquals(fileSystem.getPath("/c/d/a/b"), fileSystem.getPath("/c/d").resolve(realtive));
   }
-  
+
   @Test
   public void resolveSibling() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     assertEquals(fileSystem.getPath("b"), fileSystem.getPath("a").resolveSibling(fileSystem.getPath("b")));
-    
+
     // argument is relative
     assertEquals(fileSystem.getPath("/a/c/d"), fileSystem.getPath("/a/b").resolveSibling(fileSystem.getPath("c/d")));
     assertEquals(fileSystem.getPath("a/c/d"), fileSystem.getPath("a/b").resolveSibling(fileSystem.getPath("c/d")));
@@ -216,18 +216,18 @@ public class MemoryFileSystemTest {
     assertEquals(fileSystem.getPath("/c/d"), fileSystem.getPath("/a").resolveSibling(fileSystem.getPath("/c/d")));
     assertEquals(fileSystem.getPath("/c/d"), fileSystem.getPath("a").resolveSibling(fileSystem.getPath("/c/d")));
     assertEquals(fileSystem.getPath("/a/b"), fileSystem.getPath("").resolveSibling(fileSystem.getPath("/a/b")));
-    
+
     // argument is empty
     assertEquals(fileSystem.getPath(""), fileSystem.getPath("a").resolveSibling(fileSystem.getPath("")));
     assertEquals(fileSystem.getPath("/a"), fileSystem.getPath("/a/b").resolveSibling(fileSystem.getPath("")));
     assertEquals(fileSystem.getPath("a"), fileSystem.getPath("a/b").resolveSibling(fileSystem.getPath("")));
     assertEquals(fileSystem.getPath("/"), fileSystem.getPath("/a").resolveSibling(fileSystem.getPath("")));
     assertEquals(fileSystem.getPath(""), fileSystem.getPath("a").resolveSibling(fileSystem.getPath("")));
-    
+
     // receiver is empty
     assertEquals(fileSystem.getPath("a/b"), fileSystem.getPath("").resolveSibling(fileSystem.getPath("a/b")));
     assertEquals(fileSystem.getPath("/a/b"), fileSystem.getPath("").resolveSibling(fileSystem.getPath("/a/b")));
-    
+
     // argument is root
     assertEquals(fileSystem.getPath("/"), fileSystem.getPath("a/b").resolveSibling(fileSystem.getPath("/")));
     assertEquals(fileSystem.getPath("/"), fileSystem.getPath("/a/b").resolveSibling(fileSystem.getPath("/")));
@@ -239,7 +239,7 @@ public class MemoryFileSystemTest {
 
   @Test
   public void resolveSiblingAgainstRoot() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path root = fileSystem.getPath("/");
 
     assertEquals(fileSystem.getPath("a"), root.resolveSibling(fileSystem.getPath("a")));
@@ -251,7 +251,7 @@ public class MemoryFileSystemTest {
 
   @Test
   public void resolveSiblingAgainstRootString() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path root = fileSystem.getPath("/");
 
     assertEquals(fileSystem.getPath("a"), root.resolveSibling("a"));
@@ -264,7 +264,7 @@ public class MemoryFileSystemTest {
 
   @Test
   public void relativizeAbsolute() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path first = fileSystem.getPath("/a/b");
     Path second = fileSystem.getPath("/a/b/c");
 
@@ -302,7 +302,7 @@ public class MemoryFileSystemTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void relativizeAbsoluteUnsupported1() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path first = fileSystem.getPath("/a/b");
     Path second = fileSystem.getPath("c");
     first.relativize(second);
@@ -310,7 +310,7 @@ public class MemoryFileSystemTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void relativizeAbsoluteUnsupported2() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path first = fileSystem.getPath("/a/b");
     Path second = fileSystem.getPath("c");
     second.relativize(first);
@@ -319,7 +319,7 @@ public class MemoryFileSystemTest {
 
   @Test
   public void relativizeRelative() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path first = fileSystem.getPath("a/b");
     Path second = fileSystem.getPath("a/b/c");
 
@@ -358,7 +358,7 @@ public class MemoryFileSystemTest {
 
   @Test
   public void relativizeRelativeRoot() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path first = fileSystem.getPath("/");
     Path second = fileSystem.getPath("/a/b");
 
@@ -369,18 +369,18 @@ public class MemoryFileSystemTest {
 
   @Test
   public void absoluteIterator() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path usrBin = fileSystem.getPath("/usr/bin");
     Iterable<String> expected = Arrays.asList("usr", "bin");
-    assertIterator(fileSystem, usrBin, expected);
+    this.assertIterator(fileSystem, usrBin, expected);
   }
 
   @Test
   public void relativeIterator() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path usrBin = fileSystem.getPath("usr/bin");
     Iterable<String> expected = Arrays.asList("usr", "bin");
-    assertIterator(fileSystem, usrBin, expected);
+    this.assertIterator(fileSystem, usrBin, expected);
   }
 
   private void assertIterator(FileSystem fileSystem, Path path, Iterable<String> expected) {
@@ -396,7 +396,7 @@ public class MemoryFileSystemTest {
       }
 
       assertTrue(expectedIterator.hasNext());
-      String expectedName = (String) expectedIterator.next();
+      String expectedName = expectedIterator.next();
       Path expectedPath = fileSystem.getPath(expectedName);
 
       assertEquals(expectedPath, actualPath);
@@ -404,11 +404,11 @@ public class MemoryFileSystemTest {
     }
     assertFalse(expectedIterator.hasNext());
   }
-  
+
   @Test
   public void endsWith() {
     FileSystem fileSystem = this.rule.getFileSystem();
-    
+
     assertTrue(fileSystem.getPath("a").endsWith(fileSystem.getPath("a")));
     assertFalse(fileSystem.getPath("a").endsWith(fileSystem.getPath("a/b")));
     assertFalse(fileSystem.getPath("a").endsWith(fileSystem.getPath("/a")));
@@ -420,7 +420,7 @@ public class MemoryFileSystemTest {
     assertFalse(fileSystem.getPath("a/b").endsWith(fileSystem.getPath("/a")));
     assertFalse(fileSystem.getPath("a/b").endsWith(fileSystem.getPath("/")));
     assertFalse(fileSystem.getPath("a/b").endsWith(fileSystem.getPath("")));
-    
+
     assertTrue(fileSystem.getPath("/a").endsWith(fileSystem.getPath("/a")));
     assertFalse(fileSystem.getPath("/a").endsWith(fileSystem.getPath("/a/b")));
     assertTrue(fileSystem.getPath("/a").endsWith(fileSystem.getPath("a")));
@@ -434,14 +434,14 @@ public class MemoryFileSystemTest {
     assertFalse(fileSystem.getPath("/a/b").endsWith(fileSystem.getPath("a")));
     assertFalse(fileSystem.getPath("/a/b").endsWith(fileSystem.getPath("/")));
     assertFalse(fileSystem.getPath("/a/b").endsWith(fileSystem.getPath("")));
-    
+
     assertTrue(fileSystem.getPath("/").endsWith(fileSystem.getPath("/")));
     assertFalse(fileSystem.getPath("/").endsWith(fileSystem.getPath("")));
     assertFalse(fileSystem.getPath("/").endsWith(fileSystem.getPath("a")));
     assertFalse(fileSystem.getPath("/").endsWith(fileSystem.getPath("/a")));
     assertFalse(fileSystem.getPath("/").endsWith(fileSystem.getPath("a/b")));
     assertFalse(fileSystem.getPath("/").endsWith(fileSystem.getPath("/a/b")));
-    
+
     assertFalse(fileSystem.getPath("").endsWith(fileSystem.getPath("/")));
     assertTrue(fileSystem.getPath("").endsWith(fileSystem.getPath("")));
     assertFalse(fileSystem.getPath("").endsWith(fileSystem.getPath("a")));
@@ -449,11 +449,11 @@ public class MemoryFileSystemTest {
     assertFalse(fileSystem.getPath("").endsWith(fileSystem.getPath("a/b")));
     assertFalse(fileSystem.getPath("").endsWith(fileSystem.getPath("/a/b")));
   }
-  
+
   @Test
   public void startsWith() {
     FileSystem fileSystem = this.rule.getFileSystem();
-    
+
     assertTrue(fileSystem.getPath("a").startsWith(fileSystem.getPath("a")));
     assertFalse(fileSystem.getPath("a").startsWith(fileSystem.getPath("a/b")));
     assertFalse(fileSystem.getPath("a").startsWith(fileSystem.getPath("/a")));
@@ -464,7 +464,7 @@ public class MemoryFileSystemTest {
     assertFalse(fileSystem.getPath("a/b").startsWith(fileSystem.getPath("/a")));
     assertFalse(fileSystem.getPath("a/b").startsWith(fileSystem.getPath("/")));
     assertFalse(fileSystem.getPath("a/b").startsWith(fileSystem.getPath("")));
-    
+
     assertTrue(fileSystem.getPath("/a").startsWith(fileSystem.getPath("/a")));
     assertFalse(fileSystem.getPath("/a").startsWith(fileSystem.getPath("/a/b")));
     assertFalse(fileSystem.getPath("/a").startsWith(fileSystem.getPath("a")));
@@ -476,14 +476,14 @@ public class MemoryFileSystemTest {
     assertFalse(fileSystem.getPath("/a/b").startsWith(fileSystem.getPath("a")));
     assertTrue(fileSystem.getPath("/a/b").startsWith(fileSystem.getPath("/")));
     assertFalse(fileSystem.getPath("/a/b").startsWith(fileSystem.getPath("")));
-    
+
     assertTrue(fileSystem.getPath("/").startsWith(fileSystem.getPath("/")));
     assertFalse(fileSystem.getPath("/").startsWith(fileSystem.getPath("")));
     assertFalse(fileSystem.getPath("/").startsWith(fileSystem.getPath("a")));
     assertFalse(fileSystem.getPath("/").startsWith(fileSystem.getPath("/a")));
     assertFalse(fileSystem.getPath("/").startsWith(fileSystem.getPath("a/b")));
     assertFalse(fileSystem.getPath("/").startsWith(fileSystem.getPath("/a/b")));
-    
+
     assertFalse(fileSystem.getPath("").startsWith(fileSystem.getPath("/")));
     assertTrue(fileSystem.getPath("").startsWith(fileSystem.getPath("")));
     assertFalse(fileSystem.getPath("").startsWith(fileSystem.getPath("a")));
@@ -494,7 +494,7 @@ public class MemoryFileSystemTest {
 
   @Test
   public void getFileName() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path usrBin = fileSystem.getPath("/usr/bin");
     Path bin = fileSystem.getPath("bin");
 
@@ -507,7 +507,7 @@ public class MemoryFileSystemTest {
 
   @Test
   public void absoluteGetParent() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path usrBin = fileSystem.getPath("/usr/bin");
     Path usr = fileSystem.getPath("/usr");
 
@@ -520,7 +520,7 @@ public class MemoryFileSystemTest {
 
   @Test
   public void relativeGetParent() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path usrBin = fileSystem.getPath("usr/bin");
     Path usr = fileSystem.getPath("usr");
 
@@ -531,28 +531,28 @@ public class MemoryFileSystemTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void absoluteGetName0() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path usrBin = fileSystem.getPath("/usr/bin");
     usrBin.getName(-1);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void absoluteGetNameToLong() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path usrBin = fileSystem.getPath("/usr/bin");
     usrBin.getName(2);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void emptyGetName() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path empty = fileSystem.getPath("");
     empty.getName(0);
   }
 
   @Test
   public void absoluteGetName() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path usrBin = fileSystem.getPath("/usr/bin");
     Path usr = fileSystem.getPath("usr");
     assertEquals(usr, usrBin.getName(0));
@@ -562,7 +562,7 @@ public class MemoryFileSystemTest {
 
   @Test
   public void relativeGetName() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path usrBin = fileSystem.getPath("usr/bin");
     Path usr = fileSystem.getPath("usr");
     assertEquals(usr, usrBin.getName(0));
@@ -572,21 +572,21 @@ public class MemoryFileSystemTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void relativeGetName0() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path usrBin = fileSystem.getPath("usr/bin");
     usrBin.getName(-1);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void relativeGetNameToLong() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path usrBin = fileSystem.getPath("usr/bin");
     usrBin.getName(2);
   }
 
   @Test
   public void emptyPath() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path path = fileSystem.getPath("");
     assertFalse(path.isAbsolute());
     assertNull(path.getRoot());
@@ -594,7 +594,7 @@ public class MemoryFileSystemTest {
 
   @Test
   public void getNameCount() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path usrBin = fileSystem.getPath("/usr/bin");
     assertEquals(2, usrBin.getNameCount());
 
@@ -604,13 +604,13 @@ public class MemoryFileSystemTest {
 
   @Test
   public void isReadOnly() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     assertFalse(fileSystem.isReadOnly());
   }
 
   @Test
   public void absolutePaths() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path path = fileSystem.getPath("/");
     assertTrue(path.isAbsolute());
     assertSame(path, path.toAbsolutePath());
@@ -619,12 +619,12 @@ public class MemoryFileSystemTest {
     assertTrue(path.isAbsolute());
     assertSame(path, path.toAbsolutePath());
     assertNotNull(path.getRoot());
-    assertSame(getRoot(fileSystem), path.getRoot());
+    assertSame(this.getRoot(fileSystem), path.getRoot());
   }
 
   @Test
   public void relativePaths() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path path = fileSystem.getPath("sample");
     assertFalse(path.isAbsolute());
     assertNull(path.getRoot());
@@ -640,13 +640,13 @@ public class MemoryFileSystemTest {
 
   @Test
   public void supportedFileAttributeViews() {
-    FileSystem fileSystem = rule.getFileSystem();
-    assertEquals(Collections.singleton("basic"), fileSystem.supportedFileAttributeViews());
+    FileSystem fileSystem = this.rule.getFileSystem();
+    assertEquals(Collections.singleton(FileAttributeViews.BASIC), fileSystem.supportedFileAttributeViews());
   }
 
   @Test
   public void pathToString() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path path = fileSystem.getPath("/");
     assertEquals("/", path.toString());
 
@@ -668,39 +668,39 @@ public class MemoryFileSystemTest {
 
   @Test
   public void defaultSeparator() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     assertEquals("/", fileSystem.getSeparator());
   }
 
 
   @Test(expected = IllegalArgumentException.class)
   public void slash() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path path = fileSystem.getPath("/");
     path.subpath(0, 1);
   }
 
   @Test(expected = IOException.class)
   public void createDirectoryNoParent() throws IOException {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path homePmarscha = fileSystem.getPath("/home/pmarscha");
     assertFalse(Files.exists(homePmarscha));
     Files.createDirectory(homePmarscha);
     assertTrue(Files.exists(homePmarscha));
   }
-  
+
   @Test
   public void pathOrdering() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path root = fileSystem.getPath("/");
     Path empty = fileSystem.getPath("");
     Path a = fileSystem.getPath("a");
     Path slashA = fileSystem.getPath("/a");
     Path slashAA = fileSystem.getPath("/a/a");
-    
+
     assertThat(empty, lessThan(a));
     assertThat(a, greaterThan(empty));
-    
+
     assertThat(root, lessThan(empty));
     assertThat(root, lessThan(a));
     assertThat(root, lessThan(slashA));
@@ -709,7 +709,7 @@ public class MemoryFileSystemTest {
     assertThat(a, greaterThan(root));
     assertThat(slashA, greaterThan(root));
     assertThat(slashAA, greaterThan(root));
-    
+
     assertEquals(0, root.compareTo(root));
     assertEquals(0, empty.compareTo(empty));
     assertEquals(0, a.compareTo(a));
@@ -720,53 +720,53 @@ public class MemoryFileSystemTest {
     assertThat(a, greaterThan(slashAA));
     assertThat(slashA, lessThan(a));
     assertThat(slashAA, lessThan(a));
-    
+
     assertThat(slashA, lessThan(slashAA));
     assertThat(slashAA, greaterThan(slashA));
   }
-  
+
   @Test
   public void pathOrderingDifferentFileSystem() throws IOException {
-    FileSystem fileSystem1 = rule.getFileSystem();
+    FileSystem fileSystem1 = this.rule.getFileSystem();
     try (FileSystem fileSystem2 = FileSystems.newFileSystem(URI.create("memory:name1"), SAMPLE_ENV)) {
       Path root1 = fileSystem1.getPath("/");
       Path root2 = fileSystem2.getPath("/");
-      
+
       assertThat(root1, not(equalTo(root2)));
       assertThat(root2, not(equalTo(root1)));
       assertThat(root1, lessThan(root2));
       assertThat(root2, greaterThan(root1));
-      
+
       Path empty1 = fileSystem1.getPath("");
       Path empty2 = fileSystem2.getPath("");
-      
+
       assertThat(empty1, not(equalTo(empty2)));
       assertThat(empty2, not(equalTo(empty1)));
       assertThat(empty1, lessThan(empty2));
       assertThat(empty2, greaterThan(empty1));
-      
+
       Path realtive1 = fileSystem1.getPath("a");
       Path realtive2 = fileSystem2.getPath("a");
-      
+
       assertThat(realtive1, not(equalTo(realtive2)));
       assertThat(realtive2, not(equalTo(realtive1)));
       assertThat(realtive1, lessThan(realtive2));
       assertThat(realtive2, greaterThan(realtive1));
-      
+
       Path absolute1 = fileSystem1.getPath("/a");
       Path absolute2 = fileSystem2.getPath("/a");
-      
+
       assertThat(absolute1, not(equalTo(absolute2)));
       assertThat(absolute2, not(equalTo(absolute1)));
       assertThat(absolute1, lessThan(absolute2));
       assertThat(absolute2, greaterThan(absolute1));
     }
-    
+
   }
-  
+
   @Test(expected = ClassCastException.class)
   public void pathOrderingIncompatible() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path a = fileSystem.getPath("a");
     Path b = FileSystems.getDefault().getPath("b");
     a.compareTo(b);
@@ -775,7 +775,7 @@ public class MemoryFileSystemTest {
 
   @Test
   public void createDirectories() throws IOException {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path homePmarscha = fileSystem.getPath("/home/pmarscha");
     assertFalse(Files.exists(homePmarscha));
     Files.createDirectories(homePmarscha);
@@ -785,7 +785,7 @@ public class MemoryFileSystemTest {
 
   @Test
   public void createDirectory() throws IOException {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path home = fileSystem.getPath("/home");
     assertFalse(Files.exists(home));
     Files.createDirectory(home);
@@ -796,7 +796,7 @@ public class MemoryFileSystemTest {
 
   @Test(expected = FileAlreadyExistsException.class)
   public void createDirectoryAlreadyExists() throws IOException {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path home = fileSystem.getPath("/home");
     assertFalse(Files.exists(home));
     Files.createDirectory(home);
@@ -806,7 +806,7 @@ public class MemoryFileSystemTest {
 
   @Test
   public void getRootDirectories() {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Iterator<Path> directories = fileSystem.getRootDirectories().iterator();
     assertTrue(directories.hasNext());
     directories.next();

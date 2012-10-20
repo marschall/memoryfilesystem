@@ -16,13 +16,13 @@ import java.util.List;
  *
  */
 public final class MemoryFileSystemUninstaller {
-  
+
   //REVIEW close all file systems?
-  
+
   private MemoryFileSystemUninstaller() {
     throw new AssertionError("not instantiable");
   }
-  
+
   /**
    * Checks whether a memory file system provider loaded by this classes
    * class loader is currently installed.
@@ -42,11 +42,11 @@ public final class MemoryFileSystemUninstaller {
     }
     return false;
   }
-  
+
   private static ClassLoader getOwnClassLoader() {
     return MemoryFileSystemUninstaller.class.getClassLoader();
   }
-  
+
   private static void uninstall(FileSystemProvider provider) {
     Class<?> providerClass = FileSystemProvider.class;
     try {
@@ -66,9 +66,9 @@ public final class MemoryFileSystemUninstaller {
     } catch (ReflectiveOperationException e) {
       throw new UninstallationFailedException("uninstallation failed", e);
     }
-    
+
   }
-  
+
   /**
    * Tries to uninstall the memory file system provider loaded by this classes
    * class loader.

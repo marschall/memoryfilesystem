@@ -18,7 +18,7 @@ final class MemoryUserPrincipalLookupService extends UserPrincipalLookupService 
   private final ClosedFileSystemChecker checker;
 
   MemoryUserPrincipalLookupService(List<String> userNames, List<String> groupNames,
-      StringTransformer stringTransformer, ClosedFileSystemChecker checker) {
+          StringTransformer stringTransformer, ClosedFileSystemChecker checker) {
     this.checker = checker;
     this.users = new HashMap<>(userNames.size());
     this.groups = new HashMap<>(groupNames.size());

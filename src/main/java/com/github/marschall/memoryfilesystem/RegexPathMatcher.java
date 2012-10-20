@@ -16,7 +16,7 @@ final class RegexPathMatcher implements PathMatcher {
   public boolean matches(Path path) {
     return this.pattern.matcher(path.toString()).matches();
   }
-  
+
   static String name() {
     return "regex";
   }

@@ -10,33 +10,33 @@ import java.util.Map;
 class MemoryDirectory extends MemoryEntry {
 
   private final Map<String, MemoryEntry> entries;
-  
+
   private final BasicFileAttributes attributes;
 
   private final BasicFileAttributeView basicFileAttributeView;
-  
+
   MemoryDirectory(String originalName) {
     super(originalName);
     this.entries = new HashMap<>();
     this.attributes = new MemoryDirectoryFileAttributes();
     this.basicFileAttributeView = new MemoryDirectoryFileAttributesView();
   }
-  
+
   @Override
   BasicFileAttributeView getBasicFileAttributeView() {
     return this.basicFileAttributeView;
   }
-  
+
   @Override
   BasicFileAttributes getBasicFileAttributes() {
     return this.attributes;
   }
-  
+
   MemoryEntry getEntry(String name) {
     // TODO atime?
     return this.entries.get(name);
   }
-  
+
   void addEntry(String name, MemoryEntry entry) throws IOException {
     MemoryEntry previous = this.entries.put(name, entry);
     if (previous != null) {
@@ -47,7 +47,7 @@ class MemoryDirectory extends MemoryEntry {
     }
     this.modified();
   }
-  
+
   class MemoryDirectoryFileAttributesView extends MemoryEntryFileAttributesView {
 
     /**
@@ -57,9 +57,9 @@ class MemoryDirectory extends MemoryEntry {
     public BasicFileAttributes readAttributes() throws IOException {
       return MemoryDirectory.this.attributes;
     }
-    
+
   }
-  
+
   final class MemoryDirectoryFileAttributes extends MemoryEntryFileAttributes {
 
     /**
@@ -111,7 +111,7 @@ class MemoryDirectory extends MemoryEntry {
       // REVIEW think about it
       return MemoryDirectory.this;
     }
-    
+
   }
-  
+
 }

@@ -72,22 +72,20 @@ class MemoryFileStore extends FileStore {
   @Override
   public boolean supportsFileAttributeView(String name) {
     this.checker.check();
-    return MemoryFileSystemProperties.BASIC_FILE_ATTRIBUTE_VIEW_NAME.equals(name);
+    return FileAttributeViews.BASIC.equals(name);
   }
 
 
   @Override
   public <V extends FileStoreAttributeView> V getFileStoreAttributeView(Class<V> type) {
     this.checker.check();
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
+    return null;
   }
 
 
   @Override
   public Object getAttribute(String attribute) throws IOException {
     this.checker.check();
-    // TODO Auto-generated method stub
     throw new UnsupportedOperationException();
   }
 

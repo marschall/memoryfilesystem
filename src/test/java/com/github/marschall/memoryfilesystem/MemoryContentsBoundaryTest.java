@@ -18,11 +18,11 @@ import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
 public class MemoryContentsBoundaryTest {
-  
+
   private final int initialOffset;
 
   private final int initialBlocks;
-  
+
   private final int toWrite;
 
   private MemoryContents contents;
@@ -62,8 +62,8 @@ public class MemoryContentsBoundaryTest {
     SeekableByteChannel channel = this.contents.newChannel(true, true);
     byte[] initial = new byte[this.initialOffset];
     channel.write(ByteBuffer.wrap(initial));
-    
-    
+
+
     byte[] data = new byte[this.toWrite];
     data[data.length - 1] = 9;
     data[data.length - 2] = 8;
@@ -74,25 +74,25 @@ public class MemoryContentsBoundaryTest {
     ByteBuffer src = ByteBuffer.wrap(data);
 
     channel.write(src);
-    assertEquals(toWrite + this.initialOffset, channel.size());
-    assertEquals(toWrite + this.initialOffset, channel.position());
+    assertEquals(this.toWrite + this.initialOffset, channel.size());
+    assertEquals(this.toWrite + this.initialOffset, channel.position());
 
     // one element tests
-    
+
     // read last element
     byte[] oneElement = new byte[1];
     ByteBuffer dst = ByteBuffer.wrap(oneElement);
     channel.position(channel.size() - 1L);
     assertEquals(1, channel.read(dst));
     assertArrayEquals(new byte[]{9}, oneElement);
-    
+
     // read first element
     dst.rewind();
-    long startOfWrite = channel.size() - (long) toWrite;
+    long startOfWrite = channel.size() - this.toWrite;
     channel.position(startOfWrite);
     assertEquals(1, channel.read(dst));
     assertArrayEquals(new byte[]{1}, oneElement);
-    
+
     // two element tests
 
     // read last two elements
@@ -101,31 +101,31 @@ public class MemoryContentsBoundaryTest {
     channel.position(channel.size() - 2L);
     assertEquals(2, channel.read(dst));
     assertArrayEquals(new byte[]{8, 9}, twoElements);
-    
+
     // read first two elements
     dst.rewind();
     channel.position(startOfWrite);
     assertEquals(2, channel.read(dst));
     assertArrayEquals(new byte[]{1, 2}, twoElements);
 
-    
+
     // read last three elements
     byte[] threeElements = new byte[3];
     dst = ByteBuffer.wrap(threeElements);
     channel.position(channel.size() - 3L);
     assertEquals(3, channel.read(dst));
     assertArrayEquals(new byte[]{7, 8, 9}, threeElements);
-    
+
     // read first two elements
     dst.rewind();
     channel.position(startOfWrite);
     assertEquals(3, channel.read(dst));
     assertArrayEquals(new byte[]{1, 2, 3}, threeElements);
-    
+
     // read the full data back
     byte[] readBack = new byte[this.toWrite];
     dst = ByteBuffer.wrap(readBack);
-    channel.position(channel.size() - (long) this.toWrite);
+    channel.position(channel.size() - this.toWrite);
     assertEquals(this.toWrite, channel.read(dst));
     assertEquals(1, readBack[0]);
     assertEquals(2, readBack[1]);

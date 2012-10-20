@@ -4,39 +4,47 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
+import java.nio.file.attribute.DosFileAttributeView;
+import java.nio.file.attribute.FileAttributeView;
+import java.nio.file.attribute.PosixFileAttributeView;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 public final class MemoryFileSystemBuilder {
 
   private final List<String> roots;
-  
+
   private final List<String> users;
-  
+
   private final List<String> groups;
+
+  private final Set<String> additionalFileAttributeViews;
 
   private String separator;
 
   private String currentWorkingDirectory;
-  
+
   private StringTransformer storeTransformer;
-  
+
   private StringTransformer lookUpTransformer;
-  
+
   private StringTransformer principalTransformer;
-  
+
   private Collator collator;
 
   private Locale locale;
-  
+
   private MemoryFileSystemBuilder() {
     this.roots = new ArrayList<>();
     this.users = new ArrayList<>();
     this.groups = new ArrayList<>();
+    this.additionalFileAttributeViews = new HashSet<>();
   }
 
   public MemoryFileSystemBuilder addRoot(String root) {
@@ -48,32 +56,45 @@ public final class MemoryFileSystemBuilder {
     this.separator = separator;
     return this;
   }
-  
+
   public MemoryFileSystemBuilder addUser(String userName) {
     this.users.add(userName);
     return this;
   }
-  
+
   public MemoryFileSystemBuilder addGroup(String groupName) {
     this.groups.add(groupName);
     return this;
+  }
+
+  public MemoryFileSystemBuilder addFileAttributeView(String fileAttributeViewName) {
+    if (FileAttributeViews.isSupported(fileAttributeViewName)) {
+      this.additionalFileAttributeViews.add(fileAttributeViewName);
+    } else {
+      throw new IllegalArgumentException("file attribute view \"" + fileAttributeViewName + "\" is not supported");
+    }
+    return this;
+  }
+
+  public MemoryFileSystemBuilder addFileAttributeView(Class<? extends FileAttributeView> fileAttributeView) {
+    return this.addFileAttributeView(FileAttributeViews.map(fileAttributeView));
   }
 
   public MemoryFileSystemBuilder setCurrentWorkingDirectory(String currentWorkingDirectory) {
     this.currentWorkingDirectory = currentWorkingDirectory;
     return this;
   }
-  
+
   public MemoryFileSystemBuilder setStoreTransformer(StringTransformer storeTransformer) {
     this.storeTransformer = storeTransformer;
     return this;
   }
-  
+
   public MemoryFileSystemBuilder setLocale(Locale locale) {
     this.locale = locale;
     return this;
   }
-  
+
   private Locale getLocale() {
     if (this.locale == null) {
       return Locale.getDefault();
@@ -81,7 +102,7 @@ public final class MemoryFileSystemBuilder {
       return this.locale;
     }
   }
-  
+
   public MemoryFileSystemBuilder setCaseSensitive(boolean caseSensitive) {
     if (caseSensitive) {
       this.lookUpTransformer = StringTransformers.IDENTIY;
@@ -93,7 +114,7 @@ public final class MemoryFileSystemBuilder {
     }
     return this;
   }
-  
+
   public MemoryFileSystemBuilder setCollator(Collator collator) {
     this.collator = collator;
     return this;
@@ -102,24 +123,26 @@ public final class MemoryFileSystemBuilder {
   public static MemoryFileSystemBuilder newEmpty() {
     return new MemoryFileSystemBuilder();
   }
-  
+
   public static MemoryFileSystemBuilder newUnix() {
     return new MemoryFileSystemBuilder()
     .addRoot(MemoryFileSystemProperties.UNIX_ROOT)
     .setSeprator(MemoryFileSystemProperties.UNIX_SEPARATOR)
     .addUser(getSystemUserName())
     .addGroup(getSystemUserName())
+    .addFileAttributeView(PosixFileAttributeView.class)
     .setCurrentWorkingDirectory("/home/" + getSystemUserName())
     .setStoreTransformer(StringTransformers.IDENTIY)
     .setCaseSensitive(true);
   }
-  
+
   public static MemoryFileSystemBuilder newMacOs() {
     return new MemoryFileSystemBuilder()
     .addRoot(MemoryFileSystemProperties.UNIX_ROOT)
     .setSeprator(MemoryFileSystemProperties.UNIX_SEPARATOR)
     .addUser(getSystemUserName())
     .addGroup(getSystemUserName())
+    .addFileAttributeView(PosixFileAttributeView.class)
     .setCurrentWorkingDirectory("/Users/" + getSystemUserName())
     .setStoreTransformer(StringTransformers.MAC_OS)
     .setCaseSensitive(true);
@@ -127,21 +150,22 @@ public final class MemoryFileSystemBuilder {
 
   public static MemoryFileSystemBuilder newWindows() {
     return new MemoryFileSystemBuilder()
-      .addRoot("C:\\")
-      .setSeprator(MemoryFileSystemProperties.WINDOWS_SEPARATOR)
-      .addUser(getSystemUserName())
-      .addGroup(getSystemUserName())
-      .setCurrentWorkingDirectory("C:\\Users\\" + getSystemUserName())
-      .setStoreTransformer(StringTransformers.IDENTIY)
-      .setCaseSensitive(false);
+    .addRoot("C:\\")
+    .setSeprator(MemoryFileSystemProperties.WINDOWS_SEPARATOR)
+    .addUser(getSystemUserName())
+    .addGroup(getSystemUserName())
+    .addFileAttributeView(DosFileAttributeView.class)
+    .setCurrentWorkingDirectory("C:\\Users\\" + getSystemUserName())
+    .setStoreTransformer(StringTransformers.IDENTIY)
+    .setCaseSensitive(false);
   }
 
   static String getSystemUserName() {
     return System.getProperty("user.name");
   }
-  
+
   public FileSystem build(String name) throws IOException {
-    Map<String, ?> env = buildEnvironment();
+    Map<String, ?> env = this.buildEnvironment();
     URI uri = URI.create("memory:".concat(name));
     ClassLoader classLoader = MemoryFileSystemBuilder.class.getClassLoader();
     return FileSystems.newFileSystem(uri, env, classLoader);
@@ -169,6 +193,9 @@ public final class MemoryFileSystemBuilder {
     }
     if (this.collator != null) {
       env.put(MemoryFileSystemProperties.COLLATOR_PROPERTY, this.collator);
+    }
+    if (this.additionalFileAttributeViews != null) {
+      env.put(MemoryFileSystemProperties.FILE_ATTRIBUTE_VIEWS_PROPERTY, this.additionalFileAttributeViews);
     }
     return env;
   }

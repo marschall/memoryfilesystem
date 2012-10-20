@@ -9,40 +9,40 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Set;
 
 class MemoryFile extends MemoryEntry {
-  
+
   private final MemoryContents contents;
 
   private final BasicFileAttributes attributes;
 
   private final BasicFileAttributeView basicFileAttributeView;
-  
+
   MemoryFile(String originalName) {
     super(originalName);
     this.attributes = new MemoryFileAttributes();
     this.basicFileAttributeView = new MemoryFileAttributesView();
     this.contents = new MemoryContents(16);
   }
-  
+
   @Override
   BasicFileAttributeView getBasicFileAttributeView() {
     return this.basicFileAttributeView;
   }
-  
+
   @Override
   BasicFileAttributes getBasicFileAttributes() {
     return this.attributes;
   }
-  
-  
+
+
   class MemoryFileAttributesView extends MemoryEntryFileAttributesView {
 
     @Override
     public BasicFileAttributes readAttributes() throws IOException {
       return MemoryFile.this.attributes;
     }
-    
+
   }
-  
+
   final class MemoryFileAttributes extends MemoryEntryFileAttributes {
 
     @Override
@@ -67,7 +67,7 @@ class MemoryFile extends MemoryEntry {
 
     @Override
     public long size() {
-      return contents.size();
+      return MemoryFile.this.contents.size();
     }
 
     @Override
@@ -75,7 +75,7 @@ class MemoryFile extends MemoryEntry {
       // REVIEW think about it
       return MemoryFile.this;
     }
-    
+
   }
 
   SeekableByteChannel newChannel(Set<? extends OpenOption> options) {

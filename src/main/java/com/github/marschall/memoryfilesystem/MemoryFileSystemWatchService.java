@@ -6,7 +6,7 @@ import java.nio.file.WatchService;
 import java.util.concurrent.TimeUnit;
 
 final class MemoryFileSystemWatchService implements WatchService {
-  
+
   private final ClosedWatchServiceChecker checker;
 
   MemoryFileSystemWatchService() {

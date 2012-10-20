@@ -26,7 +26,7 @@ public class InvalidUrisTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void invalidUri() throws IOException {
-    try (FileSystem fileSystem = FileSystems.newFileSystem(uri, SAMPLE_ENV)) {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(this.uri, SAMPLE_ENV)) {
       fail(this.uri + " should not be a valid URI");
     }
   }
@@ -34,11 +34,11 @@ public class InvalidUrisTest {
   @Parameters
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
-        { URI.create("memory:name#fragment") },
-        { URI.create("memory://user:pass@host:666/path?query#fragmet") },
-        { URI.create("memory://host") },
-        { URI.create("memory:///path") },
-        { URI.create("memory:name//user:pass@host:666/path?query#fragmet") },
+            { URI.create("memory:name#fragment") },
+            { URI.create("memory://user:pass@host:666/path?query#fragmet") },
+            { URI.create("memory://host") },
+            { URI.create("memory:///path") },
+            { URI.create("memory:name//user:pass@host:666/path?query#fragmet") },
     });
   }
 

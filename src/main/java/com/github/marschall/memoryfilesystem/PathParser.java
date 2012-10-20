@@ -4,7 +4,7 @@ import java.nio.file.Path;
 import java.util.Map;
 
 abstract class PathParser {
-  
+
   final char separator;
 
   PathParser(String separator) {
@@ -13,27 +13,27 @@ abstract class PathParser {
     }
     this.separator = separator.charAt(0);
   }
-  
-  
+
+
   boolean startWithSeparator(String s) {
     return s.charAt(0) == '/' || s.charAt(0) == this.separator;
   }
-  
+
   abstract Path parse(Map<String, Root> roots, String first, String... more);
 
 
   boolean startWithSeparator(String first, String... more) {
     if (!first.isEmpty()) {
-      return startWithSeparator(first);
+      return this.startWithSeparator(first);
     }
     if (more != null && more.length > 0) {
       for (String s : more) {
         if (!s.isEmpty()) {
-          return startWithSeparator(s);
+          return this.startWithSeparator(s);
         }
       }
     }
-    
+
     // only empty strings
     return false;
   }

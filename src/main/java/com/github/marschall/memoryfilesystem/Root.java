@@ -16,7 +16,7 @@ abstract class Root extends AbstractPath {
   Root(MemoryFileSystem fileSystem) {
     super(fileSystem);
   }
-  
+
   abstract boolean isNamed();
 
 
@@ -24,9 +24,9 @@ abstract class Root extends AbstractPath {
   public boolean isAbsolute() {
     return true;
   }
-  
+
   abstract String getKey();
-  
+
   @Override
   boolean isRoot() {
     return true;
@@ -88,7 +88,7 @@ abstract class Root extends AbstractPath {
 
   @Override
   public WatchKey register(WatchService watcher, Kind<?>[] events,
-      Modifier... modifiers) throws IOException {
+          Modifier... modifiers) throws IOException {
     // TODO Auto-generated method stub
     throw new UnsupportedOperationException();
   }
@@ -96,7 +96,7 @@ abstract class Root extends AbstractPath {
 
   @Override
   public WatchKey register(WatchService watcher, Kind<?>... events)
-      throws IOException {
+          throws IOException {
     // TODO Auto-generated method stub
     throw new UnsupportedOperationException();
   }
@@ -136,9 +136,9 @@ abstract class Root extends AbstractPath {
     }
     if (other.equals(this)) {
       // other is me
-      return createRelative(getMemoryFileSystem(), Collections.<String>emptyList());
+      return createRelative(this.getMemoryFileSystem(), Collections.<String>emptyList());
     }
-    
+
     if (other instanceof ElementPath) {
       // normal case
       ElementPath otherPath = (ElementPath) other;

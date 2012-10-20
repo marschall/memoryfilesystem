@@ -36,7 +36,7 @@ public class MemoryContentsTest {
   }
 
   private ByteBuffer allocate(int capacity) {
-    if (direct) {
+    if (this.direct) {
       return ByteBuffer.allocateDirect(capacity);
     } else {
       return ByteBuffer.allocate(capacity);
@@ -52,10 +52,10 @@ public class MemoryContentsTest {
   public void setUp() {
     this.contents = new MemoryContents(INITIAL_BLOCKS);
   }
-  
+
 
   private ByteBuffer writeTestData(SeekableByteChannel channel) throws IOException {
-    ByteBuffer src = allocate(SAMPLE_DATA.length);
+    ByteBuffer src = this.allocate(SAMPLE_DATA.length);
     byte[] data = SAMPLE_DATA;
     src.put(data);
     src.rewind();
@@ -65,7 +65,7 @@ public class MemoryContentsTest {
 
   @Test
   public void firstBlockEmpty() throws IOException {
-    ByteBuffer src = allocate(SAMPLE_DATA.length);
+    ByteBuffer src = this.allocate(SAMPLE_DATA.length);
     byte[] data = SAMPLE_DATA;
     src.put(data);
     src.rewind();
@@ -77,7 +77,7 @@ public class MemoryContentsTest {
     assertEquals(SAMPLE_DATA.length, channel.position());
     channel.position(0L);
 
-    ByteBuffer dst = allocate(SAMPLE_DATA.length);
+    ByteBuffer dst = this.allocate(SAMPLE_DATA.length);
     assertEquals(SAMPLE_DATA.length, channel.read(dst));
     dst.rewind();
     byte[] extracted = new byte[SAMPLE_DATA.length];
@@ -87,38 +87,38 @@ public class MemoryContentsTest {
     dst.rewind();
     assertEquals(-1, channel.read(dst));
   }
-  
-  
+
+
   @Test
   public void positition() throws IOException {
     SeekableByteChannel channel = this.contents.newChannel(true, true);
-    
+
     assertEquals(0L, channel.position());
-    
+
     // set the position bigger than the limit
     channel.position(5L);
     assertEquals(5L, channel.position());
     assertEquals(0, channel.size());
-    
+
     // make sure we're at the end
-    ByteBuffer dst = allocate(1);
+    ByteBuffer dst = this.allocate(1);
     assertEquals(-1, channel.read(dst));
 
     this.writeTestData(channel);
-    assertEquals(5L + (long) SAMPLE_DATA.length, channel.position());
-    assertEquals(5L + (long) SAMPLE_DATA.length, channel.size());
-    
-    channel.position(channel.position() - (long) SAMPLE_DATA.length);
-    byte[] readBack = readBackSampleData(channel);
+    assertEquals(5L + SAMPLE_DATA.length, channel.position());
+    assertEquals(5L + SAMPLE_DATA.length, channel.size());
+
+    channel.position(channel.position() - SAMPLE_DATA.length);
+    byte[] readBack = this.readBackSampleData(channel);
     assertArrayEquals(SAMPLE_DATA, readBack);
   }
-  
+
   @Test
   public void readOnly() throws IOException {
     SeekableByteChannel channel = this.contents.newChannel(true, true);
-    
-    ByteBuffer src = writeTestData(channel);
-    
+
+    ByteBuffer src = this.writeTestData(channel);
+
     channel = this.contents.newChannel(true, false);
     try {
       channel.write(src);
@@ -128,14 +128,14 @@ public class MemoryContentsTest {
       assertTrue(true);
     }
   }
-  
+
   @Test
   public void writeOnly() throws IOException {
     SeekableByteChannel channel = this.contents.newChannel(false, true);
-    
-    ByteBuffer src = writeTestData(channel);
+
+    ByteBuffer src = this.writeTestData(channel);
     src.rewind();
-    
+
     channel.position(0L);
     try {
       channel.read(src);
@@ -145,32 +145,32 @@ public class MemoryContentsTest {
       assertTrue(true);
     }
   }
-  
+
   @Test
   public void truncate() throws IOException {
     SeekableByteChannel channel = this.contents.newChannel(true, true);
-    ByteBuffer src = allocate(1);
+    ByteBuffer src = this.allocate(1);
     for (byte data : SAMPLE_DATA) {
       src.rewind();
       src.put(data);
       src.rewind();
       channel.write(src);
     }
-    
+
     src.rewind();
     src.put((byte) 1);
     for (int i = 0; i < MemoryContents.BLOCK_SIZE; i++) {
       src.rewind();
       channel.write(src);
     }
-    
+
     long expectedSize = (long) MemoryContents.BLOCK_SIZE + (long) SAMPLE_DATA.length;
     assertEquals(expectedSize, channel.size());
-    
+
     // truncating a bigger value should make no difference
     assertSame(channel, channel.truncate(Long.MAX_VALUE));
     assertEquals(expectedSize, channel.size());
-    
+
     assertSame(channel, channel.truncate(expectedSize + 1L));
     assertEquals(expectedSize, channel.size());
 
@@ -178,21 +178,21 @@ public class MemoryContentsTest {
     assertSame(channel, channel.truncate(SAMPLE_DATA.length));
     assertEquals(SAMPLE_DATA.length, channel.size());
     assertEquals(SAMPLE_DATA.length, channel.position());
-    
+
     channel.position(0);
-    byte[] readBack = readBackSampleData(channel);
+    byte[] readBack = this.readBackSampleData(channel);
     assertArrayEquals(SAMPLE_DATA, readBack);
-    
+
     // should be at the end
-    ByteBuffer dst = allocate(1);
+    ByteBuffer dst = this.allocate(1);
     assertEquals(-1, channel.read(dst));
   }
-  
+
   @Test
   public void appendNonTruncatable() throws IOException {
     SeekableByteChannel channel = this.contents.newAppendingChannel(true);
 
-    ByteBuffer src = writeTestData(channel);
+    ByteBuffer src = this.writeTestData(channel);
     channel.write(src);
     try {
       channel.truncate(5L);
@@ -202,45 +202,45 @@ public class MemoryContentsTest {
       assertTrue(true);
     }
   }
-  
+
   @Test
   public void appendReadable() throws IOException {
     SeekableByteChannel channel = this.contents.newAppendingChannel(true);
     assertEquals(0L, channel.position());
-    
-    ByteBuffer src = allocate(1);
+
+    ByteBuffer src = this.allocate(1);
     for (byte data : SAMPLE_DATA) {
       src.rewind();
       channel.position(0L);
       src.put(data);
       src.rewind();
       channel.write(src);
-      
+
       assertEquals(data + 1, channel.size());
       assertEquals(data + 1, channel.position());
     }
-    
+
     channel.position(0);
-    byte[] readBack = readBackSampleData(channel);
+    byte[] readBack = this.readBackSampleData(channel);
     assertArrayEquals(SAMPLE_DATA, readBack);
   }
 
   private byte[] readBackSampleData(SeekableByteChannel channel) throws IOException {
-    ByteBuffer dst = allocate(SAMPLE_DATA.length);
+    ByteBuffer dst = this.allocate(SAMPLE_DATA.length);
     assertEquals(SAMPLE_DATA.length, channel.read(dst));
     dst.rewind();
     byte[] readBack = new byte[SAMPLE_DATA.length];
     dst.get(readBack);
     return readBack;
   }
-  
+
   @Test
   public void appendNotReadable() throws IOException {
     SeekableByteChannel channel = this.contents.newAppendingChannel(false);
-    
+
     ByteBuffer testData = this.writeTestData(channel);
     channel.position(0L);
-    
+
     testData.rewind();
     try {
       channel.read(testData);

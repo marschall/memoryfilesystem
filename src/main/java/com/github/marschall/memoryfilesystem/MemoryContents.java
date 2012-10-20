@@ -10,7 +10,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 class MemoryContents {
-	
+
   //TODO update m, c, a times
 
   /**

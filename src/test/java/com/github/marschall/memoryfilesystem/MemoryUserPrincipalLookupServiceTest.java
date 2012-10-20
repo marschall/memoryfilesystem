@@ -21,7 +21,7 @@ public class MemoryUserPrincipalLookupServiceTest {
     List<String> groups = singletonList("group");
     StringTransformer transformer = StringTransformers.IDENTIY;
     UserPrincipalLookupService lookupService = new MemoryUserPrincipalLookupService(users, groups, transformer,
-        new ClosedFileSystemChecker());
+            new ClosedFileSystemChecker());
 
     UserPrincipal user = lookupService.lookupPrincipalByName("user");
     assertEquals("user", user.getName());
@@ -66,7 +66,7 @@ public class MemoryUserPrincipalLookupServiceTest {
     List<String> groups = singletonList("grOup");
     StringTransformer transformer = StringTransformers.caseInsensitive(Locale.US);
     UserPrincipalLookupService lookupService = new MemoryUserPrincipalLookupService(users, groups, transformer,
-        new ClosedFileSystemChecker());
+            new ClosedFileSystemChecker());
 
     UserPrincipal user = lookupService.lookupPrincipalByName("user");
     assertEquals("usEr", user.getName());

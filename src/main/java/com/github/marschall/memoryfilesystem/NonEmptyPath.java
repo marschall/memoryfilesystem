@@ -12,26 +12,29 @@ import java.util.Iterator;
 import java.util.List;
 
 abstract class NonEmptyPath extends ElementPath {
-  
+
   private final List<String> nameElements;
 
   NonEmptyPath(MemoryFileSystem fileSystem, List<String> nameElements) {
     super(fileSystem);
     this.nameElements = nameElements;
   }
-  
+
+  @Override
   List<String> getNameElements() {
     return this.nameElements;
   }
-  
+
+  @Override
   String getNameElement(int index) {
     return this.nameElements.get(index);
   }
-  
+
+  @Override
   String getLastNameElement() {
     return this.nameElements.get(this.nameElements.size() - 1);
   }
-  
+
   int compareNameElements(List<String> otherElements) {
     int thisSize = this.nameElements.size();
     int otherSize = otherElements.size();
@@ -68,22 +71,22 @@ abstract class NonEmptyPath extends ElementPath {
         return false;
       }
     }
-    
+
     return true;
   }
-  
+
 
   @Override
   public Path getFileName() {
-    String lastElement = nameElements.get(nameElements.size() - 1);
-    return createRelative(getMemoryFileSystem(), lastElement);
+    String lastElement = this.nameElements.get(this.nameElements.size() - 1);
+    return createRelative(this.getMemoryFileSystem(), lastElement);
   }
 
   @Override
   public Path toRealPath(LinkOption... options) throws IOException {
     return this.getMemoryFileSystem().toRealPath(this, options);
   }
-  
+
   @Override
   boolean isRoot() {
     return false;
@@ -128,9 +131,9 @@ abstract class NonEmptyPath extends ElementPath {
 
   @Override
   public Iterator<Path> iterator() {
-    return new ElementIterator(getMemoryFileSystem(), this.nameElements.iterator());
+    return new ElementIterator(this.getMemoryFileSystem(), this.nameElements.iterator());
   }
-  
+
   protected int firstDifferenceIndex(List<?> l1, List<?> l2) {
     int endIndex = min(l1.size(), l2.size());
     for (int i = 0; i < endIndex; ++i) {
@@ -143,7 +146,7 @@ abstract class NonEmptyPath extends ElementPath {
 
   Path buildRelativePathAgainst(AbstractPath other) {
     ElementPath otherPath = (ElementPath) other;
-    int firstDifferenceIndex = firstDifferenceIndex(this.getNameElements(), otherPath.getNameElements());
+    int firstDifferenceIndex = this.firstDifferenceIndex(this.getNameElements(), otherPath.getNameElements());
     List<String> first = Collections.emptyList();
     if (firstDifferenceIndex < this.getNameCount()) {
       first = HomogenousList.create("..", this.getNameCount() - firstDifferenceIndex);
@@ -168,10 +171,10 @@ abstract class NonEmptyPath extends ElementPath {
     int nameElementsSize = nameElements.size();
     List<String> normalized = nameElements;
     boolean modified = false;
-    
+
     for (int i = 0; i < nameElementsSize; ++i) {
       String each = nameElements.get(i);
-      
+
       if (each.equals(".")) {
         if (!modified) {
           if (nameElementsSize == 1) {
@@ -187,7 +190,7 @@ abstract class NonEmptyPath extends ElementPath {
             modified = true;
             break;
           }
-          
+
           // copy everything preceding a
           normalized = new ArrayList<>(nameElementsSize - 1);
           if (i > 0) {
@@ -195,11 +198,11 @@ abstract class NonEmptyPath extends ElementPath {
           }
           modified = true;
         }
-        
+
         // ignore
         continue;
       }
-      
+
       if (each.equals("..")) {
         if (modified) {
           // just remove the last entry if possible
@@ -219,19 +222,19 @@ abstract class NonEmptyPath extends ElementPath {
         }
         continue;
       }
-      
+
       if (modified) {
         normalized.add(each);
       }
-      
+
     }
     if (modified) {
-      return newInstance(this.getMemoryFileSystem(), normalized);
+      return this.newInstance(this.getMemoryFileSystem(), normalized);
     } else {
       return this;
     }
   }
-  
+
   abstract Path newInstance(MemoryFileSystem fileSystem, List<String> pathElements);
 
   protected boolean endsWithRelativePath(AbstractPath other) {
@@ -242,7 +245,7 @@ abstract class NonEmptyPath extends ElementPath {
       // empty path
       return false;
     }
-    
+
     if (otherNameCount > thisNameCount) {
       return false;
     }
@@ -260,10 +263,10 @@ abstract class NonEmptyPath extends ElementPath {
   }
 
   static final class ElementIterator implements Iterator<Path> {
-    
+
     private final MemoryFileSystem fileSystem;
     private final Iterator<String> nameIterator;
-    
+
     ElementIterator(MemoryFileSystem fileSystem, Iterator<String> nameIterator) {
       this.fileSystem = fileSystem;
       this.nameIterator = nameIterator;
@@ -282,7 +285,7 @@ abstract class NonEmptyPath extends ElementPath {
      */
     @Override
     public Path next() {
-      return createRelative(fileSystem, this.nameIterator.next());
+      return createRelative(this.fileSystem, this.nameIterator.next());
     }
 
     /**
@@ -292,7 +295,7 @@ abstract class NonEmptyPath extends ElementPath {
     public void remove() {
       throw new UnsupportedOperationException("can't remove from a path iterator");
     }
-    
-  } 
+
+  }
 
 }

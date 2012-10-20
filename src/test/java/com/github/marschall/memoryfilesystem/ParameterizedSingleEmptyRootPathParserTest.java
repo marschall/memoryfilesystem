@@ -19,60 +19,60 @@ public class ParameterizedSingleEmptyRootPathParserTest {
 
   @Rule
   public final FileSystemRule rule = new FileSystemRule();
-  
+
   private final String first;
   private final String[] more;
 
   private Path expected;
 
   private PathParser parser;
-  
-  
+
+
   public ParameterizedSingleEmptyRootPathParserTest(String first, String[] more) {
     this.first = first;
     this.more = more;
   }
-  
+
   @Parameters
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
-        { "/a", new String[]{"b", "c"} },
-        { "/a", new String[]{"/b/", "c"} },
-        { "/a", new String[]{"/b//", "c"} },
-        { "/a", new String[]{"//b//", "c"} },
-        { "/a", new String[]{"//b/", "c"} },
-        { "/a/", new String[]{"//b/", "c"} },
-        { "//a/", new String[]{"//b/", "c"} },
-        { "//a//", new String[]{"//b/", "c"} },
-        { "/a//", new String[]{"//b/", "c"} },
-        { "/a//", new String[]{"//b/c"} },
-        { "/a//", new String[]{"//b//c"} },
-        { "/a//", new String[]{"//b//c/"} },
-        { "/a//", new String[]{"//b//c//"} },
-        { "/", new String[]{"a", "b", "c"} },
-        { "//", new String[]{"/a", "/b", "/c"} },
-        { "/", new String[]{"/a", "/b", "/c"} },
-        { "/", new String[]{"a/", "b/", "c/"} },
-        { "", new String[]{"/a/", "b/", "c/"} },
-        { "", new String[]{"", "", "/a/b/c"} },
-        { "", new String[]{"", "", "/a/b/c", ""} },
-        { "", new String[]{"", "/a/", "b/c", ""} },
-        { "/a/b/c", new String[0] },
+            { "/a", new String[]{"b", "c"} },
+            { "/a", new String[]{"/b/", "c"} },
+            { "/a", new String[]{"/b//", "c"} },
+            { "/a", new String[]{"//b//", "c"} },
+            { "/a", new String[]{"//b/", "c"} },
+            { "/a/", new String[]{"//b/", "c"} },
+            { "//a/", new String[]{"//b/", "c"} },
+            { "//a//", new String[]{"//b/", "c"} },
+            { "/a//", new String[]{"//b/", "c"} },
+            { "/a//", new String[]{"//b/c"} },
+            { "/a//", new String[]{"//b//c"} },
+            { "/a//", new String[]{"//b//c/"} },
+            { "/a//", new String[]{"//b//c//"} },
+            { "/", new String[]{"a", "b", "c"} },
+            { "//", new String[]{"/a", "/b", "/c"} },
+            { "/", new String[]{"/a", "/b", "/c"} },
+            { "/", new String[]{"a/", "b/", "c/"} },
+            { "", new String[]{"/a/", "b/", "c/"} },
+            { "", new String[]{"", "", "/a/b/c"} },
+            { "", new String[]{"", "", "/a/b/c", ""} },
+            { "", new String[]{"", "/a/", "b/c", ""} },
+            { "/a/b/c", new String[0] },
     });
   }
 
   @Before
   public void setUp() {
-    parser = new SingleEmptyRootPathParser("/");
-    Root root = (Root) rule.getFileSystem().getRootDirectories().iterator().next();
-    expected = AbstractPath.createAboslute(root.getMemoryFileSystem(), root, Arrays.asList("a", "b", "c"));
+    this.parser = new SingleEmptyRootPathParser("/");
+    Root root = (Root) this.rule.getFileSystem().getRootDirectories().iterator().next();
+    this.expected = AbstractPath.createAboslute(root.getMemoryFileSystem(), root, Arrays.asList("a", "b", "c"));
   }
-  
+
   @Test
   public void test() {
-    Root root = (Root) rule.getFileSystem().getRootDirectories().iterator().next();
-    Path actual = this.parser.parse(Collections.singletonMap("", root), first, more);
-    assertEquals(expected, actual);
+    Root root = (Root) this.rule.getFileSystem().getRootDirectories().iterator().next();
+    Path actual = this.parser.parse(Collections.singletonMap("", root), this.first, this.more);
+    assertEquals(this.expected, actual);
   }
 
 }

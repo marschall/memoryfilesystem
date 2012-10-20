@@ -15,7 +15,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
- * Tests the contract outlined in {@link Path#relativize(Path)}. 
+ * Tests the contract outlined in {@link Path#relativize(Path)}.
  */
 @RunWith(Parameterized.class)
 public class RelativizeResolveTest {
@@ -30,38 +30,38 @@ public class RelativizeResolveTest {
     this.first = first;
     this.second = second;
   }
-  
+
   @Test
   public void contract() throws IOException {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path p = fileSystem.getPath(this.first);
     Path q = fileSystem.getPath(this.second);
     assertEquals(q, p.relativize(p.resolve(q)));
   }
-  
+
   @Parameters
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
-        { "a", "a" },
-        { "/a", "a" },
-        { "a", "a/b" },
-        { "a/b", "a/b" },
-        { "/a", "a/b" },
-        { "/a/b", "a/b" },
-        { "a", "c" },
-        { "/a", "c" },
-        { "a", "c/d" },
-        { "a/b", "c/d" },
-        { "/a", "c/d" },
-        { "/a/b", "c/d" },
-        { "/", "" },
-        { "/", "a" },
-        { "a", "" },
-        { "/a", "" },
-        { "", "" },
-        { "", "a" },
+            { "a", "a" },
+            { "/a", "a" },
+            { "a", "a/b" },
+            { "a/b", "a/b" },
+            { "/a", "a/b" },
+            { "/a/b", "a/b" },
+            { "a", "c" },
+            { "/a", "c" },
+            { "a", "c/d" },
+            { "a/b", "c/d" },
+            { "/a", "c/d" },
+            { "/a/b", "c/d" },
+            { "/", "" },
+            { "/", "a" },
+            { "a", "" },
+            { "/a", "" },
+            { "", "" },
+            { "", "a" },
     });
   }
-  
+
 
 }

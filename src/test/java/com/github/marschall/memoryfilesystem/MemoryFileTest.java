@@ -12,26 +12,26 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class MemoryFileTest {
-  
+
   private MemoryFile memoryFile;
 
   @Before
   public void setUp() {
-    memoryFile = new MemoryFile("");
+    this.memoryFile = new MemoryFile("");
   }
 
   @Test
   public void testCheckMethods() throws IOException {
-    BasicFileAttributes attributes = memoryFile.getBasicFileAttributeView().readAttributes();
-    
+    BasicFileAttributes attributes = this.memoryFile.getBasicFileAttributeView().readAttributes();
+
     assertTrue(attributes.isRegularFile());
-    
+
     assertFalse(attributes.isDirectory());
     assertFalse(attributes.isOther());
     assertFalse(attributes.isSymbolicLink());
-    
+
     assertEquals(0L, attributes.size());
-    
+
     assertNotNull(attributes.fileKey());
   }
 

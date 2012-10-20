@@ -28,7 +28,7 @@ final class NonAppendingBlockChannel extends BlockChannel {
 
   @Override
   public int write(ByteBuffer src) throws IOException {
-    try (AutoRelease lock = writeLock()) {
+    try (AutoRelease lock = this.writeLock()) {
       int written = this.memoryContents.write(src, this.position);
       this.position += written;
       return written;
@@ -39,7 +39,7 @@ final class NonAppendingBlockChannel extends BlockChannel {
 
   @Override
   public SeekableByteChannel truncate(long size) throws IOException {
-    try (AutoRelease lock = writeLock()) {
+    try (AutoRelease lock = this.writeLock()) {
       this.memoryContents.truncate(size);
       // REVIEW, not sure from doc but kinda makes sense
       this.position = this.memoryContents.size();

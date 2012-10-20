@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 final class MultipleNamedRootsPathParser extends PathParser {
-  
+
   private final StringTransformer pathTransformer;
 
 
@@ -21,7 +21,7 @@ final class MultipleNamedRootsPathParser extends PathParser {
 
   @Override
   public Path parse(Map<String, Root> roots, String first, String... more) {
-    if (startWithSeparator(first, more)) {
+    if (this.startWithSeparator(first, more)) {
       // TODO build string
       throw new InvalidPathException(first, "path must not start with separator", 1);
     }
@@ -34,20 +34,20 @@ final class MultipleNamedRootsPathParser extends PathParser {
         this.parseInto(s, elements);
       }
     }
-    
-    MemoryFileSystem memoryFileSystem = getFileSystem(roots);
-    if (isAbsolute(elements)) {
-      Root root = getRoot(memoryFileSystem, roots, elements);
+
+    MemoryFileSystem memoryFileSystem = this.getFileSystem(roots);
+    if (this.isAbsolute(elements)) {
+      Root root = this.getRoot(memoryFileSystem, roots, elements);
       return AbstractPath.createAboslute(memoryFileSystem, root, elements.subList(1, elements.size()));
     } else {
       return AbstractPath.createRelative(memoryFileSystem, elements);
     }
   }
-  
+
   private MemoryFileSystem getFileSystem(Map<String, Root> roots) {
     return roots.values().iterator().next().getMemoryFileSystem();
   }
-  
+
   private Root getRoot(MemoryFileSystem memoryFileSystem, Map<String, Root> roots, List<String> elements) {
     String first = elements.get(0);
     String key = this.pathTransformer.transform(first.substring(0, 1)); // C: -> C
@@ -59,7 +59,7 @@ final class MultipleNamedRootsPathParser extends PathParser {
       return new NamedRoot(memoryFileSystem, key);
     }
   }
-  
+
   private boolean isAbsolute(List<String> elements) {
     if (elements.isEmpty()) {
       return false;
@@ -76,25 +76,25 @@ final class MultipleNamedRootsPathParser extends PathParser {
     if (s.isEmpty()) {
       return;
     }
-    
+
     int fromIndex = 0;
     int slashIndex = s.indexOf('/', fromIndex);
     int separatorIndex = s.indexOf(this.separator, fromIndex);
-    int nextIndex = computeNextIndex(slashIndex, separatorIndex);
-    
+    int nextIndex = this.computeNextIndex(slashIndex, separatorIndex);
+
     while (nextIndex != -1) {
       if (nextIndex > fromIndex) {
         // avoid empty strings for things like //
         elements.add(s.substring(fromIndex, nextIndex));
       }
-      
+
       fromIndex = nextIndex + 1;
       if (slashIndex == -1) {
         slashIndex = s.indexOf(this.separator, separatorIndex + 1);
         nextIndex = slashIndex;
       } else if (separatorIndex == -1) {
         separatorIndex = s.indexOf('/', slashIndex + 1);
-        nextIndex = separatorIndex; 
+        nextIndex = separatorIndex;
       } else {
         if (slashIndex < separatorIndex) {
           slashIndex = s.indexOf('/', slashIndex + 1);
@@ -102,14 +102,14 @@ final class MultipleNamedRootsPathParser extends PathParser {
           // they can not be equal
           separatorIndex = s.indexOf(this.separator, separatorIndex + 1);
         }
-        nextIndex = computeNextIndex(slashIndex, separatorIndex);
+        nextIndex = this.computeNextIndex(slashIndex, separatorIndex);
       }
     }
     if (fromIndex < s.length()) {
       elements.add(s.substring(fromIndex));
     }
   }
-  
+
   private int computeNextIndex(int slashIndex, int separatorIndex) {
     if (slashIndex == -1) {
       return separatorIndex;

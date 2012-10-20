@@ -7,7 +7,7 @@ import java.util.Locale;
 public final class StringTransformers {
 
   public static final StringTransformer IDENTIY = new IdentityTransformer();
-  
+
   public static final StringTransformer MAC_OS = new MacOS();
 
   public StringTransformer caseInsensitive() {
@@ -17,7 +17,7 @@ public final class StringTransformers {
   public  static StringTransformer caseInsensitive(Locale locale) {
     return new CaseInsenstive(locale);
   }
-  
+
   static final class MacOS implements StringTransformer {
 
     /**
@@ -29,7 +29,7 @@ public final class StringTransformers {
       // http://en.wikipedia.org/wiki/HFS_Plus
       return Normalizer.normalize(s, Form.NFD);
     }
-    
+
   }
 
   static final class CaseInsenstive implements StringTransformer {

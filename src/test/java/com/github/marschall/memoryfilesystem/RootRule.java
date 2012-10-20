@@ -17,7 +17,7 @@ final class RootRule implements TestRule {
 
 
   Path getRoot() {
-    return root;
+    return this.root;
   }
 
 
@@ -31,7 +31,7 @@ final class RootRule implements TestRule {
       @Override
       public void evaluate() throws Throwable {
         try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
-          root = getRoot(fileSystem);
+          RootRule.this.root = this.getRoot(fileSystem);
           base.evaluate();
         }
       }

@@ -17,7 +17,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
 public class ToUriTest {
-  
+
   @Rule
   public final FileSystemRule rule = new FileSystemRule();
 
@@ -26,25 +26,25 @@ public class ToUriTest {
   public ToUriTest(String path) {
     this.path = path;
   }
-  
+
   @Test
   public void contract() throws IOException {
-    FileSystem fileSystem = rule.getFileSystem();
+    FileSystem fileSystem = this.rule.getFileSystem();
     Path p = fileSystem.getPath(this.path);
     assertEquals(p.toAbsolutePath(), Paths.get(p.toUri()));
   }
-  
+
   @Parameters
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
-        { "a" },
-        { "/a" },
-        { "a/b" },
-        { "/a/b" },
-        { "" },
-        { ".." },
-        { "." },
-        { "/" },
+            { "a" },
+            { "/a" },
+            { "a/b" },
+            { "/a/b" },
+            { "" },
+            { ".." },
+            { "." },
+            { "/" },
     });
   }
 

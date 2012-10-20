@@ -44,38 +44,38 @@ public class MemoryFileStoreTest {
 
   @Test
   public void isReadOnly() {
-    assertFalse(rule.getFileStore().isReadOnly());
+    assertFalse(this.rule.getFileStore().isReadOnly());
   }
 
   @Test
   public void name() {
-    assertEquals("name", rule.getFileStore().name());
+    assertEquals("name", this.rule.getFileStore().name());
   }
 
   @Test
   public void type() {
-    assertEquals(MemoryFileSystemProvider.SCHEME, rule.getFileStore().type());
+    assertEquals(MemoryFileSystemProvider.SCHEME, this.rule.getFileStore().type());
   }
-  
+
   @Test
   public void supportsFileAttributeViewClass() {
-    assertTrue(rule.getFileStore().supportsFileAttributeView(BasicFileAttributeView.class));
-    assertFalse(rule.getFileStore().supportsFileAttributeView(PosixFileAttributeView.class));
-    assertFalse(rule.getFileStore().supportsFileAttributeView(DosFileAttributeView.class));
-    assertFalse(rule.getFileStore().supportsFileAttributeView(FileOwnerAttributeView.class));
-    assertFalse(rule.getFileStore().supportsFileAttributeView(UserDefinedFileAttributeView.class));
-    assertFalse(rule.getFileStore().supportsFileAttributeView(AclFileAttributeView.class));
-    
+    assertTrue(this.rule.getFileStore().supportsFileAttributeView(BasicFileAttributeView.class));
+    assertFalse(this.rule.getFileStore().supportsFileAttributeView(PosixFileAttributeView.class));
+    assertFalse(this.rule.getFileStore().supportsFileAttributeView(DosFileAttributeView.class));
+    assertFalse(this.rule.getFileStore().supportsFileAttributeView(FileOwnerAttributeView.class));
+    assertFalse(this.rule.getFileStore().supportsFileAttributeView(UserDefinedFileAttributeView.class));
+    assertFalse(this.rule.getFileStore().supportsFileAttributeView(AclFileAttributeView.class));
+
   }
-  
+
   @Test
   public void supportsFileAttributeView() {
-    assertTrue(rule.getFileStore().supportsFileAttributeView("basic"));
-    assertFalse(rule.getFileStore().supportsFileAttributeView("posix"));
-    assertFalse(rule.getFileStore().supportsFileAttributeView("dos"));
-    assertFalse(rule.getFileStore().supportsFileAttributeView("owner"));
-    assertFalse(rule.getFileStore().supportsFileAttributeView("user"));
-    assertFalse(rule.getFileStore().supportsFileAttributeView("acl"));
+    assertTrue(this.rule.getFileStore().supportsFileAttributeView(FileAttributeViews.BASIC));
+    assertFalse(this.rule.getFileStore().supportsFileAttributeView(FileAttributeViews.POSIX));
+    assertFalse(this.rule.getFileStore().supportsFileAttributeView(FileAttributeViews.DOS));
+    assertFalse(this.rule.getFileStore().supportsFileAttributeView(FileAttributeViews.OWNER));
+    assertFalse(this.rule.getFileStore().supportsFileAttributeView(FileAttributeViews.USER));
+    assertFalse(this.rule.getFileStore().supportsFileAttributeView(FileAttributeViews.ACL));
   }
 
 }

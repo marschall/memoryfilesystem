@@ -23,20 +23,20 @@ import java.nio.file.FileSystem;
  *
  * &lt;bean id="memoryFileSystem"
  *     factory-bean="memoryFileSystemFactory" factory-method="getObject" /&gt;
- *  
+ * 
  * &lt;!-- enable @PreDestroy on MemoryFileSystem#close() --&gt;
  * &lt;context:annotation-config/&gt;
  * </pre></code>
  */
 public class MemoryFileSystemFactoryBean {
 
-  private MemoryFileSystemBuilder builder;
+  private final MemoryFileSystemBuilder builder;
   private String name;
 
   public MemoryFileSystemFactoryBean() {
     this.builder = MemoryFileSystemBuilder.newEmpty();
   }
-  
+
   /**
    * Sets the unique name that identifies the file system to create.
    * 
@@ -49,7 +49,7 @@ public class MemoryFileSystemFactoryBean {
   public void setName(String name) {
     this.name = name;
   }
-  
+
   /**
    * Factory method that creates the file system.
    * 
