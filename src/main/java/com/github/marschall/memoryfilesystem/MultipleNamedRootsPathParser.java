@@ -1,11 +1,12 @@
 package com.github.marschall.memoryfilesystem;
 
+import static java.lang.Math.min;
+
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import static java.lang.Math.min;
 
 final class MultipleNamedRootsPathParser extends PathParser {
   

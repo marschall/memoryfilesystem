@@ -2,7 +2,6 @@ package com.github.marschall.memoryfilesystem;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.WatchEvent.Kind;
 import java.nio.file.WatchEvent.Modifier;

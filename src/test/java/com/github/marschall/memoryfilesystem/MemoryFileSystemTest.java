@@ -1,7 +1,6 @@
 package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_ENV;
-import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_URI;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
