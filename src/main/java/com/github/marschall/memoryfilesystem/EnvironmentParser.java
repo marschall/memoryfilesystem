@@ -3,6 +3,7 @@ package com.github.marschall.memoryfilesystem;
 import java.text.Collator;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 class EnvironmentParser {
@@ -36,8 +37,12 @@ class EnvironmentParser {
     }
   }
   
-  StringTransformer getPathTransformer() {
-    return getStringTranformer(MemoryFileSystemProperties.PATH_TRANSFORMER_PROPERTY);
+  StringTransformer getStoreTransformer() {
+    return getStringTranformer(MemoryFileSystemProperties.PATH_STORE_TRANSFORMER_PROPERTY);
+  }
+  
+  StringTransformer getLookUpTransformer() {
+    return getStringTranformer(MemoryFileSystemProperties.PATH_LOOKUP_TRANSFORMER_PROPERTY);
   }
 
   StringTransformer getStringTranformer(String property) {
@@ -66,7 +71,7 @@ class EnvironmentParser {
                 + Collator.class + " but was " + value.getClass());
       }
     } else {
-      return MemoryFileSystemProperties.caseSensitiveCollator();
+      return MemoryFileSystemProperties.caseSensitiveCollator(Locale.getDefault());
     }
   }
   
@@ -203,6 +208,5 @@ class EnvironmentParser {
     return this.getRoots().size() == 1
             && MemoryFileSystemProperties.UNIX_ROOT.equals(this.getRoots().get(0));
   }
-
 
 }

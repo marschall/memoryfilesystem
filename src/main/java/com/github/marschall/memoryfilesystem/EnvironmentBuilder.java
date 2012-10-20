@@ -4,6 +4,7 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class EnvironmentBuilder {
@@ -18,13 +19,16 @@ public class EnvironmentBuilder {
 
   private String currentWorkingDirectory;
   
-  private StringTransformer pathTransformer;
+  private StringTransformer storeTransformer;
+  
+  private StringTransformer lookUpTransformer;
   
   private StringTransformer principalTransformer;
   
   private Collator collator;
 
-
+  private Locale locale;
+  
   private EnvironmentBuilder() {
     this.roots = new ArrayList<>();
     this.users = new ArrayList<>();
@@ -56,13 +60,33 @@ public class EnvironmentBuilder {
     return this;
   }
   
-  public EnvironmentBuilder setPathTransformer(StringTransformer pathTransformer) {
-    this.pathTransformer = pathTransformer;
+  public EnvironmentBuilder setStoreTransformer(StringTransformer storeTransformer) {
+    this.storeTransformer = storeTransformer;
     return this;
   }
   
-  public EnvironmentBuilder setPrincipalTransformer(StringTransformer principalTransformer) {
-    this.principalTransformer = principalTransformer;
+  public EnvironmentBuilder setLocale(Locale locale) {
+    this.locale = locale;
+    return this;
+  }
+  
+  private Locale getLocale() {
+    if (this.locale == null) {
+      return Locale.getDefault();
+    } else {
+      return this.locale;
+    }
+  }
+  
+  public EnvironmentBuilder setCaseSensitive(boolean caseSensitive) {
+    if (caseSensitive) {
+      this.lookUpTransformer = StringTransformers.IDENTIY;
+      this.collator = MemoryFileSystemProperties.caseSensitiveCollator(this.getLocale());
+    } else {
+      this.lookUpTransformer = StringTransformers.caseInsensitive(this.getLocale());
+      this.collator = MemoryFileSystemProperties.caseInsensitiveCollator(this.getLocale());
+
+    }
     return this;
   }
   
@@ -82,8 +106,8 @@ public class EnvironmentBuilder {
     .addUser(getSystemUserName())
     .addGroup(getSystemUserName())
     .setCurrentWorkingDirectory("/home/" + getSystemUserName())
-    .setPathTransformer(StringTransformers.IDENTIY)
-    .setCollator(MemoryFileSystemProperties.caseSensitiveCollator());
+    .setStoreTransformer(StringTransformers.IDENTIY)
+    .setCaseSensitive(true);
   }
   
   public static EnvironmentBuilder newMacOs() {
@@ -93,8 +117,8 @@ public class EnvironmentBuilder {
     .addUser(getSystemUserName())
     .addGroup(getSystemUserName())
     .setCurrentWorkingDirectory("/Users/" + getSystemUserName())
-    .setPathTransformer(StringTransformers.MAC_OS)
-    .setCollator(MemoryFileSystemProperties.caseSensitiveCollator());
+    .setStoreTransformer(StringTransformers.MAC_OS)
+    .setCaseSensitive(true);
   }
 
   public static EnvironmentBuilder newWindows() {
@@ -104,8 +128,8 @@ public class EnvironmentBuilder {
       .addUser(getSystemUserName())
       .addGroup(getSystemUserName())
       .setCurrentWorkingDirectory("C:\\Users\\" + getSystemUserName())
-      .setPathTransformer(StringTransformers.IDENTIY)
-      .setCollator(MemoryFileSystemProperties.caseInsensitiveCollator());
+      .setStoreTransformer(StringTransformers.IDENTIY)
+      .setCaseSensitive(false);
   }
 
   static String getSystemUserName() {
@@ -123,8 +147,11 @@ public class EnvironmentBuilder {
     if (this.currentWorkingDirectory != null) {
       env.put(MemoryFileSystemProperties.CURRENT_WORKING_DIRECTORY_PROPERTY, this.currentWorkingDirectory);
     }
-    if (this.pathTransformer != null) {
-      env.put(MemoryFileSystemProperties.PATH_TRANSFORMER_PROPERTY, this.pathTransformer);
+    if (this.storeTransformer != null) {
+      env.put(MemoryFileSystemProperties.PATH_STORE_TRANSFORMER_PROPERTY, this.storeTransformer);
+    }
+    if (this.lookUpTransformer != null) {
+      env.put(MemoryFileSystemProperties.PATH_LOOKUP_TRANSFORMER_PROPERTY, this.lookUpTransformer);
     }
     if (this.principalTransformer != null) {
       env.put(MemoryFileSystemProperties.PRINCIPAL_TRANSFORMER_PROPERTY, this.principalTransformer);

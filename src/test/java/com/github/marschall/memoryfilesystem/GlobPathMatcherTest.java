@@ -45,6 +45,10 @@ public class GlobPathMatcherTest {
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
         { "*.java", "GlobPathMatcherTest.java", true },
+        { "*.java", "GlobPathMatcherTest.JAVA", true },
+        { "*.JAVA", "GlobPathMatcherTest.java", true },
+        { "*.j[a-z]va", "GlobPathMatcherTest.java", true },
+        { "*.j[A-Z]va", "GlobPathMatcherTest.java", true },
         { "*.java", ".java", true },
         { "*.java", ".jav.java", true },
         { "*.java", ".jav.java", true },

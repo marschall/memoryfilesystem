@@ -68,8 +68,6 @@ abstract class Root extends AbstractPath {
     throw new IllegalArgumentException("can't create subpath of root");
   }
 
-
-
   @Override
   public Path normalize() {
     return this;
@@ -84,8 +82,7 @@ abstract class Root extends AbstractPath {
 
   @Override
   public Path toRealPath(LinkOption... options) throws IOException {
-    // TODO Auto-generated function stub
-    throw new UnsupportedOperationException();
+    return this;
   }
 
 
@@ -142,7 +139,6 @@ abstract class Root extends AbstractPath {
       return createRelative(getMemoryFileSystem(), Collections.<String>emptyList());
     }
     
-    //TODO normalize
     if (other instanceof ElementPath) {
       // normal case
       ElementPath otherPath = (ElementPath) other;

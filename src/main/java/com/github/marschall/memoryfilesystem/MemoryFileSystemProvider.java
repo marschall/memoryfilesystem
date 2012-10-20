@@ -105,19 +105,20 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   private MemoryFileSystem createNewFileSystem(String key, EnvironmentParser parser) {
     ClosedFileSystemChecker checker = new ClosedFileSystemChecker();
     String separator = parser.getSeparator();
-    StringTransformer pathTransformer = parser.getPathTransformer();
+    StringTransformer storeTransformer = parser.getStoreTransformer();
+    StringTransformer lookUpTransformer = parser.getLookUpTransformer();
     Collator collator = parser.getCollator();
     MemoryFileStore memoryStore = new MemoryFileStore(key, checker);
     MemoryUserPrincipalLookupService userPrincipalLookupService = this.createUserPrincipalLookupService(parser, checker);
     PathParser pathParser = this.buildPathParser(parser);
     MemoryFileSystem fileSystem = new MemoryFileSystem(key, separator, pathParser, this, memoryStore,
-            userPrincipalLookupService, checker, pathTransformer, collator);
+            userPrincipalLookupService, checker, storeTransformer, lookUpTransformer, collator);
     fileSystem.setRootDirectories(this.buildRootsDirectories(parser, fileSystem));
     String defaultDirectory = parser.getDefaultDirectory();
     fileSystem.setCurrentWorkingDirectory(defaultDirectory);
     return fileSystem;
   }
-
+  
   private MemoryUserPrincipalLookupService createUserPrincipalLookupService(EnvironmentParser parser,
       ClosedFileSystemChecker checker) {
     List<String> userNames = parser.getUserNames();
@@ -143,20 +144,21 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     if (parser.isSingleEmptyRoot()) {
       return new SingleEmptyRootPathParser(separator);
     } else {
-      return new MultipleNamedRootsPathParser(separator, parser.getPathTransformer());
+      return new MultipleNamedRootsPathParser(separator, parser.getStoreTransformer());
     }
   }
 
   private Map<Root, MemoryDirectory> buildRootsDirectories(EnvironmentParser parser, MemoryFileSystem fileSystem) {
     if (parser.isSingleEmptyRoot()) {
       Root root = new EmptyRoot(fileSystem);
-      MemoryDirectory directory = new MemoryDirectory();
+      MemoryDirectory directory = new MemoryDirectory("");
       return Collections.singletonMap(root, directory);
     } else {
       List<String> roots = parser.getRoots();
       Map<Root, MemoryDirectory> paths = new LinkedHashMap<>(roots.size());
       for (String root : roots) {
-        paths.put(new NamedRoot(fileSystem, root), new MemoryDirectory());
+        NamedRoot namedRoot = new NamedRoot(fileSystem, root);
+        paths.put(namedRoot, new MemoryDirectory(namedRoot.getKey()));
       }
       return Collections.unmodifiableMap(paths);
     }
@@ -220,13 +222,24 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
     memoryFileSystem.createDirectory(abstractPath, attrs);
   }
+  
+  @Override
+  public void createSymbolicLink(Path link, Path target, FileAttribute<?>... attrs) throws IOException {
+    AbstractPath linkPath = this.castPath(link);
+    AbstractPath targetPath = this.castPath(target);
+    MemoryFileSystem memoryFileSystem = linkPath.getMemoryFileSystem();
+    if (memoryFileSystem != targetPath.getMemoryFileSystem()) {
+      throw new IllegalArgumentException("link and target must be on same file system");
+    }
+    memoryFileSystem.createSymbolicLink(linkPath, targetPath, attrs);
+  }
 
 
   @Override
   public void delete(Path path) throws IOException {
     AbstractPath abstractPath = this.castPath(path);
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
-    memoryFileSystem.delete(abstractPath, path);
+    memoryFileSystem.delete(abstractPath);
   }
 
 
@@ -248,8 +261,11 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   @Override
   public boolean isSameFile(Path path, Path path2) throws IOException {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
+    if (path.equals(path2)) {
+      return true;
+    }
+    // TODO isn't atomic
+    return path.toAbsolutePath().equals(path2.toAbsolutePath());
   }
 
 

@@ -149,14 +149,6 @@ final class AbsolutePath extends NonEmptyPath {
     return this;
   }
 
-
-  @Override
-  public Path toRealPath(LinkOption... options) throws IOException {
-    // TODO Auto-generated function stub
-    throw new UnsupportedOperationException();
-  }
-
-
   @Override
   public WatchKey register(WatchService watcher, Kind<?>[] events,
           Modifier... modifiers) throws IOException {

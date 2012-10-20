@@ -56,13 +56,17 @@ class MemoryFileSystem extends FileSystem {
 
   private final EmptyPath emptyPath;
 
-  private final StringTransformer pathTransformer;
+  // computes the file name to be stored of a file
+  private final StringTransformer storeTransformer;
+  
+  // computes the look up key of a file name
+  private final StringTransformer lookUpTransformer;
 
   private final Collator collator;
 
   MemoryFileSystem(String key, String separator, PathParser pathParser, MemoryFileSystemProvider provider, MemoryFileStore store,
       MemoryUserPrincipalLookupService userPrincipalLookupService, ClosedFileSystemChecker checker, StringTransformer pathTransformer,
-      Collator collator) {
+      StringTransformer lookUpTransformer, Collator collator) {
     this.key = key;
     this.separator = separator;
     this.pathParser = pathParser;
@@ -70,7 +74,8 @@ class MemoryFileSystem extends FileSystem {
     this.store = store;
     this.userPrincipalLookupService = userPrincipalLookupService;
     this.checker = checker;
-    this.pathTransformer = pathTransformer;
+    this.storeTransformer = pathTransformer;
+    this.lookUpTransformer = lookUpTransformer;
     this.collator = collator;
     this.stores = Collections.<FileStore>singletonList(store);
     this.emptyPath = new EmptyPath(this);
@@ -100,16 +105,15 @@ class MemoryFileSystem extends FileSystem {
   
   private Map<String, Root> buildRootsByKey(Collection<Root> rootDirectories) {
     if (rootDirectories.isEmpty()) {
-      // REVIEW really?
-      return Collections.emptyMap();
+      throw new IllegalArgumentException("a file system root must be present");
     } else if (rootDirectories.size() == 1) {
       Root root = rootDirectories.iterator().next();
-      String key = this.pathTransformer.transform(root.getKey());
+      String key = this.lookUpTransformer.transform(root.getKey());
       return Collections.singletonMap(key, root);
     } else {
       Map<String, Root> map = new HashMap<>(rootDirectories.size());
       for (Root root : rootDirectories) {
-        String key = this.pathTransformer.transform(root.getKey());
+        String key = this.lookUpTransformer.transform(root.getKey());
         map.put(key, root);
       }
       return map;
@@ -153,14 +157,34 @@ class MemoryFileSystem extends FileSystem {
 
 
   void createDirectory(AbstractPath path, FileAttribute<?>... attrs) throws IOException {
+    //TODO don't ignore attrs
+    this.createFile(path, new MemoryEntryCreator() {
+
+      @Override
+      public MemoryEntry create(String name) {
+        return new MemoryDirectory(name);
+      }
+      
+    });
+  }
+  
+  void createSymbolicLink(AbstractPath link, final AbstractPath target, FileAttribute<?>... attrs) throws IOException {
+    //TODO don't ignore attrs
+    this.createFile(link, new MemoryEntryCreator() {
+
+      @Override
+      public MemoryEntry create(String name) {
+        return new MemorySymbolicLink(name, target);
+      }
+
+    });
+  }
+  
+  private void createFile(AbstractPath path, final MemoryEntryCreator creator) throws IOException {
     this.checker.check();
     MemoryDirectory rootDirectory = this.getRootDirectory(path);
     
-    Path absolutePath = path.toAbsolutePath();
-    if (!(absolutePath instanceof ElementPath)) {
-      throw new IOException("can not be created");
-    }
-    final ElementPath absoluteElementPath = (ElementPath) absolutePath;
+    final ElementPath absolutePath = (ElementPath) path.toAbsolutePath();
     final Path parent = absolutePath.getParent();
     
     this.withWriteLockOnLastDo(rootDirectory, (AbstractPath) parent, new MemoryEntryBlock<Void>() {
@@ -170,12 +194,35 @@ class MemoryFileSystem extends FileSystem {
         if (!(entry instanceof MemoryDirectory)) {
           throw new IOException(parent + " is not a directory");
         }
-        MemoryDirectory newDirectory = new MemoryDirectory();
-        String name = absoluteElementPath.getLastNameElement();
-        ((MemoryDirectory) entry).addEntry(name, newDirectory);
+        String name = storeTransformer.transform(absolutePath.getLastNameElement());
+        MemoryEntry newEntry = creator.create(name);
+        String key = lookUpTransformer.transform(newEntry.getOriginalName());
+        ((MemoryDirectory) entry).addEntry(key, newEntry);
         return null;
       }
     });
+    
+  }
+  
+  Path toRealPath(AbstractPath abstractPath, LinkOption... options)throws IOException  {
+    this.checker.check();
+    AbsolutePath path = (AbsolutePath) abstractPath.normalize().toAbsolutePath();
+    boolean followSymLinks = this.isFollowSymLinks(options);
+    // TODO implement
+    throw new UnsupportedOperationException();
+  }
+  
+  private boolean isFollowSymLinks(LinkOption... options) {
+    if (options == null) {
+      return false;
+    }
+    
+    for (LinkOption option : options) {
+      if (option == LinkOption.NOFOLLOW_LINKS) {
+        return false;
+      }
+    }
+    return true;
   }
   
 
@@ -213,6 +260,12 @@ class MemoryFileSystem extends FileSystem {
   interface MemoryEntryBlock<R> {
     
     R value(MemoryEntry entry) throws IOException;
+    
+  }
+  
+  interface MemoryEntryCreator {
+    
+    MemoryEntry create(String name);
     
   }
   
@@ -304,7 +357,7 @@ class MemoryFileSystem extends FileSystem {
 
 
 
-  void delete(AbstractPath abstractPath, Path path) {
+  void delete(AbstractPath abstractPath) {
     // TODO Auto-generated method stub
     throw new UnsupportedOperationException();
   }
@@ -387,7 +440,8 @@ class MemoryFileSystem extends FileSystem {
     String syntax = syntaxAndPattern.substring(0, colonIndex);
     String pattern = syntaxAndPattern.substring(colonIndex + 1);
     if (syntax.equalsIgnoreCase(GlobPathMatcher.name())) {
-      return new GlobPathMatcher(pattern);
+      Path patternPath = getPath(pattern);
+      return new GlobPathMatcher(patternPath);
     }
     if (syntax.equalsIgnoreCase(RegexPathMatcher.name())) {
       Pattern regex = Pattern.compile(pattern);
@@ -417,13 +471,9 @@ class MemoryFileSystem extends FileSystem {
   FileStore getFileStore() {
     return this.store;
   }
-
-  private StringTransformer getPathTransformer() {
-    return this.pathTransformer;
-  }
   
   Collator getCollator() {
     return this.collator;
-  } 
+  }
 
 }

@@ -3,6 +3,7 @@ package com.github.marschall.memoryfilesystem;
 import java.text.Collator;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 public class MemoryFileSystemProperties {
 
@@ -22,7 +23,9 @@ public class MemoryFileSystemProperties {
 
   public static final String GROUPS_PROPERTY = "groups";
 
-  public static final String PATH_TRANSFORMER_PROPERTY = "path.transformer";
+  public static final String PATH_STORE_TRANSFORMER_PROPERTY = "path.store.transformer";
+  
+  public static final String PATH_LOOKUP_TRANSFORMER_PROPERTY = "path.lookup.transformer";
   
   public static final String PRINCIPAL_TRANSFORMER_PROPERTY = "princial.transformer";
   
@@ -34,15 +37,15 @@ public class MemoryFileSystemProperties {
   
   static final String BASIC_FILE_ATTRIBUTE_VIEW_NAME = "basic";
 
-  static Collator caseSensitiveCollator() {
-    Collator collator = Collator.getInstance();
+  static Collator caseSensitiveCollator(Locale locale) {
+    Collator collator = Collator.getInstance(locale);
     collator.setDecomposition(Collator.NO_DECOMPOSITION);
     collator.setStrength(Collator.IDENTICAL);
     return collator;
   }
 
-  static Collator caseInsensitiveCollator() {
-    Collator collator = Collator.getInstance();
+  static Collator caseInsensitiveCollator(Locale locale) {
+    Collator collator = Collator.getInstance(locale);
     collator.setDecomposition(Collator.NO_DECOMPOSITION);
     collator.setStrength(Collator.SECONDARY);
     return collator;

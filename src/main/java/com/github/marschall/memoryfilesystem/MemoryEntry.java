@@ -12,6 +12,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 abstract class MemoryEntry {
   
+  private final String originalName;
+  
   // protected by read and write locks
   private FileTime lastModifiedTime;
   private FileTime lastAccessTime;
@@ -19,13 +21,18 @@ abstract class MemoryEntry {
   
   private final ReadWriteLock lock;
   
-
-  MemoryEntry() {
+  MemoryEntry(String originalName) {
+    this.originalName = originalName;
     this.lock = new ReentrantReadWriteLock();
     FileTime now = this.getNow();
     this.lastAccessTime = now;
     this.lastModifiedTime = now;
     this.creationTime = now;
+  }
+
+
+  String getOriginalName() {
+    return this.originalName;
   }
   
   private FileTime getNow() {
@@ -99,9 +106,18 @@ abstract class MemoryEntry {
     }
   }
   
-  abstract BasicFileAttributeView getBasicFileAttributeView();
   
-  abstract <A extends BasicFileAttributes> A readAttributes(Class<A> type);
+  <A extends BasicFileAttributes> A readAttributes(Class<A> type) {
+    if (type == BasicFileAttributes.class) {
+      this.accessed();
+      return (A) this.getBasicFileAttributes();
+    } else {
+      throw new UnsupportedOperationException("file attribute view" + type + " not supported");
+    }
+  }
+  
+  abstract BasicFileAttributeView getBasicFileAttributeView();
+  abstract BasicFileAttributes getBasicFileAttributes();
   
   abstract class MemoryEntryFileAttributesView implements BasicFileAttributeView {
     

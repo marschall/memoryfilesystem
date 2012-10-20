@@ -17,7 +17,7 @@ public class MemoryDirectoryTest {
 
   @Before
   public void setUp() {
-    memoryDirectory = new MemoryDirectory();
+    memoryDirectory = new MemoryDirectory("");
   }
 
 

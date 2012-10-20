@@ -4,7 +4,6 @@ import static com.github.marschall.memoryfilesystem.MemoryFileSystemProvider.SCH
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Path;
 
 class EmptyRoot extends Root {
 

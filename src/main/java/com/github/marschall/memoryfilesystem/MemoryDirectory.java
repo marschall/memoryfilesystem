@@ -15,7 +15,8 @@ class MemoryDirectory extends MemoryEntry {
 
   private final BasicFileAttributeView basicFileAttributeView;
   
-  MemoryDirectory() {
+  MemoryDirectory(String originalName) {
+    super(originalName);
     this.entries = new HashMap<>();
     this.attributes = new MemoryDirectoryFileAttributes();
     this.basicFileAttributeView = new MemoryDirectoryFileAttributesView();
@@ -26,13 +27,9 @@ class MemoryDirectory extends MemoryEntry {
     return this.basicFileAttributeView;
   }
   
-  <A extends BasicFileAttributes> A readAttributes(Class<A> type) {
-    if (type == BasicFileAttributes.class) {
-      this.accessed();
-      return (A) this.attributes;
-    } else {
-      throw new UnsupportedOperationException("file attribute view" + type + " not supported");
-    }
+  @Override
+  BasicFileAttributes getBasicFileAttributes() {
+    return this.attributes;
   }
   
   MemoryEntry getEntry(String name) {

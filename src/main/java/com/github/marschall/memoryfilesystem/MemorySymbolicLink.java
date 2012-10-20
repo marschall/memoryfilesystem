@@ -1,22 +1,27 @@
 package com.github.marschall.memoryfilesystem;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 
-class MemoryFile extends MemoryEntry {
-  
-  private final MemoryContents contents;
+class MemorySymbolicLink extends MemoryEntry {
+
+  private final Path target;
 
   private final BasicFileAttributes attributes;
 
   private final BasicFileAttributeView basicFileAttributeView;
-  
-  MemoryFile(String originalName) {
+
+  MemorySymbolicLink(String originalName, AbstractPath target) {
     super(originalName);
-    this.attributes = new MemoryFileAttributes();
-    this.basicFileAttributeView = new MemoryFileAttributesView();
-    this.contents = new MemoryContents(16);
+    this.target = target;
+    this.attributes = new MemorySymbolicLinkAttributes();
+    this.basicFileAttributeView = new MemorySymbolicLinkAttributesView();
+  }
+  
+  Path getTarget() {
+    return this.target;
   }
   
   @Override
@@ -30,20 +35,20 @@ class MemoryFile extends MemoryEntry {
   }
   
   
-  class MemoryFileAttributesView extends MemoryEntryFileAttributesView {
+  class MemorySymbolicLinkAttributesView extends MemoryEntryFileAttributesView {
 
     @Override
     public BasicFileAttributes readAttributes() throws IOException {
-      return MemoryFile.this.attributes;
+      return MemorySymbolicLink.this.attributes;
     }
     
   }
   
-  final class MemoryFileAttributes extends MemoryEntryFileAttributes {
+  final class MemorySymbolicLinkAttributes extends MemoryEntryFileAttributes {
 
     @Override
     public boolean isRegularFile() {
-      return true;
+      return false;
     }
 
     @Override
@@ -53,7 +58,7 @@ class MemoryFile extends MemoryEntry {
 
     @Override
     public boolean isSymbolicLink() {
-      return false;
+      return true;
     }
 
     @Override
@@ -63,16 +68,16 @@ class MemoryFile extends MemoryEntry {
 
     @Override
     public long size() {
-      return contents.size();
+      // REVIEW make configurable
+      return -1L;
     }
 
     @Override
     public Object fileKey() {
       // REVIEW think about it
-      return MemoryFile.this;
+      return MemorySymbolicLink.this;
     }
     
   }
-
 
 }

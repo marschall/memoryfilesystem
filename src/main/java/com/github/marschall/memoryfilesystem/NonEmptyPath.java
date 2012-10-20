@@ -2,6 +2,8 @@ package com.github.marschall.memoryfilesystem;
 
 import static java.lang.Math.min;
 
+import java.io.IOException;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -75,6 +77,11 @@ abstract class NonEmptyPath extends ElementPath {
   public Path getFileName() {
     String lastElement = nameElements.get(nameElements.size() - 1);
     return createRelative(getMemoryFileSystem(), lastElement);
+  }
+
+  @Override
+  public Path toRealPath(LinkOption... options) throws IOException {
+    return this.getMemoryFileSystem().toRealPath(this, options);
   }
   
   @Override
