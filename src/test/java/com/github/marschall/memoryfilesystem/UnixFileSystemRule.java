@@ -6,7 +6,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-final class FileSystemRule implements TestRule {
+final class UnixFileSystemRule implements TestRule {
 
   private FileSystem fileSystem;
 
@@ -22,12 +22,12 @@ final class FileSystemRule implements TestRule {
 
       @Override
       public void evaluate() throws Throwable {
-        FileSystemRule.this.fileSystem = MemoryFileSystemBuilder.newEmpty().build("name");
+        UnixFileSystemRule.this.fileSystem = MemoryFileSystemBuilder.newUnix().build("name");
 
         try {
           base.evaluate();
         } finally {
-          FileSystemRule.this.fileSystem.close();
+          UnixFileSystemRule.this.fileSystem.close();
         }
       }
 

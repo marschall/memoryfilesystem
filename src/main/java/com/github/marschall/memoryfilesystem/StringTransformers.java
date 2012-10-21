@@ -20,9 +20,6 @@ public final class StringTransformers {
 
   static final class MacOS implements StringTransformer {
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String transform(String s) {
       // Wikipedia says MAC_OS uses NFD
@@ -40,9 +37,6 @@ public final class StringTransformers {
       this.locale = locale;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String transform(String s) {
       return s.toUpperCase(this.locale);
@@ -50,9 +44,7 @@ public final class StringTransformers {
 
   }
   static final class IdentityTransformer implements StringTransformer {
-    /**
-     * {@inheritDoc}
-     */
+
     @Override
     public String transform(String s) {
       return s;

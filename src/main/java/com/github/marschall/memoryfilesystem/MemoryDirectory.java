@@ -50,9 +50,6 @@ class MemoryDirectory extends MemoryEntry {
 
   class MemoryDirectoryFileAttributesView extends MemoryEntryFileAttributesView {
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public BasicFileAttributes readAttributes() throws IOException {
       return MemoryDirectory.this.attributes;
@@ -62,50 +59,32 @@ class MemoryDirectory extends MemoryEntry {
 
   final class MemoryDirectoryFileAttributes extends MemoryEntryFileAttributes {
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean isRegularFile() {
       return false;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean isDirectory() {
       return true;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean isSymbolicLink() {
       return false;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean isOther() {
       return false;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public long size() {
       // REVIEW make configurable
       return -1L;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Object fileKey() {
       // REVIEW think about it

@@ -297,11 +297,9 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   @Override
   public <V extends FileAttributeView> V getFileAttributeView(Path path, Class<V> type, LinkOption... options) {
-    //    AbstractPath abstractPath = this.castPath(path);
-    //    MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
-    //    return memoryFileSystem.getFileAttributeView(abstractPath, type, options);
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
+    AbstractPath abstractPath = this.castPath(path);
+    MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
+    return memoryFileSystem.getLazyFileAttributeView(abstractPath, type, options);
   }
 
 

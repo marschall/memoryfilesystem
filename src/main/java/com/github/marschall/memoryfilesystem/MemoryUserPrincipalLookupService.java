@@ -71,17 +71,11 @@ final class MemoryUserPrincipalLookupService extends UserPrincipalLookupService 
     }
 
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String getName() {
       return this.name;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String toString() {
       return this.getName();

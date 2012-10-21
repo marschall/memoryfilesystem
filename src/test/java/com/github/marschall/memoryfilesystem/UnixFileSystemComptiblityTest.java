@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -29,22 +29,38 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class UnixFileSystemComptiblityTest {
 
-  private final FileSystem fileSystem;
+  @Rule
+  public final UnixFileSystemRule rule = new UnixFileSystemRule();
 
-  public UnixFileSystemComptiblityTest(FileSystem fileSystem) {
-    this.fileSystem = fileSystem;
+  private FileSystem fileSystem;
+
+  private final boolean useDefault;
+
+  public UnixFileSystemComptiblityTest(boolean useDefault) {
+    this.useDefault = useDefault;
+  }
+
+  FileSystem getFileSystem() {
+    if (this.fileSystem == null) {
+      if (this.useDefault) {
+        this.fileSystem = FileSystems.getDefault();
+      } else {
+        this.fileSystem = this.rule.getFileSystem();
+      }
+    }
+    return this.fileSystem;
   }
 
   @Test
   public void notExistingView() throws IOException {
-    Path path = this.fileSystem.getPath("/foo/bar/does/not/exist");
+    Path path = this.getFileSystem().getPath("/foo/bar/does/not/exist");
     BasicFileAttributeView attributeView = Files.getFileAttributeView(path, BasicFileAttributeView.class);
     assertNotNull(attributeView);
   }
 
   @Test
   public void readOwner() throws IOException {
-    Path path = this.fileSystem.getPath("/");
+    Path path = this.getFileSystem().getPath("/");
     Map<String, Object> attributes = Files.readAttributes(path, "owner:owner");
     //TODO fix hamcrest
     //    assertThat(attributes, hasSize(1));
@@ -59,7 +75,7 @@ public class UnixFileSystemComptiblityTest {
 
   @Test
   public void readPosixSize() throws IOException {
-    Path path = this.fileSystem.getPath("/");
+    Path path = this.getFileSystem().getPath("/");
     Map<String, Object> attributes = Files.readAttributes(path, "posix:size");
     //TODO fix hamcrest
     //    assertThat(attributes, hasSize(1));
@@ -72,7 +88,7 @@ public class UnixFileSystemComptiblityTest {
 
   @Test
   public void readPosixAttributeNames() throws IOException {
-    Path path = this.fileSystem.getPath("/");
+    Path path = this.getFileSystem().getPath("/");
     Map<String, Object> attributes = Files.readAttributes(path, "posix:*");
     Set<String> expectedAttributeNames = new HashSet<>(Arrays.asList(
             "lastModifiedTime",
@@ -92,30 +108,22 @@ public class UnixFileSystemComptiblityTest {
 
   @Test
   public void readOwnerAttributeNames() throws IOException {
-    Path path = this.fileSystem.getPath("/");
+    Path path = this.getFileSystem().getPath("/");
     Map<String, Object> attributes = Files.readAttributes(path, "owner:*");
     Set<String> expectedAttributeNames = Collections.singleton("owner");
     assertEquals(expectedAttributeNames, attributes.keySet());
   }
 
-  @After
-  public void tearDown() throws IOException {
-    if (this.fileSystem instanceof MemoryFileSystem) {
-      this.fileSystem.close();
-    }
-  }
-
   @Parameters
   public static List<Object[]> fileSystems() throws IOException {
     FileSystem defaultFileSystem = FileSystems.getDefault();
-    FileSystem memoryFileSystem = MemoryFileSystemBuilder.newUnix().build("posix");
     boolean isPosix = defaultFileSystem.supportedFileAttributeViews().contains("posix");
-    // TODO don't run on Max
+    // TODO don't run on Mac
     if (isPosix) {
-      return Arrays.asList(new Object[]{memoryFileSystem},
-              new Object[]{defaultFileSystem});
+      return Arrays.asList(new Object[]{true},
+              new Object[]{false});
     } else {
-      return Collections.singletonList(new Object[]{memoryFileSystem});
+      return Collections.singletonList(new Object[]{false});
     }
   }
 

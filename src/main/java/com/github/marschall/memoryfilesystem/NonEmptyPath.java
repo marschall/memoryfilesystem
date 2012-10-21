@@ -272,25 +272,16 @@ abstract class NonEmptyPath extends ElementPath {
       this.nameIterator = nameIterator;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean hasNext() {
       return this.nameIterator.hasNext();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Path next() {
       return createRelative(this.fileSystem, this.nameIterator.next());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void remove() {
       throw new UnsupportedOperationException("can't remove from a path iterator");

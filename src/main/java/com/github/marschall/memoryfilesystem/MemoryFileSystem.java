@@ -1,6 +1,9 @@
 package com.github.marschall.memoryfilesystem;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.AccessMode;
 import java.nio.file.DirectoryStream;
@@ -26,6 +29,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
 import javax.annotation.PreDestroy;
@@ -256,6 +260,12 @@ class MemoryFileSystem extends FileSystem {
         return entry.readAttributes(type);
       }
     });
+  }
+
+  <V extends FileAttributeView> V getLazyFileAttributeView(AbstractPath path, final Class<V> type, LinkOption... options) {
+    InvocationHandler handler = new LazyFileAttributeView<>(path, type, options);
+    Object proxy = Proxy.newProxyInstance(MemoryFileSystem.class.getClassLoader(), new Class<?>[]{type}, handler);
+    return type.cast(proxy);
   }
 
   <V extends FileAttributeView> V getFileAttributeView(AbstractPath path, final Class<V> type, LinkOption... options) throws IOException {
@@ -539,6 +549,66 @@ class MemoryFileSystem extends FileSystem {
       }
 
     });
+  }
+
+  class LazyFileAttributeView<V extends FileAttributeView> implements InvocationHandler {
+
+    private final AbstractPath path;
+    private final LinkOption[] options;
+    private final Class<V> type;
+    private final AtomicReference<V> attributeView;
+
+    LazyFileAttributeView(AbstractPath path, Class<V> type, LinkOption... options) {
+      this.path = path;
+      this.options = options;
+      this.type = type;
+      this.attributeView = new AtomicReference<>();
+    }
+
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+      String methodName = method.getName();
+      switch (methodName) {
+        case "name":
+          if (args != null && args.length > 0) {
+            throw new AssertionError("#name() not expected to have any arguments");
+          }
+          return FileAttributeViews.mapAttributeView(this.type);
+        case "toString":
+          if (args != null && args.length > 0) {
+            throw new AssertionError("#toString() not expected to have any arguments");
+          }
+          return this.type.toString();
+        case "equals":
+          if (args == null || args.length != 1) {
+            throw new AssertionError("#equals() expected to exactly one argument");
+          }
+          return proxy == args[0];
+        case "hashCode":
+          if (args != null && args.length > 0) {
+            throw new AssertionError("#hashCode() not expected to have any arguments");
+          }
+          return System.identityHashCode(proxy);
+        default:
+          return method.invoke(this.getView(), args);
+      }
+    }
+
+    private V getView() throws IOException {
+      V v = this.attributeView.get();
+      if (v != null) {
+        return v;
+      } else {
+        V newValue = MemoryFileSystem.this.getFileAttributeView(this.path, this.type, this.options);
+        boolean successful = this.attributeView.compareAndSet(null, newValue);
+        if (successful) {
+          return newValue;
+        } else {
+          return this.attributeView.get();
+        }
+      }
+    }
+
   }
 
 }
