@@ -79,7 +79,7 @@ public final class MemoryFileSystemBuilder {
 
   // can't add FileOwnerAttributeView directly"
   public MemoryFileSystemBuilder addFileAttributeView(Class<? extends FileAttributeView> fileAttributeView) {
-    return this.addFileAttributeView(FileAttributeViews.map(fileAttributeView));
+    return this.addFileAttributeView(FileAttributeViews.mapAttributeView(fileAttributeView));
   }
 
   public MemoryFileSystemBuilder setCurrentWorkingDirectory(String currentWorkingDirectory) {

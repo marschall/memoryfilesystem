@@ -25,6 +25,7 @@ import java.nio.file.PathMatcher;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.regex.PatternSyntaxException;
 
 import org.junit.Rule;
@@ -34,6 +35,21 @@ public class MemoryFileSystemTest {
 
   @Rule
   public final FileSystemRule rule = new FileSystemRule();
+
+  @Test(expected = IllegalArgumentException.class)
+  public void setDirectory() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path path = fileSystem.getPath("/");
+    Files.setAttribute(path, "isDirectory", false);
+  }
+
+  @Test
+  public void isRegularFile() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path path = fileSystem.getPath("/");
+    Map<String, Object> attributes = Files.readAttributes(path, "isDirectory");
+    assertEquals(Collections.singletonMap("isDirectory", true), attributes);
+  }
 
   @Test(expected = UnsupportedOperationException.class)
   public void getPathMatcherUnknown() {

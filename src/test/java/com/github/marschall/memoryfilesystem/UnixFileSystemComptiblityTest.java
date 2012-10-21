@@ -2,6 +2,7 @@ package com.github.marschall.memoryfilesystem;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -9,6 +10,7 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.GroupPrincipal;
 import java.nio.file.attribute.UserPrincipal;
 import java.util.Arrays;
@@ -31,6 +33,13 @@ public class UnixFileSystemComptiblityTest {
 
   public UnixFileSystemComptiblityTest(FileSystem fileSystem) {
     this.fileSystem = fileSystem;
+  }
+
+  @Test
+  public void notExistingView() throws IOException {
+    Path path = this.fileSystem.getPath("/foo/bar/does/not/exist");
+    BasicFileAttributeView attributeView = Files.getFileAttributeView(path, BasicFileAttributeView.class);
+    assertNotNull(attributeView);
   }
 
   @Test

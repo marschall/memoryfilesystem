@@ -1,8 +1,11 @@
 package com.github.marschall.memoryfilesystem;
 
+import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.DosFileAttributeView;
+import java.nio.file.attribute.DosFileAttributes;
 import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.attribute.PosixFileAttributeView;
+import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,6 +32,8 @@ final class FileAttributeViews {
   private static final Map<String, Class<? extends FileAttributeView>> NAME_TO_CLASS_MAP;
   private static final Map<Class<? extends FileAttributeView>, String> CLASS_TO_NAME_MAP;
 
+  private static final Map<Class<? extends BasicFileAttributes>, String> ATTRIBUTES_TO_VIEW_MAP;
+
   static {
     SUPPORTED_VIEWS = new HashSet<Class<? extends FileAttributeView>>(3);
     SUPPORTED_VIEWS.add(DosFileAttributeView.class);
@@ -48,6 +53,10 @@ final class FileAttributeViews {
     NAME_TO_CLASS_MAP.put(POSIX, PosixFileAttributeView.class);
     NAME_TO_CLASS_MAP.put(DOS, DosFileAttributeView.class);
     NAME_TO_CLASS_MAP.put(USER, UserDefinedFileAttributeView.class);
+
+    ATTRIBUTES_TO_VIEW_MAP = new HashMap<>(2);
+    ATTRIBUTES_TO_VIEW_MAP.put(DosFileAttributes.class, DOS);
+    ATTRIBUTES_TO_VIEW_MAP.put(PosixFileAttributes.class, POSIX);
   }
 
   static boolean isSupported(Class<? extends FileAttributeView> clazz) {
@@ -58,8 +67,12 @@ final class FileAttributeViews {
     return SUPPORTED_VIEW_NAMES.contains(name);
   }
 
-  static String map(Class<? extends FileAttributeView> clazz) {
+  static String mapAttributeView(Class<? extends FileAttributeView> clazz) {
     return CLASS_TO_NAME_MAP.get(clazz);
+  }
+
+  static String mapFileAttributes(Class<? extends BasicFileAttributes> clazz) {
+    return ATTRIBUTES_TO_VIEW_MAP.get(clazz);
   }
 
 }

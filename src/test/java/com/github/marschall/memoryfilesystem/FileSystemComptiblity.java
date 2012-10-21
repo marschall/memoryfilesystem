@@ -24,6 +24,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.Normalizer;
 import java.text.Normalizer.Form;
@@ -35,6 +36,13 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 public class FileSystemComptiblity {
+
+  @Test
+  public void notExistingView() throws IOException {
+    Path path = Paths.get("/foo/bar/does/not/exist");
+    BasicFileAttributeView attributeView = Files.getFileAttributeView(path, BasicFileAttributeView.class);
+    assertNotNull(attributeView);
+  }
 
   @Test
   public void empty() {
@@ -50,6 +58,14 @@ public class FileSystemComptiblity {
   //    UserDefinedFileAttributeView userAttributes = Files.getFileAttributeView(path, UserDefinedFileAttributeView.class);
   //    //    System.out.println(userAttributes.size("foo.bar"));
   //    userAttributes.read(null, ByteBuffer.allocate(1));
+  //  }
+
+  //  @Test
+  //  public void setRegularFile() throws IOException {
+  //    FileSystem fileSystem = FileSystems.getDefault();
+  //    Path path = fileSystem.getPath("/home/upnip/temp/meta");
+  //    Files.readAttributes(path, "isOther");
+  //    Files.setAttribute(path, "isOther", true);
   //  }
 
   @Test

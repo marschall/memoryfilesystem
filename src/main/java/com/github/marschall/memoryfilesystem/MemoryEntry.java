@@ -10,6 +10,7 @@ import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.DosFileAttributeView;
 import java.nio.file.attribute.DosFileAttributes;
+import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.attribute.FileOwnerAttributeView;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.GroupPrincipal;
@@ -21,6 +22,7 @@ import java.nio.file.attribute.UserPrincipal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -136,13 +138,52 @@ abstract class MemoryEntry {
     }
   }
 
+  <A extends FileAttributeView> A getFileAttributeView(Class<A> type) {
+    try (AutoRelease lock = this.readLock()) {
+      if (type == BasicFileAttributeView.class) {
+        this.accessed();
+        return (A) this.getBasicFileAttributeView();
+      } else {
+        String name = FileAttributeViews.mapAttributeView(type);
+        if (FileAttributeViews.OWNER.equals(name)) {
+          // owner is either mapped to POSIX or ACL
+          // TODO POSIX and ACL?
+          if (this.additionalAttributes.containsKey(FileAttributeViews.POSIX)) {
+            name = FileAttributeViews.POSIX;
+          } else if (this.additionalAttributes.containsKey(FileAttributeViews.ACL)) {
+            name = FileAttributeViews.ACL;
+          }
+        }
+        BasicFileAttributeView view = this.additionalAttributes.get(name);
+        if (view != null) {
+          this.accessed();
+          return (A) view;
+        } else {
+          throw new UnsupportedOperationException("file attribute view" + type + " not supported");
+        }
+      }
+    }
+  }
 
-  <A extends BasicFileAttributes> A readAttributes(Class<A> type) {
-    if (type == BasicFileAttributes.class) {
-      this.accessed();
-      return (A) this.getBasicFileAttributes();
-    } else {
-      throw new UnsupportedOperationException("file attribute view" + type + " not supported");
+  <A extends BasicFileAttributes> A readAttributes(Class<A> type) throws IOException {
+    try (AutoRelease lock = this.readLock()) {
+      if (type == BasicFileAttributes.class) {
+        this.accessed();
+        return (A) this.getBasicFileAttributes();
+      } else {
+        String viewName = FileAttributeViews.mapFileAttributes(type);
+        if (viewName != null) {
+          BasicFileAttributeView view = this.additionalAttributes.get(viewName);
+          if (view != null) {
+            this.accessed();
+          } else {
+            throw new UnsupportedOperationException("file attributes " + type + " not supported");
+          }
+          return (A) view.readAttributes();
+        } else {
+          throw new UnsupportedOperationException("file attributes " + type + " not supported");
+        }
+      }
     }
   }
 
@@ -402,6 +443,15 @@ abstract class MemoryEntry {
       }
       try (AutoRelease lock = MemoryEntry.this.writeLock()) {
         MemoryEntry.this.checkAccess(AccessMode.WRITE);
+        // make a defensive copy
+        Set<PosixFilePermission> copy = new HashSet<>(perms.size());
+        for (PosixFilePermission permission : perms) {
+          if (!(permission instanceof PosixFilePermission)) {
+            // check type again because of erasure set can be of any type
+            throw new ClassCastException(permission + " can not be cast to " + PosixFilePermission.class);
+          }
+          copy.add(permission);
+        }
         this.perms = perms;
       }
     }

@@ -17,6 +17,7 @@ import java.nio.file.WatchService;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.DosFileAttributes;
 import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.nio.file.spi.FileSystemProvider;
 import java.text.Collator;
@@ -253,6 +254,40 @@ class MemoryFileSystem extends FileSystem {
       @Override
       public A value(MemoryEntry entry) throws IOException {
         return entry.readAttributes(type);
+      }
+    });
+  }
+
+  <V extends FileAttributeView> V getFileAttributeView(AbstractPath path, final Class<V> type, LinkOption... options) throws IOException {
+    return this.accessFile(path, new MemoryEntryBlock<V>() {
+
+      @Override
+      public V value(MemoryEntry entry) throws IOException {
+        return entry.getFileAttributeView(type);
+      }
+    });
+  }
+
+  Map<String, Object> readAttributes(AbstractPath path, final String attributes, LinkOption... options) throws IOException {
+    this.checker.check();
+    return this.accessFile(path, new MemoryEntryBlock<Map<String, Object>>() {
+
+      @Override
+      public Map<String, Object> value(MemoryEntry entry) throws IOException {
+        return AttributeAccessors.readAttributes(entry, attributes);
+      }
+    });
+  }
+
+  void setAttribute(AbstractPath path, final String attribute, final Object value, LinkOption... options) throws IOException {
+    this.checker.check();
+    this.accessFile(path, new MemoryEntryBlock<Void>() {
+
+      @Override
+      public Void value(MemoryEntry entry) throws IOException {
+        // TODO write lock?
+        AttributeAccessors.setAttribute(entry, attribute, value);
+        return null;
       }
     });
   }

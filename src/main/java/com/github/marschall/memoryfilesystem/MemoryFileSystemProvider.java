@@ -244,16 +244,14 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
 
   @Override
-  public void copy(Path source, Path target, CopyOption... options)
-          throws IOException {
+  public void copy(Path source, Path target, CopyOption... options) throws IOException {
     // TODO Auto-generated method stub
     throw new UnsupportedOperationException();
   }
 
 
   @Override
-  public void move(Path source, Path target, CopyOption... options)
-          throws IOException {
+  public void move(Path source, Path target, CopyOption... options) throws IOException {
     // TODO Auto-generated method stub
     throw new UnsupportedOperationException();
   }
@@ -299,7 +297,10 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   @Override
   public <V extends FileAttributeView> V getFileAttributeView(Path path, Class<V> type, LinkOption... options) {
-    path.getFileSystem();
+    //    AbstractPath abstractPath = this.castPath(path);
+    //    MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
+    //    return memoryFileSystem.getFileAttributeView(abstractPath, type, options);
+    // TODO Auto-generated method stub
     throw new UnsupportedOperationException();
   }
 
@@ -314,21 +315,17 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   @Override
   public Map<String, Object> readAttributes(Path path, String attributes, LinkOption... options) throws IOException {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
+    AbstractPath abstractPath = this.castPath(path);
+    MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
+    return memoryFileSystem.readAttributes(abstractPath, attributes, options);
   }
 
 
   @Override
   public void setAttribute(Path path, String attribute, Object value, LinkOption... options) throws IOException {
-    // TODO Auto-generated method stub
-    int colonIndex = attribute.indexOf(':');
-    if (colonIndex == -1) {
-    } else {
-      attribute.substring(0, colonIndex);
-    }
-    attribute.substring(colonIndex + 1, attribute.length());
-    throw new UnsupportedOperationException();
+    AbstractPath abstractPath = this.castPath(path);
+    MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
+    memoryFileSystem.setAttribute(abstractPath, attribute, options);
   }
 
   void close(MemoryFileSystem fileSystem) {
