@@ -42,6 +42,16 @@ public class FileSystemComptiblity {
     System.out.println(path.toUri());
   }
 
+  //  @Test
+  //  public void xattrs() throws IOException {
+  //    FileSystem fileSystem = FileSystems.getDefault();
+  //    Path path = fileSystem.getPath("/home/upnip/temp/meta");
+  //    assertTrue(fileSystem.supportedFileAttributeViews().contains("user"));
+  //    UserDefinedFileAttributeView userAttributes = Files.getFileAttributeView(path, UserDefinedFileAttributeView.class);
+  //    //    System.out.println(userAttributes.size("foo.bar"));
+  //    userAttributes.read(null, ByteBuffer.allocate(1));
+  //  }
+
   @Test
   public void attributeNames() throws IOException {
     FileSystem fileSystem = FileSystems.getDefault();

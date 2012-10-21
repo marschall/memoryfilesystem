@@ -117,11 +117,18 @@
           </archive>
           <instructions>
             <Export-Package>com.github.marschall.memoryfilesystem;version="${project.version}"</Export-Package>
-            <Import-Package>org.osgi.framework;version="[1.0.0,2.0.0)"</Import-Package>
+            <Import-Package>
+              org.osgi.framework;version="[1.0.0,2.0.0)",
+              javax.annotation;resolution:=optional
+            </Import-Package>
             <Bundle-SymbolicName>${project.groupId}.${project.artifactId};singleton:=true</Bundle-SymbolicName>
             <Bundle-Activator>com.github.marschall.memoryfilesystem.Activator</Bundle-Activator>
             <Bundle-RequiredExecutionEnvironment>JavaSE-1.7</Bundle-RequiredExecutionEnvironment>
-            <Include-Resource>/META-INF/jandex.idx=${project.build.outputDirectory}/META-INF/jandex.idx</Include-Resource>
+            <!-- <Include-Resource>/META-INF/jandex.idx=${project.build.outputDirectory}/META-INF/jandex.idx</Include-Resource> -->
+            <Include-Resource>
+              {maven-resources},
+              /META-INF/jandex.idx=${project.build.outputDirectory}/META-INF/jandex.idx
+            </Include-Resource>
           </instructions>
         </configuration>
       </plugin>

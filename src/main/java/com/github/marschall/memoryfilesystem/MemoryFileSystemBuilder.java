@@ -67,6 +67,7 @@ public final class MemoryFileSystemBuilder {
     return this;
   }
 
+  // can't add "owner" directly"
   public MemoryFileSystemBuilder addFileAttributeView(String fileAttributeViewName) {
     if (FileAttributeViews.isSupported(fileAttributeViewName)) {
       this.additionalFileAttributeViews.add(fileAttributeViewName);
@@ -76,6 +77,7 @@ public final class MemoryFileSystemBuilder {
     return this;
   }
 
+  // can't add FileOwnerAttributeView directly"
   public MemoryFileSystemBuilder addFileAttributeView(Class<? extends FileAttributeView> fileAttributeView) {
     return this.addFileAttributeView(FileAttributeViews.map(fileAttributeView));
   }

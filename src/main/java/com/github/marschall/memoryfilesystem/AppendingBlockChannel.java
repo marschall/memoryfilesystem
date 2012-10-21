@@ -22,6 +22,7 @@ final class AppendingBlockChannel extends BlockChannel {
 
   @Override
   public SeekableByteChannel truncate(long size) throws IOException {
+    // TODO use FileSystemException?
     throw new IOException("truncation not supported in append mode");
   }
 

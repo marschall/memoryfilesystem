@@ -1,6 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -8,6 +9,8 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.GroupPrincipal;
+import java.nio.file.attribute.UserPrincipal;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -28,6 +31,21 @@ public class UnixFileSystemComptiblityTest {
 
   public UnixFileSystemComptiblityTest(FileSystem fileSystem) {
     this.fileSystem = fileSystem;
+  }
+
+  @Test
+  public void readOwner() throws IOException {
+    Path path = this.fileSystem.getPath("/");
+    Map<String, Object> attributes = Files.readAttributes(path, "owner:owner");
+    //TODO fix hamcrest
+    //    assertThat(attributes, hasSize(1));
+    assertEquals(1, attributes.size());
+    assertEquals(Collections.singleton("owner"), attributes.keySet());
+    //TODO fix hamcrest
+    //    assertThat(attributes.values().iterator().next(), isA(Long.class));
+    Object value = attributes.values().iterator().next();
+    assertTrue(value instanceof UserPrincipal);
+    assertFalse(value instanceof GroupPrincipal);
   }
 
   @Test
@@ -60,6 +78,14 @@ public class UnixFileSystemComptiblityTest {
             "creationTime",
             "group",
             "size"));
+    assertEquals(expectedAttributeNames, attributes.keySet());
+  }
+
+  @Test
+  public void readOwnerAttributeNames() throws IOException {
+    Path path = this.fileSystem.getPath("/");
+    Map<String, Object> attributes = Files.readAttributes(path, "owner:*");
+    Set<String> expectedAttributeNames = Collections.singleton("owner");
     assertEquals(expectedAttributeNames, attributes.keySet());
   }
 

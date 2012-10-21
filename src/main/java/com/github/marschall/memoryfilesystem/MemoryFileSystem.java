@@ -199,6 +199,7 @@ class MemoryFileSystem extends FileSystem {
       @Override
       public Void value(MemoryEntry entry) throws IOException {
         if (!(entry instanceof MemoryDirectory)) {
+          // TODO use FileSystemException?
           throw new IOException(parent + " is not a directory");
         }
         String name = MemoryFileSystem.this.storeTransformer.transform(absolutePath.getLastNameElement());
@@ -295,6 +296,7 @@ class MemoryFileSystem extends FileSystem {
   private <R> R withWriteLockOnLastDo(MemoryEntry parent, ElementPath path, int i, int length, MemoryEntryBlock<R> callback) throws IOException {
     if (!(parent instanceof MemoryDirectory)) {
       //TODO construct better error message
+      // TODO use FileSystemException?
       throw new IOException("not a directory");
     }
 
@@ -334,6 +336,7 @@ class MemoryFileSystem extends FileSystem {
   private <R> R withReadLockDo(MemoryEntry parent, ElementPath path, int i, int length, MemoryEntryBlock<? extends R> callback) throws IOException {
     if (!(parent instanceof MemoryDirectory)) {
       //TODO construct better error message
+      // TODO use FileSystemException?
       throw new IOException("not a directory");
     }
 
@@ -357,6 +360,7 @@ class MemoryFileSystem extends FileSystem {
   private MemoryDirectory getRootDirectory(AbstractPath path) throws IOException {
     MemoryDirectory directory = this.roots.get(path.getRoot());
     if (directory == null) {
+      // TODO use FileSystemException?
       throw new IOException("the root of " + path + " does not exist");
     }
     return directory;
