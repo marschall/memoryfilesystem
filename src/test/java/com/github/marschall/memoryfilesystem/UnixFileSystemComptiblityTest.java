@@ -1,5 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -52,6 +54,11 @@ public class UnixFileSystemComptiblityTest {
   }
 
   @Test
+  public void supportsOwner() {
+    assertThat(this.getFileSystem().supportedFileAttributeViews(), hasItem("owner"));
+  }
+
+  @Test
   public void notExistingView() throws IOException {
     Path path = this.getFileSystem().getPath("/foo/bar/does/not/exist");
     BasicFileAttributeView attributeView = Files.getFileAttributeView(path, BasicFileAttributeView.class);
@@ -63,12 +70,13 @@ public class UnixFileSystemComptiblityTest {
     Path path = this.getFileSystem().getPath("/");
     Map<String, Object> attributes = Files.readAttributes(path, "owner:owner");
     //TODO fix hamcrest
-    //    assertThat(attributes, hasSize(1));
+    //assertThat(attributes, hasSize(1));
     assertEquals(1, attributes.size());
     assertEquals(Collections.singleton("owner"), attributes.keySet());
     //TODO fix hamcrest
-    //    assertThat(attributes.values().iterator().next(), isA(Long.class));
+    //assertThat(attributes.values().iterator().next(), isA(Long.class));
     Object value = attributes.values().iterator().next();
+    assertNotNull(value);
     assertTrue(value instanceof UserPrincipal);
     assertFalse(value instanceof GroupPrincipal);
   }
@@ -78,11 +86,11 @@ public class UnixFileSystemComptiblityTest {
     Path path = this.getFileSystem().getPath("/");
     Map<String, Object> attributes = Files.readAttributes(path, "posix:size");
     //TODO fix hamcrest
-    //    assertThat(attributes, hasSize(1));
+    //assertThat(attributes, hasSize(1));
     assertEquals(1, attributes.size());
     assertEquals(Collections.singleton("size"), attributes.keySet());
     //TODO fix hamcrest
-    //    assertThat(attributes.values().iterator().next(), isA(Long.class));
+    //assertThat(attributes.values().iterator().next(), isA(Long.class));
     assertTrue(attributes.values().iterator().next() instanceof Long);
   }
 

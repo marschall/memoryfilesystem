@@ -21,12 +21,14 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.DosFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileAttributeView;
+import java.nio.file.attribute.FileOwnerAttributeView;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.nio.file.spi.FileSystemProvider;
 import java.text.Collator;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -68,9 +70,13 @@ class MemoryFileSystem extends FileSystem {
 
   private final Collator collator;
 
+  private final Set<Class<? extends FileAttributeView>> additionalViews;
+
+  private final Set<String> supportedFileAttributeViews;
+
   MemoryFileSystem(String key, String separator, PathParser pathParser, MemoryFileSystemProvider provider, MemoryFileStore store,
           MemoryUserPrincipalLookupService userPrincipalLookupService, ClosedFileSystemChecker checker, StringTransformer pathTransformer,
-          StringTransformer lookUpTransformer, Collator collator) {
+          StringTransformer lookUpTransformer, Collator collator, Set<Class<? extends FileAttributeView>> additionalViews) {
     this.key = key;
     this.separator = separator;
     this.pathParser = pathParser;
@@ -81,8 +87,26 @@ class MemoryFileSystem extends FileSystem {
     this.storeTransformer = pathTransformer;
     this.lookUpTransformer = lookUpTransformer;
     this.collator = collator;
+    this.additionalViews = additionalViews;
     this.stores = Collections.<FileStore>singletonList(store);
     this.emptyPath = new EmptyPath(this);
+    this.supportedFileAttributeViews = this.buildSupportedFileAttributeViews(additionalViews);
+  }
+
+  private Set<String> buildSupportedFileAttributeViews(Set<Class<? extends FileAttributeView>> additionalViews) {
+    if (additionalViews.isEmpty()) {
+      return Collections.singleton(FileAttributeViews.BASIC);
+    } else {
+      Set<String> views = new HashSet<>(additionalViews.size() + 2);
+      views.add(FileAttributeViews.BASIC);
+      for (Class<? extends FileAttributeView> viewClass : additionalViews) {
+        if (FileOwnerAttributeView.class.isAssignableFrom(viewClass)) {
+          views.add(FileAttributeViews.OWNER);
+        }
+        views.add(FileAttributeViews.mapAttributeView(viewClass));
+      }
+      return Collections.unmodifiableSet(views);
+    }
   }
 
   String getKey() {
@@ -174,7 +198,7 @@ class MemoryFileSystem extends FileSystem {
 
       @Override
       public MemoryEntry create(String name) {
-        return new MemoryDirectory(name);
+        return new MemoryDirectory(name, MemoryFileSystem.this.additionalViews);
       }
 
     });
@@ -186,7 +210,7 @@ class MemoryFileSystem extends FileSystem {
 
       @Override
       public MemoryEntry create(String name) {
-        return new MemorySymbolicLink(name, target);
+        return new MemorySymbolicLink(name, target, MemoryFileSystem.this.additionalViews);
       }
 
     });
@@ -472,7 +496,7 @@ class MemoryFileSystem extends FileSystem {
   @Override
   public Set<String> supportedFileAttributeViews() {
     this.checker.check();
-    return Collections.singleton(FileAttributeViews.BASIC);
+    return this.supportedFileAttributeViews;
   }
 
 

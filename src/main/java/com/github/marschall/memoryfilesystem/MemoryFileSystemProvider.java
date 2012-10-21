@@ -109,11 +109,12 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     StringTransformer lookUpTransformer = parser.getLookUpTransformer();
     Collator collator = parser.getCollator();
     MemoryFileStore memoryStore = new MemoryFileStore(key, checker);
+    Set<Class<? extends FileAttributeView>> additionalViews = parser.getAdditionalViews();
     MemoryUserPrincipalLookupService userPrincipalLookupService = this.createUserPrincipalLookupService(parser, checker);
     PathParser pathParser = this.buildPathParser(parser);
     MemoryFileSystem fileSystem = new MemoryFileSystem(key, separator, pathParser, this, memoryStore,
-            userPrincipalLookupService, checker, storeTransformer, lookUpTransformer, collator);
-    fileSystem.setRootDirectories(this.buildRootsDirectories(parser, fileSystem));
+            userPrincipalLookupService, checker, storeTransformer, lookUpTransformer, collator, additionalViews);
+    fileSystem.setRootDirectories(this.buildRootsDirectories(parser, fileSystem, additionalViews));
     String defaultDirectory = parser.getDefaultDirectory();
     fileSystem.setCurrentWorkingDirectory(defaultDirectory);
     return fileSystem;
@@ -148,17 +149,17 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     }
   }
 
-  private Map<Root, MemoryDirectory> buildRootsDirectories(EnvironmentParser parser, MemoryFileSystem fileSystem) {
+  private Map<Root, MemoryDirectory> buildRootsDirectories(EnvironmentParser parser, MemoryFileSystem fileSystem, Set<Class<? extends FileAttributeView>> additionalViews) {
     if (parser.isSingleEmptyRoot()) {
       Root root = new EmptyRoot(fileSystem);
-      MemoryDirectory directory = new MemoryDirectory("");
+      MemoryDirectory directory = new MemoryDirectory("", additionalViews);
       return Collections.singletonMap(root, directory);
     } else {
       List<String> roots = parser.getRoots();
       Map<Root, MemoryDirectory> paths = new LinkedHashMap<>(roots.size());
       for (String root : roots) {
         NamedRoot namedRoot = new NamedRoot(fileSystem, root);
-        paths.put(namedRoot, new MemoryDirectory(namedRoot.getKey()));
+        paths.put(namedRoot, new MemoryDirectory(namedRoot.getKey(), additionalViews));
       }
       return Collections.unmodifiableMap(paths);
     }

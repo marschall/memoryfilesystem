@@ -6,6 +6,8 @@ import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileAttributeView;
+import java.util.Collections;
 import java.util.Set;
 
 class MemoryFile extends MemoryEntry {
@@ -17,7 +19,11 @@ class MemoryFile extends MemoryEntry {
   private final BasicFileAttributeView basicFileAttributeView;
 
   MemoryFile(String originalName) {
-    super(originalName);
+    this(originalName, Collections.<Class<? extends FileAttributeView>>emptySet());
+  }
+
+  MemoryFile(String originalName, Set<Class<? extends FileAttributeView>> additionalViews) {
+    super(originalName, additionalViews);
     this.attributes = new MemoryFileAttributes();
     this.basicFileAttributeView = new MemoryFileAttributesView();
     this.contents = new MemoryContents(16);

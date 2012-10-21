@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileAttributeView;
+import java.util.Collections;
+import java.util.Set;
 
 class MemorySymbolicLink extends MemoryEntry {
 
@@ -14,7 +17,12 @@ class MemorySymbolicLink extends MemoryEntry {
   private final BasicFileAttributeView basicFileAttributeView;
 
   MemorySymbolicLink(String originalName, AbstractPath target) {
-    super(originalName);
+    this(originalName, target, Collections.<Class<? extends FileAttributeView>>emptySet());
+  }
+
+
+  MemorySymbolicLink(String originalName, AbstractPath target, Set<Class<? extends FileAttributeView>> additionalViews) {
+    super(originalName, additionalViews);
     this.target = target;
     this.attributes = new MemorySymbolicLinkAttributes();
     this.basicFileAttributeView = new MemorySymbolicLinkAttributesView();

@@ -1,10 +1,13 @@
 package com.github.marschall.memoryfilesystem;
 
+import java.nio.file.attribute.FileAttributeView;
 import java.text.Collator;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 class EnvironmentParser {
 
@@ -75,6 +78,44 @@ class EnvironmentParser {
     }
   }
 
+  Set<Class<? extends FileAttributeView>> getAdditionalViews() {
+    String property = MemoryFileSystemProperties.FILE_ATTRIBUTE_VIEWS_PROPERTY;
+    Object value = this.env.get(property);
+    if (value != null) {
+      if (value instanceof Set) {
+        Set<?> values = (Set<?>) value;
+        if (values.isEmpty()) {
+          return Collections.emptySet();
+        } else if (values.size() == 1) {
+          Object viewName = values.iterator().next();
+          if (viewName instanceof String) {
+            Class<? extends FileAttributeView> viewClass = FileAttributeViews.mapAttributeViewName((String) viewName);
+            return Collections.<Class<? extends FileAttributeView>>singleton(viewClass);
+          } else {
+            throw new IllegalArgumentException(property + " values must be a "
+                    + String.class + " but was " + viewName);
+          }
+        } else {
+          Set<Class<? extends FileAttributeView>> views = new HashSet<>(values.size());
+          for (Object viewName : values) {
+            if (viewName instanceof String) {
+              Class<? extends FileAttributeView> viewClass = FileAttributeViews.mapAttributeViewName((String) viewName);
+              views.add(viewClass);
+            } else {
+              throw new IllegalArgumentException(property + " values must be a "
+                      + String.class + " but was " + viewName);
+            }
+          }
+          return views;
+        }
+      } else {
+        throw new IllegalArgumentException(property + " must be a "
+                + Set.class + " but was " + value.getClass());
+      }
+    } else {
+      return Collections.emptySet();
+    }
+  }
 
 
   StringTransformer getPrincipalNameTransfomer() {

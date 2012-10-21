@@ -4,8 +4,11 @@ import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileAttributeView;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 class MemoryDirectory extends MemoryEntry {
 
@@ -16,7 +19,11 @@ class MemoryDirectory extends MemoryEntry {
   private final BasicFileAttributeView basicFileAttributeView;
 
   MemoryDirectory(String originalName) {
-    super(originalName);
+    this(originalName, Collections.<Class<? extends FileAttributeView>>emptySet());
+  }
+
+  MemoryDirectory(String originalName, Set<Class<? extends FileAttributeView>> additionalViews) {
+    super(originalName, additionalViews);
     this.entries = new HashMap<>();
     this.attributes = new MemoryDirectoryFileAttributes();
     this.basicFileAttributeView = new MemoryDirectoryFileAttributesView();

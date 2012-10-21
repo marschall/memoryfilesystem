@@ -40,15 +40,40 @@ abstract class MemoryEntry {
 
   private final ReadWriteLock lock;
 
-  private Map <String, BasicFileAttributeView> additionalAttributes;
+  private final Map<String, FileAttributeView> additionalAttributes;
 
-  MemoryEntry(String originalName) {
+  MemoryEntry(String originalName, Set<Class<? extends FileAttributeView>> additionalViews) {
     this.originalName = originalName;
     this.lock = new ReentrantReadWriteLock();
     FileTime now = this.getNow();
     this.lastAccessTime = now;
     this.lastModifiedTime = now;
     this.creationTime = now;
+    if (additionalViews.isEmpty()) {
+      this.additionalAttributes = Collections.emptyMap();
+    } else if (additionalViews.size() == 1) {
+      FileAttributeView view = this.instantiate(additionalViews.iterator().next());
+      this.additionalAttributes = Collections.singletonMap(view.name(), view);
+    } else {
+      this.additionalAttributes = new HashMap<>(additionalViews.size());
+      for (Class<? extends FileAttributeView> viewClass : additionalViews) {
+        FileAttributeView view = this.instantiate(viewClass);
+        this.additionalAttributes.put(view.name(), view);
+      }
+    }
+  }
+
+  private FileAttributeView instantiate(Class<? extends FileAttributeView> viewClass) {
+    // TODO initialize
+    if (viewClass == PosixFileAttributeView.class) {
+      return new MemoryPosixFileAttributeView();
+    } else if (viewClass == DosFileAttributeView.class) {
+      return new MemoryDosFileAttributeView();
+    } if (viewClass == UserDefinedFileAttributeView.class) {
+      return new MemoryUserDefinedFileAttributeView();
+    } else {
+      throw new IllegalArgumentException("unknown file attribute view: " + viewClass);
+    }
   }
 
 
@@ -144,8 +169,8 @@ abstract class MemoryEntry {
         this.accessed();
         return (A) this.getBasicFileAttributeView();
       } else {
-        String name = FileAttributeViews.mapAttributeView(type);
-        if (FileAttributeViews.OWNER.equals(name)) {
+        String name = null;
+        if (type == FileOwnerAttributeView.class) {
           // owner is either mapped to POSIX or ACL
           // TODO POSIX and ACL?
           if (this.additionalAttributes.containsKey(FileAttributeViews.POSIX)) {
@@ -153,8 +178,13 @@ abstract class MemoryEntry {
           } else if (this.additionalAttributes.containsKey(FileAttributeViews.ACL)) {
             name = FileAttributeViews.ACL;
           }
+        } else {
+          name = FileAttributeViews.mapAttributeView(type);
         }
-        BasicFileAttributeView view = this.additionalAttributes.get(name);
+        if (name == null) {
+          throw new UnsupportedOperationException("file attribute view" + type + " not supported");
+        }
+        FileAttributeView view = this.additionalAttributes.get(name);
         if (view != null) {
           this.accessed();
           return (A) view;
@@ -173,13 +203,13 @@ abstract class MemoryEntry {
       } else {
         String viewName = FileAttributeViews.mapFileAttributes(type);
         if (viewName != null) {
-          BasicFileAttributeView view = this.additionalAttributes.get(viewName);
-          if (view != null) {
+          FileAttributeView view = this.additionalAttributes.get(viewName);
+          if (view instanceof BasicFileAttributeView) {
             this.accessed();
+            return (A) ((BasicFileAttributeView) view).readAttributes();
           } else {
             throw new UnsupportedOperationException("file attributes " + type + " not supported");
           }
-          return (A) view.readAttributes();
         } else {
           throw new UnsupportedOperationException("file attributes " + type + " not supported");
         }

@@ -67,6 +67,10 @@ final class FileAttributeViews {
     return SUPPORTED_VIEW_NAMES.contains(name);
   }
 
+  static Class<? extends FileAttributeView> mapAttributeViewName(String name) {
+    return NAME_TO_CLASS_MAP.get(name);
+  }
+
   static String mapAttributeView(Class<? extends FileAttributeView> clazz) {
     return CLASS_TO_NAME_MAP.get(clazz);
   }

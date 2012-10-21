@@ -70,14 +70,17 @@ public final class MemoryFileSystemBuilder {
   // can't add "owner" directly"
   public MemoryFileSystemBuilder addFileAttributeView(String fileAttributeViewName) {
     if (FileAttributeViews.isSupported(fileAttributeViewName)) {
-      this.additionalFileAttributeViews.add(fileAttributeViewName);
+      if (!FileAttributeViews.BASIC.equals(fileAttributeViewName)) {
+        // ignore "basic", always supported
+        this.additionalFileAttributeViews.add(fileAttributeViewName);
+      }
     } else {
       throw new IllegalArgumentException("file attribute view \"" + fileAttributeViewName + "\" is not supported");
     }
     return this;
   }
 
-  // can't add FileOwnerAttributeView directly"
+  // can't add FileOwnerAttributeView directly
   public MemoryFileSystemBuilder addFileAttributeView(Class<? extends FileAttributeView> fileAttributeView) {
     return this.addFileAttributeView(FileAttributeViews.mapAttributeView(fileAttributeView));
   }

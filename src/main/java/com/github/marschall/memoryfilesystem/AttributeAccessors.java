@@ -350,7 +350,8 @@ final class AttributeAccessors {
       throw new IllegalArgumentException("attribute \"" + attribute + "\" is not supported");
 
     }
-    return Collections.singletonMap(attribute, accessor.readAttribute(entry));
+    Object value = accessor.readAttribute(entry);
+    return Collections.singletonMap(attribute, value);
   }
 
   private static Map<String, Object> readAttributes(MemoryEntry entry, String[] attributes, Map<String, AttributeAccessor> viewMap) throws IOException {
