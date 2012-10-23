@@ -21,8 +21,8 @@ import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.nio.file.attribute.UserPrincipal;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -473,16 +473,16 @@ abstract class MemoryEntry {
       }
       try (AutoRelease lock = MemoryEntry.this.writeLock()) {
         MemoryEntry.this.checkAccess(AccessMode.WRITE);
-        // make a defensive copy
-        Set<PosixFilePermission> copy = new HashSet<>(perms.size());
-        for (PosixFilePermission permission : perms) {
-          if (!(permission instanceof PosixFilePermission)) {
-            // check type again because of erasure set can be of any type
-            throw new ClassCastException(permission + " can not be cast to " + PosixFilePermission.class);
-          }
-          copy.add(permission);
+        if (perms.isEmpty()) {
+          this.perms = Collections.emptySet();
+        } else {
+          // make a defensive copy
+          // does a type check on all elements
+          // checks all elements for null
+          // efficient storage
+          this.perms = EnumSet.noneOf(PosixFilePermission.class);
+          this.perms.addAll(perms);
         }
-        this.perms = perms;
       }
     }
 
