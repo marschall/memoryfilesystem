@@ -53,6 +53,20 @@ public class UnixFileSystemComptiblityTest {
     return this.fileSystem;
   }
 
+
+  @Parameters
+  public static List<Object[]> fileSystems() throws IOException {
+    FileSystem defaultFileSystem = FileSystems.getDefault();
+    boolean isPosix = defaultFileSystem.supportedFileAttributeViews().contains("posix");
+    // TODO don't run on Mac
+    if (isPosix) {
+      return Arrays.asList(new Object[]{true},
+              new Object[]{false});
+    } else {
+      return Collections.singletonList(new Object[]{false});
+    }
+  }
+
   @Test
   public void supportsOwner() {
     assertThat(this.getFileSystem().supportedFileAttributeViews(), hasItem("owner"));
@@ -120,19 +134,6 @@ public class UnixFileSystemComptiblityTest {
     Map<String, Object> attributes = Files.readAttributes(path, "owner:*");
     Set<String> expectedAttributeNames = Collections.singleton("owner");
     assertEquals(expectedAttributeNames, attributes.keySet());
-  }
-
-  @Parameters
-  public static List<Object[]> fileSystems() throws IOException {
-    FileSystem defaultFileSystem = FileSystems.getDefault();
-    boolean isPosix = defaultFileSystem.supportedFileAttributeViews().contains("posix");
-    // TODO don't run on Mac
-    if (isPosix) {
-      return Arrays.asList(new Object[]{true},
-              new Object[]{false});
-    } else {
-      return Collections.singletonList(new Object[]{false});
-    }
   }
 
 }
