@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.AccessMode;
+import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.FileStore;
@@ -177,7 +178,6 @@ class MemoryFileSystem extends FileSystem {
   }
 
   private MemoryFile getFile(final AbstractPath path, final Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
-    this.checker.check();
     final ElementPath absolutePath = (ElementPath) path.toAbsolutePath();
     MemoryDirectory rootDirectory = this.getRootDirectory(absolutePath);
 
@@ -368,9 +368,9 @@ class MemoryFileSystem extends FileSystem {
 
   private <R> R accessFile(AbstractPath path, MemoryEntryBlock<? extends R> callback) throws IOException {
     this.checker.check();
-    MemoryDirectory directory = this.getRootDirectory(path);
-    Path absolutePath = path.toAbsolutePath();
-    return this.withReadLockDo(directory, (AbstractPath) absolutePath, callback);
+    AbstractPath absolutePath = (AbstractPath) path.toAbsolutePath();
+    MemoryDirectory directory = this.getRootDirectory(absolutePath);
+    return this.withReadLockDo(directory, absolutePath, callback);
   }
 
 
@@ -476,9 +476,38 @@ class MemoryFileSystem extends FileSystem {
 
 
 
-  void delete(AbstractPath abstractPath) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
+  void delete(final AbstractPath abstractPath) throws IOException {
+    final ElementPath absolutePath = (ElementPath) abstractPath.toAbsolutePath();
+    MemoryDirectory rootDirectory = this.getRootDirectory(absolutePath);
+
+    final Path parent = absolutePath.getParent();
+
+    this.withWriteLockOnLastDo(rootDirectory, (AbstractPath) parent, new MemoryEntryBlock<Void>() {
+
+      @Override
+      public Void value(MemoryEntry entry) throws IOException {
+        if (!(entry instanceof MemoryDirectory)) {
+          throw new NotDirectoryException(parent.toString());
+        }
+        MemoryDirectory directory = (MemoryDirectory) entry;
+        String fileName = absolutePath.getLastNameElement();
+        String key = MemoryFileSystem.this.lookUpTransformer.transform(fileName);
+        MemoryEntry child = directory.getEntry(key);
+        if (child == null) {
+          throw new NoSuchFileException(abstractPath.toString());
+        }
+        try (AutoRelease lock = child.readLock()) {
+          if (child instanceof MemoryDirectory) {
+            MemoryDirectory childDirectory = (MemoryDirectory) child;
+            if (!childDirectory.isEmpty()) {
+              throw new DirectoryNotEmptyException(abstractPath.toString());
+            }
+          }
+          directory.removeEntry(key);
+        }
+        return null;
+      }
+    });
   }
 
 

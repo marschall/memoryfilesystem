@@ -150,7 +150,7 @@ public final class MemoryFileSystemBuilder {
     .addFileAttributeView(PosixFileAttributeView.class)
     .setCurrentWorkingDirectory("/Users/" + getSystemUserName())
     .setStoreTransformer(StringTransformers.MAC_OS)
-    .setCaseSensitive(true);
+    .setCaseSensitive(false);
   }
 
   public static MemoryFileSystemBuilder newWindows() {

@@ -44,6 +44,10 @@ class MemoryDirectory extends MemoryEntry {
     return this.entries.get(name);
   }
 
+  boolean isEmpty() {
+    return this.entries.isEmpty();
+  }
+
   void addEntry(String name, MemoryEntry entry) throws IOException {
     MemoryEntry previous = this.entries.put(name, entry);
     if (previous != null) {
@@ -53,6 +57,12 @@ class MemoryDirectory extends MemoryEntry {
       // FIXME needs to be path
       throw new FileAlreadyExistsException("entry " + name + " already exists");
     }
+    this.modified();
+  }
+
+  void removeEntry(String name) {
+    // TODO check for result
+    this.entries.remove(name);
     this.modified();
   }
 
