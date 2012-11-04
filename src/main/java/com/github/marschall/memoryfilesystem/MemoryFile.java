@@ -86,6 +86,8 @@ class MemoryFile extends MemoryEntry {
 
   SeekableByteChannel newChannel(Set<? extends OpenOption> options) {
     // TODO check more options
+    // TODO check TRUNCATE_EXISTING
+    // TODO DELETE_ON_CLOSE and NOFOLLOW_LINKS
     boolean append = options.contains(StandardOpenOption.APPEND);
     boolean readable = options.contains(StandardOpenOption.READ);
     if (append) {

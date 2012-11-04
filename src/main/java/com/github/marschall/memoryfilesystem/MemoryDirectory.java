@@ -50,6 +50,7 @@ class MemoryDirectory extends MemoryEntry {
       // avoid double look up in common case
       // fix if we broke it
       this.entries.put(name, previous);
+      // FIXME needs to be path
       throw new FileAlreadyExistsException("entry " + name + " already exists");
     }
     this.modified();

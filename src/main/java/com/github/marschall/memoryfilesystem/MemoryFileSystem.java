@@ -12,6 +12,7 @@ import java.nio.file.FileStore;
 import java.nio.file.FileSystem;
 import java.nio.file.LinkOption;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.NotDirectoryException;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
@@ -169,21 +170,60 @@ class MemoryFileSystem extends FileSystem {
 
 
   SeekableByteChannel newByteChannel(AbstractPath path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
-    // TODO check options
-    // TODO check attributes
     this.checker.check();
-    options.contains(StandardOpenOption.APPEND);
-    this.getRootDirectory(path);
 
-    // TODO locks
     MemoryFile file = this.getFile(path, options, attrs);
     return file.newChannel(options);
   }
 
-  private MemoryFile getFile(AbstractPath path,
-          Set<? extends OpenOption> options, FileAttribute<?>[] attrs) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
+  private MemoryFile getFile(final AbstractPath path, final Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
+    this.checker.check();
+    final ElementPath absolutePath = (ElementPath) path.toAbsolutePath();
+    MemoryDirectory rootDirectory = this.getRootDirectory(absolutePath);
+
+    final Path parent = absolutePath.getParent();
+
+    return this.withWriteLockOnLastDo(rootDirectory, (AbstractPath) parent, new MemoryEntryBlock<MemoryFile>() {
+
+      @Override
+      public MemoryFile value(MemoryEntry entry) throws IOException {
+        if (!(entry instanceof MemoryDirectory)) {
+          throw new NotDirectoryException(parent.toString());
+        }
+        boolean isCreateNew = options.contains(StandardOpenOption.CREATE_NEW);
+        MemoryDirectory directory = (MemoryDirectory) entry;
+        String fileName = absolutePath.getLastNameElement();
+        if (isCreateNew) {
+          String name = MemoryFileSystem.this.storeTransformer.transform(fileName);
+          MemoryFile file = new MemoryFile(name, MemoryFileSystem.this.additionalViews);
+          String key = MemoryFileSystem.this.lookUpTransformer.transform(file.getOriginalName());
+          // will throw an exception if already present
+          directory.addEntry(key, file);
+          return file;
+        } else {
+          MemoryEntry storedEntry = directory.getEntry(fileName);
+          if (storedEntry == null) {
+            boolean isCreate = options.contains(StandardOpenOption.CREATE);
+            if (isCreate) {
+              String name = MemoryFileSystem.this.storeTransformer.transform(fileName);
+              MemoryFile file = new MemoryFile(name, MemoryFileSystem.this.additionalViews);
+              String key = MemoryFileSystem.this.lookUpTransformer.transform(file.getOriginalName());
+              directory.addEntry(key, file);
+              return file;
+            } else {
+              throw new NoSuchFileException(path.toString());
+            }
+          }
+          if (storedEntry instanceof MemoryFile) {
+            return (MemoryFile) storedEntry;
+          } else {
+            throw new IOException("file is a directory");
+          }
+
+        }
+      }
+    });
+
   }
 
   DirectoryStream<Path> newDirectoryStream(AbstractPath abstractPath, Filter<? super Path> filter) {
@@ -216,7 +256,7 @@ class MemoryFileSystem extends FileSystem {
     });
   }
 
-  private void createFile(AbstractPath path, final MemoryEntryCreator creator) throws IOException {
+  private void createFile(final AbstractPath path, final MemoryEntryCreator creator) throws IOException {
     this.checker.check();
     MemoryDirectory rootDirectory = this.getRootDirectory(path);
 
@@ -229,7 +269,7 @@ class MemoryFileSystem extends FileSystem {
       public Void value(MemoryEntry entry) throws IOException {
         if (!(entry instanceof MemoryDirectory)) {
           // TODO use FileSystemException?
-          throw new IOException(parent + " is not a directory");
+          throw new NotDirectoryException(parent.toString());
         }
         String name = MemoryFileSystem.this.storeTransformer.transform(absolutePath.getLastNameElement());
         MemoryEntry newEntry = creator.create(name);
@@ -365,14 +405,13 @@ class MemoryFileSystem extends FileSystem {
   private <R> R withWriteLockOnLastDo(MemoryEntry parent, ElementPath path, int i, int length, MemoryEntryBlock<R> callback) throws IOException {
     if (!(parent instanceof MemoryDirectory)) {
       //TODO construct better error message
-      // TODO use FileSystemException?
-      throw new IOException("not a directory");
+      throw new NotDirectoryException(parent.toString());
     }
 
     MemoryEntry entry = ((MemoryDirectory) parent).getEntry(path.getNameElement(i));
     if (entry == null) {
       //TODO construct better error message
-      throw new NoSuchFileException("directory does not exist");
+      throw new NoSuchFileException(path.toString(), null, "directory does not exist");
     }
 
     if (i == length - 1) {
@@ -427,10 +466,10 @@ class MemoryFileSystem extends FileSystem {
   }
 
   private MemoryDirectory getRootDirectory(AbstractPath path) throws IOException {
-    MemoryDirectory directory = this.roots.get(path.getRoot());
+    Path root = path.getRoot();
+    MemoryDirectory directory = this.roots.get(root);
     if (directory == null) {
-      // TODO use FileSystemException?
-      throw new IOException("the root of " + path + " does not exist");
+      throw new NoSuchFileException(path.toString(), null, "the root doesn't exist");
     }
     return directory;
   }

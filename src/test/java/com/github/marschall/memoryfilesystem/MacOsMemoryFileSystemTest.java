@@ -27,6 +27,8 @@ public class MacOsMemoryFileSystemTest {
 
       Path createdFile = null;
       try {
+        // make sure parent exists
+        Files.createDirectories(aPath.toAbsolutePath().getParent());
         createdFile = Files.createFile(aPath);
         assertEquals(1, createdFile.getFileName().toString().length());
         assertEquals(1, createdFile.toAbsolutePath().getFileName().toString().length());
@@ -55,6 +57,8 @@ public class MacOsMemoryFileSystemTest {
       assertThat(aLower, not(equalTo(aUpper)));
       Path createdFile = null;
       try {
+        // make sure parent exists
+        Files.createDirectories(aLower.toAbsolutePath().getParent());
         createdFile = Files.createFile(aLower);
         assertTrue(Files.exists(aLower));
         assertTrue(Files.exists(aUpper));
