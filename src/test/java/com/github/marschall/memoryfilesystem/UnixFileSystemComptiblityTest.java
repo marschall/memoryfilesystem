@@ -58,8 +58,9 @@ public class UnixFileSystemComptiblityTest {
   public static List<Object[]> fileSystems() throws IOException {
     FileSystem defaultFileSystem = FileSystems.getDefault();
     boolean isPosix = defaultFileSystem.supportedFileAttributeViews().contains("posix");
-    // TODO don't run on Mac
-    if (isPosix) {
+    String osName = (String) System.getProperties().get("os.name");
+    boolean isMac = osName.startsWith("Mac");
+    if (isPosix && !isMac) {
       return Arrays.asList(new Object[]{true},
               new Object[]{false});
     } else {

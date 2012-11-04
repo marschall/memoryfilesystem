@@ -4,10 +4,8 @@ import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.READ;
 import static java.nio.file.StandardOpenOption.WRITE;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.lessThan;
-import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -26,8 +24,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.text.Normalizer;
-import java.text.Normalizer.Form;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -79,68 +75,11 @@ public class FileSystemComptiblity {
   }
 
   @Test
-  public void macOsNormalization() throws IOException {
-    String aUmlaut = "\u00C4";
-    Path aPath = Paths.get(aUmlaut);
-    String normalized = Normalizer.normalize(aUmlaut, Form.NFD);
-    Path nPath = Paths.get(normalized);
-
-    Path createdFile = null;
-    try {
-      createdFile = Files.createFile(aPath);
-      assertEquals(1, createdFile.getFileName().toString().length());
-      assertEquals(1, createdFile.toAbsolutePath().getFileName().toString().length());
-      assertEquals(2, createdFile.toRealPath().getFileName().toString().length());
-
-      assertTrue(Files.exists(aPath));
-      assertTrue(Files.exists(nPath));
-      assertTrue(Files.isSameFile(aPath, nPath));
-      assertTrue(Files.isSameFile(nPath, aPath));
-      assertThat(aPath, not(equalTo(nPath)));
-    } finally {
-      if (createdFile != null) {
-        Files.delete(createdFile);
-      }
-    }
-
-  }
-
-  @Test
-  public void macOsComparison() throws IOException {
-    Path aLower = Paths.get("a");
-    Path aUpper = Paths.get("A");
-    assertThat(aLower, not(equalTo(aUpper)));
-    Path createdFile = null;
-    try {
-      createdFile = Files.createFile(aLower);
-      assertTrue(Files.exists(aLower));
-      assertTrue(Files.exists(aUpper));
-      assertTrue(Files.isSameFile(aLower, aUpper));
-    } finally {
-      if (createdFile != null) {
-        Files.delete(createdFile);
-      }
-    }
-  }
-
-  @Test
   public void unixRoot() throws IOException {
     Path root = FileSystems.getDefault().getRootDirectories().iterator().next();
     BasicFileAttributes attributes = Files.readAttributes(root, BasicFileAttributes.class);
     assertTrue(attributes.isDirectory());
     assertFalse(attributes.isRegularFile());
-  }
-
-  @Test
-  public void macOsPaths() {
-    String aUmlaut = "\u00C4";
-    String normalized = Normalizer.normalize(aUmlaut, Form.NFD);
-    assertEquals(1, aUmlaut.length());
-    assertEquals(2, normalized.length());
-    Path aPath = Paths.get("/" + aUmlaut);
-    Path nPath = Paths.get("/" + normalized);
-    assertEquals(1, aPath.getName(0).toString().length());
-    assertThat(aPath, not(equalTo(nPath)));
   }
 
   @Test
