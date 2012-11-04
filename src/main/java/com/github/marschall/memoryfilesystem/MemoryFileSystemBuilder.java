@@ -120,6 +120,11 @@ public final class MemoryFileSystemBuilder {
     return this;
   }
 
+  public MemoryFileSystemBuilder setLookUpTransformer(StringTransformer lookUpTransformer) {
+    this.lookUpTransformer = lookUpTransformer;
+    return this;
+  }
+
   public MemoryFileSystemBuilder setCollator(Collator collator) {
     this.collator = collator;
     return this;
@@ -142,15 +147,16 @@ public final class MemoryFileSystemBuilder {
   }
 
   public static MemoryFileSystemBuilder newMacOs() {
-    return new MemoryFileSystemBuilder()
-    .addRoot(MemoryFileSystemProperties.UNIX_ROOT)
-    .setSeprator(MemoryFileSystemProperties.UNIX_SEPARATOR)
-    .addUser(getSystemUserName())
-    .addGroup(getSystemUserName())
-    .addFileAttributeView(PosixFileAttributeView.class)
-    .setCurrentWorkingDirectory("/Users/" + getSystemUserName())
-    .setStoreTransformer(StringTransformers.MAC_OS)
-    .setCaseSensitive(false);
+    MemoryFileSystemBuilder builder = new MemoryFileSystemBuilder();
+    return builder
+            .addRoot(MemoryFileSystemProperties.UNIX_ROOT)
+            .setSeprator(MemoryFileSystemProperties.UNIX_SEPARATOR)
+            .addUser(getSystemUserName())
+            .addGroup(getSystemUserName())
+            .addFileAttributeView(PosixFileAttributeView.class)
+            .setCurrentWorkingDirectory("/Users/" + getSystemUserName())
+            .setCollator(MemoryFileSystemProperties.caseSensitiveCollator(builder.getLocale()))
+            .setLookUpTransformer(StringTransformers.caseInsensitive(builder.getLocale()));
   }
 
   public static MemoryFileSystemBuilder newWindows() {
