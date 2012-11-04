@@ -193,21 +193,20 @@ class MemoryFileSystem extends FileSystem {
         boolean isCreateNew = options.contains(StandardOpenOption.CREATE_NEW);
         MemoryDirectory directory = (MemoryDirectory) entry;
         String fileName = absolutePath.getLastNameElement();
+        String key = MemoryFileSystem.this.lookUpTransformer.transform(fileName);
         if (isCreateNew) {
           String name = MemoryFileSystem.this.storeTransformer.transform(fileName);
           MemoryFile file = new MemoryFile(name, MemoryFileSystem.this.additionalViews);
-          String key = MemoryFileSystem.this.lookUpTransformer.transform(file.getOriginalName());
           // will throw an exception if already present
           directory.addEntry(key, file);
           return file;
         } else {
-          MemoryEntry storedEntry = directory.getEntry(fileName);
+          MemoryEntry storedEntry = directory.getEntry(key);
           if (storedEntry == null) {
             boolean isCreate = options.contains(StandardOpenOption.CREATE);
             if (isCreate) {
               String name = MemoryFileSystem.this.storeTransformer.transform(fileName);
               MemoryFile file = new MemoryFile(name, MemoryFileSystem.this.additionalViews);
-              String key = MemoryFileSystem.this.lookUpTransformer.transform(file.getOriginalName());
               directory.addEntry(key, file);
               return file;
             } else {
@@ -408,7 +407,9 @@ class MemoryFileSystem extends FileSystem {
       throw new NotDirectoryException(parent.toString());
     }
 
-    MemoryEntry entry = ((MemoryDirectory) parent).getEntry(path.getNameElement(i));
+    String fileName = path.getNameElement(i);
+    String key = this.lookUpTransformer.transform(fileName);
+    MemoryEntry entry = ((MemoryDirectory) parent).getEntry(key);
     if (entry == null) {
       //TODO construct better error message
       throw new NoSuchFileException(path.toString(), null, "directory does not exist");
@@ -448,7 +449,9 @@ class MemoryFileSystem extends FileSystem {
       throw new IOException("not a directory");
     }
 
-    MemoryEntry entry = ((MemoryDirectory) parent).getEntry(path.getNameElement(i));
+    String fileName = path.getNameElement(i);
+    String key = this.lookUpTransformer.transform(fileName);
+    MemoryEntry entry = ((MemoryDirectory) parent).getEntry(key);
     if (entry == null) {
       //TODO construct better error message
       throw new NoSuchFileException("directory does not exist");
