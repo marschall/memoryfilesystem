@@ -11,6 +11,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.FileStore;
 import java.nio.file.FileSystem;
+import java.nio.file.FileSystemLoopException;
 import java.nio.file.LinkOption;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.NotDirectoryException;
@@ -27,10 +28,12 @@ import java.nio.file.attribute.FileOwnerAttributeView;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.nio.file.spi.FileSystemProvider;
 import java.text.Collator;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -77,7 +80,7 @@ class MemoryFileSystem extends FileSystem {
   private final Set<String> supportedFileAttributeViews;
 
   MemoryFileSystem(String key, String separator, PathParser pathParser, MemoryFileSystemProvider provider, MemoryFileStore store,
-          MemoryUserPrincipalLookupService userPrincipalLookupService, ClosedFileSystemChecker checker, StringTransformer pathTransformer,
+          MemoryUserPrincipalLookupService userPrincipalLookupService, ClosedFileSystemChecker checker, StringTransformer storeTransformer,
           StringTransformer lookUpTransformer, Collator collator, Set<Class<? extends FileAttributeView>> additionalViews) {
     this.key = key;
     this.separator = separator;
@@ -86,7 +89,7 @@ class MemoryFileSystem extends FileSystem {
     this.store = store;
     this.userPrincipalLookupService = userPrincipalLookupService;
     this.checker = checker;
-    this.storeTransformer = pathTransformer;
+    this.storeTransformer = storeTransformer;
     this.lookUpTransformer = lookUpTransformer;
     this.collator = collator;
     this.additionalViews = additionalViews;
@@ -282,15 +285,83 @@ class MemoryFileSystem extends FileSystem {
 
   Path toRealPath(AbstractPath abstractPath, LinkOption... options)throws IOException  {
     this.checker.check();
-    abstractPath.normalize().toAbsolutePath();
-    this.isFollowSymLinks(options);
-    // TODO implement
-    throw new UnsupportedOperationException();
+    AbstractPath absolutePath = (AbstractPath) abstractPath.normalize().toAbsolutePath();
+    boolean followSymLinks = this.isFollowSymLinks(options);
+    Set<MemorySymbolicLink> encounteredSymlinks;
+    if (followSymLinks) {
+      // we don't expect to encounter many symlinks so we initialize to a lower than the default value of 16
+      // TODO optimized set
+      encounteredSymlinks = new HashSet<>(4);
+    } else {
+      encounteredSymlinks = Collections.emptySet();
+    }
+    MemoryDirectory root = this.getRootDirectory(absolutePath);
+    return this.toRealPath(root, absolutePath, encounteredSymlinks, followSymLinks);
+  }
+
+
+  private Path toRealPath(MemoryDirectory root, AbstractPath path, Set<MemorySymbolicLink> encounteredLinks, boolean followSymLinks) throws IOException {
+    if (path instanceof Root) {
+      return path.getRoot();
+    } else if (path instanceof ElementPath) {
+      Path symLinkTarget = null;
+
+      ElementPath elementPath = (ElementPath) path;
+      List<String> nameElements = elementPath.getNameElements();
+      List<String> realPath = new ArrayList<>(nameElements.size());
+      List<AutoRelease> locks = new ArrayList<>(nameElements.size() + 1);
+      try {
+        locks.add(root.readLock());
+        MemoryDirectory parent = root;
+        for (int i = 0; i < nameElements.size(); ++i) {
+          String fileName = nameElements.get(i);
+          String key = this.lookUpTransformer.transform(fileName);
+          MemoryEntry current = parent.getEntry(key);
+          if (current == null) {
+            throw new NoSuchFileException(path.toString());
+          }
+          locks.add(current.readLock());
+          realPath.add(current.getOriginalName());
+
+          if (followSymLinks && current instanceof MemorySymbolicLink) {
+            MemorySymbolicLink link = (MemorySymbolicLink) current;
+            if (!encounteredLinks.add(link)) {
+              // TODO better error message
+              throw new FileSystemLoopException(path.toString());
+            }
+            symLinkTarget = link.getTarget();
+          }
+
+          if (i == nameElements.size() - 1) {
+            continue;
+          } else if (current instanceof MemoryDirectory) {
+            parent = (MemoryDirectory) current;
+          } else {
+            //TODO construct better error message
+            throw new NotDirectoryException(path.toString());
+          }
+
+        }
+      } finally {
+        for (int i = locks.size() - 1; i >= 0; --i) {
+          AutoRelease lock = locks.get(i);
+          lock.close();
+        }
+      }
+      if (symLinkTarget == null) {
+        return AbsolutePath.createAboslute(this, (Root) path.getRoot(), realPath);
+      } else {
+        return this.toRealPath(root, (AbstractPath) symLinkTarget, encounteredLinks, followSymLinks);
+      }
+
+    } else {
+      throw new IllegalArgumentException("unknown path type" + path);
+    }
   }
 
   private boolean isFollowSymLinks(LinkOption... options) {
     if (options == null) {
-      return false;
+      return true;
     }
 
     for (LinkOption option : options) {
@@ -304,7 +375,9 @@ class MemoryFileSystem extends FileSystem {
 
   void checkAccess(AbstractPath path, final AccessMode... modes) throws IOException {
     this.checker.check();
-    this.accessFile(path, new MemoryEntryBlock<Void>() {
+    // java.nio.file.spi.FileSystemProvider#checkAccess(Path, AccessMode...)
+    // says we should follow symbolic links
+    this.accessFile(path, true, new MemoryEntryBlock<Void>() {
 
       @Override
       public Void value(MemoryEntry entry) throws IOException {
@@ -316,7 +389,7 @@ class MemoryFileSystem extends FileSystem {
 
   <A extends BasicFileAttributes> A readAttributes(AbstractPath path, final Class<A> type, LinkOption... options) throws IOException {
     this.checker.check();
-    return this.accessFile(path, new MemoryEntryBlock<A>() {
+    return this.accessFile(path, this.isFollowSymLinks(options), new MemoryEntryBlock<A>() {
 
       @Override
       public A value(MemoryEntry entry) throws IOException {
@@ -332,7 +405,7 @@ class MemoryFileSystem extends FileSystem {
   }
 
   <V extends FileAttributeView> V getFileAttributeView(AbstractPath path, final Class<V> type, LinkOption... options) throws IOException {
-    return this.accessFile(path, new MemoryEntryBlock<V>() {
+    return this.accessFile(path, this.isFollowSymLinks(options), new MemoryEntryBlock<V>() {
 
       @Override
       public V value(MemoryEntry entry) throws IOException {
@@ -343,7 +416,7 @@ class MemoryFileSystem extends FileSystem {
 
   Map<String, Object> readAttributes(AbstractPath path, final String attributes, LinkOption... options) throws IOException {
     this.checker.check();
-    return this.accessFile(path, new MemoryEntryBlock<Map<String, Object>>() {
+    return this.accessFile(path, this.isFollowSymLinks(options), new MemoryEntryBlock<Map<String, Object>>() {
 
       @Override
       public Map<String, Object> value(MemoryEntry entry) throws IOException {
@@ -354,7 +427,7 @@ class MemoryFileSystem extends FileSystem {
 
   void setAttribute(AbstractPath path, final String attribute, final Object value, LinkOption... options) throws IOException {
     this.checker.check();
-    this.accessFile(path, new MemoryEntryBlock<Void>() {
+    this.accessFile(path, this.isFollowSymLinks(options), new MemoryEntryBlock<Void>() {
 
       @Override
       public Void value(MemoryEntry entry) throws IOException {
@@ -365,11 +438,11 @@ class MemoryFileSystem extends FileSystem {
     });
   }
 
-  private <R> R accessFile(AbstractPath path, MemoryEntryBlock<? extends R> callback) throws IOException {
+  private <R> R accessFile(AbstractPath path, boolean followSymLinks, MemoryEntryBlock<? extends R> callback) throws IOException {
     this.checker.check();
     AbstractPath absolutePath = (AbstractPath) path.toAbsolutePath();
     MemoryDirectory directory = this.getRootDirectory(absolutePath);
-    return this.withReadLockDo(directory, absolutePath, callback);
+    return this.withReadLockDo(directory, absolutePath, followSymLinks, callback);
   }
 
 
@@ -426,45 +499,74 @@ class MemoryFileSystem extends FileSystem {
     }
   }
 
+  private <R> R withReadLockDo(MemoryDirectory root, AbstractPath path, boolean followSymLinks, MemoryEntryBlock<? extends R> callback) throws IOException {
+    Set<MemorySymbolicLink> encounteredSymlinks;
+    if (followSymLinks) {
+      encounteredSymlinks = new HashSet<>(4);
+    } else {
+      encounteredSymlinks = Collections.emptySet();
+    }
+    return this.withReadLockDo(root, path, encounteredSymlinks, followSymLinks, callback);
+  }
 
-  private <R> R withReadLockDo(MemoryDirectory root, AbstractPath path, MemoryEntryBlock<? extends R> callback) throws IOException {
+
+  private <R> R withReadLockDo(MemoryDirectory root, AbstractPath path, Set<MemorySymbolicLink> encounteredLinks, boolean followSymLinks, MemoryEntryBlock<? extends R> callback) throws IOException {
     if (path instanceof Root) {
       try (AutoRelease lock = root.readLock()) {
         return callback.value(root);
       }
     } else if (path instanceof ElementPath) {
+      R result = null;
+      Path symLinkTarget = null;
+
       ElementPath elementPath = (ElementPath) path;
-      try (AutoRelease lock = root.readLock()) {
-        return this.withReadLockDo(root, elementPath, 0, path.getNameCount(), callback);
+      List<String> nameElements = elementPath.getNameElements();
+      List<AutoRelease> locks = new ArrayList<>(nameElements.size() + 1);
+      try {
+        locks.add(root.readLock());
+        MemoryDirectory parent = root;
+        for (int i = 0; i < nameElements.size(); ++i) {
+          String fileName = nameElements.get(i);
+          String key = this.lookUpTransformer.transform(fileName);
+          MemoryEntry current = parent.getEntry(key);
+          if (current == null) {
+            throw new NoSuchFileException(path.toString());
+          }
+          locks.add(current.readLock());
+
+          if (followSymLinks && current instanceof MemorySymbolicLink) {
+            MemorySymbolicLink link = (MemorySymbolicLink) current;
+            if (!encounteredLinks.add(link)) {
+              // TODO better error message
+              throw new FileSystemLoopException(path.toString());
+            }
+            symLinkTarget = link.getTarget();
+          }
+
+          if (i == nameElements.size() - 1) {
+            result = callback.value(current);
+          } else if (current instanceof MemoryDirectory) {
+            parent = (MemoryDirectory) current;
+          } else {
+            //TODO construct better error message
+            throw new NotDirectoryException(path.toString());
+          }
+
+        }
+      } finally {
+        for (int i = locks.size() - 1; i >= 0; --i) {
+          AutoRelease lock = locks.get(i);
+          lock.close();
+        }
       }
+      if (symLinkTarget == null) {
+        return result;
+      } else {
+        return this.withReadLockDo(root, (AbstractPath) symLinkTarget, encounteredLinks, followSymLinks, callback);
+      }
+
     } else {
       throw new IllegalArgumentException("unknown path type" + path);
-    }
-  }
-
-  private <R> R withReadLockDo(MemoryEntry parent, ElementPath path, int i, int length, MemoryEntryBlock<? extends R> callback) throws IOException {
-    if (!(parent instanceof MemoryDirectory)) {
-      //TODO construct better error message
-      // TODO use FileSystemException?
-      throw new IOException("not a directory");
-    }
-
-    String fileName = path.getNameElement(i);
-    String key = this.lookUpTransformer.transform(fileName);
-    MemoryEntry entry = ((MemoryDirectory) parent).getEntry(key);
-    if (entry == null) {
-      //TODO construct better error message
-      throw new NoSuchFileException("directory does not exist");
-    }
-
-    if (i == length - 1) {
-      try (AutoRelease lock = entry.readLock()) {
-        return callback.value(entry);
-      }
-    } else {
-      try (AutoRelease lock = entry.readLock()) {
-        return this.withReadLockDo(entry, path, i + 1, length, callback);
-      }
     }
   }
 
@@ -628,7 +730,9 @@ class MemoryFileSystem extends FileSystem {
   }
 
   boolean isHidden(AbstractPath abstractPath) throws IOException {
-    return this.accessFile(abstractPath, new MemoryEntryBlock<Boolean>(){
+    // Posix seems to check only the file name
+    // TODO write test
+    return this.accessFile(abstractPath, false, new MemoryEntryBlock<Boolean>(){
 
       @Override
       public Boolean value(MemoryEntry entry) throws IOException {

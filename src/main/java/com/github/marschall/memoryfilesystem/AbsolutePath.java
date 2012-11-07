@@ -39,6 +39,7 @@ final class AbsolutePath extends NonEmptyPath {
 
   @Override
   public String toString() {
+    // TODO estimate size
     StringBuilder buffer = new StringBuilder();
     buffer.append(this.root);
     boolean first = true;

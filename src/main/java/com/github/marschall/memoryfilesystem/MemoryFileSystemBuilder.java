@@ -156,7 +156,8 @@ public final class MemoryFileSystemBuilder {
             .addFileAttributeView(PosixFileAttributeView.class)
             .setCurrentWorkingDirectory("/Users/" + getSystemUserName())
             .setCollator(MemoryFileSystemProperties.caseSensitiveCollator(builder.getLocale()))
-            .setLookUpTransformer(StringTransformers.caseInsensitive(builder.getLocale()));
+            .setLookUpTransformer(StringTransformers.caseInsensitiveMacOS(builder.getLocale()))
+            .setStoreTransformer(StringTransformers.MAC_OS);
   }
 
   public static MemoryFileSystemBuilder newWindows() {

@@ -264,7 +264,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
       return true;
     }
     // TODO isn't atomic
-    return path.toAbsolutePath().equals(path2.toAbsolutePath());
+    return path.toRealPath().equals(path2.toRealPath());
   }
 
 

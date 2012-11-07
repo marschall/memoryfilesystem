@@ -27,6 +27,7 @@ final class RelativePath extends NonEmptyPath {
 
   @Override
   public String toString() {
+    // TODO estimate size
     StringBuilder buffer = new StringBuilder();
     String separator = this.getFileSystem().getSeparator();
     boolean first = true;

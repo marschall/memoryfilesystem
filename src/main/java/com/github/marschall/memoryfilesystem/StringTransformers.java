@@ -18,6 +18,10 @@ public final class StringTransformers {
     return new CaseInsenstive(locale);
   }
 
+  public  static StringTransformer caseInsensitiveMacOS(Locale locale) {
+    return new CaseInsenstiveMacOS(locale);
+  }
+
   static final class MacOS implements StringTransformer {
 
     @Override
@@ -25,6 +29,21 @@ public final class StringTransformers {
       // Wikipedia says MAC_OS uses NFD
       // http://en.wikipedia.org/wiki/HFS_Plus
       return Normalizer.normalize(s, Form.NFD);
+    }
+
+  }
+
+  static final class CaseInsenstiveMacOS implements StringTransformer {
+
+    private final Locale locale;
+
+    CaseInsenstiveMacOS(Locale locale) {
+      this.locale = locale;
+    }
+
+    @Override
+    public String transform(String s) {
+      return Normalizer.normalize(s, Form.NFD).toUpperCase(this.locale);
     }
 
   }
@@ -43,6 +62,7 @@ public final class StringTransformers {
     }
 
   }
+
   static final class IdentityTransformer implements StringTransformer {
 
     @Override
