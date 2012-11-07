@@ -1,6 +1,9 @@
 package com.github.marschall.memoryfilesystem;
 
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -13,6 +16,7 @@ import java.nio.file.attribute.DosFileAttributes;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Rule;
@@ -74,6 +78,22 @@ public class WindowsFileSystemComptiblityTest {
     assertTrue(dosFileAttributes.isHidden());
     assertTrue(dosFileAttributes.isSystem());
     assertFalse(dosFileAttributes.isReadOnly());
+  }
+
+  @Test
+  public void attributeCapitalization() throws IOException {
+    FileSystem fileSystem = this.getFileSystem();
+    Path root = fileSystem.getPath("C:\\");
+    Map<String, Object> attributes = Files.readAttributes(root, "dos:*");
+    Set<String> keys = attributes.keySet();
+
+    assertThat(keys, hasItem("hidden"));
+    assertThat(keys, hasItem("archive"));
+    assertThat(keys, hasItem("system"));
+
+    assertThat(keys, not(hasItem("isHidden")));
+    assertThat(keys, not(hasItem("isArchive")));
+    assertThat(keys, not(hasItem("isSystem")));
   }
 
 }

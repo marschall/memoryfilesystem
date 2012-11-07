@@ -180,7 +180,7 @@ class MemoryFileSystem extends FileSystem {
     return file.newChannel(options);
   }
 
-  private MemoryFile getFile(final AbstractPath path, final Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
+  private MemoryFile getFile(final AbstractPath path, final Set<? extends OpenOption> options, final FileAttribute<?>... attrs) throws IOException {
     final ElementPath absolutePath = (ElementPath) path.toAbsolutePath();
     MemoryDirectory rootDirectory = this.getRootDirectory(absolutePath);
 
@@ -200,6 +200,7 @@ class MemoryFileSystem extends FileSystem {
         if (isCreateNew) {
           String name = MemoryFileSystem.this.storeTransformer.transform(fileName);
           MemoryFile file = new MemoryFile(name, MemoryFileSystem.this.additionalViews);
+          AttributeAccessors.setAttributes(file, attrs);
           // will throw an exception if already present
           directory.addEntry(key, file);
           return file;
@@ -210,6 +211,7 @@ class MemoryFileSystem extends FileSystem {
             if (isCreate) {
               String name = MemoryFileSystem.this.storeTransformer.transform(fileName);
               MemoryFile file = new MemoryFile(name, MemoryFileSystem.this.additionalViews);
+              AttributeAccessors.setAttributes(file, attrs);
               directory.addEntry(key, file);
               return file;
             } else {
@@ -234,25 +236,27 @@ class MemoryFileSystem extends FileSystem {
   }
 
 
-  void createDirectory(AbstractPath path, FileAttribute<?>... attrs) throws IOException {
-    //TODO don't ignore attrs
+  void createDirectory(AbstractPath path, final FileAttribute<?>... attrs) throws IOException {
     this.createFile(path, new MemoryEntryCreator() {
 
       @Override
-      public MemoryEntry create(String name) {
-        return new MemoryDirectory(name, MemoryFileSystem.this.additionalViews);
+      public MemoryEntry create(String name) throws IOException {
+        MemoryDirectory directory = new MemoryDirectory(name, MemoryFileSystem.this.additionalViews);
+        AttributeAccessors.setAttributes(directory, attrs);
+        return directory;
       }
 
     });
   }
 
-  void createSymbolicLink(AbstractPath link, final AbstractPath target, FileAttribute<?>... attrs) throws IOException {
-    //TODO don't ignore attrs
+  void createSymbolicLink(AbstractPath link, final AbstractPath target, final FileAttribute<?>... attrs) throws IOException {
     this.createFile(link, new MemoryEntryCreator() {
 
       @Override
-      public MemoryEntry create(String name) {
-        return new MemorySymbolicLink(name, target, MemoryFileSystem.this.additionalViews);
+      public MemoryEntry create(String name) throws IOException {
+        MemorySymbolicLink symbolicLink = new MemorySymbolicLink(name, target, MemoryFileSystem.this.additionalViews);
+        AttributeAccessors.setAttributes(symbolicLink, attrs);
+        return symbolicLink;
       }
 
     });
@@ -795,7 +799,7 @@ class MemoryFileSystem extends FileSystem {
 
   interface MemoryEntryCreator {
 
-    MemoryEntry create(String name);
+    MemoryEntry create(String name) throws IOException;
 
   }
 

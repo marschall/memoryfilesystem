@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.DosFileAttributeView;
 import java.nio.file.attribute.DosFileAttributes;
+import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileOwnerAttributeView;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.GroupPrincipal;
@@ -52,10 +53,10 @@ final class AttributeAccessors {
 
   private static Map<String, AttributeAccessor> buildDosAttributesMap() {
     Map<String, AttributeAccessor> map = new HashMap<>(DOS_ATTRIBUTE_COUNT + BASIC_ATTRIBUTE_COUNT);
-    map.put("isReadOnly", new IsReadOnlyAccessor());
-    map.put("isHidden", new IsHiddenAccessor());
-    map.put("isArchive", new IsArchiveAccessor());
-    map.put("isSystem", new IsSymbolicLinkAccessor());
+    map.put("readOnly", new IsReadOnlyAccessor());
+    map.put("hidden", new IsHiddenAccessor());
+    map.put("archive", new IsArchiveAccessor());
+    map.put("system", new IsSymbolicLinkAccessor());
     return map;
   }
 
@@ -310,6 +311,12 @@ final class AttributeAccessors {
 
   static void setAttribute(MemoryEntry entry, String attribute, Object value) throws IOException {
     getAccessor(attribute).writeAttribute(value, entry);
+  }
+
+  static void setAttributes(MemoryEntry entry, FileAttribute<?>... attrs) throws IOException {
+    for (FileAttribute<?> attribute : attrs) {
+      getAccessor(attribute.name()).writeAttribute(attribute.value(), entry);
+    }
   }
 
   static Map<String, Object> readAttributes(MemoryEntry entry, String viewAndAttribute) throws IOException {
