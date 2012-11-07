@@ -186,7 +186,7 @@ class MemoryFileSystem extends FileSystem {
 
     final Path parent = absolutePath.getParent();
 
-    return this.withWriteLockOnLastDo(rootDirectory, (AbstractPath) parent, new MemoryEntryBlock<MemoryFile>() {
+    return this.withWriteLockOnLastDo(rootDirectory, (AbstractPath) parent, this.isFollowSymLinks(options), new MemoryEntryBlock<MemoryFile>() {
 
       @Override
       public MemoryFile value(MemoryEntry entry) throws IOException {
@@ -265,12 +265,11 @@ class MemoryFileSystem extends FileSystem {
     final ElementPath absolutePath = (ElementPath) path.toAbsolutePath();
     final Path parent = absolutePath.getParent();
 
-    this.withWriteLockOnLastDo(rootDirectory, (AbstractPath) parent, new MemoryEntryBlock<Void>() {
+    this.withWriteLockOnLastDo(rootDirectory, (AbstractPath) parent, true, new MemoryEntryBlock<Void>() {
 
       @Override
       public Void value(MemoryEntry entry) throws IOException {
         if (!(entry instanceof MemoryDirectory)) {
-          // TODO use FileSystemException?
           throw new NotDirectoryException(parent.toString());
         }
         String name = MemoryFileSystem.this.storeTransformer.transform(absolutePath.getLastNameElement());
@@ -301,7 +300,7 @@ class MemoryFileSystem extends FileSystem {
 
 
   private Path toRealPath(MemoryDirectory root, AbstractPath path, Set<MemorySymbolicLink> encounteredLinks, boolean followSymLinks) throws IOException {
-    if (path instanceof Root) {
+    if (path.isRoot()) {
       return path.getRoot();
     } else if (path instanceof ElementPath) {
       Path symLinkTarget = null;
@@ -357,6 +356,19 @@ class MemoryFileSystem extends FileSystem {
     } else {
       throw new IllegalArgumentException("unknown path type" + path);
     }
+  }
+
+  private boolean isFollowSymLinks(Set<? extends OpenOption> options) {
+    if (options == null || options.isEmpty()) {
+      return true;
+    }
+
+    for (OpenOption option : options) {
+      if (option == LinkOption.NOFOLLOW_LINKS) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private boolean isFollowSymLinks(LinkOption... options) {
@@ -446,57 +458,15 @@ class MemoryFileSystem extends FileSystem {
   }
 
 
-  interface MemoryEntryBlock<R> {
-
-    R value(MemoryEntry entry) throws IOException;
-
-  }
-
-  interface MemoryEntryCreator {
-
-    MemoryEntry create(String name);
-
-  }
-
-  private <R> R withWriteLockOnLastDo(MemoryDirectory root, AbstractPath path, MemoryEntryBlock<R> callback) throws IOException {
-    if (path instanceof Root) {
-      try (AutoRelease lock = root.writeLock()) {
-        return callback.value(root);
-      }
-    } else if (path instanceof ElementPath) {
-      ElementPath elementPath = (ElementPath) path;
-      try (AutoRelease lock = root.readLock()) {
-        return this.withWriteLockOnLastDo(root, elementPath, 0, path.getNameCount(), callback);
-      }
+  private <R> R withWriteLockOnLastDo(MemoryDirectory root, AbstractPath path,  boolean followSymLinks, MemoryEntryBlock<R> callback) throws IOException {
+    Set<MemorySymbolicLink> encounteredSymlinks;
+    if (followSymLinks) {
+      encounteredSymlinks = new HashSet<>(4);
     } else {
-      throw new IllegalArgumentException("unknown path type" + path);
+      encounteredSymlinks = Collections.emptySet();
     }
+    return this.withLockDo(root, path, encounteredSymlinks, followSymLinks, LockType.WRITE, callback);
 
-  }
-
-  private <R> R withWriteLockOnLastDo(MemoryEntry parent, ElementPath path, int i, int length, MemoryEntryBlock<R> callback) throws IOException {
-    if (!(parent instanceof MemoryDirectory)) {
-      //TODO construct better error message
-      throw new NotDirectoryException(parent.toString());
-    }
-
-    String fileName = path.getNameElement(i);
-    String key = this.lookUpTransformer.transform(fileName);
-    MemoryEntry entry = ((MemoryDirectory) parent).getEntry(key);
-    if (entry == null) {
-      //TODO construct better error message
-      throw new NoSuchFileException(path.toString(), null, "directory does not exist");
-    }
-
-    if (i == length - 1) {
-      try (AutoRelease lock = entry.writeLock()) {
-        return callback.value(entry);
-      }
-    } else {
-      try (AutoRelease lock = entry.readLock()) {
-        return this.withWriteLockOnLastDo(entry, path, i + 1, length, callback);
-      }
-    }
   }
 
   private <R> R withReadLockDo(MemoryDirectory root, AbstractPath path, boolean followSymLinks, MemoryEntryBlock<? extends R> callback) throws IOException {
@@ -506,11 +476,11 @@ class MemoryFileSystem extends FileSystem {
     } else {
       encounteredSymlinks = Collections.emptySet();
     }
-    return this.withReadLockDo(root, path, encounteredSymlinks, followSymLinks, callback);
+    return this.withLockDo(root, path, encounteredSymlinks, followSymLinks, LockType.READ, callback);
   }
 
 
-  private <R> R withReadLockDo(MemoryDirectory root, AbstractPath path, Set<MemorySymbolicLink> encounteredLinks, boolean followSymLinks, MemoryEntryBlock<? extends R> callback) throws IOException {
+  private <R> R withLockDo(MemoryDirectory root, AbstractPath path, Set<MemorySymbolicLink> encounteredLinks, boolean followSymLinks, LockType lockType, MemoryEntryBlock<? extends R> callback) throws IOException {
     if (path instanceof Root) {
       try (AutoRelease lock = root.readLock()) {
         return callback.value(root);
@@ -532,7 +502,12 @@ class MemoryFileSystem extends FileSystem {
           if (current == null) {
             throw new NoSuchFileException(path.toString());
           }
-          locks.add(current.readLock());
+          boolean isLast = i == nameElements.size() - 1;
+          if (isLast && lockType == LockType.WRITE) {
+            locks.add(current.writeLock());
+          } else {
+            locks.add(current.readLock());
+          }
 
           if (followSymLinks && current instanceof MemorySymbolicLink) {
             MemorySymbolicLink link = (MemorySymbolicLink) current;
@@ -543,7 +518,7 @@ class MemoryFileSystem extends FileSystem {
             symLinkTarget = link.getTarget();
           }
 
-          if (i == nameElements.size() - 1) {
+          if (isLast) {
             result = callback.value(current);
           } else if (current instanceof MemoryDirectory) {
             parent = (MemoryDirectory) current;
@@ -562,7 +537,7 @@ class MemoryFileSystem extends FileSystem {
       if (symLinkTarget == null) {
         return result;
       } else {
-        return this.withReadLockDo(root, (AbstractPath) symLinkTarget, encounteredLinks, followSymLinks, callback);
+        return this.withLockDo(root, (AbstractPath) symLinkTarget, encounteredLinks, followSymLinks, lockType, callback);
       }
 
     } else {
@@ -587,7 +562,7 @@ class MemoryFileSystem extends FileSystem {
 
     final Path parent = absolutePath.getParent();
 
-    this.withWriteLockOnLastDo(rootDirectory, (AbstractPath) parent, new MemoryEntryBlock<Void>() {
+    this.withWriteLockOnLastDo(rootDirectory, (AbstractPath) parent, true, new MemoryEntryBlock<Void>() {
 
       @Override
       public Void value(MemoryEntry entry) throws IOException {
@@ -807,6 +782,27 @@ class MemoryFileSystem extends FileSystem {
         }
       }
     }
+
+  }
+
+
+
+  interface MemoryEntryBlock<R> {
+
+    R value(MemoryEntry entry) throws IOException;
+
+  }
+
+  interface MemoryEntryCreator {
+
+    MemoryEntry create(String name);
+
+  }
+
+  enum LockType {
+
+    READ,
+    WRITE;
 
   }
 
