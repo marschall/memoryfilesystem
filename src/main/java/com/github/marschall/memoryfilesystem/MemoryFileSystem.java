@@ -587,6 +587,7 @@ class MemoryFileSystem extends FileSystem {
               throw new DirectoryNotEmptyException(abstractPath.toString());
             }
           }
+          // TODO check for open file stream
           directory.removeEntry(key);
         }
         return null;

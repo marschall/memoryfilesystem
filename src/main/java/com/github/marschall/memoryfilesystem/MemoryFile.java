@@ -86,14 +86,20 @@ class MemoryFile extends MemoryEntry {
 
   SeekableByteChannel newChannel(Set<? extends OpenOption> options) {
     // TODO check more options
-    // TODO check TRUNCATE_EXISTING
     // TODO DELETE_ON_CLOSE and NOFOLLOW_LINKS
+    // TODO SYNC DSYNC
     boolean append = options.contains(StandardOpenOption.APPEND);
     boolean readable = options.contains(StandardOpenOption.READ);
     if (append) {
       return this.contents.newAppendingChannel(readable);
     } else {
       boolean writable = options.contains(StandardOpenOption.WRITE);
+      if (writable) {
+        boolean truncate = options.contains(StandardOpenOption.TRUNCATE_EXISTING);
+        if (truncate) {
+          this.contents.truncate(0L);
+        }
+      }
       return this.contents.newChannel(readable, writable);
     }
   }

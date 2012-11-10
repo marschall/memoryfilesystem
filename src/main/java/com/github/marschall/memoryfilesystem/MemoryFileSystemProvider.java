@@ -228,8 +228,8 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     // TODO Auto-generated method stub
     return super.newInputStream(path, options);
   }
-  @
-  Override
+
+  @Override
   public OutputStream newOutputStream(Path path, OpenOption... options) throws IOException {
     // TODO Auto-generated method stub
     return super.newOutputStream(path, options);

@@ -2,6 +2,7 @@ package com.github.marschall.memoryfilesystem;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.NonWritableChannelException;
 import java.nio.channels.SeekableByteChannel;
 
@@ -18,10 +19,11 @@ final class NonAppendingBlockChannel extends BlockChannel {
 
 
   @Override
-  void writeCheck() {
+  void writeCheck() throws ClosedChannelException {
     if (!this.writable) {
       throw new NonWritableChannelException();
     }
+    this.closedCheck();
   }
 
 

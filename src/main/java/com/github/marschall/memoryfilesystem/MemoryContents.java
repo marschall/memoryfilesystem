@@ -116,6 +116,30 @@ class MemoryContents {
     }
   }
 
+  int read(byte[] dst, long position, int off, int len) throws IOException {
+    try (AutoRelease lock = this.readLock()) {
+      if (position >= this.size) {
+        return -1;
+      }
+      int toRead = (int) min(min(this.size - position, len), Integer.MAX_VALUE);
+      int currentBlock = (int) (position / BLOCK_SIZE);
+      int startIndexInBlock = (int) (position - ((long) currentBlock * (long) BLOCK_SIZE));
+      int read = 0;
+      while (read < toRead) {
+        int lengthInBlock = (int) min((long) BLOCK_SIZE - (long) startIndexInBlock, (long) toRead - (long) read);
+
+        byte[] block = this.getBlock(currentBlock);
+        System.arraycopy(block, startIndexInBlock, dst, off + read, lengthInBlock);
+        read += lengthInBlock;
+
+        startIndexInBlock = 0;
+        currentBlock += 1;
+      }
+      return read;
+
+    }
+  }
+
   int write(ByteBuffer src, long position) {
     try (AutoRelease lock = this.writeLock()) {
       long remaining = src.remaining();

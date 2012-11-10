@@ -2,6 +2,7 @@ package com.github.marschall.memoryfilesystem;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SeekableByteChannel;
 
 final class AppendingBlockChannel extends BlockChannel {
@@ -14,19 +15,18 @@ final class AppendingBlockChannel extends BlockChannel {
   }
 
   @Override
-  void writeCheck() {
+  void writeCheck() throws ClosedChannelException {
     // an appending channel is always writable
+    this.closedCheck();
   }
 
-
+  //TODO override position(long)?
 
   @Override
   public SeekableByteChannel truncate(long size) throws IOException {
     // TODO use FileSystemException?
     throw new IOException("truncation not supported in append mode");
   }
-
-
 
   @Override
   public int write(ByteBuffer src) throws IOException {

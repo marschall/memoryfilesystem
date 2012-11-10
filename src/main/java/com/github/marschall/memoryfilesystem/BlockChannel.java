@@ -4,12 +4,15 @@ import static com.github.marschall.memoryfilesystem.AutoReleaseLock.autoRelease;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.NonReadableChannelException;
 import java.nio.channels.SeekableByteChannel;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 abstract class BlockChannel implements SeekableByteChannel {
+
+  //TODO AsynchronousCloseException
 
   volatile long position;
 
@@ -36,20 +39,25 @@ abstract class BlockChannel implements SeekableByteChannel {
     this.lock = new ReentrantLock();
   }
 
-  abstract void writeCheck();
+  void closedCheck() throws ClosedChannelException {
+    this.checker.check();
+  }
 
-  private void readCheck() {
+  abstract void writeCheck() throws ClosedChannelException;
+
+  private void readCheck() throws ClosedChannelException {
+    this.closedCheck();
     if (!this.readable) {
       throw new NonReadableChannelException();
     }
   }
 
-  AutoRelease writeLock() {
+  AutoRelease writeLock() throws ClosedChannelException {
     this.writeCheck();
     return autoRelease(this.lock);
   }
 
-  private AutoRelease readLock() {
+  private AutoRelease readLock() throws ClosedChannelException {
     this.readCheck();
     return autoRelease(this.lock);
   }

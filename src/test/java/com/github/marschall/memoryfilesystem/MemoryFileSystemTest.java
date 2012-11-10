@@ -16,12 +16,15 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.ByteBuffer;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -41,6 +44,42 @@ public class MemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path path = fileSystem.getPath("/");
     Files.setAttribute(path, "isDirectory", false);
+  }
+
+  @Test
+  public void truncateExisting() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path path = fileSystem.getPath("test");
+    try (SeekableByteChannel channel = Files.newByteChannel(path, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
+      channel.write(ByteBuffer.wrap(new byte[]{1, 2, 3}));
+    }
+    Object size = Files.getAttribute(path, "size");
+    assertEquals(3L, size);
+
+    // TRUNCATE_EXISTING with READ should not truncate
+    try (SeekableByteChannel channel = Files.newByteChannel(path, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.READ)) {
+      // ignore
+    }
+
+    size = Files.getAttribute(path, "size");
+    assertEquals(3L, size);
+
+    // WRITE alone should not truncate
+    try (SeekableByteChannel channel = Files.newByteChannel(path, StandardOpenOption.WRITE)) {
+      // ignore
+    }
+
+    size = Files.getAttribute(path, "size");
+    assertEquals(3L, size);
+
+    // TRUNCATE_EXISTING with WRITE should truncate
+    try (SeekableByteChannel channel = Files.newByteChannel(path, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)) {
+      // ignore
+    }
+
+    size = Files.getAttribute(path, "size");
+    assertEquals(0L, size);
+
   }
 
   @Test
