@@ -26,7 +26,7 @@ class MemoryFile extends MemoryEntry {
     super(originalName, additionalViews);
     this.attributes = new MemoryFileAttributes();
     this.basicFileAttributeView = new MemoryFileAttributesView();
-    this.contents = new MemoryContents(16);
+    this.contents = new MemoryContents();
   }
 
   @Override

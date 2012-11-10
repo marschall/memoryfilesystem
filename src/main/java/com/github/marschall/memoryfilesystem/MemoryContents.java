@@ -22,22 +22,44 @@ class MemoryContents {
   static final int BLOCK_SIZE = 4096 - ARRAY_HEADER; //make sure it fits into a 4k memory region
 
   // TODO
-  // byte[] first
-  // byte[][] second
-  // byte[][][] third
-  private byte[][] blocks;
+  // byte[][][] doubleIndirectBlocks
+
+  /**
+   * To store the contents efficiently we store the first {@value #BLOCK_SIZE}
+   * bytes in a {@value #BLOCK_SIZE} direct {@code byte[]}. The next
+   * {@value #BLOCK_SIZE} * {@value #BLOCK_SIZE} bytes go into a indirect
+   * {@code byte[][]} that is lazily allocated.
+   */
+  private byte[] directBlock;
+  private byte[][] indirectBlocks;
 
   private long size;
 
-  private int blocksAllocated;
+  private int indirectBlocksAllocated;
 
   private final ReadWriteLock lock;
 
+  MemoryContents() {
+    this(0);
+  }
+
   MemoryContents(int initialBlocks) {
     this.lock = new ReentrantReadWriteLock();
-    this.blocks = new byte[initialBlocks][];
+    if (initialBlocks == 0) {
+      // TODO could be made smaller
+      this.directBlock = new byte[BLOCK_SIZE];
+    } else {
+      this.directBlock = new byte[BLOCK_SIZE];
+    }
+    if (initialBlocks > 1) {
+      this.indirectBlocks = new byte[BLOCK_SIZE][];
+      for (int i = 0; i < initialBlocks - 1; ++i) {
+        this.indirectBlocks[i] = new byte[BLOCK_SIZE];
+      }
+      this.indirectBlocksAllocated = initialBlocks - 1;
+    }
     this.size = 0L;
-    this.blocksAllocated = 0;
+    // only the single direct block
   }
 
   SeekableByteChannel newChannel(boolean readable, boolean writable) {
@@ -51,6 +73,14 @@ class MemoryContents {
   long size() {
     try (AutoRelease lock = this.readLock()) {
       return this.size;
+    }
+  }
+
+  private byte[] getBlock(int currentBlock) {
+    if (currentBlock == 0) {
+      return this.directBlock;
+    } else {
+      return this.indirectBlocks[currentBlock - 1];
     }
   }
 
@@ -75,7 +105,7 @@ class MemoryContents {
       while (read < toRead) {
         int lengthInBlock = (int) min((long) BLOCK_SIZE - (long) startIndexInBlock, (long) toRead - (long) read);
 
-        dst.put(this.blocks[currentBlock], startIndexInBlock, lengthInBlock);
+        dst.put(this.getBlock(currentBlock), startIndexInBlock, lengthInBlock);
         read += lengthInBlock;
 
         startIndexInBlock = 0;
@@ -98,7 +128,7 @@ class MemoryContents {
       while (written < toWrite) {
         int lengthInBlock = (int) min((long) BLOCK_SIZE - (long) startIndexInBlock, (long) toWrite - (long) written);
 
-        src.get(this.blocks[currentBlock], startIndexInBlock, lengthInBlock);
+        src.get(this.getBlock(currentBlock), startIndexInBlock, lengthInBlock);
         written += lengthInBlock;
 
         startIndexInBlock = 0;
@@ -130,22 +160,27 @@ class MemoryContents {
   }
 
   private void ensureCapacity(long capacity) {
-    int blocksRequired;
-    if (capacity == 0L) {
-      blocksRequired = 1;
-    } else {
-      blocksRequired = (int) ((capacity - 1L)/ BLOCK_SIZE) + 1;
+    // if direct block is enough do nothing
+    if (capacity <= BLOCK_SIZE) {
+      return;
     }
-    if (blocksRequired > this.blocks.length) {
-      int newNumberOfBlocks = Math.max(this.blocks.length * 2, blocksRequired);
-      byte[][] newBlocks = new byte[newNumberOfBlocks][];
-      System.arraycopy(this.blocks, 0, newBlocks, 0, this.blocksAllocated);
-      this.blocks = newBlocks;
+
+    // lazily allocate indirect blocks
+    if (this.indirectBlocks == null) {
+      this.indirectBlocks = new byte[BLOCK_SIZE][];
     }
-    if (blocksRequired > this.blocksAllocated) {
-      for (int i = this.blocksAllocated; i < blocksRequired; ++i) {
-        this.blocks[i] = new byte[BLOCK_SIZE];
-        this.blocksAllocated += 1;
+
+    int blocksRequired = (int) ((capacity - 1L)/ BLOCK_SIZE); // consider already present direct block, don't add + 1
+
+    if (blocksRequired > BLOCK_SIZE) {
+      // FIXME implement double indirect addressing
+      throw new AssertionError("files bigger than 16GB not yet supported");
+    }
+
+    if (blocksRequired > this.indirectBlocksAllocated) {
+      for (int i = this.indirectBlocksAllocated; i < blocksRequired; ++i) {
+        this.indirectBlocks[i] = new byte[BLOCK_SIZE];
+        this.indirectBlocksAllocated += 1;
       }
     }
   }

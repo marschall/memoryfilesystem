@@ -1,7 +1,11 @@
 package com.github.marschall.memoryfilesystem;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
+import java.nio.channels.AsynchronousFileChannel;
+import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.AccessMode;
 import java.nio.file.CopyOption;
@@ -26,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Creates memory file systems instance.
@@ -199,13 +204,35 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
 
   @Override
-  public SeekableByteChannel newByteChannel(Path path,
-          Set<? extends OpenOption> options, FileAttribute<?>... attrs)
-                  throws IOException {
-
+  public SeekableByteChannel newByteChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
+    this.checkSupported(options);
     AbstractPath abstractPath = this.castPath(path);
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
     return memoryFileSystem.newByteChannel(abstractPath, options, attrs);
+  }
+
+  @Override
+  public FileChannel newFileChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
+    // TODO Auto-generated method stub
+    return super.newFileChannel(path, options, attrs);
+  }
+
+  @Override
+  public AsynchronousFileChannel newAsynchronousFileChannel(Path path, Set<? extends OpenOption> options, ExecutorService executor, FileAttribute<?>... attrs) throws IOException {
+    // TODO Auto-generated method stub
+    return super.newAsynchronousFileChannel(path, options, executor, attrs);
+  }
+
+  @Override
+  public InputStream newInputStream(Path path, OpenOption... options) throws IOException {
+    // TODO Auto-generated method stub
+    return super.newInputStream(path, options);
+  }
+  @
+  Override
+  public OutputStream newOutputStream(Path path, OpenOption... options) throws IOException {
+    // TODO Auto-generated method stub
+    return super.newOutputStream(path, options);
   }
 
 
@@ -290,6 +317,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   @Override
   public void checkAccess(Path path, AccessMode... modes) throws IOException {
+    this.checkSupported(modes);
     AbstractPath abstractPath = this.castPath(path);
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
     memoryFileSystem.checkAccess(abstractPath, modes);
@@ -330,6 +358,21 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   void close(MemoryFileSystem fileSystem) {
     String key = fileSystem.getKey();
     this.fileSystems.remove(key);
+  }
+
+  private void checkSupported(Set<? extends OpenOption> options)  {
+    // TODO implement
+  }
+
+  private void checkSupported(AccessMode... modes)  {
+    if (modes == null || modes.length == 0) {
+      return;
+    }
+    for (AccessMode mode : modes) {
+      if (!(mode == AccessMode.READ || mode == AccessMode.WRITE || mode == AccessMode.WRITE)) {
+        throw new UnsupportedOperationException("mode " + mode + " not supported");
+      }
+    }
   }
 
 }
