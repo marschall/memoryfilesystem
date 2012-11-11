@@ -70,6 +70,7 @@ final class BlockInputStream extends InputStream {
 
   @Override
   public int available() throws IOException {
+    this.checker.check();
     long available = this.memoryContents.size() - this.position.get();
     if (available > Integer.MAX_VALUE) {
       return Integer.MAX_VALUE;
@@ -117,11 +118,6 @@ final class BlockInputStream extends InputStream {
   //      this.position.set(this.markPositon);
   //    }
   //  }
-
-  @Override
-  public boolean markSupported() {
-    return true;
-  }
 
   @Override
   public int read() throws IOException {

@@ -2,6 +2,7 @@ package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_ENV;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.lessThan;
@@ -27,6 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -799,6 +801,40 @@ public class MemoryFileSystemTest {
 
     assertThat(slashA, lessThan(slashAA));
     assertThat(slashAA, greaterThan(slashA));
+  }
+
+  @Test
+  public void xattrs() throws IOException {
+    MemoryFileSystemBuilder builder = MemoryFileSystemBuilder.newEmpty().addFileAttributeView(UserDefinedFileAttributeView.class);
+    try (FileSystem fileSystem = builder.build("xtattry")) {
+      assertTrue(fileSystem.supportedFileAttributeViews().contains("user"));
+
+      Path path = fileSystem.getPath("meta");
+      Files.createFile(path);
+      UserDefinedFileAttributeView userAttributes = Files.getFileAttributeView(path, UserDefinedFileAttributeView.class);
+      assertThat(userAttributes.list(), empty());
+
+      userAttributes.write("meta-key", ByteBuffer.wrap(new byte[]{1, 2, 3}));
+      assertEquals(Collections.singletonList("meta-key"), userAttributes.list());
+      assertEquals(3, userAttributes.size("meta-key"));
+
+      byte[] readBack = new byte[5];
+      ByteBuffer buffer = ByteBuffer.wrap(readBack);
+      assertEquals(3, userAttributes.read("meta-key", buffer));
+
+      assertArrayEquals(new byte[]{1, 2, 3, 0, 0}, readBack);
+
+
+      userAttributes.delete("meta-key");
+      assertThat(userAttributes.list(), empty());
+
+      try {
+        userAttributes.read("wrong-key", buffer);
+        fail("there should be nothing under \"wrong-key\"");
+      } catch (IOException e) {
+        // should reach here
+      }
+    }
   }
 
   @Test

@@ -3,6 +3,7 @@ package com.github.marschall.memoryfilesystem;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.nio.channels.SeekableByteChannel;
@@ -785,7 +786,11 @@ class MemoryFileSystem extends FileSystem {
           }
           return System.identityHashCode(proxy);
         default:
-          return method.invoke(this.getView(), args);
+          try {
+            return method.invoke(this.getView(), args);
+          } catch (InvocationTargetException e) {
+            throw e.getCause();
+          }
       }
     }
 
