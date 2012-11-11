@@ -1,6 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -175,9 +176,24 @@ class MemoryFileSystem extends FileSystem {
 
   SeekableByteChannel newByteChannel(AbstractPath path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
     this.checker.check();
-
     MemoryFile file = this.getFile(path, options, attrs);
     return file.newChannel(options);
+  }
+
+
+  public InputStream newByteChannel(AbstractPath path, OpenOption... options) throws IOException {
+    this.checker.check();
+    Set<OpenOption> optionsSet;
+    if (options == null || options.length == 0) {
+      optionsSet = Collections.emptySet();
+    } else {
+      optionsSet = new HashSet<>(options.length);
+      for (OpenOption option : options) {
+        optionsSet.add(option);
+      }
+    }
+    MemoryFile file = this.getFile(path, optionsSet);
+    return file.newInputStream(optionsSet);
   }
 
   private MemoryFile getFile(final AbstractPath path, final Set<? extends OpenOption> options, final FileAttribute<?>... attrs) throws IOException {
@@ -810,5 +826,6 @@ class MemoryFileSystem extends FileSystem {
     WRITE;
 
   }
+
 
 }

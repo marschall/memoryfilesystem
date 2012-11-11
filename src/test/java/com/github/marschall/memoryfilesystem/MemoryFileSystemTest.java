@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -15,6 +16,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
@@ -44,6 +46,25 @@ public class MemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path path = fileSystem.getPath("/");
     Files.setAttribute(path, "isDirectory", false);
+  }
+
+  @Test
+  public void inputStream() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path path = fileSystem.getPath("test");
+    try (SeekableByteChannel channel = Files.newByteChannel(path, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
+      channel.write(ByteBuffer.wrap(new byte[]{1, 2, 3}));
+    }
+    try (InputStream input = Files.newInputStream(path)) {
+      byte[] data = new byte[5];
+      int start = 1;
+      int read = 0;
+      while ((read = input.read(data, start, 555)) != -1) {
+        start += read;
+      }
+      assertEquals(4, start); // the next read should start at 4
+      assertArrayEquals(new byte[]{0, 1, 2, 3, 0},  data);
+    }
   }
 
   @Test

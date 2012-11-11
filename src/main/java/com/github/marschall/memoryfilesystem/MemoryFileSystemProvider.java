@@ -225,8 +225,10 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   @Override
   public InputStream newInputStream(Path path, OpenOption... options) throws IOException {
-    // TODO Auto-generated method stub
-    return super.newInputStream(path, options);
+    this.checkSupported(options);
+    AbstractPath abstractPath = this.castPath(path);
+    MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
+    return memoryFileSystem.newByteChannel(abstractPath, options);
   }
 
   @Override
@@ -358,6 +360,10 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   void close(MemoryFileSystem fileSystem) {
     String key = fileSystem.getKey();
     this.fileSystems.remove(key);
+  }
+
+  private void checkSupported(OpenOption... options)  {
+    // TODO implement
   }
 
   private void checkSupported(Set<? extends OpenOption> options)  {

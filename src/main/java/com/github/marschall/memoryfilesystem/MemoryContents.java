@@ -4,6 +4,7 @@ import static com.github.marschall.memoryfilesystem.AutoReleaseLock.autoRelease;
 import static java.lang.Math.min;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -60,6 +61,10 @@ class MemoryContents {
     }
     this.size = 0L;
     // only the single direct block
+  }
+
+  InputStream newInputStream() {
+    return new BlockInputStream(this);
   }
 
   SeekableByteChannel newChannel(boolean readable, boolean writable) {
