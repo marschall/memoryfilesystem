@@ -228,13 +228,15 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     this.checkSupported(options);
     AbstractPath abstractPath = this.castPath(path);
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
-    return memoryFileSystem.newByteChannel(abstractPath, options);
+    return memoryFileSystem.newInputStream(abstractPath, options);
   }
 
   @Override
   public OutputStream newOutputStream(Path path, OpenOption... options) throws IOException {
-    // TODO Auto-generated method stub
-    return super.newOutputStream(path, options);
+    this.checkSupported(options);
+    AbstractPath abstractPath = this.castPath(path);
+    MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
+    return memoryFileSystem.newOutputStream(abstractPath, options);
   }
 
 

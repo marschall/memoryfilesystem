@@ -14,6 +14,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.NonReadableChannelException;
 import java.nio.channels.SeekableByteChannel;
@@ -22,6 +23,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Iterator;
@@ -32,13 +34,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 public class FileSystemComptiblity {
-
-  @Test
-  public void notExistingView() throws IOException {
-    Path path = Paths.get("/foo/bar/does/not/exist");
-    BasicFileAttributeView attributeView = Files.getFileAttributeView(path, BasicFileAttributeView.class);
-    assertNotNull(attributeView);
-  }
 
   @Test
   public void empty() {

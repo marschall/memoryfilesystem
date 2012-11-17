@@ -2,6 +2,7 @@ package com.github.marschall.memoryfilesystem;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
@@ -90,6 +91,22 @@ class MemoryFile extends MemoryEntry {
     // TODO DELETE_ON_CLOSE and NOFOLLOW_LINKS
     // TODO SYNC DSYNC
     return this.contents.newInputStream();
+  }
+
+  OutputStream newOutputStream(Set<? extends OpenOption> options) {
+    // TODO check more options
+    // TODO DELETE_ON_CLOSE and NOFOLLOW_LINKS
+    // TODO SYNC DSYNC
+    boolean append = options.contains(StandardOpenOption.APPEND);
+    if (append) {
+      return this.contents.newAppendingOutputStream();
+    } else {
+      boolean truncate = options.contains(StandardOpenOption.TRUNCATE_EXISTING);
+      if (truncate) {
+        this.contents.truncate(0L);
+      }
+      return this.contents.newOutputStream();
+    }
   }
 
   SeekableByteChannel newChannel(Set<? extends OpenOption> options) {

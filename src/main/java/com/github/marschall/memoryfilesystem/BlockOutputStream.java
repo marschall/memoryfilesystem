@@ -2,34 +2,26 @@ package com.github.marschall.memoryfilesystem;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.concurrent.atomic.AtomicLong;
 
-final class BlockOutputStream extends OutputStream {
+abstract class BlockOutputStream extends OutputStream {
 
-  private final MemoryContents memoryContents;
-  private final ClosedStreamChecker checker;
-  private final AtomicLong position;
+  final MemoryContents memoryContents;
+  final ClosedStreamChecker checker;
+
 
   BlockOutputStream(MemoryContents memoryContents) {
     this.memoryContents = memoryContents;
     this.checker = new ClosedStreamChecker();
-    this.position = new AtomicLong(0L);
   }
 
   @Override
   public void write(int b) throws IOException {
-    // TODO Auto-generated method stub
-  }
-
-  @Override
-  public void write(byte[] b, int off, int len) throws IOException {
-    // TODO Auto-generated method stub
-    super.write(b, off, len);
+    byte[] data = new byte[]{(byte) b};
+    this.write(data, 0, 1);
   }
 
   @Override
   public void flush() throws IOException {
-    // TODO Auto-generated method stub
     super.flush();
     // TODO atime, mtime
   }
@@ -37,10 +29,7 @@ final class BlockOutputStream extends OutputStream {
   @Override
   public void close() throws IOException {
     this.checker.close();
-
     // TODO atime, mtime
   }
-
-
 
 }

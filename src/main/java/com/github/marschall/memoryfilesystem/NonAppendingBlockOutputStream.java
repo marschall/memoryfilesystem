@@ -1,0 +1,24 @@
+package com.github.marschall.memoryfilesystem;
+
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicLong;
+
+final class NonAppendingBlockOutputStream extends BlockOutputStream {
+
+  private final AtomicLong position;
+
+
+  NonAppendingBlockOutputStream(MemoryContents memoryContents) {
+    super(memoryContents);
+    this.position = new AtomicLong(0L);
+  }
+
+
+  @Override
+  public void write(byte[] b, int off, int len) throws IOException {
+    this.checker.check();
+    this.memoryContents.write(b, this.position.get(), off, len);
+    this.position.getAndAdd(len);
+  }
+
+}

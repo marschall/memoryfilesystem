@@ -5,6 +5,7 @@ import static java.lang.Math.min;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -65,6 +66,14 @@ class MemoryContents {
 
   InputStream newInputStream() {
     return new BlockInputStream(this);
+  }
+
+  OutputStream newOutputStream() {
+    return new NonAppendingBlockOutputStream(this);
+  }
+
+  OutputStream newAppendingOutputStream() {
+    return new AppendingBlockOutputStream(this);
   }
 
   SeekableByteChannel newChannel(boolean readable, boolean writable) {
@@ -172,10 +181,42 @@ class MemoryContents {
     }
   }
 
+  int write(byte[] src, long position, int off, int len) {
+    try (AutoRelease lock = this.writeLock()) {
+      this.ensureCapacity(position + len);
+
+      int toWrite = min(len, Integer.MAX_VALUE);
+      int currentBlock = (int) (position / BLOCK_SIZE);
+      int startIndexInBlock = (int) (position - ((long) currentBlock * (long) BLOCK_SIZE));
+      int written = 0;
+      while (written < toWrite) {
+        int lengthInBlock = (int) min((long) BLOCK_SIZE - (long) startIndexInBlock, (long) toWrite - (long) written);
+
+        byte[] block = this.getBlock(currentBlock);
+        System.arraycopy(src, off + written, block, startIndexInBlock, lengthInBlock);
+        written += lengthInBlock;
+
+        startIndexInBlock = 0;
+        currentBlock += 1;
+      }
+      if (position > this.size) {
+        // REVIEW, possibility to fill with random data
+        this.size = position;
+      }
+      this.size += written;
+      return written;
+    }
+  }
 
   int writeAtEnd(ByteBuffer src) {
     try (AutoRelease lock = this.writeLock()) {
       return this.write(src, this.size);
+    }
+  }
+
+  int writeAtEnd(byte[] src, int off, int len) {
+    try (AutoRelease lock = this.writeLock()) {
+      return this.write(src, this.size, off, len);
     }
   }
 
