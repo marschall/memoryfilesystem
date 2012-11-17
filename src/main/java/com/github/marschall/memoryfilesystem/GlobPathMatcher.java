@@ -15,7 +15,7 @@ final class GlobPathMatcher implements PathMatcher {
     this.patternPath = patternPath;
     List<Pattern> patterns = new ArrayList<>(patternPath.getNameCount());
     for (int i = 0; i < patternPath.getNameCount(); ++i) {
-      patterns.add(this.convertToPattern(((RelativePath) patternPath).getNameElement(i)));
+      patterns.add(this.convertToPattern(((ElementPath) patternPath).getNameElement(i)));
     }
   }
 
@@ -25,8 +25,18 @@ final class GlobPathMatcher implements PathMatcher {
     }
     Stream stream = new Stream(element);
     StringBuilder buffer = new StringBuilder();
+
+    this.parseGeneric(stream, buffer, ExitHandler.EMPTY, element);
+    // TODO Pattern#CANON_EQ ?
+    return Pattern.compile(buffer.toString(), Pattern.UNICODE_CASE);
+  }
+
+  private char parseGeneric(Stream stream, StringBuilder buffer, ExitHandler exitHandler, String element) {
     while (stream.hasNext()) {
       char next = stream.next();
+      if (exitHandler.isExit(next)) {
+        return next;
+      }
       switch (next) {
         case '*':
           buffer.append(".*");
@@ -46,38 +56,101 @@ final class GlobPathMatcher implements PathMatcher {
         default:
       }
     }
-    // TODO Pattern#CANON_EQ ?
-    return Pattern.compile(buffer.toString(), Pattern.UNICODE_CASE);
+    return exitHandler.endOfStream(element);
   }
 
 
   private void appendSafe(char c, StringBuilder buffer) {
-    //TODO check for regex safe
+    if (c == '[' || c == ']' || c == '^' || c == '$' || c == '\\'
+            || c == '{' || c == '}'  || c == '.' ) {
+      buffer.append('\\');
+    }
     buffer.append(c);
   }
 
   private void parseGroup(Stream stream, StringBuilder buffer, String element) {
-    while (stream.hasNext()) {
-      char next = stream.next();
-      if (next == '}') {
-        // TODO build group
-      }
-      // TODO parse default
+    List<String> groups = new ArrayList<>(4);
+    StringBuilder groupBuffer = new StringBuilder();
+
+    while (this.parseGeneric(stream, groupBuffer, ExitHandler.GROUP, element) != '}') {
+      groups.add(groupBuffer.toString());
+      groupBuffer = new StringBuilder(groupBuffer.length());
     }
-    throw new PatternSyntaxException("{ must be closed by }", element, element.length() - 1);
+    groups.add(groupBuffer.toString());
+
+    boolean first = true;
+    for (String group : groups) {
+      if (!first) {
+        buffer.append('|');
+        first = false;
+      }
+      buffer.append('(');
+      buffer.append(group);
+      buffer.append(')');
+
+    }
+    buffer.append(')');
 
   }
 
   private void parseRange(Stream stream, StringBuilder buffer, String element) {
-    while (stream.hasNext()) {
-      char next = stream.next();
-      if (next == ']') {
-        // TODO build rangea
-      }
-      // TODO parse default
-    }
+    StringBuilder rangeBuffer = new StringBuilder();
+    this.parseGeneric(stream, rangeBuffer, ExitHandler.RANGE, element);
 
-    throw new PatternSyntaxException("[ must be closed by ]", element, element.length() - 1);
+    buffer.append('[');
+    // TODO escape, think about ignoring -
+    buffer.append(rangeBuffer);
+    buffer.append(']');
+  }
+
+  enum ExitHandler {
+
+    EMPTY {
+
+      @Override
+      boolean isExit(char c) {
+        return false;
+      }
+
+      @Override
+      char endOfStream(String element) {
+        return 0; // doesn't matter, will be ignored
+      }
+
+    },
+
+    GROUP {
+
+      @Override
+      boolean isExit(char c) {
+        return c == ',' || c == '}';
+      }
+
+      @Override
+      char endOfStream(String element) {
+        throw new PatternSyntaxException("expected }", element, element.length() - 1);
+      }
+
+    },
+
+    RANGE {
+
+      @Override
+      boolean isExit(char c) {
+        return c == ']';
+      }
+
+      @Override
+      char endOfStream(String element) {
+        throw new PatternSyntaxException("expected ]", element, element.length() - 1);
+      }
+
+    };
+
+    abstract boolean isExit(char c);
+
+    abstract char endOfStream(String element);
+
   }
 
   static final class Stream {

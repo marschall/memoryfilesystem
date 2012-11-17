@@ -8,7 +8,6 @@ import java.nio.file.PathMatcher;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,7 +16,6 @@ import org.junit.runners.Parameterized.Parameters;
 
 
 @RunWith(Parameterized.class)
-@Ignore("not yet implemented")
 public class GlobPathMatcherTest {
 
   @Rule
