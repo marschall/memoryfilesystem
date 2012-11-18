@@ -51,6 +51,16 @@ public class MemoryFileSystemTest {
   }
 
   @Test
+  public void dontDeleteOpenFile() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path path = fileSystem.getPath("test");
+    try (SeekableByteChannel channel = Files.newByteChannel(path, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
+      Files.delete(path);
+      fail("you shound't be able to delete a file wile it's open");
+    }
+  }
+
+  @Test
   public void inputStream() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path path = fileSystem.getPath("test");
