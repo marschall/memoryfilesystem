@@ -5,7 +5,7 @@
   <groupId>com.github.marschall</groupId>
   <artifactId>memoryfilesystem</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <packaging>bundle</packaging>
+  <packaging>jar</packaging>
   <name>Memory File System</name>
   <description>An in memory implementation of a JSR-203 file system.</description>
   <inceptionYear>2011</inceptionYear>
@@ -27,7 +27,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit-dep</artifactId>
-      <version>4.10</version>
+      <version>4.11</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
