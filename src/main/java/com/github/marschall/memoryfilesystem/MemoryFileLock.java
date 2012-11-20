@@ -7,19 +7,19 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-final class BlockFileLock extends FileLock {
+final class MemoryFileLock extends FileLock {
 
   private final LockSet lockSet;
 
   private final AtomicBoolean valid;
 
-  BlockFileLock(FileChannel channel, long position, long size, boolean shared, LockSet lockSet) {
+  MemoryFileLock(FileChannel channel, long position, long size, boolean shared, LockSet lockSet) {
     super(channel, position, size, shared);
     this.lockSet = lockSet;
     this.valid = new AtomicBoolean(true);
   }
 
-  BlockFileLock(AsynchronousFileChannel channel, long position, long size, boolean shared, LockSet lockSet) {
+  MemoryFileLock(AsynchronousFileChannel channel, long position, long size, boolean shared, LockSet lockSet) {
     super(channel, position, size, shared);
     this.lockSet = lockSet;
     this.valid = new AtomicBoolean(true);

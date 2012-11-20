@@ -264,9 +264,20 @@ class MemoryFileSystem extends FileSystem {
 
   }
 
-  DirectoryStream<Path> newDirectoryStream(AbstractPath abstractPath, Filter<? super Path> filter) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
+  DirectoryStream<Path> newDirectoryStream(final AbstractPath abstractPath, final Filter<? super Path> filter) throws IOException {
+    final AbstractPath absolutePath = (AbstractPath) abstractPath.toAbsolutePath();
+    MemoryDirectory root = this.getRootDirectory(absolutePath);
+    return this.withReadLockDo(root, abstractPath, false, new MemoryEntryBlock<DirectoryStream<Path>>() {
+
+      @Override
+      public DirectoryStream<Path> value(MemoryEntry entry) throws IOException {
+        if (!(entry instanceof MemoryDirectory)) {
+          throw new NotDirectoryException(abstractPath.toString());
+        }
+        MemoryDirectory directory = (MemoryDirectory) entry;
+        return directory.newDirectoryStream(absolutePath, filter);
+      }
+    });
   }
 
 
@@ -298,9 +309,9 @@ class MemoryFileSystem extends FileSystem {
 
   private void createFile(final AbstractPath path, final MemoryEntryCreator creator) throws IOException {
     this.checker.check();
-    MemoryDirectory rootDirectory = this.getRootDirectory(path);
-
     final ElementPath absolutePath = (ElementPath) path.toAbsolutePath();
+    MemoryDirectory rootDirectory = this.getRootDirectory(absolutePath);
+
     final Path parent = absolutePath.getParent();
 
     this.withWriteLockOnLastDo(rootDirectory, (AbstractPath) parent, true, new MemoryEntryBlock<Void>() {

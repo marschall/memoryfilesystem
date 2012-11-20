@@ -1,9 +1,9 @@
 package com.github.marschall.memoryfilesystem;
 
 import java.io.IOException;
-import java.nio.channels.AsynchronousCloseException;
 import java.nio.channels.FileLock;
 import java.nio.channels.FileLockInterruptionException;
+import java.nio.channels.OverlappingFileLockException;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.TreeMap;
@@ -53,23 +53,15 @@ final class LockSet {
       if (Thread.currentThread().isInterrupted()) {
         throw new FileLockInterruptionException();
       }
-
       FileLock returnValue = this.tryLock(lock);
-      while (returnValue == null) {
-        try {
-          this.removed.await();
-        } catch (InterruptedException e) {
-          throw new FileLockInterruptionException();
-        }
-        if (!lock.channel().isOpen()) {
-          throw new AsynchronousCloseException();
-        }
+      if (returnValue == null) {
+        throw new OverlappingFileLockException();
       }
       return returnValue;
     }
   }
 
-  void remove(BlockFileLock lock) {
+  void remove(MemoryFileLock lock) {
     try (AutoRelease autoRelease = AutoReleaseLock.autoRelease(this.lock)) {
       // no need to check for return value because FileLock#release
       // can be invoked several times from multiple threads

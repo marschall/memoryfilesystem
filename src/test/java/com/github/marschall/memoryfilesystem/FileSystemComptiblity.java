@@ -14,17 +14,15 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.NonReadableChannelException;
 import java.nio.channels.SeekableByteChannel;
+import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Iterator;
 import java.util.Map;
@@ -39,6 +37,15 @@ public class FileSystemComptiblity {
   public void empty() {
     Path path = Paths.get("");
     System.out.println(path.toUri());
+  }
+
+  @Test
+  public void directoryStream() throws IOException {
+    try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(Paths.get("/Users/marschall"))) {
+      for (Path path : directoryStream) {
+        System.out.printf("%s %s%n", path, path.isAbsolute());
+      }
+    }
   }
 
   //  @Test

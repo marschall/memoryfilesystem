@@ -21,18 +21,24 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
+import java.nio.file.DirectoryStream;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystem;
+import java.nio.file.FileSystemLoopException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.PatternSyntaxException;
 
 import org.junit.Rule;
@@ -43,11 +49,83 @@ public class MemoryFileSystemTest {
   @Rule
   public final FileSystemRule rule = new FileSystemRule();
 
+  @Test
+  public void directoryStream() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Files.createFile(fileSystem.getPath("a.java"));
+    Files.createFile(fileSystem.getPath("a.cpp"));
+    Files.createFile(fileSystem.getPath("a.hpp"));
+    Files.createFile(fileSystem.getPath("a.c"));
+    Files.createFile(fileSystem.getPath("a.h"));
+
+    Files.createDirectory(fileSystem.getPath("d1"));
+    Files.createDirectory(fileSystem.getPath("d2"));
+
+    try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(fileSystem.getPath("/"))) {
+      List<Path> actual = asList(directoryStream.iterator());
+      List<Path> expected = Arrays.asList(
+              fileSystem.getPath("/a.java"),
+              fileSystem.getPath("/a.cpp"),
+              fileSystem.getPath("/a.hpp"),
+              fileSystem.getPath("/a.c"),
+              fileSystem.getPath("/a.h"),
+              fileSystem.getPath("/d1"),
+              fileSystem.getPath("/d2"));
+
+      assertEquals(expected.size(), actual.size());
+
+      Set<Path> actualSet = new HashSet<>(actual);
+      assertEquals(actualSet.size(), actual.size());
+      Set<Path> expectedSet = new HashSet<>(expected);
+
+      assertEquals(expectedSet, actualSet);
+    }
+
+    try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(fileSystem.getPath("/"), "*.{java,cpp}")) {
+      List<Path> actual = asList(directoryStream.iterator());
+      List<Path> expected = Arrays.asList(
+              fileSystem.getPath("/a.java"),
+              fileSystem.getPath("/a.cpp"));
+
+      assertEquals(expected.size(), actual.size());
+
+      Set<Path> actualSet = new HashSet<>(actual);
+      assertEquals(actualSet.size(), actual.size());
+      Set<Path> expectedSet = new HashSet<>(expected);
+
+      assertEquals(expectedSet, actualSet);
+    }
+  }
+
+  static <T> List<T> asList(Iterator<T> iterator) {
+    List<T> list = new ArrayList<>();
+    while (iterator.hasNext()) {
+      list.add(iterator.next());
+    }
+    return list;
+  }
+
+  static <T> List<T> asList(Iterable<T> iterable) {
+    return asList(iterable.iterator());
+  }
+
   @Test(expected = IllegalArgumentException.class)
   public void setDirectory() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path path = fileSystem.getPath("/");
     Files.setAttribute(path, "isDirectory", false);
+  }
+
+
+  @Test(expected = FileSystemLoopException.class)
+  public void symbolicLinkLoop() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path a = fileSystem.getPath("/a");
+    Path b = fileSystem.getPath("/b");
+    Files.createSymbolicLink(a, b);
+    Files.createSymbolicLink(b, a);
+    a.toRealPath();
   }
 
   @Test

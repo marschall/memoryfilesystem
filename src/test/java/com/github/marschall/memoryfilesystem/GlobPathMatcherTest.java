@@ -25,7 +25,7 @@ public class GlobPathMatcherTest {
   private final boolean expected;
   private final String pattern;
 
-  public GlobPathMatcherTest(String path, String pattern, boolean expected) {
+  public GlobPathMatcherTest(String pattern, String path, boolean expected) {
     this.p = path;
     this.expected = expected;
     this.pattern = pattern;

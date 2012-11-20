@@ -1,12 +1,17 @@
 package com.github.marschall.memoryfilesystem;
 
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttributeView;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -27,6 +32,13 @@ class MemoryDirectory extends MemoryEntry {
     this.entries = new HashMap<>();
     this.attributes = new MemoryDirectoryFileAttributes();
     this.basicFileAttributeView = new MemoryDirectoryFileAttributesView();
+  }
+
+  DirectoryStream<Path> newDirectoryStream(Path basePath, Filter<? super Path> filter) {
+    // REVIEW simply copying is not super scalable
+    // REVIEW eager filtering might be nice
+    List<String> elements = new ArrayList<>(this.entries.keySet());
+    return new MemoryDirectoryStream(basePath, filter, elements);
   }
 
   @Override

@@ -8,7 +8,6 @@ import java.nio.file.PathMatcher;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,7 +15,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
-@Ignore("not yet implemented")
 public class RegexPathMatcherTest {
 
   @Rule
@@ -26,7 +24,7 @@ public class RegexPathMatcherTest {
   private final boolean expected;
   private final String pattern;
 
-  public RegexPathMatcherTest(String path, String pattern, boolean expected) {
+  public RegexPathMatcherTest(String pattern, String path, boolean expected) {
     this.p = path;
     this.expected = expected;
     this.pattern = pattern;
@@ -58,28 +56,28 @@ public class RegexPathMatcherTest {
             { ".*\\..*", "java.", true },
             { ".*\\..*", "java", false },
 
-            { ".*\\.(java)|(class)", "GlobPathMatcherTest.java", true },
-            { ".*\\.(java)|(class)", ".java", true },
-            { ".*\\.(java)|(class)", ".jav.java", true },
-            { ".*\\.(java)|(class)", ".jav.java", true },
-            { ".*\\.(java)|(class)", ".jav", false },
-            { ".*\\.(java)|(class)", "java", false },
-            { ".*\\.(java)|(class)", "GlobPathMatcherTest.class", true },
-            { ".*\\.(java)|(class)", ".class", true },
-            { ".*\\.(java)|(class)", ".clas.class", true },
-            { ".*\\.(java)|(class)", ".clas.class", true },
-            { ".*\\.(java)|(class)", ".clas", false },
-            { ".*\\.(java)|(class)", "class", false },
+            { ".*\\.((java)|(class))", "GlobPathMatcherTest.java", true },
+            { ".*\\.((java)|(class))", ".java", true },
+            { ".*\\.((java)|(class))", ".jav.java", true },
+            { ".*\\.((java)|(class))", ".jav.java", true },
+            { ".*\\.((java)|(class))", ".jav", false },
+            { ".*\\.((java)|(class))", "java", false },
+            { ".*\\.((java)|(class))", "GlobPathMatcherTest.class", true },
+            { ".*\\.((java)|(class))", ".class", true },
+            { ".*\\.((java)|(class))", ".clas.class", true },
+            { ".*\\.((java)|(class))", ".clas.class", true },
+            { ".*\\.((java)|(class))", ".clas", false },
+            { ".*\\.((java)|(class))", "class", false },
 
             { "foo\\..", "foo.", false },
             { "foo\\..", "foo.?.", false },
             { "foo\\..", "foo.?", true },
             { "foo\\..", "foo.f", true },
 
-            { "/home/.*/.*", "/home/gus/data", true },
-            { "/home/.*/.*", "/home/gus/.data", true },
-            { "/home/.*/.*", "/home/gus/data/backup", false },
-            { "/home/.*/.*", "/home/gus", false },
+            { "/home/[^/]*/[^/]*", "/home/gus/data", true },
+            { "/home/[^/]*/[^/]*", "/home/gus/.data", true },
+            { "/home/[^/]*/[^/]*", "/home/gus/data/backup", false },
+            { "/home/[^/]*/[^/]*", "/home/gus", false },
 
             { "/home/.*", "/home/gus/data", true },
             { "/home/.*", "/home/gus", true },

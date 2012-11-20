@@ -1,8 +1,12 @@
 package com.github.marschall.memoryfilesystem;
 
+import static java.util.regex.Pattern.CASE_INSENSITIVE;
+import static java.util.regex.Pattern.UNICODE_CASE;
+
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -11,24 +15,86 @@ final class GlobPathMatcher implements PathMatcher {
 
   private final Path patternPath;
 
+  private final List<Match> matches;
+
   GlobPathMatcher(Path patternPath) {
     this.patternPath = patternPath;
-    List<Pattern> patterns = new ArrayList<>(patternPath.getNameCount());
+    this.matches = new ArrayList<>(patternPath.getNameCount());
     for (int i = 0; i < patternPath.getNameCount(); ++i) {
-      patterns.add(this.convertToPattern(((ElementPath) patternPath).getNameElement(i)));
+      this.matches.add(this.convertToMatch(((ElementPath) patternPath).getNameElement(i)));
     }
   }
 
-  private Pattern convertToPattern(String element) {
+  @Override
+  public boolean matches(Path path) {
+    if (path.isAbsolute() != this.patternPath.isAbsolute()) {
+      return false;
+    }
+    ElementPath elementPath = (ElementPath) path;
+    return this.matches(elementPath.getNameElements(), this.matches);
+  }
+
+  private boolean matches(List<String> elements, List<Match> matches) {
+    if (elements.isEmpty()) {
+      for (Match match : matches) {
+        if (!match.isFlexible()) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    String element = elements.get(0);
+    if (elements.size() == 1) {
+      for (int i = 0; i < matches.size(); ++i) {
+        Match match = matches.get(i);
+        if (!match.isFlexible()) {
+          if (!match.matches(element)) {
+            return false;
+          } else if (i == matches.size() - 1) {
+            return true;
+          } else {
+            List<Match> remainingMatches = matches.subList(i + 1, matches.size());
+            return this.matches(Collections.<String>emptyList(), remainingMatches);
+          }
+        }
+      }
+    }
+
+    if (matches.isEmpty()) {
+      return false;
+    }
+
+    Match firstMatch = matches.get(0);
+    if (!firstMatch.isFlexible()) {
+      if (firstMatch.matches(element) && matches.size() > 1) {
+        return this.matches(elements.subList(1, elements.size()), matches.subList(1, matches.size()));
+      } else {
+        return false;
+      }
+    } else {
+      List<String> remainingElements = elements.subList(1, elements.size());
+      return this.matches(remainingElements, matches)
+              || this.matches(remainingElements, matches.subList(1, matches.size()));
+    }
+
+  }
+
+  static String name() {
+    return "glob";
+  }
+
+  private Match convertToMatch(String element) {
     if (element.equals("**")) {
-      // TODO rubber
+      return FlexibleMatch.INSTANCE;
     }
     Stream stream = new Stream(element);
     StringBuilder buffer = new StringBuilder();
 
     this.parseGeneric(stream, buffer, ExitHandler.EMPTY, element);
     // TODO Pattern#CANON_EQ ?
-    return Pattern.compile(buffer.toString(), Pattern.UNICODE_CASE);
+    Pattern pattern = Pattern.compile(buffer.toString(), CASE_INSENSITIVE | UNICODE_CASE);
+    return new PatternMatch(pattern);
   }
 
   private char parseGeneric(Stream stream, StringBuilder buffer, ExitHandler exitHandler, String element) {
@@ -46,23 +112,26 @@ final class GlobPathMatcher implements PathMatcher {
           break;
         case '[':
           this.parseRange(stream, buffer, element);
+          break;
         case '{':
           this.parseGroup(stream, buffer, element);
+          break;
         case '\\':
           if (!stream.hasNext()) {
             throw new PatternSyntaxException("\\must be followed by content", element, element.length() - 1);
           }
           buffer.append('\\').append(stream.next());
+          break;
         default:
+          this.appendSafe(next, buffer);
+          break;
       }
     }
     return exitHandler.endOfStream(element);
   }
 
-
   private void appendSafe(char c, StringBuilder buffer) {
-    if (c == '[' || c == ']' || c == '^' || c == '$' || c == '\\'
-            || c == '{' || c == '}'  || c == '.' ) {
+    if (c == '^' || c == '$' || c == '.' ) {
       buffer.append('\\');
     }
     buffer.append(c);
@@ -79,15 +148,16 @@ final class GlobPathMatcher implements PathMatcher {
     groups.add(groupBuffer.toString());
 
     boolean first = true;
+    buffer.append('(');
     for (String group : groups) {
       if (!first) {
         buffer.append('|');
+      } else {
         first = false;
       }
       buffer.append('(');
       buffer.append(group);
       buffer.append(')');
-
     }
     buffer.append(')');
 
@@ -173,20 +243,61 @@ final class GlobPathMatcher implements PathMatcher {
       return value;
     }
 
+  }
+
+  interface Match {
+
+    boolean isFlexible();
+
+    boolean matches(String element);
 
   }
 
-  @Override
-  public boolean matches(Path path) {
-    if (!path.isAbsolute() == this.patternPath.isAbsolute()) {
+  enum FlexibleMatch implements Match {
+
+    INSTANCE;
+
+    @Override
+    public boolean isFlexible() {
+      return true;
+    }
+
+    @Override
+    public boolean matches(String element) {
+      return true;
+    }
+
+    @Override
+    public String toString() {
+      return "**";
+    }
+
+  }
+
+  static final class PatternMatch implements Match {
+
+    private final Pattern pattern;
+
+    PatternMatch(Pattern pattern) {
+      this.pattern = pattern;
+    }
+
+    @Override
+    public boolean isFlexible() {
       return false;
     }
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
+
+    @Override
+    public boolean matches(String element) {
+      return this.pattern.matcher(element).matches();
+    }
+
+    @Override
+    public String toString() {
+      return this.pattern.toString();
+    }
+
   }
 
-  static String name() {
-    return "glob";
-  }
 
 }
