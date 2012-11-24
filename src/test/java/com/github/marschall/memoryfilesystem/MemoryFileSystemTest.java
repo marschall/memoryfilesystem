@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileAlreadyExistsException;
@@ -48,8 +49,64 @@ import org.junit.Test;
 
 public class MemoryFileSystemTest {
 
+  // spawn more tree blocks
+  private static final int SAMPLE_ITERATIONS = 1000;
+
+  private static final byte[] SAMPLE_DATA = new byte[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+
   @Rule
   public final FileSystemRule rule = new FileSystemRule();
+
+  @Test
+  public void trasferFrom() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path from = fileSystem.getPath("from.txt");
+    Path to = fileSystem.getPath("to.txt");
+    this.writeBigContents(from);
+
+    long expectedSize = SAMPLE_ITERATIONS * SAMPLE_DATA.length;
+    assertEquals(expectedSize, Files.size(from));
+
+    try (
+            FileChannel fromChannel = FileChannel.open(from, StandardOpenOption.READ);
+            FileChannel toChannel = FileChannel.open(to, StandardOpenOption.WRITE, StandardOpenOption.CREATE_NEW);) {
+      long trasferred = fromChannel.transferTo(0, expectedSize, toChannel);
+      assertEquals(expectedSize, trasferred);
+    }
+    assertEquals(expectedSize, Files.size(to));
+  }
+
+  @Test
+  public void trasferTo() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path from = fileSystem.getPath("from.txt");
+    Path to = fileSystem.getPath("to.txt");
+    this.writeBigContents(from);
+
+    long expectedSize = SAMPLE_ITERATIONS * SAMPLE_DATA.length;
+    assertEquals(expectedSize, Files.size(from));
+
+    try (
+            FileChannel fromChannel = FileChannel.open(from, StandardOpenOption.READ);
+            FileChannel toChannel = FileChannel.open(to, StandardOpenOption.WRITE, StandardOpenOption.CREATE_NEW);) {
+      long trasferred = toChannel.transferFrom(fromChannel, 0, expectedSize);
+      assertEquals(expectedSize, trasferred);
+    }
+    assertEquals(expectedSize, Files.size(to));
+
+  }
+
+  private void writeBigContents(Path path) throws IOException {
+    try (SeekableByteChannel channel = Files.newByteChannel(path, StandardOpenOption.WRITE, StandardOpenOption.CREATE_NEW)) {
+      ByteBuffer src = ByteBuffer.wrap(SAMPLE_DATA);
+      for (int i = 0; i < SAMPLE_ITERATIONS; i++) {
+        src.rewind();
+        channel.write(src);
+      }
+    }
+  }
 
   @Test
   public void directoryStream() throws IOException {

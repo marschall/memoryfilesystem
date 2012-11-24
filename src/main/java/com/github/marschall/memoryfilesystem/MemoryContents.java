@@ -121,7 +121,8 @@ class MemoryContents {
       while (read < toRead) {
         int lengthInBlock = (int) min((long) BLOCK_SIZE - (long) startIndexInBlock, toRead - read);
 
-        dst.put(this.getBlock(currentBlock), startIndexInBlock, lengthInBlock);
+        byte[] block = this.getBlock(currentBlock);
+        dst.put(block, startIndexInBlock, lengthInBlock);
         read += lengthInBlock;
 
         startIndexInBlock = 0;
@@ -158,22 +159,81 @@ class MemoryContents {
     }
   }
 
-  long transferFrom(ReadableByteChannel src, long position, long count) {
+  long transferFrom(ReadableByteChannel src, long position, long count) throws IOException {
     try (AutoRelease lock = this.writeLock()) {
       this.ensureCapacity(position + count);
       long transferred = 0L;
       long toTransfer = min(count, this.size - position);
 
+      int currentBlock = (int) (position / BLOCK_SIZE);
+      int startIndexInBlock = (int) (position - ((long) currentBlock * (long) BLOCK_SIZE));
+      long written = 0L;
+      while (written < toTransfer) {
+        int lengthInBlock = (int) min((long) BLOCK_SIZE - (long) startIndexInBlock, toTransfer - written);
+
+        byte[] block = this.getBlock(currentBlock);
+        // We can either allocate a new ByteBuffer for every iteration or keep
+        // the buffer and copy the contents into it.
+        // Since ByteBuffer objects are quite small and don't copy the contents
+        // of the backing array allocating a ByteBuffer is probably cheaper.
+        ByteBuffer buffer = ByteBuffer.wrap(block, startIndexInBlock, lengthInBlock);
+        readFully(buffer, src, lengthInBlock);
+        written += lengthInBlock;
+
+        startIndexInBlock = 0;
+        currentBlock += 1;
+      }
+      if (position > this.size) {
+        // REVIEW, possibility to fill with random data
+        this.size = position;
+      }
+      this.size += written;
       return transferred;
     }
   }
 
-  long transferTo(WritableByteChannel target, long position, long count) {
+  long transferTo(WritableByteChannel target, long position, long count) throws IOException {
     try (AutoRelease lock = this.readLock()) {
       long transferred = 0L;
+      long toTransfer = min(count, this.size - position);
+
+      int currentBlock = (int) (position / BLOCK_SIZE);
+      int startIndexInBlock = (int) (position - ((long) currentBlock * (long) BLOCK_SIZE));
+      int read = 0;
+      while (read < toTransfer) {
+        int lengthInBlock = (int) min((long) BLOCK_SIZE - (long) startIndexInBlock, toTransfer - read);
+
+        byte[] block = this.getBlock(currentBlock);
+        // We can either allocate a new ByteBuffer for every iteration or keep
+        // the buffer and copy the contents into it.
+        // Since ByteBuffer objects are quite small and don't copy the contents
+        // of the backing array allocating a ByteBuffer is probably cheaper.
+        ByteBuffer buffer = ByteBuffer.wrap(block, startIndexInBlock, lengthInBlock);
+        writeFully(buffer, target, lengthInBlock);
+        read += lengthInBlock;
+
+        startIndexInBlock = 0;
+        currentBlock += 1;
+      }
 
       return transferred;
     }
+  }
+
+  private static int writeFully(ByteBuffer src, WritableByteChannel target, int toWrite) throws IOException {
+    int written = 0;
+    while (written < toWrite) {
+      written += target.write(src);
+    }
+    return written;
+  }
+
+  private static int readFully(ByteBuffer src, ReadableByteChannel target, int toRead) throws IOException {
+    int read = 0;
+    while (read < toRead) {
+      read += target.read(src);
+    }
+    return read;
   }
 
   long write(ByteBuffer src, long position, long maximum) {
@@ -188,7 +248,8 @@ class MemoryContents {
       while (written < toWrite) {
         int lengthInBlock = (int) min((long) BLOCK_SIZE - (long) startIndexInBlock, toWrite - written);
 
-        src.get(this.getBlock(currentBlock), startIndexInBlock, lengthInBlock);
+        byte[] block = this.getBlock(currentBlock);
+        src.get(block, startIndexInBlock, lengthInBlock);
         written += lengthInBlock;
 
         startIndexInBlock = 0;
