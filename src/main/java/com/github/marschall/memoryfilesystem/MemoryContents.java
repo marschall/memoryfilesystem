@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.nio.channels.SeekableByteChannel;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -76,11 +78,11 @@ class MemoryContents {
     return new AppendingBlockOutputStream(this);
   }
 
-  SeekableByteChannel newChannel(boolean readable, boolean writable) {
+  FileChannel newChannel(boolean readable, boolean writable) {
     return new NonAppendingBlockChannel(this, readable, writable);
   }
 
-  SeekableByteChannel newAppendingChannel(boolean readable) {
+  FileChannel newAppendingChannel(boolean readable) {
     return new AppendingBlockChannel(this, readable, this.size);
   }
 
@@ -106,18 +108,18 @@ class MemoryContents {
     return autoRelease(this.lock.writeLock());
   }
 
-  int read(ByteBuffer dst, long position) throws IOException {
+  long read(ByteBuffer dst, long position, long maximum) throws IOException {
     try (AutoRelease lock = this.readLock()) {
       if (position >= this.size) {
-        return -1;
+        return -1L;
       }
       long remaining = dst.remaining();
-      int toRead = (int) min(min(this.size - position, remaining), Integer.MAX_VALUE);
+      long toRead = min(min(this.size - position, remaining), maximum);
       int currentBlock = (int) (position / BLOCK_SIZE);
       int startIndexInBlock = (int) (position - ((long) currentBlock * (long) BLOCK_SIZE));
-      int read = 0;
+      long read = 0L;
       while (read < toRead) {
-        int lengthInBlock = (int) min((long) BLOCK_SIZE - (long) startIndexInBlock, (long) toRead - (long) read);
+        int lengthInBlock = (int) min((long) BLOCK_SIZE - (long) startIndexInBlock, toRead - read);
 
         dst.put(this.getBlock(currentBlock), startIndexInBlock, lengthInBlock);
         read += lengthInBlock;
@@ -126,8 +128,11 @@ class MemoryContents {
         currentBlock += 1;
       }
       return read;
-
     }
+  }
+
+  int readShort(ByteBuffer dst, long position) throws IOException {
+    return (int) this.read(dst, position, Integer.MAX_VALUE);
   }
 
   int read(byte[] dst, long position, int off, int len) throws IOException {
@@ -150,21 +155,38 @@ class MemoryContents {
         currentBlock += 1;
       }
       return read;
-
     }
   }
 
-  int write(ByteBuffer src, long position) {
+  long transferFrom(ReadableByteChannel src, long position, long count) {
+    try (AutoRelease lock = this.writeLock()) {
+      this.ensureCapacity(position + count);
+      long transferred = 0L;
+      long toTransfer = min(count, this.size - position);
+
+      return transferred;
+    }
+  }
+
+  long transferTo(WritableByteChannel target, long position, long count) {
+    try (AutoRelease lock = this.readLock()) {
+      long transferred = 0L;
+
+      return transferred;
+    }
+  }
+
+  long write(ByteBuffer src, long position, long maximum) {
     try (AutoRelease lock = this.writeLock()) {
       long remaining = src.remaining();
       this.ensureCapacity(position + remaining);
 
-      int toWrite = (int) min(remaining, Integer.MAX_VALUE);
+      long toWrite = min(remaining, maximum);
       int currentBlock = (int) (position / BLOCK_SIZE);
       int startIndexInBlock = (int) (position - ((long) currentBlock * (long) BLOCK_SIZE));
-      int written = 0;
+      long written = 0L;
       while (written < toWrite) {
-        int lengthInBlock = (int) min((long) BLOCK_SIZE - (long) startIndexInBlock, (long) toWrite - (long) written);
+        int lengthInBlock = (int) min((long) BLOCK_SIZE - (long) startIndexInBlock, toWrite - written);
 
         src.get(this.getBlock(currentBlock), startIndexInBlock, lengthInBlock);
         written += lengthInBlock;
@@ -179,6 +201,10 @@ class MemoryContents {
       this.size += written;
       return written;
     }
+  }
+
+  int writeShort(ByteBuffer src, long position) {
+    return (int) this.write(src, position, Integer.MAX_VALUE);
   }
 
   int write(byte[] src, long position, int off, int len) {
@@ -208,9 +234,15 @@ class MemoryContents {
     }
   }
 
+  long writeAtEnd(ByteBuffer src, long maximum) {
+    try (AutoRelease lock = this.writeLock()) {
+      return this.write(src, this.size, maximum);
+    }
+  }
+
   int writeAtEnd(ByteBuffer src) {
     try (AutoRelease lock = this.writeLock()) {
-      return this.write(src, this.size);
+      return this.writeShort(src, this.size);
     }
   }
 

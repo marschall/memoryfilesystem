@@ -2,7 +2,7 @@ package com.github.marschall.memoryfilesystem;
 
 import java.io.IOException;
 
-public class AppendingBlockOutputStream extends BlockOutputStream {
+class AppendingBlockOutputStream extends BlockOutputStream {
 
   AppendingBlockOutputStream(MemoryContents memoryContents) {
     super(memoryContents);

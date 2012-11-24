@@ -153,8 +153,8 @@ public class FileSystemComptiblity {
     } finally {
       Files.delete(path);
     }
-
   }
+
   @Test
   public void append() throws IOException {
     Path path = Files.createTempFile("sample", ".txt");

@@ -1,6 +1,8 @@
 package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_ENV;
+import static java.nio.file.StandardOpenOption.READ;
+import static java.nio.file.StandardOpenOption.WRITE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
@@ -190,7 +192,40 @@ public class MemoryFileSystemTest {
 
     size = Files.getAttribute(path, "size");
     assertEquals(0L, size);
+  }
 
+  @Test
+  public void position() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path path = Files.createTempFile(fileSystem.getPath("/"), "sample", ".txt");
+    try (SeekableByteChannel channel = Files.newByteChannel(path, WRITE)) {
+      assertEquals(0L, channel.position());
+
+      channel.position(5L);
+      assertEquals(5L, channel.position());
+      assertEquals(0, channel.size());
+
+      ByteBuffer src = ByteBuffer.wrap(new byte[]{1, 2, 3, 4, 5});
+      assertEquals(5, channel.write(src));
+
+      assertEquals(10L, channel.position());
+      assertEquals(10L, channel.size());
+    }
+  }
+
+  @Test
+  public void setPosition() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path path = Files.createTempFile(fileSystem.getPath("/"), "sample", ".txt");
+    try (SeekableByteChannel channel = Files.newByteChannel(path, WRITE)) {
+      ByteBuffer src = ByteBuffer.wrap(new byte[]{1, 2, 3, 4, 5});
+      assertEquals(5, channel.write(src));
+    }
+    try (SeekableByteChannel channel = Files.newByteChannel(path, READ)) {
+      ByteBuffer dst = ByteBuffer.wrap(new byte[5]);
+      channel.position(42L);
+      assertEquals(-1, channel.read(dst));
+    }
   }
 
   @Test

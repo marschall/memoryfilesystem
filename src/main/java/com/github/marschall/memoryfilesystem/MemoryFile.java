@@ -3,7 +3,7 @@ package com.github.marschall.memoryfilesystem;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.channels.SeekableByteChannel;
+import java.nio.channels.FileChannel;
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributeView;
@@ -109,7 +109,7 @@ class MemoryFile extends MemoryEntry {
     }
   }
 
-  SeekableByteChannel newChannel(Set<? extends OpenOption> options) {
+  FileChannel newChannel(Set<? extends OpenOption> options) {
     // TODO check more options
     // TODO DELETE_ON_CLOSE and NOFOLLOW_LINKS
     // TODO SYNC DSYNC
