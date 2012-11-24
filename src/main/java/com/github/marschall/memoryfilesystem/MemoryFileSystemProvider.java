@@ -31,8 +31,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
 /**
  * Creates memory file systems instance.
@@ -43,25 +41,18 @@ import java.util.concurrent.ThreadFactory;
  */
 public final class MemoryFileSystemProvider extends FileSystemProvider {
 
-  private final ConcurrentMap<String, MemoryFileSystem> fileSystems;
+  static final String SCHEME = "memory";
 
-  private final ExecutorService workExecutor;
-  private final ExecutorService callbackExecutor;
+  private final ConcurrentMap<String, MemoryFileSystem> fileSystems;
 
   public MemoryFileSystemProvider() {
     this.fileSystems = new ConcurrentHashMap<>();
-    this.workExecutor = Executors.newFixedThreadPool(1, new NamedDaemonThreadFactory("memory-file-system-worker"));
-    this.callbackExecutor = Executors.newFixedThreadPool(1, new NamedDaemonThreadFactory("memory-file-system-callback"));
   }
-
-  static final String SCHEME = "memory";
-
 
   @Override
   public String getScheme() {
     return SCHEME;
   }
-
 
   @Override
   public FileSystem newFileSystem(URI uri, Map<String, ?> env) throws IOException {
@@ -386,23 +377,6 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
         throw new UnsupportedOperationException("mode " + mode + " not supported");
       }
     }
-  }
-
-  static final class NamedDaemonThreadFactory implements ThreadFactory {
-
-    private final String name;
-
-    NamedDaemonThreadFactory(String name) {
-      this.name = name;
-    }
-
-    @Override
-    public Thread newThread(Runnable r) {
-      Thread thread = new Thread(r, this.name);
-      thread.setDaemon(true);
-      return thread;
-    }
-
   }
 
 }
