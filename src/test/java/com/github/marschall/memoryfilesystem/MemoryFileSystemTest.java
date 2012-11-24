@@ -22,7 +22,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileAlreadyExistsException;
@@ -42,6 +44,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.regex.PatternSyntaxException;
 
 import org.junit.Rule;
@@ -56,6 +60,19 @@ public class MemoryFileSystemTest {
 
   @Rule
   public final FileSystemRule rule = new FileSystemRule();
+
+  @Test
+  public void lockAsyncChannel() throws IOException, InterruptedException, ExecutionException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path path = fileSystem.getPath("lock.txt");
+    try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, StandardOpenOption.WRITE, StandardOpenOption.CREATE_NEW)) {
+      Future<FileLock> lockFuture = channel.lock();
+      FileLock lock = lockFuture.get();
+      assertSame(channel, lock.acquiredBy());
+      assertSame(channel, lock.channel());
+    }
+  }
 
   @Test
   public void trasferFrom() throws IOException {

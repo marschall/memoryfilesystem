@@ -5,10 +5,12 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.attribute.FileTime;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -47,7 +49,7 @@ public class MemoryEntryTest {
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
             { new MemoryDirectory("") },
-            { new MemoryFile("") },
+            { new MemoryFile("", Collections.<Class<? extends FileAttributeView>>emptySet()) },
     });
   }
 

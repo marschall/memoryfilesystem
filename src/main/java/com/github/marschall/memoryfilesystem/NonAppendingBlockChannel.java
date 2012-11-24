@@ -47,8 +47,7 @@ final class NonAppendingBlockChannel extends BlockChannel {
   public long transferFrom(ReadableByteChannel src, long position, long count) throws IOException {
     this.validatePositionAndCount(position, count);
     try (AutoRelease lock = this.writeLock()) {
-      // TODO Auto-generated method stub
-      return 0;
+      return this.memoryContents.transferFrom(src, position, count);
     }
   }
 

@@ -9,19 +9,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 final class MemoryFileLock extends FileLock {
 
-  private final LockSet lockSet;
-
   private final AtomicBoolean valid;
 
-  MemoryFileLock(FileChannel channel, long position, long size, boolean shared, LockSet lockSet) {
+  MemoryFileLock(FileChannel channel, long position, long size, boolean shared) {
     super(channel, position, size, shared);
-    this.lockSet = lockSet;
     this.valid = new AtomicBoolean(true);
   }
 
-  MemoryFileLock(AsynchronousFileChannel channel, long position, long size, boolean shared, LockSet lockSet) {
+  MemoryFileLock(AsynchronousFileChannel channel, long position, long size, boolean shared) {
     super(channel, position, size, shared);
-    this.lockSet = lockSet;
     this.valid = new AtomicBoolean(true);
   }
 
@@ -36,7 +32,13 @@ final class MemoryFileLock extends FileLock {
       throw new ClosedChannelException();
     }
     if (this.isValid()) {
-      this.lockSet.remove(this);
+      FileChannel channel = this.channel();
+      if (channel instanceof BlockChannel) {
+        BlockChannel blockChannel = (BlockChannel) channel;
+        blockChannel.removeLock(this);
+      } else {
+        throw new AssertionError("unknown channel type: " + channel);
+      }
     }
 
   }

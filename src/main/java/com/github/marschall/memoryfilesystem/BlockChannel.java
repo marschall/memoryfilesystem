@@ -10,6 +10,8 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.NonReadableChannelException;
 import java.nio.channels.WritableByteChannel;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -29,6 +31,8 @@ abstract class BlockChannel extends FileChannel {
    * only one read operation may be in progress on a channel at a time.
    */
   private final Lock lock;
+
+  private Set<MemoryFileLock> fileLocks;
 
 
   BlockChannel(MemoryContents memoryContents, boolean readable) {
@@ -186,20 +190,49 @@ abstract class BlockChannel extends FileChannel {
 
   @Override
   public FileLock lock(long position, long size, boolean shared) throws IOException {
-    // TODO Auto-generated method stub
-    return null;
+    try (AutoRelease lock = this.writeLock()) {
+      // TODO Auto-generated method stub
+      MemoryFileLock fileLock = this.memoryContents.lock(new MemoryFileLock(this, position, size, shared));
+      this.addLock(fileLock);
+      return fileLock;
+    }
+  }
+
+  private void addLock(MemoryFileLock fileLock) {
+    if (this.fileLocks == null) {
+      this.fileLocks = new HashSet<>();
+    }
+    this.fileLocks.add(fileLock);
   }
 
   @Override
   public FileLock tryLock(long position, long size, boolean shared) throws IOException {
-    // TODO Auto-generated method stub
-    return null;
+    try (AutoRelease lock = this.writeLock()) {
+      // TODO Auto-generated method stub
+      MemoryFileLock fileLock = this.memoryContents.tryLock(new MemoryFileLock(this, position, size, shared));
+      if (fileLock != null) {
+        this.addLock(fileLock);
+      }
+      return fileLock;
+    }
+  }
+
+  void removeLock(MemoryFileLock fileLock) throws IOException {
+    try (AutoRelease lock = this.writeLock()) {
+      this.fileLocks.remove(fileLock);
+      this.memoryContents.unlock(fileLock);
+    }
   }
 
   @Override
   protected void implCloseChannel() throws IOException {
-    // TODO Auto-generated method stub
-
+    try (AutoRelease lock = this.writeLock()) {
+      if (this.fileLocks != null) {
+        for (MemoryFileLock fileLock : this.fileLocks) {
+          this.memoryContents.unlock(fileLock);
+        }
+      }
+    }
   }
 
 }

@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
-import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -13,12 +12,13 @@ import java.util.concurrent.Future;
 final class AsynchronousMemoryFileChannel extends AsynchronousFileChannel {
 
   // TODO what about exceptions in methods that return futures?
+  // FIXME channel of lock must be this
 
-  private final FileChannel delegate;
+  private final BlockChannel delegate;
   private final ExecutorService workExecutor;
   private final ExecutorService callbackExecutor;
 
-  AsynchronousMemoryFileChannel(FileChannel delegate, ExecutorService workExecutor, ExecutorService callbackExecutor) {
+  AsynchronousMemoryFileChannel(BlockChannel delegate, ExecutorService workExecutor, ExecutorService callbackExecutor) {
     this.delegate = delegate;
     this.workExecutor = workExecutor;
     this.callbackExecutor = callbackExecutor;
@@ -70,6 +70,7 @@ final class AsynchronousMemoryFileChannel extends AsynchronousFileChannel {
   public void force(boolean metaData) throws IOException {
     this.delegate.force(metaData);
   }
+
 
   @Override
   public <A> void lock(final long position, final long size, final boolean shared, final A attachment, final CompletionHandler<FileLock, ? super A> handler) {

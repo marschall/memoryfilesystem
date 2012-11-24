@@ -7,7 +7,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.nio.channels.FileChannel;
 import java.nio.file.AccessMode;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.DirectoryStream;
@@ -183,7 +182,7 @@ class MemoryFileSystem extends FileSystem {
   }
 
 
-  FileChannel newFileChannel(AbstractPath path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
+  BlockChannel newFileChannel(AbstractPath path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
     this.checker.check();
     MemoryFile file = this.getFile(path, options, attrs);
     return file.newChannel(options);

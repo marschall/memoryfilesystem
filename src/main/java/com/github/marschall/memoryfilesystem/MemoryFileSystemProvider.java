@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.nio.channels.AsynchronousFileChannel;
-import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.AccessMode;
 import java.nio.file.CopyOption;
@@ -206,7 +205,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   }
 
   @Override
-  public FileChannel newFileChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
+  public BlockChannel newFileChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
     this.checkSupported(options);
     AbstractPath abstractPath = this.castPath(path);
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
@@ -215,7 +214,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   @Override
   public AsynchronousFileChannel newAsynchronousFileChannel(Path path, Set<? extends OpenOption> options, ExecutorService executor, FileAttribute<?>... attrs) throws IOException {
-    FileChannel fileChannel = this.newFileChannel(path, options, attrs);
+    BlockChannel fileChannel = this.newFileChannel(path, options, attrs);
     return new AsynchronousMemoryFileChannel(fileChannel, executor, executor);
   }
 

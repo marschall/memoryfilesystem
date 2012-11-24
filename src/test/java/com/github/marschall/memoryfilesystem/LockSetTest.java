@@ -24,12 +24,12 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class LockSetTest {
 
-  private final FileLock toAdd;
-  private final Collection<FileLock> alreadyPresent;
+  private final MemoryFileLock toAdd;
+  private final Collection<MemoryFileLock> alreadyPresent;
   private LockSet lockSet;
   private final boolean expectedSuccess;
 
-  public LockSetTest(FileLock toAdd, Collection<FileLock> alreadyPresent, boolean expectedSuccess) {
+  public LockSetTest(MemoryFileLock toAdd, Collection<MemoryFileLock> alreadyPresent, boolean expectedSuccess) {
     this.toAdd = toAdd;
     this.alreadyPresent = alreadyPresent;
     this.expectedSuccess = expectedSuccess;
@@ -63,7 +63,7 @@ public class LockSetTest {
   @Before
   public void setUp() throws IOException {
     this.lockSet = new LockSet();
-    for (FileLock lock : this.alreadyPresent) {
+    for (MemoryFileLock lock : this.alreadyPresent) {
       this.lockSet.lock(lock);
     }
   }
