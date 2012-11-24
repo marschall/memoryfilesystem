@@ -6,7 +6,9 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
+import java.nio.file.attribute.FileAttributeView;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Before;
@@ -25,7 +27,7 @@ public class MemoryContentsBoundaryTest {
 
   private final int toWrite;
 
-  private MemoryContents contents;
+  private MemoryFile contents;
 
   public MemoryContentsBoundaryTest(int initialOffset, int initialBlocks, int twoWrite) {
     this.initialOffset = initialOffset;
@@ -35,7 +37,7 @@ public class MemoryContentsBoundaryTest {
 
   @Parameters
   public static List<Object[]> parameters() {
-    int blockSize = MemoryContents.BLOCK_SIZE;
+    int blockSize = MemoryFile.BLOCK_SIZE;
     List<Object[]> parameters = new ArrayList<>();
     for (int initialOffset : new int[]{0, blockSize - 2, blockSize - 1, blockSize, blockSize + 1, blockSize + 2}) {
       for (int initialBlockSize = 0; initialBlockSize < 10; initialBlockSize++) {
@@ -54,7 +56,7 @@ public class MemoryContentsBoundaryTest {
 
   @Before
   public void setUp() {
-    this.contents = new MemoryContents(this.initialBlocks);
+    this.contents = new MemoryFile("", Collections.<Class<? extends FileAttributeView>>emptySet(), this.initialBlocks);
   }
 
   @Test

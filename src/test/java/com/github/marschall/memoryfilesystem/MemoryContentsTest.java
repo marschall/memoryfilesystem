@@ -11,7 +11,9 @@ import java.nio.ByteBuffer;
 import java.nio.channels.NonReadableChannelException;
 import java.nio.channels.NonWritableChannelException;
 import java.nio.channels.SeekableByteChannel;
+import java.nio.file.attribute.FileAttributeView;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Before;
@@ -29,7 +31,7 @@ public class MemoryContentsTest {
 
   private final boolean direct;
 
-  private MemoryContents contents;
+  private MemoryFile contents;
 
   public MemoryContentsTest(boolean direct) {
     this.direct = direct;
@@ -50,7 +52,7 @@ public class MemoryContentsTest {
 
   @Before
   public void setUp() {
-    this.contents = new MemoryContents(INITIAL_BLOCKS);
+    this.contents = new MemoryFile("", Collections.<Class<? extends FileAttributeView>>emptySet(), INITIAL_BLOCKS);
   }
 
 
@@ -159,12 +161,12 @@ public class MemoryContentsTest {
 
     src.rewind();
     src.put((byte) 1);
-    for (int i = 0; i < MemoryContents.BLOCK_SIZE; i++) {
+    for (int i = 0; i < MemoryFile.BLOCK_SIZE; i++) {
       src.rewind();
       channel.write(src);
     }
 
-    long expectedSize = (long) MemoryContents.BLOCK_SIZE + (long) SAMPLE_DATA.length;
+    long expectedSize = (long) MemoryFile.BLOCK_SIZE + SAMPLE_DATA.length;
     assertEquals(expectedSize, channel.size());
 
     // truncating a bigger value should make no difference
