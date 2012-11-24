@@ -39,6 +39,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
@@ -82,6 +83,10 @@ class MemoryFileSystem extends FileSystem {
 
   private final Set<String> supportedFileAttributeViews;
 
+  private final ExecutorService workExecutor;
+
+  private final ExecutorService callbackExecutor;
+
   MemoryFileSystem(String key, String separator, PathParser pathParser, MemoryFileSystemProvider provider, MemoryFileStore store,
           MemoryUserPrincipalLookupService userPrincipalLookupService, ClosedFileSystemChecker checker, StringTransformer storeTransformer,
           StringTransformer lookUpTransformer, Collator collator, Set<Class<? extends FileAttributeView>> additionalViews) {
@@ -96,6 +101,8 @@ class MemoryFileSystem extends FileSystem {
     this.lookUpTransformer = lookUpTransformer;
     this.collator = collator;
     this.additionalViews = additionalViews;
+    this.workExecutor = this.workExecutor;
+    this.callbackExecutor = this.callbackExecutor;
     this.stores = Collections.<FileStore>singletonList(store);
     this.emptyPath = new EmptyPath(this);
     this.supportedFileAttributeViews = this.buildSupportedFileAttributeViews(additionalViews);
