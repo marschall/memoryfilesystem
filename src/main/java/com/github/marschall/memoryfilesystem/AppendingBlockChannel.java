@@ -5,13 +5,14 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.file.Path;
 
 final class AppendingBlockChannel extends BlockChannel {
 
   private final long startPosition;
 
-  AppendingBlockChannel(MemoryContents memoryContents, boolean readable, long startPosition) {
-    super(memoryContents, readable);
+  AppendingBlockChannel(MemoryContents memoryContents, boolean readable, long startPosition, boolean deleteOnClose, Path path) {
+    super(memoryContents, readable, deleteOnClose, path);
     this.startPosition = startPosition;
   }
 

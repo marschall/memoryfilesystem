@@ -1,11 +1,12 @@
 package com.github.marschall.memoryfilesystem;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 class AppendingBlockOutputStream extends BlockOutputStream {
 
-  AppendingBlockOutputStream(MemoryContents memoryContents) {
-    super(memoryContents);
+  AppendingBlockOutputStream(MemoryContents memoryContents, boolean deleteOnClose, Path path) {
+    super(memoryContents, deleteOnClose, path);
   }
 
   @Override

@@ -1,6 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicLong;
 
 final class NonAppendingBlockOutputStream extends BlockOutputStream {
@@ -8,8 +9,8 @@ final class NonAppendingBlockOutputStream extends BlockOutputStream {
   private final AtomicLong position;
 
 
-  NonAppendingBlockOutputStream(MemoryContents memoryContents) {
-    super(memoryContents);
+  NonAppendingBlockOutputStream(MemoryContents memoryContents, boolean deleteOnClose, Path path) {
+    super(memoryContents, deleteOnClose, path);
     this.position = new AtomicLong(0L);
   }
 

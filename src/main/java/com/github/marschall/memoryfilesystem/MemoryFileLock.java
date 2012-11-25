@@ -28,7 +28,7 @@ final class MemoryFileLock extends FileLock {
 
   @Override
   public void release() throws IOException {
-    if (!this.channel().isOpen()) {
+    if (!this.acquiredBy().isOpen()) {
       throw new ClosedChannelException();
     }
     if (this.isValid()) {

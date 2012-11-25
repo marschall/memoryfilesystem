@@ -10,6 +10,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.NonReadableChannelException;
 import java.nio.channels.WritableByteChannel;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
@@ -32,13 +33,23 @@ abstract class BlockChannel extends FileChannel {
    */
   private final Lock lock;
 
+  /**
+   * Lazily allocated.
+   */
   private Set<MemoryFileLock> fileLocks;
 
+  private final Path pathToDelete;
 
-  BlockChannel(MemoryContents memoryContents, boolean readable) {
+
+  BlockChannel(MemoryContents memoryContents, boolean readable, boolean deleteOnClose, Path path) {
     this.memoryContents = memoryContents;
     this.readable = readable;
     this.lock = new ReentrantLock();
+    if (deleteOnClose) {
+      this.pathToDelete = path;
+    } else {
+      this.pathToDelete = null;
+    }
   }
 
   void closedCheck() throws ClosedChannelException {
@@ -182,14 +193,32 @@ abstract class BlockChannel extends FileChannel {
     return this.memoryContents.size();
   }
 
-  @Override
-  public FileLock lock(long position, long size, boolean shared) throws IOException {
+  MemoryFileLock lock(MemoryFileLock l) throws IOException {
     try (AutoRelease lock = this.writeLock()) {
-      // TODO Auto-generated method stub
-      MemoryFileLock fileLock = this.memoryContents.lock(new MemoryFileLock(this, position, size, shared));
+      MemoryFileLock fileLock = this.memoryContents.lock(l);
       this.addLock(fileLock);
       return fileLock;
     }
+  }
+
+  FileLock tryLock(MemoryFileLock l) throws IOException {
+    try (AutoRelease lock = this.writeLock()) {
+      MemoryFileLock fileLock = this.memoryContents.tryLock(l);
+      if (fileLock != null) {
+        this.addLock(fileLock);
+      }
+      return fileLock;
+    }
+  }
+
+  @Override
+  public FileLock lock(long position, long size, boolean shared) throws IOException {
+    return this.lock(new MemoryFileLock(this, position, size, shared));
+  }
+
+  @Override
+  public FileLock tryLock(long position, long size, boolean shared) throws IOException {
+    return this.tryLock(new MemoryFileLock(this, position, size, shared));
   }
 
   private void addLock(MemoryFileLock fileLock) {
@@ -197,18 +226,6 @@ abstract class BlockChannel extends FileChannel {
       this.fileLocks = new HashSet<>();
     }
     this.fileLocks.add(fileLock);
-  }
-
-  @Override
-  public FileLock tryLock(long position, long size, boolean shared) throws IOException {
-    try (AutoRelease lock = this.writeLock()) {
-      // TODO Auto-generated method stub
-      MemoryFileLock fileLock = this.memoryContents.tryLock(new MemoryFileLock(this, position, size, shared));
-      if (fileLock != null) {
-        this.addLock(fileLock);
-      }
-      return fileLock;
-    }
   }
 
   void removeLock(MemoryFileLock fileLock) throws IOException {
@@ -228,7 +245,7 @@ abstract class BlockChannel extends FileChannel {
           this.memoryContents.unlock(fileLock);
         }
       }
-      this.memoryContents.closedChannel();
+      this.memoryContents.closedChannel(this.pathToDelete);
     }
   }
 

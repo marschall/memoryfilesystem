@@ -17,36 +17,17 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.NonReadableChannelException;
 import java.nio.channels.SeekableByteChannel;
-import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class FileSystemComptiblity {
 
-  @Test
-  public void empty() {
-    Path path = Paths.get("");
-    System.out.println(path.toUri());
-  }
-
-  @Test
-  public void directoryStream() throws IOException {
-    try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(Paths.get("/Users/marschall"))) {
-      for (Path path : directoryStream) {
-        System.out.printf("%s %s%n", path, path.isAbsolute());
-      }
-    }
-  }
 
   //  @Test
   //  public void xattrs() throws IOException {
@@ -67,37 +48,11 @@ public class FileSystemComptiblity {
   //  }
 
   @Test
-  public void attributeNames() throws IOException {
-    FileSystem fileSystem = FileSystems.getDefault();
-    Path path = fileSystem.getPath("/");
-    Map<String, Object> attributes = Files.readAttributes(path, "posix:*");
-    for (Entry<String, Object> each : attributes.entrySet()) {
-      System.out.printf("%s -> %s%n", each.getKey(), each.getValue());
-    }
-  }
-
-  @Test
   public void unixRoot() throws IOException {
     Path root = FileSystems.getDefault().getRootDirectories().iterator().next();
     BasicFileAttributes attributes = Files.readAttributes(root, BasicFileAttributes.class);
     assertTrue(attributes.isDirectory());
     assertFalse(attributes.isRegularFile());
-  }
-
-  @Test
-  @Ignore("only on Windows")
-  public void windows() throws IOException {
-    Path c1 = Paths.get("C:\\");
-    Path c2 = Paths.get("c:\\");
-    assertEquals(c1, c2);
-    assertEquals("C:\\", c1.toString());
-    assertEquals("c:\\", c2.toString());
-    assertTrue(c1.startsWith(c2));
-    assertTrue(c1.startsWith("c:\\"));
-
-    //TODO
-
-    c1.toRealPath();
   }
 
   @Test
@@ -188,32 +143,6 @@ public class FileSystemComptiblity {
       Path next = iterator.next();
       assertFalse(next.isAbsolute());
     }
-  }
-
-  @Test
-  @Ignore("mac os")
-  public void getPath() {
-    FileSystem fileSystem = FileSystems.getDefault();
-    Path path = fileSystem.getPath("/Users/marschall/Documents");
-    assertTrue(Files.exists(path));
-
-    path = fileSystem.getPath("/", "Users/marschall/Documents");
-    assertTrue(Files.exists(path));
-
-    path = fileSystem.getPath("/", "/Users/marschall/Documents");
-    assertTrue(Files.exists(path));
-
-    path = fileSystem.getPath("", "/Users/marschall/Documents");
-    assertTrue(Files.exists(path));
-
-    path = fileSystem.getPath("/Users", "/marschall/Documents");
-    assertTrue(Files.exists(path));
-
-    path = fileSystem.getPath("/Users", "marschall/Documents");
-    assertTrue(Files.exists(path));
-
-    path = fileSystem.getPath("/", "Users/marschall/Documents");
-    assertTrue(Files.exists(path));
   }
 
   @Test

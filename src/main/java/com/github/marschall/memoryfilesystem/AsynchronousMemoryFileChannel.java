@@ -12,7 +12,6 @@ import java.util.concurrent.Future;
 final class AsynchronousMemoryFileChannel extends AsynchronousFileChannel {
 
   // TODO what about exceptions in methods that return futures?
-  // FIXME channel of lock must be this
 
   private final BlockChannel delegate;
   private final ExecutorService workExecutor;
@@ -79,7 +78,8 @@ final class AsynchronousMemoryFileChannel extends AsynchronousFileChannel {
       @Override
       public void run() {
         try {
-          FileLock lock = AsynchronousMemoryFileChannel.this.delegate.lock(position, size, shared);
+          MemoryFileLock l = new MemoryFileLock(AsynchronousMemoryFileChannel.this, position, size, shared);
+          FileLock lock = AsynchronousMemoryFileChannel.this.delegate.lock(l);
           AsynchronousMemoryFileChannel.this.completed(lock, attachment, handler);
         } catch (IOException e) {
           AsynchronousMemoryFileChannel.this.failed(e, attachment, handler);
@@ -96,7 +96,8 @@ final class AsynchronousMemoryFileChannel extends AsynchronousFileChannel {
 
       @Override
       public FileLock call() throws Exception {
-        return AsynchronousMemoryFileChannel.this.delegate.lock(position, size, shared);
+        MemoryFileLock l = new MemoryFileLock(AsynchronousMemoryFileChannel.this, position, size, shared);
+        return AsynchronousMemoryFileChannel.this.delegate.lock(l);
       }
     });
   }

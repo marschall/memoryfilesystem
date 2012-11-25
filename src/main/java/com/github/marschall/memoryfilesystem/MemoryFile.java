@@ -9,7 +9,10 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.OpenOption;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -45,6 +48,8 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
 
   /**
    * The number of open streams or channels.
+   * 
+   * <p>A negative number indicates the file is marked for deletion.
    */
   private int openCount;
 
@@ -152,34 +157,35 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
     }
   }
 
-  InputStream newInputStream(Set<? extends OpenOption> options) {
-    // TODO DELETE_ON_CLOSE and NOFOLLOW_LINKS
+  InputStream newInputStream(Set<? extends OpenOption> options, Path path) throws IOException {
     // TODO SYNC
-    return this.newInputStream();
+    boolean deleteOnClose = options.contains(StandardOpenOption.DELETE_ON_CLOSE);
+    return this.newInputStream(deleteOnClose, path);
   }
 
-  OutputStream newOutputStream(Set<? extends OpenOption> options) {
-    // TODO DELETE_ON_CLOSE and NOFOLLOW_LINKS
+  OutputStream newOutputStream(Set<? extends OpenOption> options, Path path) throws IOException {
     // TODO SYNC
+    boolean deleteOnClose = options.contains(StandardOpenOption.DELETE_ON_CLOSE);
     boolean append = options.contains(StandardOpenOption.APPEND);
     if (append) {
-      return this.newAppendingOutputStream();
+      return this.newAppendingOutputStream(deleteOnClose, path);
     } else {
       boolean truncate = options.contains(StandardOpenOption.TRUNCATE_EXISTING);
       if (truncate) {
         this.truncate(0L);
       }
-      return this.newOutputStream();
+      return this.newOutputStream(deleteOnClose, path);
     }
   }
 
-  BlockChannel newChannel(Set<? extends OpenOption> options) {
+  BlockChannel newChannel(Set<? extends OpenOption> options, Path path) throws IOException {
     // TODO DELETE_ON_CLOSE and NOFOLLOW_LINKS
     // TODO SYNC
     boolean append = options.contains(StandardOpenOption.APPEND);
     boolean readable = options.contains(StandardOpenOption.READ);
+    boolean deleteOnClose = options.contains(StandardOpenOption.DELETE_ON_CLOSE);
     if (append) {
-      return this.newAppendingChannel(readable);
+      return this.newAppendingChannel(readable, deleteOnClose, path);
     } else {
       boolean writable = options.contains(StandardOpenOption.WRITE);
       if (writable) {
@@ -188,60 +194,87 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
           this.truncate(0L);
         }
       }
-      return this.newChannel(readable, writable);
+      return this.newChannel(readable, writable, deleteOnClose, path);
     }
   }
 
-  InputStream newInputStream() {
+  InputStream newInputStream(boolean deleteOnClose, Path path) throws IOException {
     try (AutoRelease lock = this.writeLock()) {
-      this.openCount += 1;
-      return new BlockInputStream(this);
+      this.incrementOpenCount(path);
+      return new BlockInputStream(this, deleteOnClose, path);
     }
   }
 
-  OutputStream newOutputStream() {
+  OutputStream newOutputStream(boolean deleteOnClose, Path path) throws IOException {
     try (AutoRelease lock = this.writeLock()) {
-      this.openCount += 1;
-      return new NonAppendingBlockOutputStream(this);
+      this.incrementOpenCount(path);
+      return new NonAppendingBlockOutputStream(this, deleteOnClose, path);
     }
   }
 
-  OutputStream newAppendingOutputStream() {
+  OutputStream newAppendingOutputStream(boolean deleteOnClose, Path path) throws IOException {
     try (AutoRelease lock = this.writeLock()) {
-      this.openCount += 1;
-      return new AppendingBlockOutputStream(this);
+      this.incrementOpenCount(path);
+      return new AppendingBlockOutputStream(this, deleteOnClose, path);
     }
   }
 
-  BlockChannel newChannel(boolean readable, boolean writable) {
+  BlockChannel newChannel(boolean readable, boolean writable, boolean deleteOnClose, Path path) throws IOException {
     try (AutoRelease lock = this.writeLock()) {
-      this.openCount += 1;
-      return new NonAppendingBlockChannel(this, readable, writable);
+      this.incrementOpenCount(path);
+      return new NonAppendingBlockChannel(this, readable, writable, deleteOnClose, path);
     }
   }
 
-  BlockChannel newAppendingChannel(boolean readable) {
+  BlockChannel newAppendingChannel(boolean readable, boolean deleteOnClose, Path path) throws IOException {
     try (AutoRelease lock = this.writeLock()) {
-      this.openCount += 1;
-      return new AppendingBlockChannel(this, readable, this.size);
+      this.incrementOpenCount(path);
+      return new AppendingBlockChannel(this, readable, this.size, deleteOnClose, path);
     }
+  }
+
+  private void incrementOpenCount(Path path) throws NoSuchFileException {
+    if (this.openCount < 0) {
+      throw new NoSuchFileException(path.toString());
+    }
+    this.openCount += 1;
   }
 
   int openCount() {
     return this.openCount;
   }
 
+  void markForDeletion() {
+    this.openCount = -1;
+  }
+
   @Override
-  public void closedStream() {
+  public void closedStream(Path toDelete) {
     try (AutoRelease lock = this.writeLock()) {
       this.openCount -= 1;
+    }
+    if (toDelete != null) {
+      // intentionally not covered by Lock
+      try {
+        Files.delete(toDelete);
+      } catch (IOException e) {
+        // ignore, only a best effort is made
+      }
     }
   }
 
   @Override
-  public void closedChannel() {
+  public void closedChannel(Path toDelete) {
     try (AutoRelease lock = this.writeLock()) {
       this.openCount -= 1;
+    }
+    if (toDelete != null) {
+      // intentionally not covered by Lock
+      try {
+        Files.delete(toDelete);
+      } catch (IOException e) {
+        // ignore, only a best effort is made
+      }
     }
   }
 

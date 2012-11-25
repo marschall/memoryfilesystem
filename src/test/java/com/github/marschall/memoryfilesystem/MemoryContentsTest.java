@@ -11,11 +11,13 @@ import java.nio.ByteBuffer;
 import java.nio.channels.NonReadableChannelException;
 import java.nio.channels.NonWritableChannelException;
 import java.nio.channels.SeekableByteChannel;
+import java.nio.file.Path;
 import java.nio.file.attribute.FileAttributeView;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.easymock.EasyMock;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -71,7 +73,9 @@ public class MemoryContentsTest {
     byte[] data = SAMPLE_DATA;
     src.put(data);
     src.rewind();
-    SeekableByteChannel channel = this.contents.newChannel(true, true);
+
+    Path path = EasyMock.createNiceMock(Path.class);
+    SeekableByteChannel channel = this.contents.newChannel(true, true, false, path);
     assertEquals(0, channel.size());
     assertEquals(0, channel.position());
     assertEquals(SAMPLE_DATA.length, channel.write(src));
@@ -93,7 +97,8 @@ public class MemoryContentsTest {
 
   @Test
   public void positition() throws IOException {
-    SeekableByteChannel channel = this.contents.newChannel(true, true);
+    Path path = EasyMock.createNiceMock(Path.class);
+    SeekableByteChannel channel = this.contents.newChannel(true, true, false, path);
 
     assertEquals(0L, channel.position());
 
@@ -117,11 +122,12 @@ public class MemoryContentsTest {
 
   @Test
   public void readOnly() throws IOException {
-    SeekableByteChannel channel = this.contents.newChannel(true, true);
+    Path path = EasyMock.createNiceMock(Path.class);
+    SeekableByteChannel channel = this.contents.newChannel(true, true, false, path);
 
     ByteBuffer src = this.writeTestData(channel);
 
-    channel = this.contents.newChannel(true, false);
+    channel = this.contents.newChannel(true, false, false, path);
     try {
       channel.write(src);
       fail("channel should not be writable");
@@ -133,7 +139,8 @@ public class MemoryContentsTest {
 
   @Test
   public void writeOnly() throws IOException {
-    SeekableByteChannel channel = this.contents.newChannel(false, true);
+    Path path = EasyMock.createNiceMock(Path.class);
+    SeekableByteChannel channel = this.contents.newChannel(false, true, false, path);
 
     ByteBuffer src = this.writeTestData(channel);
     src.rewind();
@@ -150,7 +157,8 @@ public class MemoryContentsTest {
 
   @Test
   public void truncate() throws IOException {
-    SeekableByteChannel channel = this.contents.newChannel(true, true);
+    Path path = EasyMock.createNiceMock(Path.class);
+    SeekableByteChannel channel = this.contents.newChannel(true, true, false, path);
     ByteBuffer src = this.allocate(1);
     for (byte data : SAMPLE_DATA) {
       src.rewind();
@@ -192,7 +200,8 @@ public class MemoryContentsTest {
 
   @Test
   public void appendNonTruncatable() throws IOException {
-    SeekableByteChannel channel = this.contents.newAppendingChannel(true);
+    Path path = EasyMock.createNiceMock(Path.class);
+    SeekableByteChannel channel = this.contents.newAppendingChannel(true, false, path);
 
     ByteBuffer src = this.writeTestData(channel);
     channel.write(src);
@@ -207,7 +216,8 @@ public class MemoryContentsTest {
 
   @Test
   public void appendReadable() throws IOException {
-    SeekableByteChannel channel = this.contents.newAppendingChannel(true);
+    Path path = EasyMock.createNiceMock(Path.class);
+    SeekableByteChannel channel = this.contents.newAppendingChannel(true, false, path);
     assertEquals(0L, channel.position());
 
     ByteBuffer src = this.allocate(1);
@@ -238,7 +248,8 @@ public class MemoryContentsTest {
 
   @Test
   public void appendNotReadable() throws IOException {
-    SeekableByteChannel channel = this.contents.newAppendingChannel(false);
+    Path path = EasyMock.createNiceMock(Path.class);
+    SeekableByteChannel channel = this.contents.newAppendingChannel(false, false, path);
 
     ByteBuffer testData = this.writeTestData(channel);
     channel.position(0L);

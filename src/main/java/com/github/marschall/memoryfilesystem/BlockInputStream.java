@@ -4,6 +4,7 @@ import static java.lang.Math.min;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicLong;
 
 final class BlockInputStream extends InputStream {
@@ -16,16 +17,23 @@ final class BlockInputStream extends InputStream {
   private final MemoryContents memoryContents;
   private final ClosedStreamChecker checker;
   private final AtomicLong position;
+  private Path pathToDelete;
   //
   //  private final Lock markLock;
   //
   //  private long markPositon;
   //  private int readLimit;
 
-  BlockInputStream(MemoryContents memoryContents) {
+
+  BlockInputStream(MemoryContents memoryContents, boolean deleteOnClose, Path path) {
     this.memoryContents = memoryContents;
     this.checker = new ClosedStreamChecker();
     this.position = new AtomicLong(0L);
+    if (deleteOnClose) {
+      this.pathToDelete = path;
+    } else {
+      this.pathToDelete = null;
+    }
     //    this.markLock = new ReentrantLock();
     //    this.readLimit = -1;
     //    this.markPositon = -1L;
@@ -87,6 +95,7 @@ final class BlockInputStream extends InputStream {
   public void close() throws IOException {
     this.checker.close();
     this.memoryContents.accessed();
+    this.memoryContents.closedStream(this.pathToDelete);
   }
 
   // FileInputStream doesn't support marks so neither do we

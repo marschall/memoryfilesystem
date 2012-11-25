@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.nio.file.Path;
 
 interface MemoryContents {
 
@@ -44,8 +45,8 @@ interface MemoryContents {
 
   void modified();
 
-  void closedStream();
+  void closedStream(Path toDelete);
 
-  void closedChannel();
+  void closedChannel(Path toDelete);
 
 }

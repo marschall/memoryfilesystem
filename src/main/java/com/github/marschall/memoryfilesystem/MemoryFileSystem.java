@@ -46,6 +46,8 @@ import javax.annotation.PreDestroy;
 
 class MemoryFileSystem extends FileSystem {
 
+  private static final Set<String> UNSUPPORTED_INITIAL_ATTRIBUES;
+
   private final String key;
 
   private final String separator;
@@ -81,6 +83,14 @@ class MemoryFileSystem extends FileSystem {
   private final Set<Class<? extends FileAttributeView>> additionalViews;
 
   private final Set<String> supportedFileAttributeViews;
+
+  static {
+    Set<String> unsupported = new HashSet<>(3);
+    unsupported.add("lastAccessTime");
+    unsupported.add("creationTime");
+    unsupported.add("lastModifiedTime");
+    UNSUPPORTED_INITIAL_ATTRIBUES = Collections.unmodifiableSet(unsupported);
+  }
 
   MemoryFileSystem(String key, String separator, PathParser pathParser, MemoryFileSystemProvider provider, MemoryFileStore store,
           MemoryUserPrincipalLookupService userPrincipalLookupService, ClosedFileSystemChecker checker, StringTransformer storeTransformer,
@@ -179,7 +189,7 @@ class MemoryFileSystem extends FileSystem {
   BlockChannel newFileChannel(AbstractPath path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
     this.checker.check();
     MemoryFile file = this.getFile(path, options, attrs);
-    return file.newChannel(options);
+    return file.newChannel(options, path);
   }
 
 
@@ -195,7 +205,7 @@ class MemoryFileSystem extends FileSystem {
       }
     }
     MemoryFile file = this.getFile(path, optionsSet);
-    return file.newInputStream(optionsSet);
+    return file.newInputStream(optionsSet, path);
   }
 
 
@@ -211,7 +221,18 @@ class MemoryFileSystem extends FileSystem {
       }
     }
     MemoryFile file = this.getFile(path, optionsSet);
-    return file.newOutputStream(optionsSet);
+    return file.newOutputStream(optionsSet, path);
+  }
+
+  private static void checkSupportedInitialAttributes(FileAttribute<?>... attrs) {
+    if (attrs != null) {
+      for (FileAttribute<?> attribute : attrs) {
+        String attributeName = attribute.name();
+        if (UNSUPPORTED_INITIAL_ATTRIBUES.contains(attributeName)) {
+          throw new UnsupportedOperationException("'" + attributeName + "' not supported as initial attribute");
+        }
+      }
+    }
   }
 
   private MemoryFile getFile(final AbstractPath path, final Set<? extends OpenOption> options, final FileAttribute<?>... attrs) throws IOException {
@@ -234,6 +255,7 @@ class MemoryFileSystem extends FileSystem {
         if (isCreateNew) {
           String name = MemoryFileSystem.this.storeTransformer.transform(fileName);
           MemoryFile file = new MemoryFile(name, MemoryFileSystem.this.additionalViews);
+          checkSupportedInitialAttributes(attrs);
           AttributeAccessors.setAttributes(file, attrs);
           // will throw an exception if already present
           directory.addEntry(key, file);
@@ -245,6 +267,7 @@ class MemoryFileSystem extends FileSystem {
             if (isCreate) {
               String name = MemoryFileSystem.this.storeTransformer.transform(fileName);
               MemoryFile file = new MemoryFile(name, MemoryFileSystem.this.additionalViews);
+              checkSupportedInitialAttributes(attrs);
               AttributeAccessors.setAttributes(file, attrs);
               directory.addEntry(key, file);
               return file;
@@ -637,6 +660,7 @@ class MemoryFileSystem extends FileSystem {
             if (file.openCount() > 0) {
               throw new FileSystemException(abstractPath.toString(), null, "file still open");
             }
+            file.markForDeletion();
           }
           directory.removeEntry(key);
         }

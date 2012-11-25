@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -15,7 +14,6 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.DosFileAttributeView;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileTime;
@@ -42,21 +40,11 @@ public class WindowsMemoryFileSystemTest {
     FileTime lastModifiedTime = FileTime.fromMillis(format.parse("2012-11-07T20:30:22").getTime());
 
     FileAttribute<?> hiddenAttribute = new StubFileAttribute<>("dos:hidden", true);
-    FileAttribute<?> lastModifiedAttribute = new StubFileAttribute<>("lastModifiedTime", lastModifiedTime);
-
-    Path defaultPath = fileSystem.getPath("default");
-    Files.createFile(defaultPath);
-    DosFileAttributeView dosAttributeView = Files.getFileAttributeView(defaultPath, DosFileAttributeView.class);
-    assertFalse(dosAttributeView.readAttributes().isHidden());
-    BasicFileAttributeView basicAttributeView = Files.getFileAttributeView(defaultPath, BasicFileAttributeView.class);
-    assertThat(basicAttributeView.readAttributes().lastModifiedTime(), not(equalTo(lastModifiedTime)));
 
     Path hiddenPath = fileSystem.getPath("hidden");
-    Files.createFile(hiddenPath, hiddenAttribute, lastModifiedAttribute);
-    dosAttributeView = Files.getFileAttributeView(hiddenPath, DosFileAttributeView.class);
+    Files.createFile(hiddenPath, hiddenAttribute);
+    DosFileAttributeView dosAttributeView = Files.getFileAttributeView(hiddenPath, DosFileAttributeView.class);
     assertTrue(dosAttributeView.readAttributes().isHidden());
-    basicAttributeView = Files.getFileAttributeView(hiddenPath, BasicFileAttributeView.class);
-    assertEquals(lastModifiedTime, basicAttributeView.readAttributes().lastModifiedTime());
   }
 
   @Test

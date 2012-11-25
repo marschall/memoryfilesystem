@@ -20,6 +20,7 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
@@ -71,8 +72,65 @@ public class MemoryFileSystemTest {
       Future<FileLock> lockFuture = channel.lock();
       FileLock lock = lockFuture.get();
       assertSame(channel, lock.acquiredBy());
-      assertSame(channel, lock.channel());
     }
+  }
+
+  @Test
+  public void deleteOnCloseInputStream() throws IOException {
+    Path path = this.rule.getFileSystem().getPath("/sample.txt");
+    Files.createFile(path);
+    assertTrue(Files.exists(path));
+
+    try (InputStream inputStream = Files.newInputStream(path)) {
+      // nothing
+    }
+    assertTrue(Files.exists(path));
+
+    try (InputStream inputStream = Files.newInputStream(path, StandardOpenOption.DELETE_ON_CLOSE)) {
+      // nothing
+    }
+    assertFalse(Files.exists(path));
+  }
+
+  @Test
+  public void deleteOnCloseOutputStream() throws IOException {
+    Path path = this.rule.getFileSystem().getPath("/sample.txt");
+    Files.createFile(path);
+    assertTrue(Files.exists(path));
+
+    try (OutputStream outputStream = Files.newOutputStream(path)) {
+      // nothing
+    }
+    assertTrue(Files.exists(path));
+
+    try (OutputStream outputStream = Files.newOutputStream(path, StandardOpenOption.DELETE_ON_CLOSE)) {
+      // nothing
+    }
+    assertFalse(Files.exists(path));
+  }
+
+  @Test
+  public void deleteOnCloseByteChannelStream() throws IOException {
+    Path path = this.rule.getFileSystem().getPath("/sample.txt");
+    Files.createFile(path);
+    assertTrue(Files.exists(path));
+
+    try (SeekableByteChannel byteChannel = Files.newByteChannel(path)) {
+      // nothing
+    }
+    assertTrue(Files.exists(path));
+
+    try (SeekableByteChannel byteChannel = Files.newByteChannel(path, StandardOpenOption.DELETE_ON_CLOSE)) {
+      // nothing
+    }
+    assertFalse(Files.exists(path));
+  }
+
+  @Test
+  public void probeContent() throws IOException {
+    Path path = this.rule.getFileSystem().getPath("/sample.txt");
+    Files.createFile(path);
+    assertNull(Files.probeContentType(path));
   }
 
   @Test

@@ -6,13 +6,14 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.NonWritableChannelException;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.file.Path;
 
 final class NonAppendingBlockChannel extends BlockChannel {
 
   private final boolean writable;
 
-  NonAppendingBlockChannel(MemoryContents memoryContents, boolean readable, boolean writable) {
-    super(memoryContents, readable);
+  NonAppendingBlockChannel(MemoryContents memoryContents, boolean readable, boolean writable, boolean deleteOnClose, Path path) {
+    super(memoryContents, readable, deleteOnClose, path);
     this.writable = writable;
   }
 

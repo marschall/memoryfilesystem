@@ -8,12 +8,15 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.nio.channels.FileChannel;
+import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousFileChannel;
+import java.nio.channels.CompletionHandler;
 import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Future;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -56,8 +59,9 @@ public class LockSetTest {
     });
   }
 
-  private static FileLock lock(long position, long size) {
-    return new StubLock(position, size);
+  private static MemoryFileLock lock(long position, long size) {
+    AsynchronousFileChannel channel = new StubChannel();
+    return new MemoryFileLock(channel, position, size, false);
   }
 
   @Before
@@ -97,20 +101,66 @@ public class LockSetTest {
     }
   }
 
-  static final class StubLock extends FileLock {
+  static final class StubChannel extends AsynchronousFileChannel {
 
-    StubLock(long position, long size) {
-      super((FileChannel) null, position, size, true);
+    @Override
+    public void close() throws IOException {
+      throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean isValid() {
-      return true;
+    public boolean isOpen() {
+      throw new UnsupportedOperationException();
     }
 
     @Override
-    public void release() throws IOException {
-      // ignore
+    public long size() throws IOException {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public AsynchronousFileChannel truncate(long size) throws IOException {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void force(boolean metaData) throws IOException {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public <A> void lock(long position, long size, boolean shared, A attachment, CompletionHandler<FileLock, ? super A> handler) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Future<FileLock> lock(long position, long size, boolean shared) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public FileLock tryLock(long position, long size, boolean shared) throws IOException {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public <A> void read(ByteBuffer dst, long position, A attachment, CompletionHandler<Integer, ? super A> handler) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Future<Integer> read(ByteBuffer dst, long position) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public <A> void write(ByteBuffer src, long position, A attachment, CompletionHandler<Integer, ? super A> handler) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Future<Integer> write(ByteBuffer src, long position) {
+      throw new UnsupportedOperationException();
     }
 
   }
