@@ -6,6 +6,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,8 +18,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributeView;
+import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.GroupPrincipal;
 import java.nio.file.attribute.UserPrincipal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -70,6 +75,32 @@ public class UnixFileSystemComptiblityTest {
     } else {
       return Collections.singletonList(new Object[]{false});
     }
+  }
+
+  @Test(expected = UnsupportedOperationException.class)
+  public void initialLastModifiedTime() throws ParseException, IOException {
+    this.assertUnsupportedCreateOption("lastAccessTime");
+  }
+
+  @Test(expected = UnsupportedOperationException.class)
+  public void initialCreationTime() throws ParseException, IOException {
+    this.assertUnsupportedCreateOption("creationTime");
+  }
+
+  @Test(expected = UnsupportedOperationException.class)
+  public void initiallastModifiedTime() throws ParseException, IOException {
+    this.assertUnsupportedCreateOption("lastModifiedTime");
+  }
+
+  private void assertUnsupportedCreateOption(String attributeName) throws IOException, ParseException {
+    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    FileTime time = FileTime.fromMillis(format.parse("2012-11-07T20:30:22").getTime());
+
+    FileAttribute<?> lastModifiedAttribute = new StubFileAttribute<>(attributeName, time);
+
+    Path path = this.getFileSystem().getPath("time");
+    Files.createFile(path, lastModifiedAttribute);
+    fail("'" + attributeName + "' not supported as initial attribute");
   }
 
   @Test

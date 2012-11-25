@@ -57,7 +57,6 @@ public class WindowsMemoryFileSystemTest {
     assertTrue(dosAttributeView.readAttributes().isHidden());
     basicAttributeView = Files.getFileAttributeView(hiddenPath, BasicFileAttributeView.class);
     assertEquals(lastModifiedTime, basicAttributeView.readAttributes().lastModifiedTime());
-
   }
 
   @Test
