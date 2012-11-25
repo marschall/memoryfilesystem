@@ -23,13 +23,13 @@ abstract class BlockOutputStream extends OutputStream {
   @Override
   public void flush() throws IOException {
     super.flush();
-    // TODO atime, mtime
+    this.memoryContents.modified();
   }
 
   @Override
   public void close() throws IOException {
     this.checker.close();
-    // TODO atime, mtime
+    this.memoryContents.modified();
   }
 
 }

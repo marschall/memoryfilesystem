@@ -21,7 +21,7 @@ abstract class BlockChannel extends FileChannel {
 
   final MemoryContents memoryContents;
 
-  private final boolean readable;
+  final boolean readable;
 
   /**
    * The {@link java.nio.channels.WritableByteChannel} documentation says
@@ -143,12 +143,6 @@ abstract class BlockChannel extends FileChannel {
   }
 
   @Override
-  public void force(boolean metaData) throws IOException {
-    // TODO Auto-generated method stub
-
-  }
-
-  @Override
   public long transferTo(long position, long count, WritableByteChannel target) throws IOException {
     // TODO more validation
     this.validatePositionAndCount(position, count);
@@ -175,7 +169,7 @@ abstract class BlockChannel extends FileChannel {
       throw new IllegalArgumentException("only a non-negative values are allowed, " + newPosition + " is invalid");
     }
     this.closedCheck();
-    try (AutoRelease lock = AutoReleaseLock.autoRelease(this.lock)) {
+    try (AutoRelease autoRelease = autoRelease(this.lock)) {
       this.position = newPosition;
     }
     return this;
@@ -226,12 +220,15 @@ abstract class BlockChannel extends FileChannel {
 
   @Override
   protected void implCloseChannel() throws IOException {
-    try (AutoRelease lock = this.writeLock()) {
+    try (AutoRelease lock = autoRelease(this.lock)) {
+      // update atime and mtime
+      this.force(true);
       if (this.fileLocks != null) {
         for (MemoryFileLock fileLock : this.fileLocks) {
           this.memoryContents.unlock(fileLock);
         }
       }
+      this.memoryContents.closedChannel();
     }
   }
 

@@ -40,4 +40,12 @@ interface MemoryContents {
 
   MemoryFileLock tryLock(MemoryFileLock lock) throws IOException;
 
+  void accessed();
+
+  void modified();
+
+  void closedStream();
+
+  void closedChannel();
+
 }

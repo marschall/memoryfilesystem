@@ -29,6 +29,7 @@ import java.nio.channels.SeekableByteChannel;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystem;
+import java.nio.file.FileSystemException;
 import java.nio.file.FileSystemLoopException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -204,7 +205,7 @@ public class MemoryFileSystemTest {
     a.toRealPath();
   }
 
-  @Test
+  @Test(expected = FileSystemException.class)
   public void dontDeleteOpenFile() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path path = fileSystem.getPath("test");

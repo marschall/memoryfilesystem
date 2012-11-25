@@ -86,4 +86,11 @@ final class AppendingBlockChannel extends BlockChannel {
     }
   }
 
+  @Override
+  public void force(boolean metaData) throws IOException {
+    if (metaData) {
+      this.memoryContents.modified();
+    }
+  }
+
 }

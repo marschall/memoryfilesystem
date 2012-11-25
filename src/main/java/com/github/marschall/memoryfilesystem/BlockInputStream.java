@@ -86,7 +86,7 @@ final class BlockInputStream extends InputStream {
   @Override
   public void close() throws IOException {
     this.checker.close();
-    // TODO atime
+    this.memoryContents.accessed();
   }
 
   // FileInputStream doesn't support marks so neither do we

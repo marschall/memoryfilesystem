@@ -18,6 +18,16 @@ import java.util.Set;
 
 class MemoryFile extends MemoryEntry implements MemoryContents {
 
+  /*
+   * It turned out to be easier to implement the contents in this class
+   * rather than a separate class since it needs access to a, c, m times
+   * and update the open count.
+   * 
+   * #transferTo and #transferFrom are candidates for deadlocks since they
+   * acquire two locks without ordering. However one is a read lock
+   * and the other is a write lock. So I "think" we're fine for now.
+   */
+
   //TODO update m, c, a times
 
   /**
@@ -34,6 +44,11 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
 
   // lazily allocated
   private LockSet lockSet;
+
+  /**
+   * The number of open streams or channels.
+   */
+  private int openCount;
 
   /**
    * To store the contents efficiently we store the first {@value #BLOCK_SIZE}
@@ -74,8 +89,7 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
       this.indirectBlocksAllocated = initialBlocks - 1;
     }
     this.size = 0L;
-
-
+    this.openCount = 0;
   }
 
   @Override
@@ -141,16 +155,14 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
   }
 
   InputStream newInputStream(Set<? extends OpenOption> options) {
-    // TODO check more options
     // TODO DELETE_ON_CLOSE and NOFOLLOW_LINKS
-    // TODO SYNC DSYNC
+    // TODO SYNC
     return this.newInputStream();
   }
 
   OutputStream newOutputStream(Set<? extends OpenOption> options) {
-    // TODO check more options
     // TODO DELETE_ON_CLOSE and NOFOLLOW_LINKS
-    // TODO SYNC DSYNC
+    // TODO SYNC
     boolean append = options.contains(StandardOpenOption.APPEND);
     if (append) {
       return this.newAppendingOutputStream();
@@ -164,9 +176,8 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
   }
 
   BlockChannel newChannel(Set<? extends OpenOption> options) {
-    // TODO check more options
     // TODO DELETE_ON_CLOSE and NOFOLLOW_LINKS
-    // TODO SYNC DSYNC
+    // TODO SYNC
     boolean append = options.contains(StandardOpenOption.APPEND);
     boolean readable = options.contains(StandardOpenOption.READ);
     if (append) {
@@ -184,25 +195,57 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
   }
 
   InputStream newInputStream() {
-    return new BlockInputStream(this);
+    try (AutoRelease lock = this.writeLock()) {
+      this.openCount += 1;
+      return new BlockInputStream(this);
+    }
   }
 
   OutputStream newOutputStream() {
-    return new NonAppendingBlockOutputStream(this);
+    try (AutoRelease lock = this.writeLock()) {
+      this.openCount += 1;
+      return new NonAppendingBlockOutputStream(this);
+    }
   }
 
   OutputStream newAppendingOutputStream() {
-    return new AppendingBlockOutputStream(this);
+    try (AutoRelease lock = this.writeLock()) {
+      this.openCount += 1;
+      return new AppendingBlockOutputStream(this);
+    }
   }
 
   BlockChannel newChannel(boolean readable, boolean writable) {
-    return new NonAppendingBlockChannel(this, readable, writable);
+    try (AutoRelease lock = this.writeLock()) {
+      this.openCount += 1;
+      return new NonAppendingBlockChannel(this, readable, writable);
+    }
   }
 
   BlockChannel newAppendingChannel(boolean readable) {
-    return new AppendingBlockChannel(this, readable, this.size);
+    try (AutoRelease lock = this.writeLock()) {
+      this.openCount += 1;
+      return new AppendingBlockChannel(this, readable, this.size);
+    }
   }
 
+  int openCount() {
+    return this.openCount;
+  }
+
+  @Override
+  public void closedStream() {
+    try (AutoRelease lock = this.writeLock()) {
+      this.openCount -= 1;
+    }
+  }
+
+  @Override
+  public void closedChannel() {
+    try (AutoRelease lock = this.writeLock()) {
+      this.openCount -= 1;
+    }
+  }
 
   private byte[] getBlock(int currentBlock) {
     if (currentBlock == 0) {
@@ -450,6 +493,16 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
         this.indirectBlocksAllocated += 1;
       }
     }
+  }
+
+  @Override
+  public void modified() {
+    super.modified();
+  }
+
+  @Override
+  public void accessed() {
+    super.accessed();
   }
 
 

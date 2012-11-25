@@ -94,4 +94,15 @@ final class NonAppendingBlockChannel extends BlockChannel {
     return this;
   }
 
+  @Override
+  public void force(boolean metaData) throws IOException {
+    if (metaData) {
+      if (!this.writable) {
+        this.memoryContents.accessed();
+      } else {
+        this.memoryContents.modified();
+      }
+    }
+  }
+
 }
