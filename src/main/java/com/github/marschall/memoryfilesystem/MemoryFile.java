@@ -28,8 +28,6 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
    * and the other is a write lock. So I "think" we're fine for now.
    */
 
-  //TODO update m, c, a times
-
   /**
    * The object header size of an array. Two words (flags &amp; class oop)
    * plus array size (2 *64 bit + 32 bit on 64 bit, 2 *32 bit + 32 bit on 32 bit).
@@ -42,7 +40,7 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
 
   private final BasicFileAttributeView basicFileAttributeView;
 
-  // lazily allocated
+  // lazily allocated, most files probably won't need this
   private LockSet lockSet;
 
   /**

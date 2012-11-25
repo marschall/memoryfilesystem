@@ -99,6 +99,7 @@ public class UnixFileSystemComptiblityTest {
     FileAttribute<?> lastModifiedAttribute = new StubFileAttribute<>(attributeName, time);
 
     Path path = this.getFileSystem().getPath("time");
+    Files.createDirectories(path.toAbsolutePath().getParent());
     Files.createFile(path, lastModifiedAttribute);
     fail("'" + attributeName + "' not supported as initial attribute");
   }

@@ -47,7 +47,9 @@ public final class MemoryFileSystemUninstaller {
     return MemoryFileSystemUninstaller.class.getClassLoader();
   }
 
-  private static void uninstall(FileSystemProvider provider) {
+  private static void uninstall(MemoryFileSystemProvider provider) {
+    // shut down thread pools
+    provider.close();
     Class<?> providerClass = FileSystemProvider.class;
     try {
       Field installedProvidersField = providerClass.getDeclaredField("installedProviders");
@@ -92,15 +94,17 @@ public final class MemoryFileSystemUninstaller {
    */
   public static boolean uninstall() {
     ClassLoader ownClassLoader = getOwnClassLoader();
-    List<FileSystemProvider> toUninstall = new ArrayList<>(1);
+    List<MemoryFileSystemProvider> toUninstall = new ArrayList<>(1);
     for (FileSystemProvider provider : FileSystemProvider.installedProviders()) {
       if (provider.getClass().getClassLoader() == ownClassLoader) {
-        // don't call #uninstall(FileSystemProvider) because we can't remove
-        // from a collection while iterating over it
-        toUninstall.add(provider);
+        if (provider instanceof MemoryFileSystemProvider) {
+          // don't call #uninstall(FileSystemProvider) because we can't remove
+          // from a collection while iterating over it
+          toUninstall.add((MemoryFileSystemProvider) provider);
+        }
       }
     }
-    for (FileSystemProvider provider : toUninstall) {
+    for (MemoryFileSystemProvider provider : toUninstall) {
       uninstall(provider);
     }
     return !toUninstall.isEmpty();

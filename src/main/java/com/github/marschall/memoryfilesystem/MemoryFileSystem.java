@@ -215,7 +215,7 @@ class MemoryFileSystem extends FileSystem {
   }
 
   private MemoryFile getFile(final AbstractPath path, final Set<? extends OpenOption> options, final FileAttribute<?>... attrs) throws IOException {
-    final ElementPath absolutePath = (ElementPath) path.toAbsolutePath();
+    final ElementPath absolutePath = (ElementPath) path.toAbsolutePath().normalize();
     MemoryDirectory rootDirectory = this.getRootDirectory(absolutePath);
 
     final Path parent = absolutePath.getParent();
@@ -265,7 +265,7 @@ class MemoryFileSystem extends FileSystem {
   }
 
   DirectoryStream<Path> newDirectoryStream(final AbstractPath abstractPath, final Filter<? super Path> filter) throws IOException {
-    final AbstractPath absolutePath = (AbstractPath) abstractPath.toAbsolutePath();
+    final AbstractPath absolutePath = (AbstractPath) abstractPath.toAbsolutePath().normalize();
     MemoryDirectory root = this.getRootDirectory(absolutePath);
     return this.withReadLockDo(root, abstractPath, false, new MemoryEntryBlock<DirectoryStream<Path>>() {
 
@@ -309,7 +309,7 @@ class MemoryFileSystem extends FileSystem {
 
   private void createFile(final AbstractPath path, final MemoryEntryCreator creator) throws IOException {
     this.checker.check();
-    final ElementPath absolutePath = (ElementPath) path.toAbsolutePath();
+    final ElementPath absolutePath = (ElementPath) path.toAbsolutePath().normalize();
     MemoryDirectory rootDirectory = this.getRootDirectory(absolutePath);
 
     final Path parent = absolutePath.getParent();
@@ -333,7 +333,7 @@ class MemoryFileSystem extends FileSystem {
 
   Path toRealPath(AbstractPath abstractPath, LinkOption... options)throws IOException  {
     this.checker.check();
-    AbstractPath absolutePath = (AbstractPath) abstractPath.normalize().toAbsolutePath();
+    AbstractPath absolutePath = (AbstractPath) abstractPath.toAbsolutePath().normalize();
     boolean followSymLinks = this.isFollowSymLinks(options);
     Set<MemorySymbolicLink> encounteredSymlinks;
     if (followSymLinks) {
@@ -501,7 +501,7 @@ class MemoryFileSystem extends FileSystem {
 
   private <R> R accessFile(AbstractPath path, boolean followSymLinks, MemoryEntryBlock<? extends R> callback) throws IOException {
     this.checker.check();
-    AbstractPath absolutePath = (AbstractPath) path.toAbsolutePath();
+    AbstractPath absolutePath = (AbstractPath) path.toAbsolutePath().normalize();
     MemoryDirectory directory = this.getRootDirectory(absolutePath);
     return this.withReadLockDo(directory, absolutePath, followSymLinks, callback);
   }
@@ -606,7 +606,7 @@ class MemoryFileSystem extends FileSystem {
 
 
   void delete(final AbstractPath abstractPath) throws IOException {
-    final ElementPath absolutePath = (ElementPath) abstractPath.toAbsolutePath();
+    final ElementPath absolutePath = (ElementPath) abstractPath.toAbsolutePath().normalize();
     MemoryDirectory rootDirectory = this.getRootDirectory(absolutePath);
 
     final Path parent = absolutePath.getParent();

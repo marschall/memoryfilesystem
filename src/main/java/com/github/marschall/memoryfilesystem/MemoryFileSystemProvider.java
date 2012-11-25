@@ -298,7 +298,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     if (path.equals(path2)) {
       return true;
     }
-    // TODO isn't atomic
+    // isn't atomic but that's fine I guess
     return path.toRealPath().equals(path2.toRealPath());
   }
 
@@ -366,6 +366,11 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   void close(MemoryFileSystem fileSystem) {
     String key = fileSystem.getKey();
     this.fileSystems.remove(key);
+  }
+
+  void close() {
+    this.workExecutor.shutdownNow();
+    this.callbackExecutor.shutdownNow();
   }
 
   private void checkSupported(OpenOption... options)  {
