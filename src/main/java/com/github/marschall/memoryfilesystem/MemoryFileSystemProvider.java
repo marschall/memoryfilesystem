@@ -17,6 +17,7 @@ import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.LinkOption;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileAttributeView;
@@ -281,6 +282,29 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   @Override
   public void copy(Path source, Path target, CopyOption... options) throws IOException {
+    this.copyOrMove(source, target, false, options);
+  }
+
+  private void copyOrMove(Path source, Path target, boolean move, CopyOption... options) throws IOException {
+    this.checkSupported(options);
+    AbstractPath sourcePath = this.castPath(source);
+    AbstractPath targetPath = this.castPath(target);
+    MemoryFileSystem sourceFileSystem = sourcePath.getMemoryFileSystem();
+    MemoryFileSystem targetFileSystem = targetPath.getMemoryFileSystem();
+    if (sourceFileSystem == targetFileSystem) {
+      sourceFileSystem.copyOrMove(sourcePath, targetPath, move, options);
+    } else {
+      MemoryFileSystem first;
+      MemoryFileSystem second;
+      if (sourceFileSystem.getKey().compareTo(targetFileSystem.getKey()) < 0) {
+        first = sourceFileSystem;
+        second = targetFileSystem;
+      } else {
+        first = targetFileSystem;
+        second = sourceFileSystem;
+      }
+      // need to do lock ordering to avoid deadlocks
+    }
     // TODO Auto-generated method stub
     throw new UnsupportedOperationException();
   }
@@ -288,8 +312,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   @Override
   public void move(Path source, Path target, CopyOption... options) throws IOException {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
+    this.copyOrMove(source, target, true, options);
   }
 
 
@@ -371,6 +394,20 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   void close() {
     this.workExecutor.shutdownNow();
     this.callbackExecutor.shutdownNow();
+  }
+
+  private void checkSupported(CopyOption... options)  {
+    if (options == null) {
+      return;
+    }
+    for (CopyOption copyOption : options) {
+      if (copyOption != StandardCopyOption.ATOMIC_MOVE
+              && copyOption != StandardCopyOption.COPY_ATTRIBUTES
+              && copyOption != StandardCopyOption.REPLACE_EXISTING
+              && copyOption != LinkOption.NOFOLLOW_LINKS) {
+        throw new UnsupportedOperationException("copy option: " + copyOption + " not supported");
+      }
+    }
   }
 
   private void checkSupported(OpenOption... options)  {

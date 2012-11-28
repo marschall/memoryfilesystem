@@ -158,15 +158,15 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
   }
 
   InputStream newInputStream(Set<? extends OpenOption> options, Path path) throws IOException {
-    // TODO SYNC
     boolean deleteOnClose = options.contains(StandardOpenOption.DELETE_ON_CLOSE);
+    boolean sync = options.contains(StandardOpenOption.SYNC);
     return this.newInputStream(deleteOnClose, path);
   }
 
   OutputStream newOutputStream(Set<? extends OpenOption> options, Path path) throws IOException {
-    // TODO SYNC
     boolean deleteOnClose = options.contains(StandardOpenOption.DELETE_ON_CLOSE);
     boolean append = options.contains(StandardOpenOption.APPEND);
+    boolean sync = options.contains(StandardOpenOption.SYNC);
     if (append) {
       return this.newAppendingOutputStream(deleteOnClose, path);
     } else {
@@ -179,11 +179,10 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
   }
 
   BlockChannel newChannel(Set<? extends OpenOption> options, Path path) throws IOException {
-    // TODO DELETE_ON_CLOSE and NOFOLLOW_LINKS
-    // TODO SYNC
     boolean append = options.contains(StandardOpenOption.APPEND);
     boolean readable = options.contains(StandardOpenOption.READ);
     boolean deleteOnClose = options.contains(StandardOpenOption.DELETE_ON_CLOSE);
+    boolean sync = options.contains(StandardOpenOption.SYNC);
     if (append) {
       return this.newAppendingChannel(readable, deleteOnClose, path);
     } else {

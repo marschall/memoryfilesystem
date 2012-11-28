@@ -15,12 +15,14 @@ Supported
 * <code>FileOwnerAttributeView</code>
 * <code>PosixFileAttributeView</code>, <code>PosixFileAttributes</code>
 * <code>UserDefinedFileAttributeView</code>
+* <code>FileLock</code>
 
 Not Supported
 -------------
 * <code>FileChannel#map</code>, </code>MappedByteBuffer<code> has final methods that call native methods
 * <code>WatchService</code>
 * <code>FileTypeDetector</code>
-* faked DOS view under Linux
+* cross filesystem copy
+* faked DOS view under Linux, totally unspecified
 * <code>UnixFileAttributeView</code>, sun package, totally unspecified
 * any meaningful access checks

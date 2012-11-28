@@ -1,9 +1,11 @@
 package com.github.marschall.memoryfilesystem;
 
 import java.io.IOException;
+import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -56,8 +58,22 @@ class MemoryDirectory extends MemoryEntry {
     return this.entries.get(name);
   }
 
+  MemoryEntry getEntryOrException(String name, Path path) throws IOException {
+    MemoryEntry entry = this.getEntry(name);
+    if (entry == null) {
+      throw new NoSuchFileException(path.toString());
+    }
+    return entry;
+  }
+
   boolean isEmpty() {
     return this.entries.isEmpty();
+  }
+
+  void checkEmpty(Path path) throws IOException {
+    if (this.isEmpty()) {
+      throw new DirectoryNotEmptyException(path.toString());
+    }
   }
 
   void addEntry(String name, MemoryEntry entry) throws IOException {
