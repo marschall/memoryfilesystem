@@ -1,6 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_ENV;
+import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
 import static java.nio.file.StandardOpenOption.READ;
@@ -82,51 +83,51 @@ public class MemoryFileSystemTest {
   public void deleteOnCloseInputStream() throws IOException {
     Path path = this.rule.getFileSystem().getPath("/sample.txt");
     Files.createFile(path);
-    assertTrue(Files.exists(path));
+    assertThat(path, exists());
 
     try (InputStream inputStream = Files.newInputStream(path)) {
       // nothing
     }
-    assertTrue(Files.exists(path));
+    assertThat(path, exists());
 
     try (InputStream inputStream = Files.newInputStream(path, StandardOpenOption.DELETE_ON_CLOSE)) {
       // nothing
     }
-    assertFalse(Files.exists(path));
+    assertThat(path, not(exists()));
   }
 
   @Test
   public void deleteOnCloseOutputStream() throws IOException {
     Path path = this.rule.getFileSystem().getPath("/sample.txt");
     Files.createFile(path);
-    assertTrue(Files.exists(path));
+    assertThat(path, exists());
 
     try (OutputStream outputStream = Files.newOutputStream(path)) {
       // nothing
     }
-    assertTrue(Files.exists(path));
+    assertThat(path, exists());
 
     try (OutputStream outputStream = Files.newOutputStream(path, StandardOpenOption.DELETE_ON_CLOSE)) {
       // nothing
     }
-    assertFalse(Files.exists(path));
+    assertThat(path, not(exists()));
   }
 
   @Test
   public void deleteOnCloseByteChannelStream() throws IOException {
     Path path = this.rule.getFileSystem().getPath("/sample.txt");
     Files.createFile(path);
-    assertTrue(Files.exists(path));
+    assertThat(path, exists());
 
     try (SeekableByteChannel byteChannel = Files.newByteChannel(path)) {
       // nothing
     }
-    assertTrue(Files.exists(path));
+    assertThat(path, exists());
 
     try (SeekableByteChannel byteChannel = Files.newByteChannel(path, StandardOpenOption.DELETE_ON_CLOSE)) {
       // nothing
     }
-    assertFalse(Files.exists(path));
+    assertThat(path, not(exists()));
   }
 
   @Test
@@ -1021,9 +1022,9 @@ public class MemoryFileSystemTest {
   public void createDirectoryNoParent() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path homePmarscha = fileSystem.getPath("/home/pmarscha");
-    assertFalse(Files.exists(homePmarscha));
+    assertThat(homePmarscha, not(exists()));
     Files.createDirectory(homePmarscha);
-    assertTrue(Files.exists(homePmarscha));
+    assertThat(homePmarscha,exists());
   }
 
   @Test
@@ -1148,9 +1149,9 @@ public class MemoryFileSystemTest {
   public void createDirectories() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path homePmarscha = fileSystem.getPath("/home/pmarscha");
-    assertFalse(Files.exists(homePmarscha));
+    assertThat(homePmarscha, not(exists()));
     Files.createDirectories(homePmarscha);
-    assertTrue(Files.exists(homePmarscha));
+    assertThat(homePmarscha, exists());
   }
 
 
@@ -1158,9 +1159,9 @@ public class MemoryFileSystemTest {
   public void createDirectory() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path home = fileSystem.getPath("/home");
-    assertFalse(Files.exists(home));
+    assertThat(home, not(exists()));
     Files.createDirectory(home);
-    assertTrue(Files.exists(home));
+    assertThat(home, exists());
     assertTrue(Files.isDirectory(home));
     assertFalse(Files.isRegularFile(home));
   }
@@ -1169,9 +1170,9 @@ public class MemoryFileSystemTest {
   public void createDirectoryAlreadyExists() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path home = fileSystem.getPath("/home");
-    assertFalse(Files.exists(home));
+    assertThat(home, not(exists()));
     Files.createDirectory(home);
-    assertTrue(Files.exists(home));
+    assertThat(home, exists());
     Files.createDirectory(home);
   }
 
@@ -1197,6 +1198,8 @@ public class MemoryFileSystemTest {
     Path b = fileSystem.getPath("b");
 
     this.createAndSetContents(a, "abc");
+    assertThat(a, exists());
+    assertThat(b, not(exists()));
 
   }
 

@@ -11,7 +11,7 @@ import org.hamcrest.TypeSafeMatcher;
 final class FileExistsMatcher extends TypeSafeMatcher<Path> {
 
   @Factory
-  static Matcher<Path> fileExists() {
+  static Matcher<Path> exists() {
     return new FileExistsMatcher();
   }
 

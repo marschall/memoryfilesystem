@@ -1,5 +1,6 @@
 package com.github.marschall.memoryfilesystem;
 
+import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
@@ -78,8 +79,8 @@ public class MacOsMemoryFileSystemTest {
       assertEquals(1, createdFile.toAbsolutePath().getFileName().toString().length());
       assertEquals(2, createdFile.toRealPath().getFileName().toString().length());
 
-      assertTrue(Files.exists(aPath));
-      assertTrue(Files.exists(nPath));
+      assertThat(aPath, exists());
+      assertThat(nPath, exists());
       assertTrue(Files.isSameFile(aPath, nPath));
       assertTrue(Files.isSameFile(nPath, aPath));
       assertThat(aPath, not(equalTo(nPath)));
@@ -102,8 +103,8 @@ public class MacOsMemoryFileSystemTest {
       // make sure parent exists
       Files.createDirectories(aLower.toAbsolutePath().getParent());
       createdFile = Files.createFile(aLower);
-      assertTrue(Files.exists(aLower));
-      assertTrue(Files.exists(aUpper));
+      assertThat(aLower, exists());
+      assertThat(aUpper, exists());
       assertTrue(Files.isSameFile(aLower, aUpper));
     } finally {
       if (createdFile != null) {
