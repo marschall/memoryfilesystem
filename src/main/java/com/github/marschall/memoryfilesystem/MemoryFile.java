@@ -14,7 +14,6 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttributeView;
 import java.util.Set;
@@ -41,7 +40,7 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
 
   private final BasicFileAttributes attributes;
 
-  private final BasicFileAttributeView basicFileAttributeView;
+  private final InitializingFileAttributeView basicFileAttributeView;
 
   // lazily allocated, most files probably won't need this
   private LockSet lockSet;
@@ -96,7 +95,7 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
   }
 
   @Override
-  BasicFileAttributeView getBasicFileAttributeView() {
+  InitializingFileAttributeView getBasicFileAttributeView() {
     return this.basicFileAttributeView;
   }
 

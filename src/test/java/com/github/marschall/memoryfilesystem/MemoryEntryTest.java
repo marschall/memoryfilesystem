@@ -45,7 +45,7 @@ public class MemoryEntryTest {
     this.memoryEntry = memoryEntry;
   }
 
-  @Parameters
+  @Parameters(name = "entry: {0}")
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
             { new MemoryDirectory("") },

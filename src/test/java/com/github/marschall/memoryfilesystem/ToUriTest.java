@@ -34,7 +34,7 @@ public class ToUriTest {
     assertEquals(p.toAbsolutePath(), Paths.get(p.toUri()));
   }
 
-  @Parameters
+  @Parameters(name = "path: {0}")
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
             { "a" },

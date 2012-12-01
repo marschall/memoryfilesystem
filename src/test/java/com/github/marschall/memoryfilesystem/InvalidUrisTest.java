@@ -31,7 +31,7 @@ public class InvalidUrisTest {
     }
   }
 
-  @Parameters
+  @Parameters(name = "URI: {0}")
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
             { URI.create("memory:name#fragment") },

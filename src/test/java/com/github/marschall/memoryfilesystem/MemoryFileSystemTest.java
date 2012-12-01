@@ -1,6 +1,8 @@
 package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_ENV;
+import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.nio.file.StandardOpenOption.CREATE_NEW;
 import static java.nio.file.StandardOpenOption.READ;
 import static java.nio.file.StandardOpenOption.WRITE;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -18,6 +20,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -1185,6 +1188,34 @@ public class MemoryFileSystemTest {
       // should reach here
     }
     assertFalse(directories.hasNext());
+  }
+
+  @Test
+  public void copyNoExisitingNoAttributes() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path a = fileSystem.getPath("a");
+    Path b = fileSystem.getPath("b");
+
+    this.createAndSetContents(a, "abc");
+
+  }
+
+  private void createAndSetContents(Path path, String contents) throws IOException {
+    try (SeekableByteChannel channel = Files.newByteChannel(path, WRITE, CREATE_NEW)) {
+      channel.write(ByteBuffer.wrap(contents.getBytes(US_ASCII)));
+    }
+  }
+
+  private void assertContents(Path path, String expected) throws IOException {
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream(expected.length());
+    try (InputStream input = Files.newInputStream(path, READ)) {
+      int read;
+      byte[] buffer = new byte[512];
+      while ((read = input.read(buffer)) != -1) {
+        outputStream.write(buffer, 0, read);
+      }
+    }
+    assertEquals(expected, new String(outputStream.toByteArray(), US_ASCII));
   }
 
 }

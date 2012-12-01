@@ -36,7 +36,7 @@ public class ParserTest {
     assertEquals(fileSystem.getPath(this.expected), fileSystem.getPath(this.first, this.more));
   }
 
-  @Parameters
+  @Parameters(name = "first: {0}, more: {1}, expected: {2}")
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
             { "", null, "" },

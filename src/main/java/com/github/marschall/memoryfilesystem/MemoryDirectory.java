@@ -7,7 +7,6 @@ import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttributeView;
 import java.util.ArrayList;
@@ -23,7 +22,7 @@ class MemoryDirectory extends MemoryEntry {
 
   private final BasicFileAttributes attributes;
 
-  private final BasicFileAttributeView basicFileAttributeView;
+  private final InitializingFileAttributeView basicFileAttributeView;
 
   MemoryDirectory(String originalName) {
     this(originalName, Collections.<Class<? extends FileAttributeView>>emptySet());
@@ -44,7 +43,7 @@ class MemoryDirectory extends MemoryEntry {
   }
 
   @Override
-  BasicFileAttributeView getBasicFileAttributeView() {
+  InitializingFileAttributeView getBasicFileAttributeView() {
     return this.basicFileAttributeView;
   }
 

@@ -342,14 +342,18 @@ class MemoryFileSystem extends FileSystem {
 
   private void createFile(final AbstractPath path, final MemoryEntryCreator creator) throws IOException {
     this.checker.check();
-    final ElementPath absolutePath = (ElementPath) path.toAbsolutePath().normalize();
-    MemoryDirectory rootDirectory = this.getRootDirectory(absolutePath);
+    AbstractPath absolutePath = (AbstractPath) path.toAbsolutePath().normalize();
+    if (absolutePath.isRoot()) {
+      throw new FileSystemException(path.toString(), null, "can not create root");
+    }
+    final ElementPath elementPath = (ElementPath) absolutePath;
+    MemoryDirectory rootDirectory = this.getRootDirectory(elementPath);
 
-    this.withWriteLockOnLastDo(rootDirectory, (AbstractPath) absolutePath.getParent(), true, new MemoryDirectoryBlock<Void>() {
+    this.withWriteLockOnLastDo(rootDirectory, (AbstractPath) elementPath.getParent(), true, new MemoryDirectoryBlock<Void>() {
 
       @Override
       public Void value(MemoryDirectory directory) throws IOException {
-        String name = MemoryFileSystem.this.storeTransformer.transform(absolutePath.getLastNameElement());
+        String name = MemoryFileSystem.this.storeTransformer.transform(elementPath.getLastNameElement());
         MemoryEntry newEntry = creator.create(name);
         String key = MemoryFileSystem.this.lookUpTransformer.transform(newEntry.getOriginalName());
         directory.addEntry(key, newEntry);
@@ -430,6 +434,19 @@ class MemoryFileSystem extends FileSystem {
     } else {
       throw new IllegalArgumentException("unknown path type" + path);
     }
+  }
+
+  private static boolean isCopyAttribues(Object[] options) {
+    if (options == null || options.length == 0) {
+      return false;
+    }
+
+    for (Object option : options) {
+      if (option == StandardCopyOption.COPY_ATTRIBUTES) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private static boolean isFollowSymLinks(Set<?> options) {
@@ -577,7 +594,7 @@ class MemoryFileSystem extends FileSystem {
 
 
   private <R> R withLockDo(MemoryDirectory root, AbstractPath path, Set<MemorySymbolicLink> encounteredLinks, boolean followSymLinks, LockType lockType, MemoryEntryBlock<? extends R> callback) throws IOException {
-    if (path instanceof Root) {
+    if (path.isRoot()) {
       try (AutoRelease lock = root.readLock()) {
         return callback.value(root);
       }
@@ -665,8 +682,6 @@ class MemoryFileSystem extends FileSystem {
         return;
       }
 
-      //TODO follow symbolic links?
-
       final AbstractPath first;
       final AbstractPath second;
       final boolean inverted;
@@ -712,45 +727,16 @@ class MemoryFileSystem extends FileSystem {
               String targetElementName = absoluteTargetPath.getLastNameElement();
               MemoryEntry targetEntry = sourceParent.getEntry(targetElementName);
               if (targetEntry != null) {
-                boolean replaceExisting = isReplaceExisting(options);
-                if (!replaceExisting) {
-                  throw new FileAlreadyExistsException(target.toString());
-                }
-                if (targetEntry instanceof MemoryDirectory) {
-                  MemoryDirectory targetDirectory = (MemoryDirectory) targetEntry;
-                  try (AutoRelease lock = targetDirectory.readLock()) {
-                    targetDirectory.checkEmpty(absoluteTargetPath);
-                  }
-                }
-                targetParent.removeEntry(targetElementName);
+                MemoryFileSystem.this.handeExistingTarget(target, absoluteTargetPath, targetParent, targetElementName, targetEntry, options);
               }
 
               if (move) {
                 sourceParent.removeEntry(sourceElementName);
                 targetParent.addEntry(targetElementName, sourceEntry);
               } else {
-                MemoryEntry copy;
-                if (sourceEntry instanceof MemoryFile) {
-                  MemoryFile sourceFile = (MemoryFile) sourceEntry;
-                  try (AutoRelease lock = sourceFile.readLock()) {
-                    // FIXME implement
-                    copy = null;
-                  }
-                } else if (sourceEntry instanceof MemoryDirectory) {
-                  MemoryDirectory sourceDirectory = (MemoryDirectory) sourceEntry;
-                  try (AutoRelease lock = sourceDirectory.readLock()) {
-                    sourceDirectory.checkEmpty(absoluteTargetPath);
-                    // FIXME implement
-                    copy = null;
-                  }
-                } else if (sourceEntry instanceof MemorySymbolicLink) {
-                  MemorySymbolicLink sourceLink = (MemorySymbolicLink) sourceEntry;
-                  try (AutoRelease lock = sourceLink.readLock()) {
-                    // FIXME implement
-                    copy = null;
-                  }
-                } else {
-                  throw new AssertionError("unknown entry type:" + sourceEntry);
+                MemoryEntry copy = MemoryFileSystem.this.copyEntry(absoluteTargetPath, sourceEntry, targetElementName);
+                if (isCopyAttribues(options)) {
+                  copy.initializeAttributes(sourceEntry);
                 }
                 targetParent.addEntry(targetElementName, copy);
               }
@@ -769,14 +755,18 @@ class MemoryFileSystem extends FileSystem {
 
   void delete(final AbstractPath abstractPath) throws IOException {
     try (AutoRelease autoRelease = autoRelease(this.pathOrderingLock.readLock())) {
-      final ElementPath absolutePath = (ElementPath) abstractPath.toAbsolutePath().normalize();
-      MemoryDirectory rootDirectory = this.getRootDirectory(absolutePath);
+      AbstractPath absolutePath = (AbstractPath) abstractPath.toAbsolutePath().normalize();
+      if (absolutePath.isRoot()) {
+        throw new FileSystemException(abstractPath.toString(), null, "can not delete root");
+      }
+      final ElementPath elementPath = (ElementPath) absolutePath;
+      MemoryDirectory rootDirectory = this.getRootDirectory(elementPath);
 
-      this.withWriteLockOnLastDo(rootDirectory, (AbstractPath) absolutePath.getParent(), true, new MemoryDirectoryBlock<Void>() {
+      this.withWriteLockOnLastDo(rootDirectory, (AbstractPath) elementPath.getParent(), true, new MemoryDirectoryBlock<Void>() {
 
         @Override
         public Void value(MemoryDirectory directory) throws IOException {
-          String fileName = absolutePath.getLastNameElement();
+          String fileName = elementPath.getLastNameElement();
           String key = MemoryFileSystem.this.lookUpTransformer.transform(fileName);
           MemoryEntry child = directory.getEntryOrException(key, abstractPath);
           try (AutoRelease lock = child.writeLock()) {
@@ -932,6 +922,42 @@ class MemoryFileSystem extends FileSystem {
       }
 
     });
+  }
+
+  private void handeExistingTarget(AbstractPath target, ElementPath absoluteTargetPath, MemoryDirectory targetParent, String targetElementName, MemoryEntry targetEntry, final CopyOption... options) throws IOException {
+    boolean replaceExisting = isReplaceExisting(options);
+    if (!replaceExisting) {
+      throw new FileAlreadyExistsException(target.toString());
+    }
+    if (targetEntry instanceof MemoryDirectory) {
+      MemoryDirectory targetDirectory = (MemoryDirectory) targetEntry;
+      try (AutoRelease lock = targetDirectory.readLock()) {
+        targetDirectory.checkEmpty(absoluteTargetPath);
+      }
+    }
+    targetParent.removeEntry(targetElementName);
+  }
+
+  private MemoryEntry copyEntry(ElementPath absoluteTargetPath, MemoryEntry sourceEntry, String targetElementName) throws IOException {
+    if (sourceEntry instanceof MemoryFile) {
+      MemoryFile sourceFile = (MemoryFile) sourceEntry;
+      try (AutoRelease lock = sourceFile.readLock()) {
+        return new MemoryFile(targetElementName, MemoryFileSystem.this.additionalViews);
+      }
+    } else if (sourceEntry instanceof MemoryDirectory) {
+      MemoryDirectory sourceDirectory = (MemoryDirectory) sourceEntry;
+      try (AutoRelease lock = sourceDirectory.readLock()) {
+        sourceDirectory.checkEmpty(absoluteTargetPath);
+        return new MemoryDirectory(targetElementName, MemoryFileSystem.this.additionalViews);
+      }
+    } else if (sourceEntry instanceof MemorySymbolicLink) {
+      MemorySymbolicLink sourceLink = (MemorySymbolicLink) sourceEntry;
+      try (AutoRelease lock = sourceLink.readLock()) {
+        return new MemorySymbolicLink(targetElementName, (AbstractPath) sourceLink.getTarget(), MemoryFileSystem.this.additionalViews);
+      }
+    } else {
+      throw new AssertionError("unknown entry type:" + sourceEntry);
+    }
   }
 
   class LazyFileAttributeView<V extends FileAttributeView> implements InvocationHandler {

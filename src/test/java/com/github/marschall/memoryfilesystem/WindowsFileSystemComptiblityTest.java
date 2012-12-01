@@ -51,7 +51,7 @@ public class WindowsFileSystemComptiblityTest {
   }
 
 
-  @Parameters
+  @Parameters(name = "navite: {0}")
   public static List<Object[]> fileSystems() throws IOException {
     FileSystem defaultFileSystem = FileSystems.getDefault();
     Set<String> supportedFileAttributeViews = defaultFileSystem.supportedFileAttributeViews();

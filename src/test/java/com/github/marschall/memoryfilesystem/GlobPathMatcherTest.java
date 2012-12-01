@@ -39,7 +39,7 @@ public class GlobPathMatcherTest {
     assertEquals(this.expected, matcher.matches(path));
   }
 
-  @Parameters
+  @Parameters(name = "pattern: {0}, path: {1}, should match: {2}")
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
             { "*.java", "GlobPathMatcherTest.java", true },

@@ -47,7 +47,7 @@ public class MemoryContentsTest {
     }
   }
 
-  @Parameters
+  @Parameters(name = "direct allocated: {0}")
   public static List<Object[]> parameters() {
     return Arrays.asList(new Object[]{true}, new Object[]{false});
   }

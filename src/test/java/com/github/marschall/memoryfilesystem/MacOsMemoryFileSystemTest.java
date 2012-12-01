@@ -49,7 +49,7 @@ public class MacOsMemoryFileSystemTest {
   }
 
 
-  @Parameters
+  @Parameters(name = "navite: {0}")
   public static List<Object[]> fileSystems() throws IOException {
     String osName = (String) System.getProperties().get("os.name");
     boolean isMac = osName.startsWith("Mac");

@@ -16,6 +16,9 @@ Supported
 * <code>PosixFileAttributeView</code>, <code>PosixFileAttributes</code>
 * <code>UserDefinedFileAttributeView</code>
 * <code>FileLock</code>
+* <code>PathMatcher</code>
+  * glob
+  * regex
 
 Not Supported
 -------------

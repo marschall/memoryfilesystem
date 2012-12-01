@@ -37,7 +37,7 @@ public class MemoryContentsBoundaryTest {
     this.initialBlocks = initialBlocks;
   }
 
-  @Parameters
+  @Parameters(name = "initialOffset: {0}, initialBlocks: {1}, twoWrite: {2}")
   public static List<Object[]> parameters() {
     int blockSize = MemoryFile.BLOCK_SIZE;
     List<Object[]> parameters = new ArrayList<>();

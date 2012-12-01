@@ -163,13 +163,16 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     if (parser.isSingleEmptyRoot()) {
       Root root = new EmptyRoot(fileSystem);
       MemoryDirectory directory = new MemoryDirectory("", additionalViews);
+      directory.initializeRoot();
       return Collections.singletonMap(root, directory);
     } else {
       List<String> roots = parser.getRoots();
       Map<Root, MemoryDirectory> paths = new LinkedHashMap<>(roots.size());
       for (String root : roots) {
         NamedRoot namedRoot = new NamedRoot(fileSystem, root);
-        paths.put(namedRoot, new MemoryDirectory(namedRoot.getKey(), additionalViews));
+        MemoryDirectory rootDirectory = new MemoryDirectory(namedRoot.getKey(), additionalViews);
+        rootDirectory.initializeRoot();
+        paths.put(namedRoot, rootDirectory);
       }
       return Collections.unmodifiableMap(paths);
     }

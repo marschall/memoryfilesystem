@@ -39,7 +39,7 @@ public class RelativizeResolveTest {
     assertEquals(q, p.relativize(p.resolve(q)));
   }
 
-  @Parameters
+  @Parameters(name = "receiver: {0}, other: {1}")
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
             { "a", "a" },

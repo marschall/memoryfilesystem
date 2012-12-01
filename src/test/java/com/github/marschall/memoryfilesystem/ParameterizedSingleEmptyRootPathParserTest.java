@@ -33,7 +33,7 @@ public class ParameterizedSingleEmptyRootPathParserTest {
     this.more = more;
   }
 
-  @Parameters
+  @Parameters(name = "first: {0} more: {1}")
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
             { "/a", new String[]{"b", "c"} },
