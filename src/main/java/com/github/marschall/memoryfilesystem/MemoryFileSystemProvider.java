@@ -386,7 +386,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   public void setAttribute(Path path, String attribute, Object value, LinkOption... options) throws IOException {
     AbstractPath abstractPath = this.castPath(path);
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
-    memoryFileSystem.setAttribute(abstractPath, attribute, options);
+    memoryFileSystem.setAttribute(abstractPath, attribute, value, options);
   }
 
   void close(MemoryFileSystem fileSystem) {

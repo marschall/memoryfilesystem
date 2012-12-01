@@ -82,6 +82,30 @@ public class UnixFileSystemComptiblityTest {
   }
 
   @Test
+  public void isHidden() throws IOException {
+    Path hidden = this.getFileSystem().getPath(".hidden");
+    Files.createDirectories(hidden.toAbsolutePath().getParent());
+    Files.createFile(hidden);
+    try {
+      assertTrue(Files.isHidden(hidden));
+    } finally {
+      Files.delete(hidden);
+    }
+  }
+
+  @Test
+  public void isNotHidden() throws IOException {
+    Path hidden = this.getFileSystem().getPath("not_hidden");
+    Files.createDirectories(hidden.toAbsolutePath().getParent());
+    Files.createFile(hidden);
+    try {
+      assertFalse(Files.isHidden(hidden));
+    } finally {
+      Files.delete(hidden);
+    }
+  }
+
+  @Test
   public void rootAttributes() throws IOException {
     Path root = this.getFileSystem().getRootDirectories().iterator().next();
     BasicFileAttributes attributes = Files.readAttributes(root, BasicFileAttributes.class);

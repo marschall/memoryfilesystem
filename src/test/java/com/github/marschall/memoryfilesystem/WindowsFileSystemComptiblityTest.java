@@ -65,6 +65,33 @@ public class WindowsFileSystemComptiblityTest {
     }
   }
 
+
+  @Test
+  public void isHidden() throws IOException {
+    Path hidden = this.getFileSystem().getPath("hidden");
+    Files.createDirectories(hidden.toAbsolutePath().getParent());
+    Files.createFile(hidden);
+    try {
+      Files.setAttribute(hidden, "dos:hidden", true);
+      assertTrue(Files.isHidden(hidden));
+    } finally {
+      Files.delete(hidden);
+    }
+  }
+
+  @Test
+  public void isNotHidden() throws IOException {
+    Path hidden = this.getFileSystem().getPath(".not_hidden");
+    Files.createDirectories(hidden.toAbsolutePath().getParent());
+    Files.createFile(hidden);
+    try {
+      Files.setAttribute(hidden, "dos:hidden", false);
+      assertFalse(Files.isHidden(hidden));
+    } finally {
+      Files.delete(hidden);
+    }
+  }
+
   @Test
   public void rootAttributes() throws IOException {
     FileSystem fileSystem = this.getFileSystem();

@@ -5,6 +5,7 @@ import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
 import static java.nio.file.StandardOpenOption.READ;
+import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
@@ -40,6 +41,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.util.ArrayList;
@@ -1197,14 +1199,90 @@ public class MemoryFileSystemTest {
     Path a = fileSystem.getPath("a");
     Path b = fileSystem.getPath("b");
 
-    this.createAndSetContents(a, "abc");
+    this.createAndSetContents(a, "aaa");
     assertThat(a, exists());
     assertThat(b, not(exists()));
 
+    Files.copy(a, b);
+    assertThat(a, exists());
+    assertThat(b, exists());
+
+    this.assertContents(a, "aaa");
+    this.assertContents(b, "aaa");
+
+    this.setContents(a, "a1");
+
+    this.assertContents(a, "a1");
+    this.assertContents(b, "aaa");
+  }
+
+  @Test
+  public void copyReplaceExisitingNoAttributes() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path a = fileSystem.getPath("a");
+    Path b = fileSystem.getPath("b");
+
+    this.createAndSetContents(a, "aaa");
+    this.createAndSetContents(b, "bbb");
+    assertThat(a, exists());
+    assertThat(b, exists());
+
+    Files.copy(a, b, StandardCopyOption.REPLACE_EXISTING);
+    assertThat(a, exists());
+    assertThat(b, exists());
+
+    this.assertContents(a, "aaa");
+    this.assertContents(b, "aaa");
+
+    this.setContents(a, "a1");
+
+    this.assertContents(a, "a1");
+    this.assertContents(b, "aaa");
+  }
+
+  @Test
+  public void moveNoExisitingNoAttributes() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path a = fileSystem.getPath("a");
+    Path b = fileSystem.getPath("b");
+
+    this.createAndSetContents(a, "aaa");
+    assertThat(a, exists());
+    assertThat(b, not(exists()));
+
+    Files.move(a, b);
+    assertThat(a, not(exists()));
+    assertThat(b, exists());
+
+    this.assertContents(b, "aaa");
+  }
+
+  @Test
+  public void moveReplaceExisitingNoAttributes() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path a = fileSystem.getPath("a");
+    Path b = fileSystem.getPath("b");
+
+    this.createAndSetContents(a, "aaa");
+    this.createAndSetContents(b, "bbb");
+    assertThat(a, exists());
+    assertThat(b, exists());
+
+    Files.move(a, b, StandardCopyOption.REPLACE_EXISTING);
+    assertThat(a, not(exists()));
+    assertThat(b, exists());
+
+    this.assertContents(b, "aaa");
   }
 
   private void createAndSetContents(Path path, String contents) throws IOException {
     try (SeekableByteChannel channel = Files.newByteChannel(path, WRITE, CREATE_NEW)) {
+      channel.write(ByteBuffer.wrap(contents.getBytes(US_ASCII)));
+    }
+  }
+
+  private void setContents(Path path, String contents) throws IOException {
+    try (SeekableByteChannel channel = Files.newByteChannel(path, WRITE, TRUNCATE_EXISTING)) {
       channel.write(ByteBuffer.wrap(contents.getBytes(US_ASCII)));
     }
   }
