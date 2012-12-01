@@ -94,6 +94,27 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
     this.openCount = 0;
   }
 
+  MemoryFile(String originalName, Set<Class<? extends FileAttributeView>> additionalViews, MemoryFile other) {
+    super(originalName, additionalViews);
+    this.attributes = new MemoryFileAttributes();
+    this.basicFileAttributeView = new MemoryFileAttributesView();
+
+    if (other.directBlock != null) {
+      this.directBlock = other.directBlock.clone();
+    }
+
+    if (other.indirectBlocks != null) {
+      this.indirectBlocks = other.indirectBlocks.clone();
+      for (int i = 0; i < other.indirectBlocksAllocated; ++i) {
+        this.indirectBlocks[i] = other.indirectBlocks[i].clone();
+      }
+    }
+    this.indirectBlocksAllocated = other.indirectBlocksAllocated;
+
+    this.size = other.size;
+    this.openCount = 0;
+  }
+
   @Override
   InitializingFileAttributeView getBasicFileAttributeView() {
     return this.basicFileAttributeView;

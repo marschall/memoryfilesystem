@@ -967,7 +967,7 @@ class MemoryFileSystem extends FileSystem {
     if (sourceEntry instanceof MemoryFile) {
       MemoryFile sourceFile = (MemoryFile) sourceEntry;
       try (AutoRelease lock = sourceFile.readLock()) {
-        return new MemoryFile(targetElementName, MemoryFileSystem.this.additionalViews);
+        return new MemoryFile(targetElementName, MemoryFileSystem.this.additionalViews, sourceFile);
       }
     } else if (sourceEntry instanceof MemoryDirectory) {
       MemoryDirectory sourceDirectory = (MemoryDirectory) sourceEntry;
