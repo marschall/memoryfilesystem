@@ -307,9 +307,9 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
         second = sourceFileSystem;
       }
       // need to do lock ordering to avoid deadlocks
+      // TODO Auto-generated method stub
+      throw new UnsupportedOperationException();
     }
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
   }
 
 

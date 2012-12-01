@@ -128,11 +128,11 @@ public class FileSystemComptiblityTest {
     Path path = Files.createTempFile("sample", ".txt");
     try (SeekableByteChannel channel = Files.newByteChannel(path, APPEND)) {
       //      channel.position(channel.size());
-      System.out.println(channel.position());
+      assertEquals(0L, channel.position());
       ByteBuffer src = ByteBuffer.wrap(new byte[]{1, 2, 3, 4, 5});
       channel.position(0L);
       channel.write(src);
-      System.out.println(channel.position());
+      assertEquals(5L, channel.position());
       //      channel.truncate(channel.size() - 1L);
       //      channel.truncate(1L);
     } finally {

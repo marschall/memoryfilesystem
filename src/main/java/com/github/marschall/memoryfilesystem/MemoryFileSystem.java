@@ -569,13 +569,13 @@ class MemoryFileSystem extends FileSystem {
     if (lockType == LockType.READ) {
       return this.withReadLockDo(directory, absolutePath, followSymLinks, callback);
     } else {
-      final ElementPath elementPath = (ElementPath) absolutePath;
-      MemoryDirectory rootDirectory = this.getRootDirectory(elementPath);
+      MemoryDirectory rootDirectory = this.getRootDirectory(absolutePath);
       if (absolutePath.isRoot()) {
         try (AutoRelease autoRelease = rootDirectory.writeLock()) {
           return callback.value(rootDirectory);
         }
       }
+      ElementPath elementPath = (ElementPath) absolutePath;
       Set<MemorySymbolicLink> encounteredSymlinks;
       if (followSymLinks) {
         encounteredSymlinks = new HashSet<>(4);
