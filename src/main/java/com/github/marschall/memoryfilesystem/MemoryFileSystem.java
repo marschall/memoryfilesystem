@@ -24,7 +24,6 @@ import java.nio.file.NotDirectoryException;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
-import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.WatchService;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -255,7 +254,7 @@ class MemoryFileSystem extends FileSystem {
     final ElementPath absolutePath = (ElementPath) path.toAbsolutePath().normalize();
     MemoryDirectory rootDirectory = this.getRootDirectory(absolutePath);
 
-    return this.withWriteLockOnLastDo(rootDirectory, (AbstractPath) absolutePath.getParent(), isFollowSymLinks(options), new MemoryDirectoryBlock<MemoryFile>() {
+    return this.withWriteLockOnLastDo(rootDirectory, (AbstractPath) absolutePath.getParent(), Options.isFollowSymLinks(options), new MemoryDirectoryBlock<MemoryFile>() {
 
       @Override
       public MemoryFile value(MemoryDirectory directory) throws IOException {
@@ -366,7 +365,7 @@ class MemoryFileSystem extends FileSystem {
   Path toRealPath(AbstractPath abstractPath, LinkOption... options)throws IOException  {
     this.checker.check();
     AbstractPath absolutePath = (AbstractPath) abstractPath.toAbsolutePath().normalize();
-    boolean followSymLinks = isFollowSymLinks(options);
+    boolean followSymLinks = Options.isFollowSymLinks(options);
     Set<MemorySymbolicLink> encounteredSymlinks;
     if (followSymLinks) {
       // we don't expect to encounter many symlinks so we initialize to a lower than the default value of 16
@@ -436,59 +435,6 @@ class MemoryFileSystem extends FileSystem {
     }
   }
 
-  private static boolean isCopyAttribues(Object[] options) {
-    if (options == null || options.length == 0) {
-      return false;
-    }
-
-    for (Object option : options) {
-      if (option == StandardCopyOption.COPY_ATTRIBUTES) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private static boolean isFollowSymLinks(Set<?> options) {
-    if (options == null || options.isEmpty()) {
-      return true;
-    }
-
-    for (Object option : options) {
-      if (option == LinkOption.NOFOLLOW_LINKS) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  private static boolean isFollowSymLinks(Object[] options) {
-    if (options == null) {
-      return true;
-    }
-
-    for (Object option : options) {
-      if (option == LinkOption.NOFOLLOW_LINKS) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  private static boolean isReplaceExisting(CopyOption... options) {
-    if (options == null) {
-      return false;
-    }
-
-    for (CopyOption option : options) {
-      if (option == StandardCopyOption.REPLACE_EXISTING) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-
   void checkAccess(AbstractPath path, final AccessMode... modes) throws IOException {
     this.checker.check();
     // java.nio.file.spi.FileSystemProvider#checkAccess(Path, AccessMode...)
@@ -505,7 +451,7 @@ class MemoryFileSystem extends FileSystem {
 
   <A extends BasicFileAttributes> A readAttributes(AbstractPath path, final Class<A> type, LinkOption... options) throws IOException {
     this.checker.check();
-    return this.accessFileReading(path, isFollowSymLinks(options), new MemoryEntryBlock<A>() {
+    return this.accessFileReading(path, Options.isFollowSymLinks(options), new MemoryEntryBlock<A>() {
 
       @Override
       public A value(MemoryEntry entry) throws IOException {
@@ -521,7 +467,7 @@ class MemoryFileSystem extends FileSystem {
   }
 
   <V extends FileAttributeView> V getFileAttributeView(AbstractPath path, final Class<V> type, LinkOption... options) throws IOException {
-    return this.accessFileReading(path, isFollowSymLinks(options), new MemoryEntryBlock<V>() {
+    return this.accessFileReading(path, Options.isFollowSymLinks(options), new MemoryEntryBlock<V>() {
 
       @Override
       public V value(MemoryEntry entry) throws IOException {
@@ -532,7 +478,7 @@ class MemoryFileSystem extends FileSystem {
 
   Map<String, Object> readAttributes(AbstractPath path, final String attributes, LinkOption... options) throws IOException {
     this.checker.check();
-    return this.accessFileReading(path, isFollowSymLinks(options), new MemoryEntryBlock<Map<String, Object>>() {
+    return this.accessFileReading(path, Options.isFollowSymLinks(options), new MemoryEntryBlock<Map<String, Object>>() {
 
       @Override
       public Map<String, Object> value(MemoryEntry entry) throws IOException {
@@ -543,7 +489,7 @@ class MemoryFileSystem extends FileSystem {
 
   void setAttribute(AbstractPath path, final String attribute, final Object value, LinkOption... options) throws IOException {
     this.checker.check();
-    this.accessFileWriting(path, isFollowSymLinks(options), new MemoryEntryBlock<Void>() {
+    this.accessFileWriting(path, Options.isFollowSymLinks(options), new MemoryEntryBlock<Void>() {
 
       @Override
       public Void value(MemoryEntry entry) throws IOException {
@@ -714,7 +660,7 @@ class MemoryFileSystem extends FileSystem {
       final boolean secondFollowSymLinks;
       if (absoluteSourePath.compareTo(absoluteTargetPath) < 0) {
         first = absoluteSourePath;
-        firstFollowSymLinks = isFollowSymLinks(options);
+        firstFollowSymLinks = Options.isFollowSymLinks(options);
         second = absoluteTargetPath;
         secondFollowSymLinks = false;
         inverted = false;
@@ -722,7 +668,7 @@ class MemoryFileSystem extends FileSystem {
         first = absoluteTargetPath;
         firstFollowSymLinks = false;
         second = absoluteSourePath;
-        secondFollowSymLinks = isFollowSymLinks(options);
+        secondFollowSymLinks = Options.isFollowSymLinks(options);
         inverted = true;
       }
 
@@ -760,7 +706,7 @@ class MemoryFileSystem extends FileSystem {
                 targetParent.addEntry(targetElementName, sourceEntry);
               } else {
                 MemoryEntry copy = MemoryFileSystem.this.copyEntry(absoluteTargetPath, sourceEntry, targetElementName);
-                if (isCopyAttribues(options)) {
+                if (Options.isCopyAttribues(options)) {
                   copy.initializeAttributes(sourceEntry);
                 }
                 targetParent.addEntry(targetElementName, copy);
@@ -950,7 +896,7 @@ class MemoryFileSystem extends FileSystem {
   }
 
   private void handeExistingTarget(AbstractPath target, ElementPath absoluteTargetPath, MemoryDirectory targetParent, String targetElementName, MemoryEntry targetEntry, final CopyOption... options) throws IOException {
-    boolean replaceExisting = isReplaceExisting(options);
+    boolean replaceExisting = Options.isReplaceExisting(options);
     if (!replaceExisting) {
       throw new FileAlreadyExistsException(target.toString());
     }
