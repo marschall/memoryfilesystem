@@ -643,69 +643,64 @@ class MemoryFileSystem extends FileSystem {
     this.copyOrMove(source, target, false, options);
   }
 
-  void copyOrMove(AbstractPath source, final AbstractPath target, final boolean move, final CopyOption... options) throws IOException {
+  void copyOrMove(final AbstractPath source, final AbstractPath target, final boolean move, final CopyOption... options) throws IOException {
     try (AutoRelease autoRelease = autoRelease(this.pathOrderingLock.writeLock())) {
       // FIXME check for root, cast fill fail
-      final ElementPath absoluteSourePath = (ElementPath) source.toRealPath();
-      final ElementPath absoluteTargetPath = (ElementPath) target.toRealPath();
 
-      if (absoluteSourePath.equals(absoluteTargetPath)) {
-        return;
-      }
+      final EndPointCopyContext sourceContext = this.buildEndpointCopyContext(source);
+      final EndPointCopyContext targetContext = this.buildEndpointCopyContext(target);
 
-      final AbstractPath first;
-      final AbstractPath second;
-      final boolean inverted;
-      final boolean firstFollowSymLinks;
-      final boolean secondFollowSymLinks;
-      if (absoluteSourePath.compareTo(absoluteTargetPath) < 0) {
-        first = absoluteSourePath;
-        firstFollowSymLinks = Options.isFollowSymLinks(options);
-        second = absoluteTargetPath;
-        secondFollowSymLinks = false;
-        inverted = false;
-      } else {
-        first = absoluteTargetPath;
-        firstFollowSymLinks = false;
-        second = absoluteSourePath;
-        secondFollowSymLinks = Options.isFollowSymLinks(options);
-        inverted = true;
-      }
+      // TODO check for equality later
 
-      final MemoryDirectory firstRoot = this.getRootDirectory(first);
-      final MemoryDirectory secondRoot = this.getRootDirectory(second);
-      this.withWriteLockOnLastDo(firstRoot, (AbstractPath) first.getParent(), firstFollowSymLinks, new MemoryDirectoryBlock<Void>() {
+      boolean followSymLinks = Options.isFollowSymLinks(options);
+
+      final CopyContext copyContext = this.buildCopyContext(sourceContext, targetContext, followSymLinks);
+
+      final MemoryDirectory firstRoot = this.getRootDirectory(copyContext.first.parent);
+      final MemoryDirectory secondRoot = this.getRootDirectory(copyContext.second.parent);
+      this.withWriteLockOnLastDo(firstRoot, copyContext.first.parent, copyContext.firstFollowSymLinks, new MemoryDirectoryBlock<Void>() {
 
         @Override
         public Void value(final MemoryDirectory firstDirectory) throws IOException {
-          MemoryFileSystem.this.withWriteLockOnLastDo(secondRoot, (AbstractPath) second.getParent(), secondFollowSymLinks, new MemoryDirectoryBlock<Void>() {
+          MemoryFileSystem.this.withWriteLockOnLastDo(secondRoot, copyContext.second.parent, copyContext.secondFollowSymLinks, new MemoryDirectoryBlock<Void>() {
 
             @Override
             public Void value(MemoryDirectory secondDirectory) throws IOException {
-              MemoryDirectory sourceParent;
-              MemoryDirectory targetParent;
-              if (!inverted) {
-                sourceParent = firstDirectory;
-                targetParent = secondDirectory;
-              } else {
-                sourceParent = secondDirectory;
-                targetParent = firstDirectory;
+              MemoryDirectory sourceParent = copyContext.getSourceParent(firstDirectory, secondDirectory);
+              MemoryDirectory targetParent = copyContext.getTargetParent(firstDirectory, secondDirectory);
+
+              String sourceElementName = MemoryFileSystem.this.lookUpTransformer.transform(sourceContext.elementName);
+              MemoryEntry sourceEntry = sourceParent.getEntryOrException(sourceElementName, source);
+
+              String targetElementName = MemoryFileSystem.this.lookUpTransformer.transform(targetContext.elementName);
+              MemoryEntry targetEntry = sourceParent.getEntry(targetElementName);
+
+              if (sourceEntry == targetEntry) {
+                // source and target are the same, do nothing
+                // the way I read Files#copy this is the intention of the spec
+                return null;
               }
 
-              String sourceElementName = absoluteSourePath.getLastNameElement();
-              MemoryEntry sourceEntry = sourceParent.getEntryOrException(sourceElementName, absoluteSourePath);
-
-              String targetElementName = absoluteTargetPath.getLastNameElement();
-              MemoryEntry targetEntry = sourceParent.getEntry(targetElementName);
               if (targetEntry != null) {
-                MemoryFileSystem.this.handeExistingTarget(target, absoluteTargetPath, targetParent, targetElementName, targetEntry, options);
+                boolean replaceExisting = Options.isReplaceExisting(options);
+                if (!replaceExisting) {
+                  throw new FileAlreadyExistsException(target.toString());
+                }
+
+                if (targetEntry instanceof MemoryDirectory) {
+                  MemoryDirectory targetDirectory = (MemoryDirectory) targetEntry;
+                  try (AutoRelease lock = targetDirectory.readLock()) {
+                    targetDirectory.checkEmpty(target);
+                  }
+                }
+                targetParent.removeEntry(targetElementName);
               }
 
               if (move) {
                 sourceParent.removeEntry(sourceElementName);
                 targetParent.addEntry(targetElementName, sourceEntry);
               } else {
-                MemoryEntry copy = MemoryFileSystem.this.copyEntry(absoluteTargetPath, sourceEntry, targetElementName);
+                MemoryEntry copy = MemoryFileSystem.this.copyEntry(target, sourceEntry, targetElementName);
                 if (Options.isCopyAttribues(options)) {
                   copy.initializeAttributes(sourceEntry);
                 }
@@ -721,6 +716,100 @@ class MemoryFileSystem extends FileSystem {
       });
 
     }
+  }
+
+  private EndPointCopyContext buildEndpointCopyContext(AbstractPath source) {
+    // TODO check for root
+    ElementPath absolutePath = (ElementPath) source.toAbsolutePath();
+    AbstractPath parent = (AbstractPath) absolutePath.getParent();
+    String elementName = absolutePath.getLastNameElement();
+    return new EndPointCopyContext(parent, elementName);
+  }
+
+  static final class EndPointCopyContext {
+
+    final AbstractPath parent;
+    final String elementName;
+
+    EndPointCopyContext(AbstractPath parent, String elementName) {
+      this.parent = parent;
+      this.elementName = elementName;
+    }
+
+  }
+
+  private CopyContext buildCopyContext(EndPointCopyContext source, EndPointCopyContext target, boolean followSymlinks) {
+    int order = this.order(source, target);
+
+    EndPointCopyContext first;
+    EndPointCopyContext second;
+    boolean firstFollowSymLinks;
+    boolean secondFollowSymLinks;
+    boolean inverted;
+    if (order <= 0) {
+      first = source;
+      second = target;
+      firstFollowSymLinks = followSymlinks;
+      secondFollowSymLinks = false;
+      inverted = true;
+    } else {
+      first = target;
+      second = source;
+      firstFollowSymLinks = false;
+      secondFollowSymLinks = followSymlinks;
+      inverted = false;
+    }
+
+    return new CopyContext(source, target, first, second, firstFollowSymLinks, secondFollowSymLinks, inverted);
+  }
+
+  private int order(EndPointCopyContext source, EndPointCopyContext target) {
+    int parentOrder = source.parent.compareTo(target.parent);
+    if (parentOrder != 0) {
+      return parentOrder;
+    } else {
+      return this.collator.compare(source.elementName, target.elementName);
+    }
+  }
+
+  static final class CopyContext {
+
+    final EndPointCopyContext source;
+    final EndPointCopyContext target;
+    final EndPointCopyContext first;
+    final EndPointCopyContext second;
+    final boolean firstFollowSymLinks;
+    final boolean secondFollowSymLinks;
+    private final boolean inverted;
+
+    CopyContext(EndPointCopyContext source, EndPointCopyContext target, EndPointCopyContext first, EndPointCopyContext second, boolean firstFollowSymLinks, boolean secondFollowSymLinks, boolean inverted) {
+      this.source = source;
+      this.target = target;
+      this.first = first;
+      this.second = second;
+      this.firstFollowSymLinks = firstFollowSymLinks;
+      this.secondFollowSymLinks = secondFollowSymLinks;
+      this.inverted = inverted;
+    }
+
+    MemoryDirectory getSourceParent(MemoryDirectory firstDirectory, MemoryDirectory secondDirectory) {
+      if (!this.inverted) {
+        return firstDirectory;
+      } else {
+        return secondDirectory;
+      }
+    }
+
+    MemoryDirectory getTargetParent(MemoryDirectory firstDirectory, MemoryDirectory secondDirectory) {
+      if (!this.inverted) {
+        return secondDirectory;
+      } else {
+        return firstDirectory;
+      }
+    }
+
+
+
   }
 
 
@@ -895,21 +984,7 @@ class MemoryFileSystem extends FileSystem {
     });
   }
 
-  private void handeExistingTarget(AbstractPath target, ElementPath absoluteTargetPath, MemoryDirectory targetParent, String targetElementName, MemoryEntry targetEntry, final CopyOption... options) throws IOException {
-    boolean replaceExisting = Options.isReplaceExisting(options);
-    if (!replaceExisting) {
-      throw new FileAlreadyExistsException(target.toString());
-    }
-    if (targetEntry instanceof MemoryDirectory) {
-      MemoryDirectory targetDirectory = (MemoryDirectory) targetEntry;
-      try (AutoRelease lock = targetDirectory.readLock()) {
-        targetDirectory.checkEmpty(absoluteTargetPath);
-      }
-    }
-    targetParent.removeEntry(targetElementName);
-  }
-
-  private MemoryEntry copyEntry(ElementPath absoluteTargetPath, MemoryEntry sourceEntry, String targetElementName) throws IOException {
+  private MemoryEntry copyEntry(Path absoluteTargetPath, MemoryEntry sourceEntry, String targetElementName) throws IOException {
     if (sourceEntry instanceof MemoryFile) {
       MemoryFile sourceFile = (MemoryFile) sourceEntry;
       try (AutoRelease lock = sourceFile.readLock()) {
@@ -1016,11 +1091,8 @@ class MemoryFileSystem extends FileSystem {
   }
 
   enum LockType {
-
     READ,
     WRITE;
-
   }
-
 
 }

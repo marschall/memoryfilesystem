@@ -165,11 +165,11 @@ final class AbsolutePath extends NonEmptyPath {
   }
 
   @Override
-  int compareToNonRoot(AbstractPath other) {
+  int compareToNonRoot(ElementPath other) {
     if (!other.isAbsolute()) {
       return -1;
     }
-    return this.compareNameElements(((AbsolutePath) other).getNameElements());
+    return this.compareNameElements(other.getNameElements());
   }
 
   @Override
@@ -226,14 +226,9 @@ final class AbsolutePath extends NonEmptyPath {
   }
 
   @Override
-  Path resolve(AbstractPath other) {
-    if (other instanceof ElementPath) {
-      ElementPath otherPath = (ElementPath) other;
-      List<String> resolvedElements = CompositeList.create(this.getNameElements(), otherPath.getNameElements());
-      return createAboslute(this.getMemoryFileSystem(), this.root, resolvedElements);
-    } else {
-      throw new IllegalArgumentException("can't resolve" + other);
-    }
+  Path resolve(ElementPath other) {
+    List<String> resolvedElements = CompositeList.create(this.getNameElements(), other.getNameElements());
+    return createAboslute(this.getMemoryFileSystem(), this.root, resolvedElements);
   }
 
 

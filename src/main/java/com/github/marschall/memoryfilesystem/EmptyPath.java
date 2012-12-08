@@ -114,7 +114,7 @@ final class EmptyPath extends ElementPath {
   }
 
   @Override
-  int compareToNonRoot(AbstractPath other) {
+  int compareToNonRoot(ElementPath other) {
     return -1;
   }
 
@@ -135,7 +135,7 @@ final class EmptyPath extends ElementPath {
 
 
   @Override
-  Path resolve(AbstractPath other) {
+  Path resolve(ElementPath other) {
     return other;
   }
 

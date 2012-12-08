@@ -32,15 +32,18 @@ abstract class AbstractPath implements Path {
   }
 
   static AbstractPath createRelative(MemoryFileSystem fileSystem, List<String> nameElements) {
-    if (nameElements.isEmpty()) {
+    int nameElementCount = nameElements.size();
+    if (nameElementCount == 0) {
       return fileSystem.getEmptyPath();
+    } else if (nameElementCount == 1) {
+      return createRelative(fileSystem, nameElements.get(0));
     } else {
       return new RelativePath(fileSystem, nameElements);
     }
   }
 
   static AbstractPath createRelative(MemoryFileSystem fileSystem, String nameElement) {
-    return createRelative(fileSystem, Collections.singletonList(nameElement));
+    return new SingletonPath(fileSystem, nameElement);
   }
 
 
@@ -92,11 +95,13 @@ abstract class AbstractPath implements Path {
     } else if (other.isAbsolute()) {
       // TODO totally unspecified, make configurable
       return other;
+    } else if (otherPath.getNameCount() == 0) {
+      return this;
     }
-    return this.resolve(otherPath);
+    return this.resolve((ElementPath) otherPath);
   }
 
-  abstract Path resolve(AbstractPath other);
+  abstract Path resolve(ElementPath other);
 
 
   @Override

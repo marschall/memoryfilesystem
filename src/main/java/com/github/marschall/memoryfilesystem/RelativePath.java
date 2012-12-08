@@ -111,14 +111,14 @@ final class RelativePath extends NonEmptyPath {
   }
 
   @Override
-  int compareToNonRoot(AbstractPath other) {
+  int compareToNonRoot(ElementPath other) {
     if (other.isAbsolute()) {
       return 1;
     }
     if (other.getNameCount() == 0) {
       return 1;
     }
-    return this.compareNameElements(((RelativePath) other).getNameElements());
+    return this.compareNameElements(other.getNameElements());
   }
 
   @Override
@@ -171,14 +171,9 @@ final class RelativePath extends NonEmptyPath {
   }
 
   @Override
-  Path resolve(AbstractPath other) {
-    if (other instanceof ElementPath) {
-      ElementPath otherPath = (ElementPath) other;
-      List<String> resolvedElements = CompositeList.create(this.getNameElements(), otherPath.getNameElements());
-      return createRelative(this.getMemoryFileSystem(), resolvedElements);
-    } else {
-      throw new IllegalArgumentException("can't resolve" + other);
-    }
+  Path resolve(ElementPath other) {
+    List<String> resolvedElements = CompositeList.create(this.getNameElements(), other.getNameElements());
+    return createRelative(this.getMemoryFileSystem(), resolvedElements);
   }
 
   @Override
@@ -221,16 +216,19 @@ final class RelativePath extends NonEmptyPath {
     ElementPath other = (ElementPath) obj;
     // compareTo take memory file system key into account to ensure
     // a.compareTo(b) == 0 iff a.equals(b)
-    return this.getMemoryFileSystem().getKey().equals(other.getMemoryFileSystem().getKey())
+    return this.getMemoryFileSystem().equals(other.getMemoryFileSystem())
             && this.equalElementsAs(other.getNameElements());
   }
 
   @Override
   public int hashCode() {
-    // TODO expensive, safe
-    Collator collator = this.getMemoryFileSystem().getCollator();
+    MemoryFileSystem memoryFileSystem = this.getMemoryFileSystem();
+    Collator collator = memoryFileSystem.getCollator();
+
     int result = 17;
+    result = 31 * result + memoryFileSystem.hashCode();
     for (String each : this.getNameElements()) {
+      // TODO expensive, safe
       CollationKey collationKey = collator.getCollationKey(each);
       result = 31 * result + Arrays.hashCode(collationKey.toByteArray());
     }

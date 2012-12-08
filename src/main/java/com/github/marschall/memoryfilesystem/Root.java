@@ -109,14 +109,8 @@ abstract class Root extends AbstractPath {
 
 
   @Override
-  Path resolve(AbstractPath other) {
-    if (other instanceof ElementPath) {
-      // TODO root?
-      ElementPath otherPath = (ElementPath) other;
-      return AbstractPath.createAboslute(this.getMemoryFileSystem(), this, otherPath.getNameElements());
-    } else {
-      throw new IllegalArgumentException("can't resolve" + other);
-    }
+  Path resolve(ElementPath other) {
+    return AbstractPath.createAboslute(this.getMemoryFileSystem(), this, other.getNameElements());
   }
 
   @Override

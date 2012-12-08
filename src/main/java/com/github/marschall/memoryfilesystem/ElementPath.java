@@ -20,10 +20,10 @@ abstract class ElementPath extends AbstractPath {
     if (other.isRoot()) {
       return 1;
     }
-    return this.compareToNonRoot(other);
+    return this.compareToNonRoot((ElementPath) other);
   }
 
-  abstract int compareToNonRoot(AbstractPath other);
+  abstract int compareToNonRoot(ElementPath other);
 
 
 }
