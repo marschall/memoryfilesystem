@@ -1,19 +1,27 @@
 package com.github.marschall.memoryfilesystem;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.file.CopyOption;
 import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.DosFileAttributeView;
+import java.nio.file.attribute.DosFileAttributes;
+import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.attribute.GroupPrincipal;
+import java.nio.file.attribute.PosixFileAttributeView;
+import java.nio.file.attribute.PosixFileAttributes;
+import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.nio.file.attribute.UserPrincipalNotFoundException;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -54,14 +62,17 @@ public final class Directories {
     LinkOption[] linkOptions = linkOptions(copyOptions);
     boolean targetExists = Files.exists(target, linkOptions);
     boolean copyAttribues = Options.isCopyAttribues(copyOptions);
+    Set<Class<? extends FileAttributeView>> supportedAttribueViews = supportedAttribueViews(source, target, sameFileSystem);
+
     if (!targetExists) {
       Files.createDirectories(target);
     }
 
-    Files.walkFileTree(source, new DirectoryCopier(source, target, copyOptions, linkOptions, sameFileSystem, copyAttribues));
+    FileVisitor<Path> copier = new DirectoryCopier(source, target, copyOptions, linkOptions, supportedAttribueViews, sameFileSystem, copyAttribues);
+    Files.walkFileTree(source, copier);
 
     if (!targetExists && copyAttribues) {
-      copyAttributes(source, target, sameFileSystem, linkOptions);
+      copyAttributes(source, target, sameFileSystem, supportedAttribueViews, linkOptions);
     }
   }
 
@@ -69,43 +80,91 @@ public final class Directories {
     return Options.isFollowSymLinks(copyOptions) ? NO_LINK_OPTIONS : NOFOLLOW_LINKS;
   }
 
-  private static void copyAttributes(Path source, Path target, boolean sameFileSystem, LinkOption[] linkOptions) throws IOException {
-    Set<String> supportedFileAttributeViews = source.getFileSystem().supportedFileAttributeViews();
-    for (String viewName : supportedFileAttributeViews) {
-      // TODO UserDefinedFileAttributeView?
-      Map<String, Object> attributes = Files.readAttributes(target, viewName + ":*", linkOptions);
-      for (Entry<String, Object> attribute : attributes.entrySet()) {
-        String attributeName = attribute.getKey();
-        Object attributeValue = attribute.getValue();
-        if (!sameFileSystem) {
-          if (attributeValue instanceof UserPrincipal) {
-            UserPrincipalLookupService userPrincipalLookupService = source.getFileSystem().getUserPrincipalLookupService();
-            UserPrincipal user = (UserPrincipal) attributeValue;
-            try {
-              attributeValue = userPrincipalLookupService.lookupPrincipalByName(user.getName());
-            } catch (UserPrincipalNotFoundException e) {
-              // user doesn't exist in target file system, ignore
-              continue;
-            }
-          } else if (attributeValue instanceof GroupPrincipal) {
-            UserPrincipalLookupService userPrincipalLookupService = source.getFileSystem().getUserPrincipalLookupService();
-            GroupPrincipal group = (GroupPrincipal) attributeValue;
-            try {
-              attributeValue = userPrincipalLookupService.lookupPrincipalByGroupName(group.getName());
-            } catch (UserPrincipalNotFoundException e) {
-              // group doesn't exist in target file system, ignore
-              continue;
-            }
-          }
+  private static Set<Class<? extends FileAttributeView>> supportedAttribueViews(Path source, Path target, boolean sameFileSystem) {
+    Set<String> viewNames = source.getFileSystem().supportedFileAttributeViews();
+    if (!sameFileSystem) {
+      viewNames.retainAll(target.getFileSystem().supportedFileAttributeViews());
+    }
+    Set<Class<? extends FileAttributeView>> supportedAttribueViews = new HashSet<>(viewNames.size());
+    for (String string : viewNames) {
+      supportedAttribueViews.add(FileAttributeViews.mapAttributeViewName(string));
+    }
+    return supportedAttribueViews;
+  }
+
+  private static void copyAttributes(Path source, Path target, boolean sameFileSystem, Set<Class<? extends FileAttributeView>> attribueViews, LinkOption[] linkOptions) throws IOException {
+
+    BasicFileAttributes basicAttributes = Files.readAttributes(target, BasicFileAttributes.class, linkOptions);
+    BasicFileAttributeView basicView = Files.getFileAttributeView(target, BasicFileAttributeView.class, linkOptions);
+    basicView.setTimes(basicAttributes.lastModifiedTime(), basicAttributes.lastAccessTime(), basicAttributes.creationTime());
+
+    if (attribueViews.contains(PosixFileAttributeView.class)) {
+      PosixFileAttributes posixAttributes = Files.readAttributes(target, PosixFileAttributes.class, linkOptions);
+      PosixFileAttributeView posixView = Files.getFileAttributeView(target, PosixFileAttributeView.class, linkOptions);
+      posixView.setPermissions(posixAttributes.permissions());
+      copyOwner(source, target, sameFileSystem, posixAttributes, posixView, linkOptions);
+      copyGroup(source, target, sameFileSystem, posixAttributes, posixView, linkOptions);
+    }
+
+    if (attribueViews.contains(UserDefinedFileAttributeView.class)) {
+      UserDefinedFileAttributeView sourceAttributes = Files.getFileAttributeView(source, UserDefinedFileAttributeView.class, linkOptions);
+      UserDefinedFileAttributeView targeAttributes = Files.getFileAttributeView(target, UserDefinedFileAttributeView.class, linkOptions);
+      for (String each : sourceAttributes.list()) {
+        //TODO reuse buffer
+        //TODO retry harder
+
+        int size = sourceAttributes.size(each);
+        ByteBuffer buffer = ByteBuffer.allocate(size);
+        int read = sourceAttributes.read(each, buffer);
+        if (read != size) {
+          throw new IOException("could not read attribute: " + each + " of " + source);
         }
-        try {
-          Files.setAttribute(target, attributeName, attributeValue, linkOptions);
-        } catch (UnsupportedOperationException e) {
-          // ignore, it's hard to tell in advance which attributes are writable and which not
-          // so let's just not set it
+        buffer.flip();
+        int written = targeAttributes.write(each, buffer);
+        if (written != size) {
+          throw new IOException("could not read attribute: " + each + " of " + target);
         }
+
       }
     }
+
+    if (attribueViews.contains(DosFileAttributeView.class)) {
+      DosFileAttributes dosAttributes = Files.readAttributes(target, DosFileAttributes.class, linkOptions);
+      DosFileAttributeView dosView = Files.getFileAttributeView(target, DosFileAttributeView.class, linkOptions);
+      dosView.setArchive(dosAttributes.isArchive());
+      dosView.setHidden(dosAttributes.isHidden());
+      dosView.setSystem(dosAttributes.isSystem());
+      dosView.setReadOnly(dosAttributes.isReadOnly());
+    }
+  }
+
+
+  private static void copyOwner(Path source, Path target, boolean sameFileSystem, PosixFileAttributes posixAttributes, PosixFileAttributeView posixView, LinkOption[] linkOptions) throws IOException {
+    UserPrincipal owner = posixAttributes.owner();
+    if (!sameFileSystem) {
+      UserPrincipalLookupService userPrincipalLookupService = source.getFileSystem().getUserPrincipalLookupService();
+      try {
+        owner = userPrincipalLookupService.lookupPrincipalByName(owner.getName());
+      } catch (UserPrincipalNotFoundException e) {
+        // user doesn't exist in target file system, ignore
+        return;
+      }
+    }
+    posixView.setOwner(owner);
+  }
+
+  private static void copyGroup(Path source, Path target, boolean sameFileSystem, PosixFileAttributes posixAttributes, PosixFileAttributeView posixView, LinkOption[] linkOptions) throws IOException {
+    GroupPrincipal group = posixAttributes.group();
+    if (!sameFileSystem) {
+      UserPrincipalLookupService userPrincipalLookupService = source.getFileSystem().getUserPrincipalLookupService();
+      try {
+        group = userPrincipalLookupService.lookupPrincipalByGroupName(group.getName());
+      } catch (UserPrincipalNotFoundException e) {
+        // user doesn't exist in target file system, ignore
+        return;
+      }
+    }
+    posixView.setGroup(group);
   }
 
   static final class DirectoryCopier extends SimpleFileVisitor<Path> {
@@ -117,12 +176,14 @@ public final class Directories {
     private final CopyOption[] copyOptions;
     private final boolean sameFileSystem;
     private final boolean copyAttribues;
+    private final Set<Class<? extends FileAttributeView>> supportedAttribueViews;
 
-    DirectoryCopier(Path source, Path target, CopyOption[] copyOptions, LinkOption[] linkOptions, boolean sameFileSystem, boolean copyAttribues) {
+    DirectoryCopier(Path source, Path target, CopyOption[] copyOptions, LinkOption[] linkOptions, Set<Class<? extends FileAttributeView>> supportedAttribueViews, boolean sameFileSystem, boolean copyAttribues) {
       this.source = source;
       this.target = target;
       this.copyOptions = copyOptions;
       this.linkOptions = linkOptions;
+      this.supportedAttribueViews = supportedAttribueViews;
       this.sameFileSystem = sameFileSystem;
       this.copyAttribues = copyAttribues;
       this.sameProvider = source.getFileSystem().provider() == target.getFileSystem().provider();
@@ -152,8 +213,7 @@ public final class Directories {
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
       if (this.copyAttribues) {
-        copyAttributes(this.source, this.relativize(dir), this.sameFileSystem,
-                this.linkOptions);
+        copyAttributes(this.source, this.relativize(dir), this.sameFileSystem, this.supportedAttribueViews, this.linkOptions);
       }
       return FileVisitResult.CONTINUE;
     }
