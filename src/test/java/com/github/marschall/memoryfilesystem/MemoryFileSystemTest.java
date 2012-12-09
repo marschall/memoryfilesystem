@@ -1217,6 +1217,31 @@ public class MemoryFileSystemTest {
   }
 
   @Test
+  public void copyAcrossFileSystems() throws IOException {
+    FileSystem source = this.rule.getFileSystem();
+    try (FileSystem target = MemoryFileSystemBuilder.newEmpty().build("target")) {
+      Path a = source.getPath("a");
+      Path b = target.getPath("b");
+
+      this.createAndSetContents(a, "aaa");
+      assertThat(a, exists());
+      assertThat(b, not(exists()));
+
+      Files.copy(a, b);
+      assertThat(a, exists());
+      assertThat(b, exists());
+
+      this.assertContents(a, "aaa");
+      this.assertContents(b, "aaa");
+
+      this.setContents(a, "a1");
+
+      this.assertContents(a, "a1");
+      this.assertContents(b, "aaa");
+    }
+  }
+
+  @Test
   public void copyReplaceExisitingNoAttributes() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path a = fileSystem.getPath("a");
@@ -1255,6 +1280,25 @@ public class MemoryFileSystemTest {
     assertThat(b, exists());
 
     this.assertContents(b, "aaa");
+  }
+
+  @Test
+  public void moveDifferentFileSystem() throws IOException {
+    FileSystem source = this.rule.getFileSystem();
+    try (FileSystem target = MemoryFileSystemBuilder.newEmpty().build("target")) {
+      Path a = source.getPath("a");
+      Path b = target.getPath("b");
+
+      this.createAndSetContents(a, "aaa");
+      assertThat(a, exists());
+      assertThat(b, not(exists()));
+
+      Files.move(a, b);
+      assertThat(a, not(exists()));
+      assertThat(b, exists());
+
+      this.assertContents(b, "aaa");
+    }
   }
 
   @Test
