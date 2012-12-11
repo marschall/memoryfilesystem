@@ -21,10 +21,21 @@ import java.nio.file.FileSystem;
  *   &lt;property name="name" value="test"/&gt;
  * &lt;/bean&gt;
  *
+ * &lt;bean id="memoryFileSystem" destroy-method="close"
+ *     factory-bean="memoryFileSystemFactory" factory-method="getObject" /&gt;
+ * 
+ * </pre></code>
+ * 
+ * <p>You can also save the <tt>destroy-method</tt> enable {@code @PreDestroy} with:</p>
+ * <pre><code>
+ * &lt;bean id="memoryFileSystemFactory"
+ *    class="com.github.marschall.memoryfilesystem.MemoryFileSystemFactoryBean"&gt;
+ *   &lt;property name="name" value="test"/&gt;
+ * &lt;/bean&gt;
+ *
  * &lt;bean id="memoryFileSystem"
  *     factory-bean="memoryFileSystemFactory" factory-method="getObject" /&gt;
  * 
- * &lt;!-- enable @PreDestroy on MemoryFileSystem#close() --&gt;
  * &lt;context:annotation-config/&gt;
  * </pre></code>
  */

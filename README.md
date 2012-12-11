@@ -25,8 +25,7 @@ Not Supported
 * <code>FileChannel#map</code>, </code>MappedByteBuffer<code> has final methods that call native methods
 * <code>WatchService</code>
 * <code>FileTypeDetector</code>
-* cross filesystem copy
-* faked DOS view under Linux, totally unspecified
+* faked DOS attribute view under Linux, totally unspecified
 * <code>UnixFileAttributeView</code>, sun package, totally unspecified
 * any meaningful access checks
 * file system size
@@ -36,6 +35,9 @@ FAQ
 ---
 ### Does it have bugs?
 Quite likely.
+
+### What license is it?
+MIT
 
 ### Does it support concurrent access?
 Yes, but hasn't been subject much scrutiny to bugs are likely. 
@@ -48,3 +50,40 @@ No, it's only intended for testing purposes.
 
 ### Does it scale?
 No
+
+### Does it have any dependencies?
+No
+
+### Does it work with Spring?
+Yes, there is a POJO factory bean. It has been tested with Spring 3.1.3 but since it doesn't have any dependencies on Spring it should work with every >= 2.x version.
+
+### Does it work with OSGi?
+Yes, it's a bundle and there's an activator that prevents class loader leaks. You should use the `MemoryFileSystemBuilder` instead of `FileSystems#newFileSystem` because `ServiceLoader` uses the thread context class loader. `MemoryFileSystemBuilder` avoids this by passing in the correct class loader.
+
+Usage
+-----
+### Getting Started
+The easiest way to get started is to use the `MemoryFileSystemBuilder`
+
+```
+try (FileSystem fileSystem = MemoryFileSystemBuilder.newEmpty().build("test")) {
+  Path p = fileSystem.getPath("p");
+  System.out.println(Files.exists(p));
+}
+```
+
+### Next Steps
+You probably want to create a JUnit `TestRule` that sets up and tears down a file system for you.
+
+### Spring
+The `com.github.marschall.memoryfilesystem.MemoryFileSystemFactoryBean` provides integration with Spring.
+
+```
+  <bean id="memoryFileSystemFactory"
+      class="com.github.marschall.memoryfilesystem.MemoryFileSystemFactoryBean">
+    <property name="name" value="test" />
+  </bean>
+
+  <bean id="memoryFileSystem" destroy-method="close"
+    factory-bean="memoryFileSystemFactory" factory-method="getObject" />
+```

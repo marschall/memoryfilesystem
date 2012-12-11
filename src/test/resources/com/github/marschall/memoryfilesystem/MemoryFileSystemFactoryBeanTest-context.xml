@@ -10,10 +10,7 @@
     <property name="name" value="test" />
   </bean>
 
-  <bean id="memoryFileSystem"
+  <bean id="memoryFileSystem" destroy-method="close"
     factory-bean="memoryFileSystemFactory" factory-method="getObject" />
-
-  <!-- enable @PreDestroy on MemoryFileSystem#close() -->
-  <context:annotation-config />
 
 </beans>
