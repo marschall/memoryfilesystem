@@ -636,21 +636,18 @@ class MemoryFileSystem extends FileSystem {
   }
 
   void copy(AbstractPath source, final AbstractPath target, final CopyOption... options) throws IOException {
-    this.copyOrMove(source, target, false, options);
+    this.copyOrMove(source, target, TwoPathOperation.COPY, options);
   }
 
   void move(AbstractPath source, final AbstractPath target, final CopyOption... options) throws IOException {
-    this.copyOrMove(source, target, false, options);
+    this.copyOrMove(source, target, TwoPathOperation.MOVE, options);
   }
 
-  void copyOrMove(final AbstractPath source, final AbstractPath target, final boolean move, final CopyOption... options) throws IOException {
+  void copyOrMove(final AbstractPath source, final AbstractPath target, final TwoPathOperation operation, final CopyOption... options) throws IOException {
     try (AutoRelease autoRelease = autoRelease(this.pathOrderingLock.writeLock())) {
-      // FIXME check for root, cast fill fail
 
       final EndPointCopyContext sourceContext = this.buildEndpointCopyContext(source);
       final EndPointCopyContext targetContext = this.buildEndpointCopyContext(target);
-
-      // TODO check for equality later
 
       boolean followSymLinks = Options.isFollowSymLinks(options);
 
@@ -669,10 +666,12 @@ class MemoryFileSystem extends FileSystem {
               MemoryDirectory sourceParent = copyContext.getSourceParent(firstDirectory, secondDirectory);
               MemoryDirectory targetParent = copyContext.getTargetParent(firstDirectory, secondDirectory);
 
-              String sourceElementName = MemoryFileSystem.this.lookUpTransformer.transform(sourceContext.elementName);
-              MemoryEntry sourceEntry = sourceParent.getEntryOrException(sourceElementName, source);
+              StringTransformer sourceTransformer = sourceContext.path.getMemoryFileSystem().lookUpTransformer;
+              String sourceElementName = sourceTransformer.transform(sourceContext.elementName);
+              MemoryEntry sourceEntry = sourceParent.getEntryOrException(sourceElementName, sourceContext.path);
 
-              String targetElementName = MemoryFileSystem.this.lookUpTransformer.transform(targetContext.elementName);
+              StringTransformer targetTransformer = targetContext.path.getMemoryFileSystem().lookUpTransformer;
+              String targetElementName = targetTransformer.transform(targetContext.elementName);
               MemoryEntry targetEntry = sourceParent.getEntry(targetElementName);
 
               if (sourceEntry == targetEntry) {
@@ -696,11 +695,11 @@ class MemoryFileSystem extends FileSystem {
                 targetParent.removeEntry(targetElementName);
               }
 
-              if (move) {
+              if (operation.isMove()) {
                 sourceParent.removeEntry(sourceElementName);
                 targetParent.addEntry(targetElementName, sourceEntry);
               } else {
-                MemoryEntry copy = MemoryFileSystem.this.copyEntry(target, sourceEntry, targetElementName);
+                MemoryEntry copy = MemoryFileSystem.this.copyEntry(targetContext.path, sourceEntry, targetElementName);
                 if (Options.isCopyAttribues(options)) {
                   copy.initializeAttributes(sourceEntry);
                 }
@@ -718,20 +717,22 @@ class MemoryFileSystem extends FileSystem {
     }
   }
 
-  private EndPointCopyContext buildEndpointCopyContext(AbstractPath source) {
+  private EndPointCopyContext buildEndpointCopyContext(AbstractPath path) {
     // TODO check for root
-    ElementPath absolutePath = (ElementPath) source.toAbsolutePath();
+    ElementPath absolutePath = (ElementPath) path.toAbsolutePath();
     AbstractPath parent = (AbstractPath) absolutePath.getParent();
     String elementName = absolutePath.getLastNameElement();
-    return new EndPointCopyContext(parent, elementName);
+    return new EndPointCopyContext(path, parent, elementName);
   }
 
   static final class EndPointCopyContext {
 
+    final AbstractPath path;
     final AbstractPath parent;
     final String elementName;
 
-    EndPointCopyContext(AbstractPath parent, String elementName) {
+    EndPointCopyContext(AbstractPath path, AbstractPath parent, String elementName) {
+      this.path = path;
       this.parent = parent;
       this.elementName = elementName;
     }

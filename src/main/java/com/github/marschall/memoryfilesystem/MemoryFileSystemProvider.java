@@ -285,17 +285,22 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   @Override
   public void copy(Path source, Path target, CopyOption... options) throws IOException {
-    this.copyOrMove(source, target, false, options);
+    this.copyOrMove(source, target, TwoPathOperation.COPY, options);
   }
 
-  private void copyOrMove(Path source, Path target, boolean move, CopyOption... options) throws IOException {
+  @Override
+  public void move(Path source, Path target, CopyOption... options) throws IOException {
+    this.copyOrMove(source, target, TwoPathOperation.MOVE, options);
+  }
+
+  private void copyOrMove(Path source, Path target, TwoPathOperation operation, CopyOption... options) throws IOException {
     this.checkSupported(options);
     AbstractPath sourcePath = this.castPath(source);
     AbstractPath targetPath = this.castPath(target);
     MemoryFileSystem sourceFileSystem = sourcePath.getMemoryFileSystem();
     MemoryFileSystem targetFileSystem = targetPath.getMemoryFileSystem();
     if (sourceFileSystem == targetFileSystem) {
-      sourceFileSystem.copyOrMove(sourcePath, targetPath, move, options);
+      sourceFileSystem.copyOrMove(sourcePath, targetPath, operation, options);
     } else {
       MemoryFileSystem first;
       MemoryFileSystem second;
@@ -306,17 +311,14 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
         first = targetFileSystem;
         second = sourceFileSystem;
       }
+
+
       // need to do lock ordering to avoid deadlocks
       // TODO Auto-generated method stub
       throw new UnsupportedOperationException();
     }
   }
 
-
-  @Override
-  public void move(Path source, Path target, CopyOption... options) throws IOException {
-    this.copyOrMove(source, target, true, options);
-  }
 
 
   @Override
