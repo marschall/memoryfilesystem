@@ -643,17 +643,16 @@ class MemoryFileSystem extends FileSystem {
     this.copyOrMove(source, target, TwoPathOperation.MOVE, options);
   }
 
-  void copyOrMove(final AbstractPath source, final AbstractPath target, final TwoPathOperation operation, final CopyOption... options) throws IOException {
+  void copyOrMove(AbstractPath source, AbstractPath target, TwoPathOperation operation, CopyOption... options) throws IOException {
     try (AutoRelease autoRelease = autoRelease(this.pathOrderingLock.writeLock())) {
 
-      final EndPointCopyContext sourceContext = this.buildEndpointCopyContext(source);
-      final EndPointCopyContext targetContext = this.buildEndpointCopyContext(target);
+      EndPointCopyContext sourceContext = this.buildEndpointCopyContext(source);
+      EndPointCopyContext targetContext = this.buildEndpointCopyContext(target);
 
-      boolean followSymLinks = Options.isFollowSymLinks(options);
+      int order = this.orderPaths(sourceContext, targetContext);
+      final CopyContext copyContext = buildCopyContext(sourceContext, targetContext, operation, options, order);
 
-      final CopyContext copyContext = this.buildCopyContext(sourceContext, targetContext, followSymLinks);
-
-      final MemoryDirectory firstRoot = this.getRootDirectory(copyContext.first.parent);
+      MemoryDirectory firstRoot = this.getRootDirectory(copyContext.first.parent);
       final MemoryDirectory secondRoot = this.getRootDirectory(copyContext.second.parent);
       this.withWriteLockOnLastDo(firstRoot, copyContext.first.parent, copyContext.firstFollowSymLinks, new MemoryDirectoryBlock<Void>() {
 
@@ -663,48 +662,7 @@ class MemoryFileSystem extends FileSystem {
 
             @Override
             public Void value(MemoryDirectory secondDirectory) throws IOException {
-              MemoryDirectory sourceParent = copyContext.getSourceParent(firstDirectory, secondDirectory);
-              MemoryDirectory targetParent = copyContext.getTargetParent(firstDirectory, secondDirectory);
-
-              StringTransformer sourceTransformer = sourceContext.path.getMemoryFileSystem().lookUpTransformer;
-              String sourceElementName = sourceTransformer.transform(sourceContext.elementName);
-              MemoryEntry sourceEntry = sourceParent.getEntryOrException(sourceElementName, sourceContext.path);
-
-              StringTransformer targetTransformer = targetContext.path.getMemoryFileSystem().lookUpTransformer;
-              String targetElementName = targetTransformer.transform(targetContext.elementName);
-              MemoryEntry targetEntry = sourceParent.getEntry(targetElementName);
-
-              if (sourceEntry == targetEntry) {
-                // source and target are the same, do nothing
-                // the way I read Files#copy this is the intention of the spec
-                return null;
-              }
-
-              if (targetEntry != null) {
-                boolean replaceExisting = Options.isReplaceExisting(options);
-                if (!replaceExisting) {
-                  throw new FileAlreadyExistsException(target.toString());
-                }
-
-                if (targetEntry instanceof MemoryDirectory) {
-                  MemoryDirectory targetDirectory = (MemoryDirectory) targetEntry;
-                  try (AutoRelease lock = targetDirectory.readLock()) {
-                    targetDirectory.checkEmpty(target);
-                  }
-                }
-                targetParent.removeEntry(targetElementName);
-              }
-
-              if (operation.isMove()) {
-                sourceParent.removeEntry(sourceElementName);
-                targetParent.addEntry(targetElementName, sourceEntry);
-              } else {
-                MemoryEntry copy = MemoryFileSystem.this.copyEntry(targetContext.path, sourceEntry, targetElementName);
-                if (Options.isCopyAttribues(options)) {
-                  copy.initializeAttributes(sourceEntry);
-                }
-                targetParent.addEntry(targetElementName, copy);
-              }
+              handleTwoPathOperation(copyContext, firstDirectory, secondDirectory);
               return null;
             }
 
@@ -714,6 +672,56 @@ class MemoryFileSystem extends FileSystem {
 
       });
 
+    }
+  }
+
+  static void copyOrMoveBetweenFileSystems(MemoryFileSystem sourceFileSystem, MemoryFileSystem targetFileSystem, AbstractPath source, AbstractPath target, TwoPathOperation operation, CopyOption... options) throws IOException {
+    EndPointCopyContext sourceContext = sourceFileSystem.buildEndpointCopyContext(source);
+    EndPointCopyContext targetContext = targetFileSystem.buildEndpointCopyContext(target);
+
+    int order = orderFileSystems(sourceContext, targetContext);
+    final CopyContext copyContext = buildCopyContext(sourceContext, targetContext, operation, options, order);
+
+    MemoryDirectory firstRoot = sourceFileSystem.getRootDirectory(copyContext.first.parent);
+    final MemoryDirectory secondRoot = targetFileSystem.getRootDirectory(copyContext.second.parent);
+    copyContext.first.path.getMemoryFileSystem().withWriteLockOnLastDo(firstRoot, copyContext.first.parent, copyContext.firstFollowSymLinks, new MemoryDirectoryBlock<Void>() {
+
+      @Override
+      public Void value(final MemoryDirectory firstDirectory) throws IOException {
+        copyContext.second.path.getMemoryFileSystem().withWriteLockOnLastDo(secondRoot, copyContext.second.parent, copyContext.secondFollowSymLinks, new MemoryDirectoryBlock<Void>() {
+
+          @Override
+          public Void value(MemoryDirectory secondDirectory) throws IOException {
+            handleTwoPathOperation(copyContext, firstDirectory, secondDirectory);
+            return null;
+          }
+
+        });
+        return null;
+      }
+
+    });
+  }
+
+  private int orderPaths(EndPointCopyContext source, EndPointCopyContext target) {
+    int parentOrder = source.parent.compareTo(target.parent);
+    if (parentOrder != 0) {
+      return parentOrder;
+    } else {
+      return MemoryFileSystem.this.collator.compare(source.elementName, target.elementName);
+    }
+  }
+
+  private static int orderFileSystems(EndPointCopyContext source, EndPointCopyContext target) {
+    MemoryFileSystem sourceFileSystem = source.path.getMemoryFileSystem();
+    MemoryFileSystem targetFileSystem = target.path.getMemoryFileSystem();
+    String sourceKey = sourceFileSystem.getKey();
+    String targetKey = targetFileSystem.getKey();
+    int comparison = sourceKey.compareTo(targetKey);
+    if (comparison != 0) {
+      return comparison;
+    } else {
+      throw new AssertionError("the two file system keys " + sourceKey + " and " + targetKey + " compare equal.");
     }
   }
 
@@ -739,8 +747,10 @@ class MemoryFileSystem extends FileSystem {
 
   }
 
-  private CopyContext buildCopyContext(EndPointCopyContext source, EndPointCopyContext target, boolean followSymlinks) {
-    int order = this.order(source, target);
+  private static CopyContext buildCopyContext(EndPointCopyContext source, EndPointCopyContext target, TwoPathOperation operation, CopyOption[] options, int order) {
+    boolean followSymLinks = Options.isFollowSymLinks(options);
+    boolean replaceExisting = Options.isReplaceExisting(options);
+    boolean copyAttribues = Options.isCopyAttribues(options);
 
     EndPointCopyContext first;
     EndPointCopyContext second;
@@ -750,27 +760,19 @@ class MemoryFileSystem extends FileSystem {
     if (order <= 0) {
       first = source;
       second = target;
-      firstFollowSymLinks = followSymlinks;
+      firstFollowSymLinks = followSymLinks;
       secondFollowSymLinks = false;
-      inverted = true;
+      inverted = false;
     } else {
       first = target;
       second = source;
       firstFollowSymLinks = false;
-      secondFollowSymLinks = followSymlinks;
-      inverted = false;
+      secondFollowSymLinks = followSymLinks;
+      inverted = true;
     }
 
-    return new CopyContext(source, target, first, second, firstFollowSymLinks, secondFollowSymLinks, inverted);
-  }
-
-  private int order(EndPointCopyContext source, EndPointCopyContext target) {
-    int parentOrder = source.parent.compareTo(target.parent);
-    if (parentOrder != 0) {
-      return parentOrder;
-    } else {
-      return this.collator.compare(source.elementName, target.elementName);
-    }
+    return new CopyContext(operation, source, target, first, second, firstFollowSymLinks, secondFollowSymLinks,
+            inverted, replaceExisting, copyAttribues);
   }
 
   static final class CopyContext {
@@ -782,8 +784,13 @@ class MemoryFileSystem extends FileSystem {
     final boolean firstFollowSymLinks;
     final boolean secondFollowSymLinks;
     private final boolean inverted;
+    final boolean replaceExisting;
+    final boolean copyAttribues;
+    final TwoPathOperation operation;
 
-    CopyContext(EndPointCopyContext source, EndPointCopyContext target, EndPointCopyContext first, EndPointCopyContext second, boolean firstFollowSymLinks, boolean secondFollowSymLinks, boolean inverted) {
+    CopyContext(TwoPathOperation operation, EndPointCopyContext source, EndPointCopyContext target, EndPointCopyContext first, EndPointCopyContext second,
+            boolean firstFollowSymLinks, boolean secondFollowSymLinks, boolean inverted, boolean replaceExisting, boolean copyAttribues) {
+      this.operation = operation;
       this.source = source;
       this.target = target;
       this.first = first;
@@ -791,6 +798,8 @@ class MemoryFileSystem extends FileSystem {
       this.firstFollowSymLinks = firstFollowSymLinks;
       this.secondFollowSymLinks = secondFollowSymLinks;
       this.inverted = inverted;
+      this.replaceExisting = replaceExisting;
+      this.copyAttribues = copyAttribues;
     }
 
     MemoryDirectory getSourceParent(MemoryDirectory firstDirectory, MemoryDirectory secondDirectory) {
@@ -1007,6 +1016,58 @@ class MemoryFileSystem extends FileSystem {
     }
   }
 
+  static void handleTwoPathOperation(CopyContext copyContext, MemoryDirectory firstDirectory, MemoryDirectory secondDirectory) throws IOException {
+
+    EndPointCopyContext sourceContext = copyContext.source;
+    EndPointCopyContext targetContext = copyContext.target;
+    MemoryDirectory sourceParent = copyContext.getSourceParent(firstDirectory, secondDirectory);
+    MemoryDirectory targetParent = copyContext.getTargetParent(firstDirectory, secondDirectory);
+
+    StringTransformer sourceTransformer = sourceContext.path.getMemoryFileSystem().lookUpTransformer;
+    String sourceElementName = sourceTransformer.transform(sourceContext.elementName);
+    MemoryEntry sourceEntry = sourceParent.getEntryOrException(sourceElementName, sourceContext.path);
+
+    StringTransformer targetTransformer = targetContext.path.getMemoryFileSystem().lookUpTransformer;
+    String targetElementName = targetTransformer.transform(targetContext.elementName);
+    MemoryEntry targetEntry = sourceParent.getEntry(targetElementName);
+
+    if (sourceEntry == targetEntry) {
+      // source and target are the same, do nothing
+      // the way I read Files#copy this is the intention of the spec
+      return;
+    }
+
+    if (targetEntry != null) {
+      if (!copyContext.replaceExisting) {
+        throw new FileAlreadyExistsException(targetContext.path.toString());
+      }
+
+      if (targetEntry instanceof MemoryDirectory) {
+        MemoryDirectory targetDirectory = (MemoryDirectory) targetEntry;
+        try (AutoRelease lock = targetDirectory.readLock()) {
+          targetDirectory.checkEmpty(targetContext.path);
+        }
+      }
+      targetParent.removeEntry(targetElementName);
+    }
+
+    if (copyContext.operation.isMove()) {
+      sourceParent.removeEntry(sourceElementName);
+      targetParent.addEntry(targetElementName, sourceEntry);
+    } else {
+      MemoryEntry copy = targetContext.path.getMemoryFileSystem().copyEntry(targetContext.path, sourceEntry, targetElementName);
+      if (copyContext.copyAttribues) {
+        copy.initializeAttributes(sourceEntry);
+      }
+      targetParent.addEntry(targetElementName, copy);
+    }
+  }
+
+  @Override
+  public String toString() {
+    return MemoryFileSystem.class.getSimpleName() + '[' + this.key + ']';
+  }
+
   class LazyFileAttributeView<V extends FileAttributeView> implements InvocationHandler {
 
     private final AbstractPath path;
@@ -1070,7 +1131,6 @@ class MemoryFileSystem extends FileSystem {
     }
 
   }
-
 
 
   interface MemoryEntryBlock<R> {

@@ -585,4 +585,10 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
   }
 
 
+  @Override
+  public String toString() {
+    return "file(" + this.getOriginalName() + ')';
+  }
+
+
 }

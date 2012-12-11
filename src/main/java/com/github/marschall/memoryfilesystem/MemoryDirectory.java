@@ -87,6 +87,11 @@ class MemoryDirectory extends MemoryEntry {
     this.modified();
   }
 
+  @Override
+  public String toString() {
+    return "directory(" + this.getOriginalName() + ')';
+  }
+
   void removeEntry(String name) {
     // TODO check for result
     this.entries.remove(name);

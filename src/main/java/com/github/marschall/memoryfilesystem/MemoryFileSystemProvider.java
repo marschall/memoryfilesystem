@@ -302,20 +302,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     if (sourceFileSystem == targetFileSystem) {
       sourceFileSystem.copyOrMove(sourcePath, targetPath, operation, options);
     } else {
-      MemoryFileSystem first;
-      MemoryFileSystem second;
-      if (sourceFileSystem.getKey().compareTo(targetFileSystem.getKey()) < 0) {
-        first = sourceFileSystem;
-        second = targetFileSystem;
-      } else {
-        first = targetFileSystem;
-        second = sourceFileSystem;
-      }
-
-
-      // need to do lock ordering to avoid deadlocks
-      // TODO Auto-generated method stub
-      throw new UnsupportedOperationException();
+      MemoryFileSystem.copyOrMoveBetweenFileSystems(sourceFileSystem, targetFileSystem, sourcePath, targetPath, operation, options);
     }
   }
 

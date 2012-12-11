@@ -42,6 +42,11 @@ class MemorySymbolicLink extends MemoryEntry {
   }
 
 
+  @Override
+  public String toString() {
+    return "symlin(" + this.getOriginalName() + ") -> " + this.target;
+  }
+
   class MemorySymbolicLinkAttributesView extends MemoryEntryFileAttributesView {
 
     @Override
