@@ -87,3 +87,9 @@ The `com.github.marschall.memoryfilesystem.MemoryFileSystemFactoryBean` provides
   <bean id="memoryFileSystem" destroy-method="close"
     factory-bean="memoryFileSystemFactory" factory-method="getObject" />
 ```
+
+Travis CI
+---------
+[![Build Status](https://travis-ci.org/marschall/memoryfilesystem.png?branch=master)](https://travis-ci.org/marschall/memoryfilesystem)
+
+
