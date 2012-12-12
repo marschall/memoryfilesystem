@@ -10,6 +10,14 @@
   <description>An in memory implementation of a JSR-203 file system.</description>
   <inceptionYear>2011</inceptionYear>
 
+  <url>https://github.com/marschall/memoryfilesystem</url>
+
+  <scm>
+    <connection>scm:git:git@github.com:marschall/memoryfilesystem.git</connection>
+    <developerConnection>scm:git:git@github.com:marschall/memoryfilesystem.git</developerConnection>
+    <url>git@github.com:marschall/memoryfilesystem.git</url>
+    <tag>HEAD</tag>
+  </scm>
 
   <developers>
     <developer>
