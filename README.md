@@ -65,7 +65,7 @@ Usage
 ### Getting Started
 The easiest way to get started is to use the `MemoryFileSystemBuilder`
 
-```
+```java
 try (FileSystem fileSystem = MemoryFileSystemBuilder.newEmpty().build("test")) {
   Path p = fileSystem.getPath("p");
   System.out.println(Files.exists(p));
@@ -78,7 +78,7 @@ You probably want to create a JUnit `TestRule` that sets up and tears down a fil
 ### Spring
 The `com.github.marschall.memoryfilesystem.MemoryFileSystemFactoryBean` provides integration with Spring.
 
-```
+```xml
   <bean id="memoryFileSystemFactory"
       class="com.github.marschall.memoryfilesystem.MemoryFileSystemFactoryBean">
     <property name="name" value="test" />
