@@ -40,7 +40,7 @@ Quite likely.
 MIT
 
 ### Does it support concurrent access?
-Yes, but hasn't been subject much scrutiny to bugs are likely. 
+Yes, but hasn't been subject much scrutiny so bugs are likely. 
 
 ### Does it work with the zipfs provider?
 No, see http://bugs.sun.com/view_bug.do?bug_id=8004789
