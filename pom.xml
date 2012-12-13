@@ -14,8 +14,7 @@
   <scm>
     <connection>scm:git:git@github.com:marschall/memoryfilesystem.git</connection>
     <developerConnection>scm:git:git@github.com:marschall/memoryfilesystem.git</developerConnection>
-    <url>git@github.com:marschall/memoryfilesystem.git</url>
-    <tag>HEAD</tag>
+    <url>${project.url}</url>
   </scm>
 
   <developers>
