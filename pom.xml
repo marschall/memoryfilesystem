@@ -135,15 +135,16 @@
             <link>http://docs.oracle.com/javase/7/docs/api/</link>
             <link>http://www.osgi.org/javadoc/r4v43/</link>
           </links>
-          <executions>
-            <execution>
-              <id>attach-javadocs</id>
-              <goals>
-                <goal>jar</goal>
-              </goals>
-            </execution>
-          </executions>
         </configuration>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <phase>package</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.jboss.jandex</groupId>
