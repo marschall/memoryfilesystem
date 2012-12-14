@@ -26,6 +26,17 @@ Supported
 * <code>PathMatcher</code>
   * glob
   * regex
+* <code>StandardCopyOption</code>
+  * REPLACE_EXISTING
+  * COPY_ATTRIBUTES
+  * ATOMIC_MOVE
+* <code>StandardOpenOption</code>
+  * READ
+  * WRITE
+  * TRUNCATE_EXISTING
+  * CREATE
+  * DELETE_ON_CLOSE
+* symbolic links
 
 Not Supported
 -------------
@@ -36,6 +47,11 @@ Not Supported
 * <code>UnixFileAttributeView</code>, [sun package](http://www.oracle.com/technetwork/java/faq-sun-packages-142232.html), totally unspecified
 * any meaningful access checks
 * files larger than 16MB
+* <code>StandardOpenOption</code>
+  * SPARSE
+  * SYNC
+  * DSYNC
+* hard links
 
 FAQ
 ---
@@ -153,5 +169,5 @@ The `com.github.marschall.memoryfilesystem.MemoryFileSystemFactoryBean` provides
     factory-bean="memoryFileSystemFactory" factory-method="getObject" />
 ```
 
-You can of course also write a [Java Configuration](http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/beans.html#beans-java) class and a `@Bean` method that uses `MemoryFileSystemBuilder` to create a new file system. Or a CDI class with a `@Produces` method that uses `MemoryFileSystemBuilder` to create a new file system.. 
+You can of course also write a [Java Configuration](http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/beans.html#beans-java) class and a `@Bean` method that uses `MemoryFileSystemBuilder` to create a new file system. Or a CDI class with a `@Produces` method that uses `MemoryFileSystemBuilder` to create a new file system. 
 
