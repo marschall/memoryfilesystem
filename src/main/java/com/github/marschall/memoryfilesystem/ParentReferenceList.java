@@ -6,31 +6,26 @@ import java.util.List;
 import java.util.RandomAccess;
 
 /**
- * A {@link List} that only contains a single element x-times.
- *
- * @param <E> the element type
+ * A {@link List} that only contains <code>".."</code> a given number
+ * of times.
  */
-final class HomogenousList<E> extends AbstractList<E> implements RandomAccess {
-
-  //TODO value is actually constant
-  private final E element;
+final class ParentReferenceList extends AbstractList<String> implements RandomAccess {
 
   private final int size;
 
-  private HomogenousList(E element, int size) {
-    this.element = element;
+  private ParentReferenceList(int size) {
     this.size = size;
   }
 
   @Override
-  public E get(int index) {
+  public String get(int index) {
     if (index < 0) {
       throw new IndexOutOfBoundsException("index is not allowed to be negative but was " + index);
     }
     if (index >= this.size) {
       throw new IndexOutOfBoundsException("index is not allowed to be bigger than " + this.size + " but was " + index);
     }
-    return this.element;
+    return "..";
   }
 
   @Override
@@ -40,11 +35,11 @@ final class HomogenousList<E> extends AbstractList<E> implements RandomAccess {
 
   @Override
   public boolean contains(Object o) {
-    return this.element.equals(o);
+    return "..".equals(o);
   }
 
   @Override
-  public List<E> subList(int fromIndex, int toIndex) {
+  public List<String> subList(int fromIndex, int toIndex) {
     if (fromIndex < 0) {
       throw new IllegalArgumentException("from index negative");
     }
@@ -59,16 +54,16 @@ final class HomogenousList<E> extends AbstractList<E> implements RandomAccess {
       return this;
     }
 
-    return create(this.element, toIndex - fromIndex);
+    return create(toIndex - fromIndex);
   }
 
-  static <E> List<E> create(E element, int size) {
+  static List<String> create(int size) {
     if (size == 0) {
       return Collections.emptyList();
     } else if (size == 1) {
-      return Collections.singletonList(element);
+      return Collections.singletonList("..");
     } else {
-      return new HomogenousList<E>(element, size);
+      return new ParentReferenceList(size);
     }
 
   }

@@ -259,7 +259,7 @@ final class AbsolutePath extends NonEmptyPath {
     }
     if (other.equals(this.root)) {
       // other is my root, easy
-      return createRelative(this.getMemoryFileSystem(), HomogenousList.create("..", this.getNameCount()));
+      return createRelative(this.getMemoryFileSystem(), ParentReferenceList.create(this.getNameCount()));
     } else if (other instanceof ElementPath) {
       // normal case
       return this.buildRelativePathAgainst(other);
