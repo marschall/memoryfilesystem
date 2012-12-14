@@ -1,6 +1,15 @@
-Memory File System
-=================
+Memory File System [![Build Status](https://travis-ci.org/marschall/memoryfilesystem.png?branch=master)](https://travis-ci.org/marschall/memoryfilesystem)
+==================
 An in memory implementation of a [JSR-203](http://jcp.org/en/jsr/detail?id=203) (Java 7) file system for testing purposes.
+
+```xml
+<dependency>
+    <groupId>com.github.marschall</groupId>
+    <artifactId>memoryfilesystem</artifactId>
+    <version>0.1.0</version>
+</dependency>
+```
+
 
 Supported
 ---------
@@ -66,9 +75,6 @@ No
 ### But I want all my file access logged
 A logging file system that wraps an other file system is the best way to do this.
 
-### Is it on maven central?
-Working on it
-
 Usage
 -----
 ### Getting Started
@@ -96,9 +102,4 @@ The `com.github.marschall.memoryfilesystem.MemoryFileSystemFactoryBean` provides
   <bean id="memoryFileSystem" destroy-method="close"
     factory-bean="memoryFileSystemFactory" factory-method="getObject" />
 ```
-
-Travis CI
----------
-[![Build Status](https://travis-ci.org/marschall/memoryfilesystem.png?branch=master)](https://travis-ci.org/marschall/memoryfilesystem)
-
 
