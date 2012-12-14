@@ -1,1 +1,0 @@
-marschall = Philippe Marschall <philippe.marschall@gmail.com>

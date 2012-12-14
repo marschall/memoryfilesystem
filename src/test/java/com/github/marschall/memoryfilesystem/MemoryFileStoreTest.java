@@ -1,8 +1,11 @@
 package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_URI;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -59,23 +62,39 @@ public class MemoryFileStoreTest {
 
   @Test
   public void supportsFileAttributeViewClass() {
-    assertTrue(this.rule.getFileStore().supportsFileAttributeView(BasicFileAttributeView.class));
-    assertFalse(this.rule.getFileStore().supportsFileAttributeView(PosixFileAttributeView.class));
-    assertFalse(this.rule.getFileStore().supportsFileAttributeView(DosFileAttributeView.class));
-    assertFalse(this.rule.getFileStore().supportsFileAttributeView(FileOwnerAttributeView.class));
-    assertFalse(this.rule.getFileStore().supportsFileAttributeView(UserDefinedFileAttributeView.class));
-    assertFalse(this.rule.getFileStore().supportsFileAttributeView(AclFileAttributeView.class));
+    FileStore fileStore = this.rule.getFileStore();
+    assertTrue(fileStore.supportsFileAttributeView(BasicFileAttributeView.class));
+    assertFalse(fileStore.supportsFileAttributeView(PosixFileAttributeView.class));
+    assertFalse(fileStore.supportsFileAttributeView(DosFileAttributeView.class));
+    assertFalse(fileStore.supportsFileAttributeView(FileOwnerAttributeView.class));
+    assertFalse(fileStore.supportsFileAttributeView(UserDefinedFileAttributeView.class));
+    assertFalse(fileStore.supportsFileAttributeView(AclFileAttributeView.class));
+  }
 
+  @Test
+  public void fileSizes() throws IOException {
+    FileStore fileStore = this.rule.getFileStore();
+    long totalSpace = fileStore.getTotalSpace();
+    long unallocatedSpace = fileStore.getUnallocatedSpace();
+    long usableSpace = fileStore.getUsableSpace();
+
+    assertThat("total space", totalSpace, greaterThan(0L));
+    assertThat("unallocated space", unallocatedSpace, greaterThan(0L));
+    assertThat("usable space", usableSpace, greaterThan(0L));
+
+    assertThat("usable space", usableSpace, lessThan(totalSpace));
+    assertThat("unallocated space", unallocatedSpace, lessThan(totalSpace));
   }
 
   @Test
   public void supportsFileAttributeView() {
-    assertTrue(this.rule.getFileStore().supportsFileAttributeView(FileAttributeViews.BASIC));
-    assertFalse(this.rule.getFileStore().supportsFileAttributeView(FileAttributeViews.POSIX));
-    assertFalse(this.rule.getFileStore().supportsFileAttributeView(FileAttributeViews.DOS));
-    assertFalse(this.rule.getFileStore().supportsFileAttributeView(FileAttributeViews.OWNER));
-    assertFalse(this.rule.getFileStore().supportsFileAttributeView(FileAttributeViews.USER));
-    assertFalse(this.rule.getFileStore().supportsFileAttributeView(FileAttributeViews.ACL));
+    FileStore fileStore = this.rule.getFileStore();
+    assertTrue(fileStore.supportsFileAttributeView(FileAttributeViews.BASIC));
+    assertFalse(fileStore.supportsFileAttributeView(FileAttributeViews.POSIX));
+    assertFalse(fileStore.supportsFileAttributeView(FileAttributeViews.DOS));
+    assertFalse(fileStore.supportsFileAttributeView(FileAttributeViews.OWNER));
+    assertFalse(fileStore.supportsFileAttributeView(FileAttributeViews.USER));
+    assertFalse(fileStore.supportsFileAttributeView(FileAttributeViews.ACL));
   }
 
 }

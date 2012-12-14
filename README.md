@@ -37,7 +37,6 @@ Not Supported
 * faked DOS attribute view under Linux, totally unspecified
 * <code>UnixFileAttributeView</code>, [sun package](http://www.oracle.com/technetwork/java/faq-sun-packages-142232.html), totally unspecified
 * any meaningful access checks
-* file system size
 * files larger than 16MB
 
 FAQ
