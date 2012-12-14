@@ -37,6 +37,7 @@ Supported
   * CREATE
   * DELETE_ON_CLOSE
 * symbolic links
+* symbolic link look detection
 
 Not Supported
 -------------
