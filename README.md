@@ -16,12 +16,10 @@ Supported
 * <code>SeekableByteChannel</code>
 * <code>FileChannel</code>
 * <code>AsynchronousFileChannel</code>
-* <code>UserDefinedFileAttributeView</code>
 * <code>InputStream</code>
 * <code>OutputStream</code>
 * <code>BasicFileAttributeView</code>, <code>BasicFileAttributes</code>
 * <code>DosFileAttributeView</code>, <code>DosFileAttributes</code>
-* <code>FileOwnerAttributeView</code>
 * <code>PosixFileAttributeView</code>, <code>PosixFileAttributes</code>
 * <code>UserDefinedFileAttributeView</code>
 * <code>FileLock</code>
@@ -86,8 +84,61 @@ try (FileSystem fileSystem = MemoryFileSystemBuilder.newEmpty().build("test")) {
 }
 ```
 
+It's important to know that at any given time there can only be one memory file system with a given name. Any attempt to create a memory file system with the name of an existing one will throw an exception. 
+
+There are other `new` methods on `MemoryFileSystemBuilder` that allow you to create different file systems and other methods that allow you to customize the file system.
+
 ### Next Steps
-You probably want to create a JUnit `TestRule` that sets up and tears down a file system for you.
+You probably want to create a JUnit `TestRule` that sets up and tears down a file system for you. A rule can look like this
+
+```java
+final class FileSystemRule implements TestRule {
+
+  private FileSystem fileSystem;
+
+  FileSystem getFileSystem() {
+    return this.fileSystem;
+  }
+
+  @Override
+  public Statement apply(final Statement base, Description description) {
+    return new Statement() {
+
+      @Override
+      public void evaluate() throws Throwable {
+        FileSystemRule.this.fileSystem = MemoryFileSystemBuilder.newEmpty().build("name");
+        try {
+          base.evaluate();
+        } finally {
+          FileSystemRule.this.fileSystem.close();
+        }
+      }
+
+    };
+  }
+
+}
+```
+
+and is used like this
+```java
+public class FileSystemTest {
+
+  @Rule
+  public final FileSystemRule rule = new FileSystemRule();
+
+  @Test
+  public void lockAsyncChannel() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path path = fileSystem.getPath("sample.txt");
+    assertFalse(Files.exists(path));
+  }
+
+}
+```
+
+It's important to note that the field holding the rule must be public. If you're using an IoC container for integration tests check out the secion below.
 
 ### Spring
 The `com.github.marschall.memoryfilesystem.MemoryFileSystemFactoryBean` provides integration with Spring.
@@ -101,4 +152,6 @@ The `com.github.marschall.memoryfilesystem.MemoryFileSystemFactoryBean` provides
   <bean id="memoryFileSystem" destroy-method="close"
     factory-bean="memoryFileSystemFactory" factory-method="getObject" />
 ```
+
+You can of course also write a [Java Configuration](http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/beans.html#beans-java) class and a `@Bean` method that uses `MemoryFileSystemBuilder` to create a new file system. Or a CDI class with a `@Produces` method that uses `MemoryFileSystemBuilder` to create a new file system.. 
 
