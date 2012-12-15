@@ -10,11 +10,9 @@ final class FileSystemRule implements TestRule {
 
   private FileSystem fileSystem;
 
-
   FileSystem getFileSystem() {
     return this.fileSystem;
   }
-
 
   @Override
   public Statement apply(final Statement base, Description description) {
@@ -23,7 +21,6 @@ final class FileSystemRule implements TestRule {
       @Override
       public void evaluate() throws Throwable {
         FileSystemRule.this.fileSystem = MemoryFileSystemBuilder.newEmpty().build("name");
-
         try {
           base.evaluate();
         } finally {

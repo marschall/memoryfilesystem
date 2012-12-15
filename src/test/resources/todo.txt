@@ -1,0 +1,6 @@
+configurable
+ - path characters to reject
+ - FileTypeDetector
+ - Paths.get lazily create file system?
+ - configure range of setTimes (past 2038)
+ - security manager restrictions

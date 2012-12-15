@@ -11,24 +11,24 @@ import java.util.List;
 
 import org.junit.Test;
 
-public class HomogenousListTest {
+public class ParentReferenceListTest {
 
   @Test
   public void contains() {
-    assertTrue(HomogenousList.create("..", 42).contains(".."));
-    assertFalse(HomogenousList.create("..", 42).contains("."));
+    assertTrue(ParentReferenceList.create(42).contains(".."));
+    assertFalse(ParentReferenceList.create(42).contains("."));
   }
 
   @Test
   public void create() {
-    assertSame(Collections.emptyList(), HomogenousList.create("..", 0));
-    assertEquals(Collections.singletonList(".."), HomogenousList.create("..", 1));
-    assertEquals(Arrays.asList("..", ".."), HomogenousList.create("..", 2));
+    assertSame(Collections.emptyList(), ParentReferenceList.create(0));
+    assertEquals(Collections.singletonList(".."), ParentReferenceList.create(1));
+    assertEquals(Arrays.asList("..", ".."), ParentReferenceList.create(2));
   }
 
   @Test
   public void subList() {
-    List<String> list = HomogenousList.create("..", 42);
+    List<String> list = ParentReferenceList.create(42);
     assertSame(Collections.emptyList(), list.subList(7, 7));
     assertEquals(Collections.singletonList(".."), list.subList(7, 8));
     assertEquals(Arrays.asList("..", ".."), list.subList(7, 9));
@@ -37,12 +37,12 @@ public class HomogenousListTest {
 
   @Test(expected = IndexOutOfBoundsException.class)
   public void indexUnderflow() {
-    HomogenousList.create("..", 42).get(-1);
+    ParentReferenceList.create(42).get(-1);
   }
 
   @Test(expected = IndexOutOfBoundsException.class)
   public void indexOverflow() {
-    HomogenousList.create("..", 42).get(42);
+    ParentReferenceList.create(42).get(42);
   }
 
 }

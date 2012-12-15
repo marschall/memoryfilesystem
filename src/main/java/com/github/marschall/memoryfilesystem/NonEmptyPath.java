@@ -149,7 +149,7 @@ abstract class NonEmptyPath extends ElementPath {
     int firstDifferenceIndex = this.firstDifferenceIndex(this.getNameElements(), otherPath.getNameElements());
     List<String> first = Collections.emptyList();
     if (firstDifferenceIndex < this.getNameCount()) {
-      first = HomogenousList.create("..", this.getNameCount() - firstDifferenceIndex);
+      first = ParentReferenceList.create(this.getNameCount() - firstDifferenceIndex);
     }
     List<String> second = Collections.emptyList();
     if (firstDifferenceIndex < other.getNameCount()) {

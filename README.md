@@ -1,24 +1,43 @@
-Memory File System
-=================
+Memory File System [![Build Status](https://travis-ci.org/marschall/memoryfilesystem.png?branch=master)](https://travis-ci.org/marschall/memoryfilesystem)
+==================
 An in memory implementation of a [JSR-203](http://jcp.org/en/jsr/detail?id=203) (Java 7) file system for testing purposes.
+
+```xml
+<dependency>
+    <groupId>com.github.marschall</groupId>
+    <artifactId>memoryfilesystem</artifactId>
+    <version>0.1.0</version>
+</dependency>
+```
+
 
 Supported
 ---------
 * <code>SeekableByteChannel</code>
 * <code>FileChannel</code>
 * <code>AsynchronousFileChannel</code>
-* <code>UserDefinedFileAttributeView</code>
 * <code>InputStream</code>
 * <code>OutputStream</code>
 * <code>BasicFileAttributeView</code>, <code>BasicFileAttributes</code>
 * <code>DosFileAttributeView</code>, <code>DosFileAttributes</code>
-* <code>FileOwnerAttributeView</code>
 * <code>PosixFileAttributeView</code>, <code>PosixFileAttributes</code>
 * <code>UserDefinedFileAttributeView</code>
 * <code>FileLock</code>
 * <code>PathMatcher</code>
   * glob
   * regex
+* <code>StandardCopyOption</code>
+  * REPLACE_EXISTING
+  * COPY_ATTRIBUTES
+  * ATOMIC_MOVE
+* <code>StandardOpenOption</code>
+  * READ
+  * WRITE
+  * TRUNCATE_EXISTING
+  * CREATE
+  * DELETE_ON_CLOSE
+* symbolic links
+* symbolic link look detection
 
 Not Supported
 -------------
@@ -26,10 +45,14 @@ Not Supported
 * <code>WatchService</code>
 * <code>FileTypeDetector</code>
 * faked DOS attribute view under Linux, totally unspecified
-* <code>UnixFileAttributeView</code>, sun package, totally unspecified
+* <code>UnixFileAttributeView</code>, [sun package](http://www.oracle.com/technetwork/java/faq-sun-packages-142232.html), totally unspecified
 * any meaningful access checks
-* file system size
 * files larger than 16MB
+* <code>StandardOpenOption</code>
+  * SPARSE
+  * SYNC
+  * DSYNC
+* hard links
 
 FAQ
 ---
@@ -66,9 +89,6 @@ No
 ### But I want all my file access logged
 A logging file system that wraps an other file system is the best way to do this.
 
-### Is it on maven central?
-Working on it
-
 Usage
 -----
 ### Getting Started
@@ -81,8 +101,61 @@ try (FileSystem fileSystem = MemoryFileSystemBuilder.newEmpty().build("test")) {
 }
 ```
 
+It's important to know that at any given time there can only be one memory file system with a given name. Any attempt to create a memory file system with the name of an existing one will throw an exception. 
+
+There are other `new` methods on `MemoryFileSystemBuilder` that allow you to create different file systems and other methods that allow you to customize the file system.
+
 ### Next Steps
-You probably want to create a JUnit `TestRule` that sets up and tears down a file system for you.
+You probably want to create a JUnit `TestRule` that sets up and tears down a file system for you. A rule can look like this
+
+```java
+final class FileSystemRule implements TestRule {
+
+  private FileSystem fileSystem;
+
+  FileSystem getFileSystem() {
+    return this.fileSystem;
+  }
+
+  @Override
+  public Statement apply(final Statement base, Description description) {
+    return new Statement() {
+
+      @Override
+      public void evaluate() throws Throwable {
+        FileSystemRule.this.fileSystem = MemoryFileSystemBuilder.newEmpty().build("name");
+        try {
+          base.evaluate();
+        } finally {
+          FileSystemRule.this.fileSystem.close();
+        }
+      }
+
+    };
+  }
+
+}
+```
+
+and is used like this
+```java
+public class FileSystemTest {
+
+  @Rule
+  public final FileSystemRule rule = new FileSystemRule();
+
+  @Test
+  public void lockAsyncChannel() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path path = fileSystem.getPath("sample.txt");
+    assertFalse(Files.exists(path));
+  }
+
+}
+```
+
+It's important to note that the field holding the rule must be public. If you're using an IoC container for integration tests check out the secion below.
 
 ### Spring
 The `com.github.marschall.memoryfilesystem.MemoryFileSystemFactoryBean` provides integration with Spring.
@@ -97,8 +170,5 @@ The `com.github.marschall.memoryfilesystem.MemoryFileSystemFactoryBean` provides
     factory-bean="memoryFileSystemFactory" factory-method="getObject" />
 ```
 
-Travis CI
----------
-[![Build Status](https://travis-ci.org/marschall/memoryfilesystem.png?branch=master)](https://travis-ci.org/marschall/memoryfilesystem)
-
+You can of course also write a [Java Configuration](http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/beans.html#beans-java) class and a `@Bean` method that uses `MemoryFileSystemBuilder` to create a new file system. Or a CDI class with a `@Produces` method that uses `MemoryFileSystemBuilder` to create a new file system. 
 

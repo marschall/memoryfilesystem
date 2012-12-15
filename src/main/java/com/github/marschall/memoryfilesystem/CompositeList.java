@@ -7,6 +7,16 @@ import java.util.RandomAccess;
 
 /**
  * A list made of two other lists.
+ * 
+ * <p>An example usage for this is path relativization. Consider you have
+ * a list <code>["..", ".."]</code> and a list <code>["a", "b"]</code>
+ * and you want to create a new list <code>["..", "..", "a", "b"]</code>
+ * without having to allocate a full array.</p>
+ * 
+ * <p>This list tries to automatically "defragment" itself. When a sublist
+ * is created in an index range that falls into only one list then a
+ * sublist of only that list and not the whole composite list is
+ * returned.</p>
  *
  * @param <E> the element type
  */

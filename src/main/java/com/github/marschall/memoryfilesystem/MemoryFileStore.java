@@ -42,23 +42,21 @@ class MemoryFileStore extends FileStore {
   @Override
   public long getTotalSpace() throws IOException {
     this.checker.check();
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
+    return Runtime.getRuntime().maxMemory();
   }
 
 
   @Override
   public long getUsableSpace() throws IOException {
     this.checker.check();
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
+    return Runtime.getRuntime().freeMemory();
   }
 
 
   @Override
   public long getUnallocatedSpace() throws IOException {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
+    this.checker.check();
+    return Runtime.getRuntime().freeMemory();
   }
 
 
