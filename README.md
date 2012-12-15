@@ -37,7 +37,7 @@ Supported
   * CREATE
   * DELETE_ON_CLOSE
 * symbolic links
-* symbolic link look detection
+* symbolic link loop detection
 
 Not Supported
 -------------
@@ -171,4 +171,18 @@ The `com.github.marschall.memoryfilesystem.MemoryFileSystemFactoryBean` provides
 ```
 
 You can of course also write a [Java Configuration](http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/beans.html#beans-java) class and a `@Bean` method that uses `MemoryFileSystemBuilder` to create a new file system. Or a CDI class with a `@Produces` method that uses `MemoryFileSystemBuilder` to create a new file system. 
+
+
+Guidlines for Testable File Code
+================================
+
+The following guidles are designed to help you write code that can easily be tested using this project. In general code using the old `File` API has to moved over to the new Java 7 API.
+
+* Inject a `Path` or `FileSystem` instance into the object doing the file handling. This allows you to pass in an instance of a memory file system when tesing and and an instace of the default file system when running in production. Note that you can always the the file system of a path by using `Path#getFileSystem()`.
+* Don't use `File`, `FileInputStream` and `FileOutputStream`. These classes are hard wired to the default file system.
+  * Use `Path` instead of `File`.
+  * Use `SeekableByteChannel` instead of `RandomAccessFile`. Use `Files#newByteChannel` to crete an instance of `SeekableByteChannel`.
+  * Use `Files#newInputStream` and `Files#newOutputStream` to create `InputStream`s and `OutputStream`s on files.
+  * Use `FileChannel#open` instead of `FileInputStream#getChannel()`, `FileOutputStream#getChannel()`, or `RandomAccessFile#getChannel()` to crete a ``FileChannel`
+* Use `FileSystem#getPath(String, String...)` instead of `Paths#get` to create a `Path` instance because the latter creates an instance on the default file system.
 
