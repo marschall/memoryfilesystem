@@ -4,11 +4,6 @@ enum TwoPathOperation {
 
   COPY {
     @Override
-    boolean isCopy() {
-      return true;
-    }
-
-    @Override
     boolean isMove() {
       return false;
     }
@@ -17,17 +12,10 @@ enum TwoPathOperation {
 
   MOVE {
     @Override
-    boolean isCopy() {
-      return false;
-    }
-
-    @Override
     boolean isMove() {
       return true;
     }
   };
-
-  abstract boolean isCopy();
 
   abstract boolean isMove();
 

@@ -1029,7 +1029,7 @@ class MemoryFileSystem extends FileSystem {
 
     StringTransformer targetTransformer = targetContext.path.getMemoryFileSystem().lookUpTransformer;
     String targetElementName = targetTransformer.transform(targetContext.elementName);
-    MemoryEntry targetEntry = sourceParent.getEntry(targetElementName);
+    MemoryEntry targetEntry = targetParent.getEntry(targetElementName);
 
     if (sourceEntry == targetEntry) {
       // source and target are the same, do nothing

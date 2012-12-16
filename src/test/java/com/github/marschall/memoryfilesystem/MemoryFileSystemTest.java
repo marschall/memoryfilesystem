@@ -1196,8 +1196,9 @@ public class MemoryFileSystemTest {
   @Test
   public void copyNoExisitingNoAttributes() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
-    Path a = fileSystem.getPath("a");
-    Path b = fileSystem.getPath("b");
+    Path a = fileSystem.getPath("/1/a");
+    Path b = fileSystem.getPath("/2/b");
+    Files.createDirectories(b.toAbsolutePath().getParent());
 
     this.createAndSetContents(a, "aaa");
     assertThat(a, exists());
@@ -1244,8 +1245,8 @@ public class MemoryFileSystemTest {
   @Test
   public void copyReplaceExisitingNoAttributes() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
-    Path a = fileSystem.getPath("a");
-    Path b = fileSystem.getPath("b");
+    Path a = fileSystem.getPath("/1/a");
+    Path b = fileSystem.getPath("/2/b");
 
     this.createAndSetContents(a, "aaa");
     this.createAndSetContents(b, "bbb");
@@ -1268,8 +1269,9 @@ public class MemoryFileSystemTest {
   @Test
   public void moveNoExisitingNoAttributes() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
-    Path a = fileSystem.getPath("a");
-    Path b = fileSystem.getPath("b");
+    Path a = fileSystem.getPath("/1/a");
+    Path b = fileSystem.getPath("/2/b");
+    Files.createDirectories(b.toAbsolutePath().getParent());
 
     this.createAndSetContents(a, "aaa");
     assertThat(a, exists());
@@ -1304,8 +1306,8 @@ public class MemoryFileSystemTest {
   @Test
   public void moveReplaceExisitingNoAttributes() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
-    Path a = fileSystem.getPath("a");
-    Path b = fileSystem.getPath("b");
+    Path a = fileSystem.getPath("/1/a");
+    Path b = fileSystem.getPath("/2/b");
 
     this.createAndSetContents(a, "aaa");
     this.createAndSetContents(b, "bbb");
@@ -1320,6 +1322,10 @@ public class MemoryFileSystemTest {
   }
 
   private void createAndSetContents(Path path, String contents) throws IOException {
+    Path parent = path.toAbsolutePath().getParent();
+    if (parent.getParent() != null) { // check for root
+      Files.createDirectories(parent);
+    }
     try (SeekableByteChannel channel = Files.newByteChannel(path, WRITE, CREATE_NEW)) {
       channel.write(ByteBuffer.wrap(contents.getBytes(US_ASCII)));
     }
