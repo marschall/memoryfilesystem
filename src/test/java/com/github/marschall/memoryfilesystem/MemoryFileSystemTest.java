@@ -3,6 +3,7 @@ package com.github.marschall.memoryfilesystem;
 import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_ENV;
 import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
 import static java.nio.file.StandardOpenOption.READ;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
@@ -68,6 +69,42 @@ public class MemoryFileSystemTest {
 
   @Rule
   public final FileSystemRule rule = new FileSystemRule();
+
+  @Test
+  public void scatteringWrite() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path path = fileSystem.getPath("file.txt");
+    ByteBuffer a = ByteBuffer.wrap(new byte[]{'a'});
+    ByteBuffer b = ByteBuffer.wrap(new byte[]{'b'});
+    ByteBuffer c = ByteBuffer.wrap(new byte[]{'c'});
+    ByteBuffer d = ByteBuffer.wrap(new byte[]{'d'});
+
+    try (FileChannel channel = FileChannel.open(path, CREATE_NEW, WRITE)) {
+      channel.write(new ByteBuffer[]{a, b, c, d}, 1, 2);
+    }
+    this.assertContents(path, "bc");
+  }
+
+  @Test
+  public void scatteringWriteAppend() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path path = fileSystem.getPath("file.txt");
+
+    Files.createFile(path);
+    this.setContents(path, "z");
+
+    ByteBuffer a = ByteBuffer.wrap(new byte[]{'a'});
+    ByteBuffer b = ByteBuffer.wrap(new byte[]{'b'});
+    ByteBuffer c = ByteBuffer.wrap(new byte[]{'c'});
+    ByteBuffer d = ByteBuffer.wrap(new byte[]{'d'});
+
+    try (FileChannel channel = FileChannel.open(path, APPEND)) {
+      channel.write(new ByteBuffer[]{a, b, c, d}, 1, 2);
+    }
+    this.assertContents(path, "zbc");
+  }
 
   @Test
   public void lockAsyncChannel() throws IOException, InterruptedException, ExecutionException {

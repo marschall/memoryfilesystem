@@ -66,7 +66,7 @@ final class NonAppendingBlockChannel extends BlockChannel {
 
         // we have to make sure a buffers capacity is exhausted before writing into the
         // next buffer so we use the method that returns a long
-        long written = this.memoryContents.write(srcs[offset + 1], this.position, Long.MAX_VALUE - totalWritten);
+        long written = this.memoryContents.write(srcs[offset + i], this.position, Long.MAX_VALUE - totalWritten);
         if (written != -1) {
           // we could read data, update position and total counter
           this.position += written;
