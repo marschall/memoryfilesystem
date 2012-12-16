@@ -71,6 +71,55 @@ public class MemoryFileSystemTest {
   public final FileSystemRule rule = new FileSystemRule();
 
   @Test
+  public void writeByteArrayAppending() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path path = fileSystem.getPath("file.txt");
+    Files.createFile(path);
+    this.setContents(path, "z");
+
+    byte[] data = new byte[]{'a', 'b', 'c', 'd'};
+
+    try (OutputStream outputStream = Files.newOutputStream(path, APPEND)) {
+      outputStream.write(data, 1, 2);
+    }
+
+    assertContents(path, "zbc");
+  }
+
+  @Test
+  public void writeByteArrayNonAppending() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path path = fileSystem.getPath("file.txt");
+    byte[] data = new byte[]{'a', 'b', 'c', 'd'};
+
+    try (OutputStream outputStream = Files.newOutputStream(path, CREATE_NEW)) {
+      outputStream.write(data, 1, 2);
+    }
+
+    assertContents(path, "bc");
+  }
+
+  @Test
+  public void readIntoBuffer() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path path = fileSystem.getPath("file.txt");
+    Files.createFile(path);
+    this.setContents(path, "abcd");
+
+    byte[] data = new byte[2];
+
+    try (FileChannel channel = FileChannel.open(path, READ)) {
+      long read = channel.read(ByteBuffer.wrap(data), 1L);
+      assertEquals("bytes read", 2L, read);
+    }
+
+    assertArrayEquals(new byte[]{'b', 'c'}, data);
+  }
+
+  @Test
   public void scatteringRead() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
@@ -96,6 +145,31 @@ public class MemoryFileSystemTest {
   }
 
   @Test
+  public void scatteringReadBufferTooSmall() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path path = fileSystem.getPath("file.txt");
+    Files.createFile(path);
+    this.setContents(path, "abcdef");
+
+    byte[] a = new byte[1];
+    byte[] b = new byte[1];
+    byte[] c = new byte[1];
+    byte[] d = new byte[1];
+
+    try (FileChannel channel = FileChannel.open(path, READ)) {
+      ByteBuffer[] buffers = new ByteBuffer[]{ByteBuffer.wrap(a), ByteBuffer.wrap(b), ByteBuffer.wrap(c), ByteBuffer.wrap(d)};
+      long read = channel.read(buffers);
+      assertEquals("bytes read", 4L, read);
+    }
+
+    assertArrayEquals(new byte[]{'a'}, a);
+    assertArrayEquals(new byte[]{'b'}, b);
+    assertArrayEquals(new byte[]{'c'}, c);
+    assertArrayEquals(new byte[]{'d'}, d);
+  }
+
+  @Test
   public void scatteringWrite() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
@@ -109,7 +183,7 @@ public class MemoryFileSystemTest {
       long written = channel.write(new ByteBuffer[]{a, b, c, d}, 1, 2);
       assertEquals("byte written", 2L, written);
     }
-    this.assertContents(path, "bc");
+    assertContents(path, "bc");
   }
 
   @Test
@@ -130,7 +204,7 @@ public class MemoryFileSystemTest {
       long written = channel.write(new ByteBuffer[]{a, b, c, d}, 1, 2);
       assertEquals("byte written", 2L, written);
     }
-    this.assertContents(path, "zbc");
+    assertContents(path, "zbc");
   }
 
   @Test
@@ -1272,8 +1346,8 @@ public class MemoryFileSystemTest {
     assertThat(a, exists());
     assertThat(b, exists());
 
-    this.assertContents(a, "aaa");
-    this.assertContents(b, "aaa");
+    assertContents(a, "aaa");
+    assertContents(b, "aaa");
   }
 
   @Test
@@ -1291,8 +1365,8 @@ public class MemoryFileSystemTest {
     assertThat(a, exists());
     assertThat(b, exists());
 
-    this.assertContents(a, "aaa");
-    this.assertContents(b, "aaa");
+    assertContents(a, "aaa");
+    assertContents(b, "aaa");
   }
 
   @Test
@@ -1310,13 +1384,13 @@ public class MemoryFileSystemTest {
     assertThat(a, exists());
     assertThat(b, exists());
 
-    this.assertContents(a, "aaa");
-    this.assertContents(b, "aaa");
+    assertContents(a, "aaa");
+    assertContents(b, "aaa");
 
     this.setContents(a, "a1");
 
-    this.assertContents(a, "a1");
-    this.assertContents(b, "aaa");
+    assertContents(a, "a1");
+    assertContents(b, "aaa");
   }
 
   @Test
@@ -1334,13 +1408,13 @@ public class MemoryFileSystemTest {
       assertThat(a, exists());
       assertThat(b, exists());
 
-      this.assertContents(a, "aaa");
-      this.assertContents(b, "aaa");
+      assertContents(a, "aaa");
+      assertContents(b, "aaa");
 
       this.setContents(a, "a1");
 
-      this.assertContents(a, "a1");
-      this.assertContents(b, "aaa");
+      assertContents(a, "a1");
+      assertContents(b, "aaa");
     }
   }
 
@@ -1359,13 +1433,13 @@ public class MemoryFileSystemTest {
     assertThat(a, exists());
     assertThat(b, exists());
 
-    this.assertContents(a, "aaa");
-    this.assertContents(b, "aaa");
+    assertContents(a, "aaa");
+    assertContents(b, "aaa");
 
     this.setContents(a, "a1");
 
-    this.assertContents(a, "a1");
-    this.assertContents(b, "aaa");
+    assertContents(a, "a1");
+    assertContents(b, "aaa");
   }
 
   @Test
@@ -1383,7 +1457,7 @@ public class MemoryFileSystemTest {
     assertThat(a, not(exists()));
     assertThat(b, exists());
 
-    this.assertContents(b, "aaa");
+    assertContents(b, "aaa");
   }
 
   @Test
@@ -1401,7 +1475,7 @@ public class MemoryFileSystemTest {
       assertThat(a, not(exists()));
       assertThat(b, exists());
 
-      this.assertContents(b, "aaa");
+      assertContents(b, "aaa");
     }
   }
 
@@ -1420,7 +1494,7 @@ public class MemoryFileSystemTest {
     assertThat(a, not(exists()));
     assertThat(b, exists());
 
-    this.assertContents(b, "aaa");
+    assertContents(b, "aaa");
   }
 
   private void createAndSetContents(Path path, String contents) throws IOException {
@@ -1439,7 +1513,7 @@ public class MemoryFileSystemTest {
     }
   }
 
-  private void assertContents(Path path, String expected) throws IOException {
+  private static void assertContents(Path path, String expected) throws IOException {
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream(expected.length());
     try (InputStream input = Files.newInputStream(path, READ)) {
       int read;
