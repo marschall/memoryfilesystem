@@ -71,6 +71,31 @@ public class MemoryFileSystemTest {
   public final FileSystemRule rule = new FileSystemRule();
 
   @Test
+  public void scatteringRead() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path path = fileSystem.getPath("file.txt");
+    Files.createFile(path);
+    this.setContents(path, "abcd");
+
+    byte[] a = new byte[1];
+    byte[] b = new byte[1];
+    byte[] c = new byte[1];
+    byte[] d = new byte[1];
+
+    try (FileChannel channel = FileChannel.open(path, READ)) {
+      ByteBuffer[] buffers = new ByteBuffer[]{ByteBuffer.wrap(a), ByteBuffer.wrap(b), ByteBuffer.wrap(c), ByteBuffer.wrap(d)};
+      long read = channel.read(buffers, 1, 2);
+      assertEquals("bytes read", 2L, read);
+    }
+
+    assertArrayEquals(new byte[]{0}, a);
+    assertArrayEquals(new byte[]{'a'}, b);
+    assertArrayEquals(new byte[]{'b'}, c);
+    assertArrayEquals(new byte[]{0}, d);
+  }
+
+  @Test
   public void scatteringWrite() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
@@ -81,7 +106,8 @@ public class MemoryFileSystemTest {
     ByteBuffer d = ByteBuffer.wrap(new byte[]{'d'});
 
     try (FileChannel channel = FileChannel.open(path, CREATE_NEW, WRITE)) {
-      channel.write(new ByteBuffer[]{a, b, c, d}, 1, 2);
+      long written = channel.write(new ByteBuffer[]{a, b, c, d}, 1, 2);
+      assertEquals("byte written", 2L, written);
     }
     this.assertContents(path, "bc");
   }
@@ -101,7 +127,8 @@ public class MemoryFileSystemTest {
     ByteBuffer d = ByteBuffer.wrap(new byte[]{'d'});
 
     try (FileChannel channel = FileChannel.open(path, APPEND)) {
-      channel.write(new ByteBuffer[]{a, b, c, d}, 1, 2);
+      long written = channel.write(new ByteBuffer[]{a, b, c, d}, 1, 2);
+      assertEquals("byte written", 2L, written);
     }
     this.assertContents(path, "zbc");
   }

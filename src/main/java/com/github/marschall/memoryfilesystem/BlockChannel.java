@@ -103,7 +103,7 @@ abstract class BlockChannel extends FileChannel {
 
         // we have to make sure a buffers capacity is exhausted before reading into the
         // next buffer so we use the method that returns a long
-        long read = this.memoryContents.read(dsts[offset + 1], this.position, Long.MAX_VALUE - totalRead);
+        long read = this.memoryContents.read(dsts[offset + i], this.position, Long.MAX_VALUE - totalRead);
         if (read != -1) {
           // we could read data, update position and total counter
           this.position += read;
