@@ -5,6 +5,7 @@ import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
+import static java.nio.file.StandardOpenOption.DELETE_ON_CLOSE;
 import static java.nio.file.StandardOpenOption.READ;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
@@ -30,6 +31,7 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
+import java.nio.channels.CompletionHandler;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.SeekableByteChannel;
@@ -43,7 +45,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,6 +54,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.regex.PatternSyntaxException;
@@ -208,11 +210,59 @@ public class MemoryFileSystemTest {
   }
 
   @Test
+  public void writeAsyncChannelCompletionHandler() throws IOException, InterruptedException, ExecutionException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path path = fileSystem.getPath("async.txt");
+    Files.createFile(path);
+    this.setContents(path, "z");
+
+    try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, WRITE)) {
+      Object attachment = new Object();
+      ByteBuffer buffer = ByteBuffer.wrap(new byte[]{'a', 'b'});
+
+      CompletionHandlerStub<Integer, Object> handler = new CompletionHandlerStub<>();
+
+      channel.write(buffer, 1L, attachment, handler);
+
+      handler.await();
+
+      assertTrue(handler.isCompleted());
+      assertFalse(handler.isFailed());
+
+      assertSame("attachment", attachment, handler.getAttachment());
+      assertEquals("bytes written", 2, handler.getResult().intValue());
+    }
+
+    assertContents(path, "zab");
+  }
+
+  @Test
+  public void writeAsyncChannelCompletionFuture() throws IOException, InterruptedException, ExecutionException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path path = fileSystem.getPath("async.txt");
+    Files.createFile(path);
+    this.setContents(path, "z");
+
+    try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, WRITE)) {
+      ByteBuffer buffer = ByteBuffer.wrap(new byte[]{'a', 'b'});
+
+      Future<Integer> future = channel.write(buffer, 1L);
+
+      Integer written = future.get();
+      assertEquals(2, written.intValue());
+    }
+
+    assertContents(path, "zab");
+  }
+
+  @Test
   public void lockAsyncChannel() throws IOException, InterruptedException, ExecutionException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("lock.txt");
-    try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, StandardOpenOption.WRITE, StandardOpenOption.CREATE_NEW)) {
+    try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, WRITE, CREATE_NEW)) {
       Future<FileLock> lockFuture = channel.lock();
       FileLock lock = lockFuture.get();
       assertSame(channel, lock.acquiredBy());
@@ -230,7 +280,7 @@ public class MemoryFileSystemTest {
     }
     assertThat(path, exists());
 
-    try (InputStream inputStream = Files.newInputStream(path, StandardOpenOption.DELETE_ON_CLOSE)) {
+    try (InputStream inputStream = Files.newInputStream(path, DELETE_ON_CLOSE)) {
       // nothing
     }
     assertThat(path, not(exists()));
@@ -247,7 +297,7 @@ public class MemoryFileSystemTest {
     }
     assertThat(path, exists());
 
-    try (OutputStream outputStream = Files.newOutputStream(path, StandardOpenOption.DELETE_ON_CLOSE)) {
+    try (OutputStream outputStream = Files.newOutputStream(path, DELETE_ON_CLOSE)) {
       // nothing
     }
     assertThat(path, not(exists()));
@@ -264,7 +314,7 @@ public class MemoryFileSystemTest {
     }
     assertThat(path, exists());
 
-    try (SeekableByteChannel byteChannel = Files.newByteChannel(path, StandardOpenOption.DELETE_ON_CLOSE)) {
+    try (SeekableByteChannel byteChannel = Files.newByteChannel(path, DELETE_ON_CLOSE)) {
       // nothing
     }
     assertThat(path, not(exists()));
@@ -289,8 +339,8 @@ public class MemoryFileSystemTest {
     assertEquals(expectedSize, Files.size(from));
 
     try (
-            FileChannel fromChannel = FileChannel.open(from, StandardOpenOption.READ);
-            FileChannel toChannel = FileChannel.open(to, StandardOpenOption.WRITE, StandardOpenOption.CREATE_NEW);) {
+            FileChannel fromChannel = FileChannel.open(from, READ);
+            FileChannel toChannel = FileChannel.open(to, WRITE, CREATE_NEW);) {
       long trasferred = fromChannel.transferTo(0, expectedSize, toChannel);
       assertEquals(expectedSize, trasferred);
     }
@@ -309,8 +359,8 @@ public class MemoryFileSystemTest {
     assertEquals(expectedSize, Files.size(from));
 
     try (
-            FileChannel fromChannel = FileChannel.open(from, StandardOpenOption.READ);
-            FileChannel toChannel = FileChannel.open(to, StandardOpenOption.WRITE, StandardOpenOption.CREATE_NEW);) {
+            FileChannel fromChannel = FileChannel.open(from, READ);
+            FileChannel toChannel = FileChannel.open(to, WRITE, CREATE_NEW);) {
       long trasferred = toChannel.transferFrom(fromChannel, 0, expectedSize);
       assertEquals(expectedSize, trasferred);
     }
@@ -319,7 +369,7 @@ public class MemoryFileSystemTest {
   }
 
   private void writeBigContents(Path path) throws IOException {
-    try (SeekableByteChannel channel = Files.newByteChannel(path, StandardOpenOption.WRITE, StandardOpenOption.CREATE_NEW)) {
+    try (SeekableByteChannel channel = Files.newByteChannel(path, WRITE, CREATE_NEW)) {
       ByteBuffer src = ByteBuffer.wrap(SAMPLE_DATA);
       for (int i = 0; i < SAMPLE_ITERATIONS; i++) {
         src.rewind();
@@ -411,7 +461,7 @@ public class MemoryFileSystemTest {
   public void dontDeleteOpenFile() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path path = fileSystem.getPath("test");
-    try (SeekableByteChannel channel = Files.newByteChannel(path, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
+    try (SeekableByteChannel channel = Files.newByteChannel(path, CREATE_NEW, WRITE)) {
       Files.delete(path);
       fail("you shound't be able to delete a file wile it's open");
     }
@@ -421,7 +471,7 @@ public class MemoryFileSystemTest {
   public void inputStream() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path path = fileSystem.getPath("test");
-    try (SeekableByteChannel channel = Files.newByteChannel(path, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
+    try (SeekableByteChannel channel = Files.newByteChannel(path, CREATE_NEW, WRITE)) {
       channel.write(ByteBuffer.wrap(new byte[]{1, 2, 3}));
     }
     try (InputStream input = Files.newInputStream(path)) {
@@ -440,14 +490,14 @@ public class MemoryFileSystemTest {
   public void truncateExisting() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path path = fileSystem.getPath("test");
-    try (SeekableByteChannel channel = Files.newByteChannel(path, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
+    try (SeekableByteChannel channel = Files.newByteChannel(path, CREATE_NEW, WRITE)) {
       channel.write(ByteBuffer.wrap(new byte[]{1, 2, 3}));
     }
     Object size = Files.getAttribute(path, "size");
     assertEquals(3L, size);
 
     // TRUNCATE_EXISTING with READ should not truncate
-    try (SeekableByteChannel channel = Files.newByteChannel(path, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.READ)) {
+    try (SeekableByteChannel channel = Files.newByteChannel(path, TRUNCATE_EXISTING, READ)) {
       // ignore
     }
 
@@ -455,7 +505,7 @@ public class MemoryFileSystemTest {
     assertEquals(3L, size);
 
     // WRITE alone should not truncate
-    try (SeekableByteChannel channel = Files.newByteChannel(path, StandardOpenOption.WRITE)) {
+    try (SeekableByteChannel channel = Files.newByteChannel(path, WRITE)) {
       // ignore
     }
 
@@ -463,7 +513,7 @@ public class MemoryFileSystemTest {
     assertEquals(3L, size);
 
     // TRUNCATE_EXISTING with WRITE should truncate
-    try (SeekableByteChannel channel = Files.newByteChannel(path, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)) {
+    try (SeekableByteChannel channel = Files.newByteChannel(path, TRUNCATE_EXISTING, WRITE)) {
       // ignore
     }
 
@@ -1524,5 +1574,61 @@ public class MemoryFileSystemTest {
     }
     assertEquals(expected, new String(outputStream.toByteArray(), US_ASCII));
   }
+
+  static final class CompletionHandlerStub<V, A> implements CompletionHandler<V, A> {
+
+    private volatile V result;
+    private volatile A attachment;
+    private volatile boolean completed;
+    private volatile Throwable exception;
+    private volatile boolean failed;
+    private final CountDownLatch countDownLatch;
+
+    CompletionHandlerStub() {
+      this.countDownLatch = new CountDownLatch(1);
+    }
+
+    @Override
+    public void completed(V result, A attachment) {
+      this.result = result;
+      this.attachment = attachment;
+      this.completed = true;
+      this.countDownLatch.countDown();
+    }
+
+    @Override
+    public void failed(Throwable exception, A attachment) {
+      this.exception = exception;
+      this.attachment = attachment;
+      this.failed = true;
+      this.countDownLatch.countDown();
+    }
+
+    void await() throws InterruptedException {
+      this.countDownLatch.await();
+    }
+
+    V getResult() {
+      return this.result;
+    }
+
+    A getAttachment() {
+      return this.attachment;
+    }
+
+    boolean isCompleted() {
+      return this.completed;
+    }
+
+    Throwable getException() {
+      return this.exception;
+    }
+
+    boolean isFailed() {
+      return this.failed;
+    }
+
+  }
+
 
 }
