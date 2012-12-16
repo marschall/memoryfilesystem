@@ -1194,6 +1194,44 @@ public class MemoryFileSystemTest {
   }
 
   @Test
+  public void copySameFile() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path a = fileSystem.getPath("a");
+    Path b = fileSystem.getPath("./b/../a");
+
+    this.createAndSetContents(a, "aaa");
+    assertThat(a, exists());
+    assertThat(b, exists());
+
+    Files.copy(a, b);
+    assertThat(a, exists());
+    assertThat(b, exists());
+
+    this.assertContents(a, "aaa");
+    this.assertContents(b, "aaa");
+  }
+
+  @Test
+  public void moveSameFile() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path a = fileSystem.getPath("a");
+    Path b = fileSystem.getPath("./b/../a");
+
+    this.createAndSetContents(a, "aaa");
+    assertThat(a, exists());
+    assertThat(b, exists());
+
+    Files.move(a, b);
+    assertThat(a, exists());
+    assertThat(b, exists());
+
+    this.assertContents(a, "aaa");
+    this.assertContents(b, "aaa");
+  }
+
+  @Test
   public void copyNoExisitingNoAttributes() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path a = fileSystem.getPath("/1/a");

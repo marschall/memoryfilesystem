@@ -727,10 +727,10 @@ class MemoryFileSystem extends FileSystem {
 
   private EndPointCopyContext buildEndpointCopyContext(AbstractPath path) {
     // TODO check for root
-    ElementPath absolutePath = (ElementPath) path.toAbsolutePath();
+    ElementPath absolutePath = (ElementPath) path.toAbsolutePath().normalize();
     AbstractPath parent = (AbstractPath) absolutePath.getParent();
     String elementName = absolutePath.getLastNameElement();
-    return new EndPointCopyContext(path, parent, elementName);
+    return new EndPointCopyContext(absolutePath, parent, elementName);
   }
 
   static final class EndPointCopyContext {
