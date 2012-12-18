@@ -370,6 +370,7 @@ public class MemoryFileSystemTest {
       assertThat(handler.getException(), isA((Class<Throwable>) (Object) NonWritableChannelException.class));
     }
 
+    assertContents(path, "z");
   }
 
   @Test
@@ -390,6 +391,32 @@ public class MemoryFileSystemTest {
     }
 
     assertContents(path, "zab");
+  }
+
+  @Test
+  public void writeAsyncChannelCompletionFutureFailed() throws IOException, InterruptedException, ExecutionException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path path = fileSystem.getPath("async.txt");
+    Files.createFile(path);
+    this.setContents(path, "z");
+
+    try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, READ)) {
+      ByteBuffer buffer = ByteBuffer.wrap(new byte[]{'a', 'b'});
+
+      Future<Integer> future = channel.write(buffer, 1L);
+
+      try {
+        future.get();
+        fail("write to reading channel should fail");
+      } catch (ExecutionException e) {
+        Throwable cause = e.getCause();
+
+        // TODO fix Hamcrest
+        assertThat(cause, isA((Class<Throwable>) (Object) NonWritableChannelException.class));
+      }
+    }
+    assertContents(path, "z");
   }
 
   @Test
