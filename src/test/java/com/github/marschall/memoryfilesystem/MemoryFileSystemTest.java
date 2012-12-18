@@ -34,6 +34,7 @@ import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileAlreadyExistsException;
@@ -71,6 +72,91 @@ public class MemoryFileSystemTest {
 
   @Rule
   public final FileSystemRule rule = new FileSystemRule();
+
+  @Test
+  public void tryLockNoArguments() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path path = fileSystem.getPath("file.txt");
+    Files.createFile(path);
+    this.setContents(path, "0123456789");
+
+    try (FileChannel channel = FileChannel.open(path, WRITE)) {
+      FileLock firstLock = channel.tryLock();
+      assertNotNull(firstLock);
+      assertTrue("valid", firstLock.isValid());
+      assertFalse("shared", firstLock.isShared());
+
+      assertNull(channel.tryLock());
+
+      assertSame(channel, firstLock.acquiredBy());
+      assertSame(channel, firstLock.channel());
+
+      firstLock.release();
+      assertFalse("valid", firstLock.isValid());
+
+      FileLock secondLock = channel.tryLock();
+      assertNotNull(secondLock);
+    }
+
+  }
+
+  @Test
+  public void overLappingLocking() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path path = fileSystem.getPath("file.txt");
+    Files.createFile(path);
+    this.setContents(path, "0123456789");
+
+    try (FileChannel firstChannel = FileChannel.open(path, WRITE)) {
+
+      FileLock firstLock = firstChannel.lock(2L, 6L, true);
+
+      assertTrue("valid", firstLock.isValid());
+      assertTrue("shared", firstLock.isShared());
+      firstLock.release();
+      assertFalse("valid", firstLock.isValid());
+
+      firstLock = firstChannel.lock(2L, 6L, false);
+
+      assertTrue("valid", firstLock.isValid());
+      assertFalse("shared", firstLock.isShared());
+
+      try (FileChannel secondChannel = FileChannel.open(path, WRITE)) {
+
+        assertNull(secondChannel.tryLock());
+        assertNull(secondChannel.tryLock(1L, 8L, true));
+        assertNull(secondChannel.tryLock(1L, 8L, false));
+
+        try {
+          secondChannel.lock(1L, 8L, true);
+        } catch (OverlappingFileLockException e) {
+          // should reach here
+        }
+
+        try {
+          secondChannel.lock(1L, 8L, false);
+        } catch (OverlappingFileLockException e) {
+          // should reach here
+        }
+
+        FileLock secondLock = secondChannel.lock(0L, 2L, true);
+        assertNotNull(secondLock);
+        secondLock.release();
+
+        // closing the first channel should release the first lock
+        firstChannel.close();
+
+        assertFalse("valid", firstLock.isValid());
+
+        secondLock = secondChannel.lock();
+        assertNotNull(secondLock);
+
+      }
+
+    }
+  }
 
   @Test
   public void writeByteArrayAppending() throws IOException {
