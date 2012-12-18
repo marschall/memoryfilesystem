@@ -123,11 +123,11 @@ final class FileSystemRule implements TestRule {
 
       @Override
       public void evaluate() throws Throwable {
-        FileSystemRule.this.fileSystem = MemoryFileSystemBuilder.newEmpty().build("name");
+        fileSystem = MemoryFileSystemBuilder.newEmpty().build("name");
         try {
           base.evaluate();
         } finally {
-          FileSystemRule.this.fileSystem.close();
+          fileSystem.close();
         }
       }
 
