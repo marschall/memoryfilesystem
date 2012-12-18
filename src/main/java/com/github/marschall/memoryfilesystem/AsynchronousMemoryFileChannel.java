@@ -81,7 +81,7 @@ final class AsynchronousMemoryFileChannel extends AsynchronousFileChannel {
           MemoryFileLock l = new MemoryFileLock(AsynchronousMemoryFileChannel.this, position, size, shared);
           FileLock lock = AsynchronousMemoryFileChannel.this.delegate.lock(l);
           AsynchronousMemoryFileChannel.this.completed(lock, attachment, handler);
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
           AsynchronousMemoryFileChannel.this.failed(e, attachment, handler);
         }
 
@@ -116,7 +116,7 @@ final class AsynchronousMemoryFileChannel extends AsynchronousFileChannel {
         try {
           final int read = AsynchronousMemoryFileChannel.this.delegate.read(dst, position);
           AsynchronousMemoryFileChannel.this.completed(read, attachment, handler);
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
           AsynchronousMemoryFileChannel.this.failed(e, attachment, handler);
         }
 
@@ -144,7 +144,7 @@ final class AsynchronousMemoryFileChannel extends AsynchronousFileChannel {
         try {
           final int written = AsynchronousMemoryFileChannel.this.delegate.write(src, position);
           AsynchronousMemoryFileChannel.this.completed(written, attachment, handler);
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
           AsynchronousMemoryFileChannel.this.failed(e, attachment, handler);
         }
 

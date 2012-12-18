@@ -13,6 +13,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertArrayEquals;
@@ -34,6 +35,7 @@ import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
+import java.nio.channels.NonWritableChannelException;
 import java.nio.channels.OverlappingFileLockException;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.DirectoryStream;
@@ -296,6 +298,25 @@ public class MemoryFileSystemTest {
   }
 
   @Test
+  public void writeAsyncChannelBasicMethods() throws IOException, InterruptedException, ExecutionException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path path = fileSystem.getPath("async.txt");
+    Files.createFile(path);
+    this.setContents(path, "z");
+
+    try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, WRITE)) {
+      assertTrue("open", channel.isOpen());
+
+      assertEquals(1L, channel.size());
+
+      channel.close();
+
+      assertFalse("open", channel.isOpen());
+    }
+  }
+
+  @Test
   public void writeAsyncChannelCompletionHandler() throws IOException, InterruptedException, ExecutionException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
@@ -321,6 +342,34 @@ public class MemoryFileSystemTest {
     }
 
     assertContents(path, "zab");
+  }
+
+  @Test
+  public void writeAsyncChannelIoException() throws IOException, InterruptedException, ExecutionException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path path = fileSystem.getPath("async.txt");
+    Files.createFile(path);
+    this.setContents(path, "z");
+
+    try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, READ)) {
+      Object attachment = new Object();
+      ByteBuffer buffer = ByteBuffer.wrap(new byte[]{'a', 'b'});
+
+      CompletionHandlerStub<Integer, Object> handler = new CompletionHandlerStub<>();
+
+      channel.write(buffer, 1L, attachment, handler);
+
+      handler.await();
+
+      assertFalse("completed", handler.isCompleted());
+      assertTrue("failed", handler.isFailed());
+
+      assertSame("attachment", attachment, handler.getAttachment());
+      // TODO fix Hamcrest
+      assertThat(handler.getException(), isA((Class<Throwable>) (Object) NonWritableChannelException.class));
+    }
+
   }
 
   @Test
