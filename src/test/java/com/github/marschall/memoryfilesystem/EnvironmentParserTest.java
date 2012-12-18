@@ -18,7 +18,7 @@ public class EnvironmentParserTest {
 
   @Test
   public void unix() {
-    EnvironmentParser parser = this.parse(MemoryFileSystemBuilder.newUnix());
+    EnvironmentParser parser = this.parse(MemoryFileSystemBuilder.newLinux());
     assertEquals(Collections.singletonList("/"), parser.getRoots());
     assertEquals("/", parser.getSeparator());
   }

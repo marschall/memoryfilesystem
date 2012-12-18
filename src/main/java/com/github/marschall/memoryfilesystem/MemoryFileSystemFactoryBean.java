@@ -2,6 +2,7 @@ package com.github.marschall.memoryfilesystem;
 
 import java.io.IOException;
 import java.nio.file.FileSystem;
+import java.util.UUID;
 
 /**
  * A POJO factory bean to create memory file systems.
@@ -11,54 +12,93 @@ import java.nio.file.FileSystem;
  * Java configuration as well as any other dependency injection framework
  * or even without one.</p>
  * 
- * <p>The only method that has to be invoked before {@link #getObject()} is
- * {@link #setName(String)}.</p>
+ * <p>You can optionally configure the type file system that should be created
+ * (Windows, Linux, MacOS) and the name. The name shows up only when a path is
+ * converted to a URI.</p>
  * 
  * <p>A minimal Spring configuration can look something like this:</p>
  * <pre><code>
  * &lt;bean id="memoryFileSystemFactory"
- *    class="com.github.marschall.memoryfilesystem.MemoryFileSystemFactoryBean"&gt;
- *   &lt;property name="name" value="test"/&gt;
- * &lt;/bean&gt;
+ *    class="com.github.marschall.memoryfilesystem.MemoryFileSystemFactoryBean"/&gt;
  *
  * &lt;bean id="memoryFileSystem" destroy-method="close"
- *     factory-bean="memoryFileSystemFactory" factory-method="getObject" /&gt;
+ *     factory-bean="memoryFileSystemFactory" factory-method="getObject"/&gt;
  * 
  * </pre></code>
  * 
  * <p>You can also save the <tt>destroy-method</tt> enable {@code @PreDestroy} with:</p>
  * <pre><code>
  * &lt;bean id="memoryFileSystemFactory"
- *    class="com.github.marschall.memoryfilesystem.MemoryFileSystemFactoryBean"&gt;
- *   &lt;property name="name" value="test"/&gt;
- * &lt;/bean&gt;
+ *    class="com.github.marschall.memoryfilesystem.MemoryFileSystemFactoryBean"/&gt;
  *
  * &lt;bean id="memoryFileSystem"
- *     factory-bean="memoryFileSystemFactory" factory-method="getObject" /&gt;
+ *     factory-bean="memoryFileSystemFactory" factory-method="getObject"/&gt;
  * 
  * &lt;context:annotation-config/&gt;
  * </pre></code>
  */
 public class MemoryFileSystemFactoryBean {
 
-  private final MemoryFileSystemBuilder builder;
   private String name;
 
-  public MemoryFileSystemFactoryBean() {
-    this.builder = MemoryFileSystemBuilder.newEmpty();
-  }
+  private String type;
+
+  public static final String WINDOWS = "windows";
+
+  public static final String LINUX = "linux";
+
+  public static final String MACOS = "macos";
 
   /**
-   * Sets the unique name that identifies the file system to create.
+   * Sets the name that identifies the file system to create.
    * 
-   * <p>This method method <strong>has</strong> to be invoked and the
-   * argument must not be {@code null}.</p>
+   * <p>The name must be unique across all memory file system instances.</p>
+   * 
+   * <p>If the name is not set, a random one will be generated.</p>
    * 
    * @param name the name of the file system, this should be a purely
    *  alpha numeric string
    */
   public void setName(String name) {
     this.name = name;
+  }
+
+  /**
+   * Sets what type of file system should be created.
+   * 
+   * @see #WINDOWS
+   * @see #LINUX
+   * @see #MACOS
+   * 
+   * @param type the file system type, one of {@value #WINDOWS},
+   *  {@value #LINUX}, {@value #MACOS}
+   */
+  public void setType(String type) {
+    this.type = type;
+  }
+
+  private String getName() {
+    if (this.name != null) {
+      return this.name;
+    } else {
+      return UUID.randomUUID().toString();
+    }
+  }
+
+  private MemoryFileSystemBuilder getBuilder() {
+    if (this.type == null) {
+      return MemoryFileSystemBuilder.newEmpty();
+    }
+    switch (this.type) {
+      case WINDOWS:
+        return MemoryFileSystemBuilder.newWindows();
+      case LINUX:
+        return MemoryFileSystemBuilder.newLinux();
+      case MACOS:
+        return MemoryFileSystemBuilder.newMacOs();
+      default:
+        throw new IllegalArgumentException("unknown file system type: " + this.type);
+    }
   }
 
   /**
@@ -71,12 +111,8 @@ public class MemoryFileSystemFactoryBean {
    * @return the file system
    */
   public FileSystem getObject() {
-    if (this.name == null) {
-      // TODO generate random name?
-      throw new IllegalArgumentException("name must be set");
-    }
     try {
-      return this.builder.build(this.name);
+      return this.getBuilder().build(this.getName());
     } catch (IOException e) {
       throw new IllegalArgumentException("could not create file system", e);
     }

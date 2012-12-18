@@ -22,7 +22,7 @@ final class UnixFileSystemRule implements TestRule {
 
       @Override
       public void evaluate() throws Throwable {
-        UnixFileSystemRule.this.fileSystem = MemoryFileSystemBuilder.newUnix().build("name");
+        UnixFileSystemRule.this.fileSystem = MemoryFileSystemBuilder.newLinux().build("name");
 
         try {
           base.evaluate();

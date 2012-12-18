@@ -134,7 +134,7 @@ public final class MemoryFileSystemBuilder {
     return new MemoryFileSystemBuilder();
   }
 
-  public static MemoryFileSystemBuilder newUnix() {
+  public static MemoryFileSystemBuilder newLinux() {
     return new MemoryFileSystemBuilder()
     .addRoot(MemoryFileSystemProperties.UNIX_ROOT)
     .setSeprator(MemoryFileSystemProperties.UNIX_SEPARATOR)

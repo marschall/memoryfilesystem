@@ -1,6 +1,6 @@
 package com.github.marschall.memoryfilesystem;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.nio.file.FileSystem;
@@ -11,9 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-@ContextConfiguration
+@ContextConfiguration(locations = "MemoryFileSystemFactoryBeanTest-context-generated.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
-public class MemoryFileSystemFactoryBeanTest {
+public class MemoryFileSystemFactoryBeanGeneratedNameTest {
 
   @Autowired
   private FileSystem fileSystem;
@@ -21,7 +21,7 @@ public class MemoryFileSystemFactoryBeanTest {
   @Test
   public void isOpen() {
     assertTrue(this.fileSystem.isOpen());
-    assertEquals("memory:test:///", this.fileSystem.getPath("").toUri().toString());
+    assertNotEquals("memory:test:///", this.fileSystem.getPath("").toUri().toString());
   }
 
 }

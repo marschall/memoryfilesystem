@@ -27,7 +27,7 @@ public class RootTest {
 
   @Test
   public void unixRoot() throws IOException {
-    try (FileSystem fileSystem = MemoryFileSystemBuilder.newUnix().build("name")) {
+    try (FileSystem fileSystem = MemoryFileSystemBuilder.newLinux().build("name")) {
       for (Path root : fileSystem.getRootDirectories()) {
         assertCommonRootProperties(root);
 
