@@ -11,8 +11,6 @@ import java.util.concurrent.Future;
 
 final class AsynchronousMemoryFileChannel extends AsynchronousFileChannel {
 
-  // TODO what about exceptions in methods that return futures?
-
   private final BlockChannel delegate;
   private final ExecutorService workExecutor;
   private final ExecutorService callbackExecutor;
