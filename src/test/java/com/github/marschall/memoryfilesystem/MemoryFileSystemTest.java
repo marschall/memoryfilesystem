@@ -19,6 +19,7 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
@@ -48,7 +49,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributeView;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -1631,6 +1637,37 @@ public class MemoryFileSystemTest {
 
     assertContents(a, "aaa");
     assertContents(b, "aaa");
+  }
+
+
+  @Test
+  public void copyAttributes() throws IOException, ParseException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path source = fileSystem.getPath("/source.txt");
+    Path target = fileSystem.getPath("/target.txt");
+
+    Files.createFile(source);
+
+    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    FileTime lastModifiedTime = FileTime.fromMillis(format.parse("2012-11-07T20:30:22").getTime());
+    FileTime lastAccessedTime = FileTime.fromMillis(format.parse("2012-10-07T20:30:22").getTime());
+    FileTime createTime = FileTime.fromMillis(format.parse("2012-09-07T20:30:22").getTime());
+
+    BasicFileAttributeView sourceBasicFileAttributeView = Files.getFileAttributeView(source, BasicFileAttributeView.class);
+    BasicFileAttributes sourceBasicAttributes = sourceBasicFileAttributeView.readAttributes();
+
+    assertNotEquals(lastModifiedTime, sourceBasicAttributes.lastModifiedTime());
+    assertNotEquals(lastAccessedTime, sourceBasicAttributes.lastAccessTime());
+    assertNotEquals(createTime, sourceBasicAttributes.creationTime());
+    sourceBasicFileAttributeView.setTimes(lastModifiedTime, lastAccessedTime, createTime);
+
+    Files.copy(source, target, StandardCopyOption.COPY_ATTRIBUTES);
+
+    BasicFileAttributeView targetBasicFileAttributeView = Files.getFileAttributeView(target, BasicFileAttributeView.class);
+    BasicFileAttributes targetBasicAttributes = targetBasicFileAttributeView.readAttributes();
+    assertNotEquals(lastModifiedTime, targetBasicAttributes.lastModifiedTime());
+    assertNotEquals(lastAccessedTime, targetBasicAttributes.lastAccessTime());
+    assertNotEquals(createTime, targetBasicAttributes.creationTime());
   }
 
   @Test
