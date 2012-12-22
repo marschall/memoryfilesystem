@@ -171,7 +171,6 @@ public final class Directories {
 
     private final Path source;
     private final Path target;
-    private final boolean sameProvider;
     private final LinkOption[] linkOptions;
     private final CopyOption[] copyOptions;
     private final boolean sameFileSystem;
@@ -186,12 +185,12 @@ public final class Directories {
       this.supportedAttribueViews = supportedAttribueViews;
       this.sameFileSystem = sameFileSystem;
       this.copyAttribues = copyAttribues;
-      this.sameProvider = source.getFileSystem().provider() == target.getFileSystem().provider();
     }
 
     private Path relativize(Path path) {
       Path relativized = this.source.relativize(path);
-      if (this.sameProvider) {
+      if (this.sameFileSystem) {
+        // TODO would same provider be enough?
         return this.target.resolve(relativized);
       } else {
         return this.target.resolve(relativized.toString());
@@ -206,7 +205,10 @@ public final class Directories {
 
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-      Files.createDirectory(this.relativize(dir));
+      if (!dir.equals(dir.getRoot())) {
+        // skip creating root on target file system
+        Files.createDirectory(this.relativize(dir));
+      }
       return FileVisitResult.CONTINUE;
     }
 

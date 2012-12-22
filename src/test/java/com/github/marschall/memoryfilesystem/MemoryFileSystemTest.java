@@ -1,6 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_ENV;
+import static com.github.marschall.memoryfilesystem.FileContentsMatcher.hasContents;
 import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.file.StandardOpenOption.APPEND;
@@ -26,7 +27,6 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -180,7 +180,7 @@ public class MemoryFileSystemTest {
       outputStream.write(data, 1, 2);
     }
 
-    assertContents(path, "zbc");
+    assertThat(path, hasContents("zbc"));
   }
 
   @Test
@@ -194,7 +194,7 @@ public class MemoryFileSystemTest {
       outputStream.write(data, 1, 2);
     }
 
-    assertContents(path, "bc");
+    assertThat(path, hasContents("bc"));
   }
 
   @Test
@@ -279,7 +279,7 @@ public class MemoryFileSystemTest {
       long written = channel.write(new ByteBuffer[]{a, b, c, d}, 1, 2);
       assertEquals("byte written", 2L, written);
     }
-    assertContents(path, "bc");
+    assertThat(path, hasContents("bc"));
   }
 
   @Test
@@ -300,7 +300,7 @@ public class MemoryFileSystemTest {
       long written = channel.write(new ByteBuffer[]{a, b, c, d}, 1, 2);
       assertEquals("byte written", 2L, written);
     }
-    assertContents(path, "zbc");
+    assertThat(path, hasContents("zbc"));
   }
 
   @Test
@@ -347,7 +347,7 @@ public class MemoryFileSystemTest {
       assertEquals("bytes written", 2, handler.getResult().intValue());
     }
 
-    assertContents(path, "zab");
+    assertThat(path, hasContents("zab"));
   }
 
   @Test
@@ -377,7 +377,7 @@ public class MemoryFileSystemTest {
       assertArrayEquals(new byte[]{'b', 'c'}, data);
     }
 
-    assertContents(path, "abcd");
+    assertThat(path, hasContents("abcd"));
   }
 
   @Test
@@ -406,7 +406,7 @@ public class MemoryFileSystemTest {
       assertThat(handler.getException(), isA((Class<Throwable>) (Object) NonWritableChannelException.class));
     }
 
-    assertContents(path, "z");
+    assertThat(path, hasContents("z"));
   }
 
   @Test
@@ -426,7 +426,7 @@ public class MemoryFileSystemTest {
       assertEquals(2, written.intValue());
     }
 
-    assertContents(path, "zab");
+    assertThat(path, hasContents("zab"));
   }
 
   @Test
@@ -448,7 +448,7 @@ public class MemoryFileSystemTest {
       assertArrayEquals(new byte[]{'b', 'c'},  data);
     }
 
-    assertContents(path, "abcd");
+    assertThat(path, hasContents("abcd"));
   }
 
   @Test
@@ -474,7 +474,7 @@ public class MemoryFileSystemTest {
         assertThat(cause, isA((Class<Throwable>) (Object) NonWritableChannelException.class));
       }
     }
-    assertContents(path, "z");
+    assertThat(path, hasContents("z"));
   }
 
   @Test
@@ -1616,8 +1616,8 @@ public class MemoryFileSystemTest {
     assertThat(a, exists());
     assertThat(b, exists());
 
-    assertContents(a, "aaa");
-    assertContents(b, "aaa");
+    assertThat(a, hasContents("aaa"));
+    assertThat(b, hasContents("aaa"));
   }
 
   @Test
@@ -1635,8 +1635,8 @@ public class MemoryFileSystemTest {
     assertThat(a, exists());
     assertThat(b, exists());
 
-    assertContents(a, "aaa");
-    assertContents(b, "aaa");
+    assertThat(a, hasContents("aaa"));
+    assertThat(b, hasContents("aaa"));
   }
 
 
@@ -1685,13 +1685,13 @@ public class MemoryFileSystemTest {
     assertThat(a, exists());
     assertThat(b, exists());
 
-    assertContents(a, "aaa");
-    assertContents(b, "aaa");
+    assertThat(a, hasContents("aaa"));
+    assertThat(b, hasContents("aaa"));
 
     this.setContents(a, "a1");
 
-    assertContents(a, "a1");
-    assertContents(b, "aaa");
+    assertThat(a, hasContents("a1"));
+    assertThat(b, hasContents("aaa"));
   }
 
   @Test
@@ -1709,13 +1709,13 @@ public class MemoryFileSystemTest {
       assertThat(a, exists());
       assertThat(b, exists());
 
-      assertContents(a, "aaa");
-      assertContents(b, "aaa");
+      assertThat(a, hasContents("aaa"));
+      assertThat(b, hasContents("aaa"));
 
       this.setContents(a, "a1");
 
-      assertContents(a, "a1");
-      assertContents(b, "aaa");
+      assertThat(a, hasContents("a1"));
+      assertThat(b, hasContents("aaa"));
     }
   }
 
@@ -1734,13 +1734,13 @@ public class MemoryFileSystemTest {
     assertThat(a, exists());
     assertThat(b, exists());
 
-    assertContents(a, "aaa");
-    assertContents(b, "aaa");
+    assertThat(a, hasContents("aaa"));
+    assertThat(b, hasContents("aaa"));
 
     this.setContents(a, "a1");
 
-    assertContents(a, "a1");
-    assertContents(b, "aaa");
+    assertThat(a, hasContents("a1"));
+    assertThat(b, hasContents("aaa"));
   }
 
   @Test
@@ -1758,7 +1758,7 @@ public class MemoryFileSystemTest {
     assertThat(a, not(exists()));
     assertThat(b, exists());
 
-    assertContents(b, "aaa");
+    assertThat(b, hasContents("aaa"));
   }
 
   @Test
@@ -1776,7 +1776,7 @@ public class MemoryFileSystemTest {
       assertThat(a, not(exists()));
       assertThat(b, exists());
 
-      assertContents(b, "aaa");
+      assertThat(b, hasContents("aaa"));
     }
   }
 
@@ -1795,7 +1795,7 @@ public class MemoryFileSystemTest {
     assertThat(a, not(exists()));
     assertThat(b, exists());
 
-    assertContents(b, "aaa");
+    assertThat(b, hasContents("aaa"));
   }
 
   private void createAndSetContents(Path path, String contents) throws IOException {
@@ -1812,18 +1812,6 @@ public class MemoryFileSystemTest {
     try (SeekableByteChannel channel = Files.newByteChannel(path, WRITE, TRUNCATE_EXISTING)) {
       channel.write(ByteBuffer.wrap(contents.getBytes(US_ASCII)));
     }
-  }
-
-  private static void assertContents(Path path, String expected) throws IOException {
-    ByteArrayOutputStream outputStream = new ByteArrayOutputStream(expected.length());
-    try (InputStream input = Files.newInputStream(path, READ)) {
-      int read;
-      byte[] buffer = new byte[512];
-      while ((read = input.read(buffer)) != -1) {
-        outputStream.write(buffer, 0, read);
-      }
-    }
-    assertEquals(expected, new String(outputStream.toByteArray(), US_ASCII));
   }
 
   static final class CompletionHandlerStub<V, A> implements CompletionHandler<V, A> {

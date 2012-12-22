@@ -1,5 +1,6 @@
 package com.github.marschall.memoryfilesystem;
 
+import static com.github.marschall.memoryfilesystem.FileContentsMatcher.hasContents;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasItem;
@@ -12,7 +13,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -153,18 +153,6 @@ public class UnixFileSystemComptiblityTest {
     assertNotNull(attributeView);
   }
 
-  private static void assertContents(Path p, byte[] contents) throws IOException {
-    int expectedContentSize = contents.length;
-    byte[] buffer = new byte[expectedContentSize + 1];
-    try (InputStream input = Files.newInputStream(p)) {
-      assertEquals(expectedContentSize, input.read(buffer, 0, expectedContentSize));
-      assertEquals(-1, input.read(buffer, expectedContentSize, 1));
-      for (int i = 0; i < expectedContentSize; i++) {
-        assertEquals(contents[i], buffer[i]);
-      }
-    }
-  }
-
 
   @Test
   public void outputStreamDontTruncate() throws IOException {
@@ -178,7 +166,7 @@ public class UnixFileSystemComptiblityTest {
       try (OutputStream output = Files.newOutputStream(path, StandardOpenOption.WRITE)) {
         output.write("22".getBytes("US-ASCII"));
       }
-      assertContents(path, "22111".getBytes("US-ASCII"));
+      assertThat(path, hasContents("22111"));
     } finally {
       Files.deleteIfExists(path);
     }
@@ -197,7 +185,7 @@ public class UnixFileSystemComptiblityTest {
       try (OutputStream output = Files.newOutputStream(path, StandardOpenOption.APPEND)) {
         output.write("22".getBytes("US-ASCII"));
       }
-      assertContents(path, "1111122".getBytes("US-ASCII"));
+      assertThat(path, hasContents("1111122"));
     } finally {
       Files.deleteIfExists(path);
     }
@@ -217,7 +205,7 @@ public class UnixFileSystemComptiblityTest {
       try (OutputStream output = Files.newOutputStream(path)) {
         output.write("22".getBytes("US-ASCII"));
       }
-      assertContents(path, "22".getBytes("US-ASCII"));
+      assertThat(path, hasContents("22"));
     } finally {
       Files.deleteIfExists(path);
     }
