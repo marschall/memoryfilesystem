@@ -46,7 +46,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class UnixFileSystemComptiblityTest {
 
   @Rule
-  public final UnixFileSystemRule rule = new UnixFileSystemRule();
+  public final PosixFileSystemRule rule = new PosixFileSystemRule();
 
   private FileSystem fileSystem;
 
