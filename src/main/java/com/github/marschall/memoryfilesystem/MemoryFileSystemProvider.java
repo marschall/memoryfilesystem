@@ -227,7 +227,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   @Override
   public AsynchronousFileChannel newAsynchronousFileChannel(Path path, Set<? extends OpenOption> options, ExecutorService executor, FileAttribute<?>... attrs) throws IOException {
     BlockChannel fileChannel = this.newFileChannel(path, options, attrs);
-    return new AsynchronousMemoryFileChannel(fileChannel,
+    return new AsynchronousBlockChannel(fileChannel,
             executor != null ? executor : this.workExecutor, executor != null ? executor : this.callbackExecutor);
   }
 

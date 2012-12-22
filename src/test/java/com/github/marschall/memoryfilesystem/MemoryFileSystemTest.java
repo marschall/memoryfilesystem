@@ -317,7 +317,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void writeAsyncChannelCompletionHandler() throws IOException, InterruptedException, ExecutionException {
+  public void writeAsyncChannelWriteCompletionHandler() throws IOException, InterruptedException, ExecutionException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
@@ -345,7 +345,37 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void writeAsyncChannelIoException() throws IOException, InterruptedException, ExecutionException {
+  public void writeAsyncChannelReadCompletionHandler() throws IOException, InterruptedException, ExecutionException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path path = fileSystem.getPath("async.txt");
+    Files.createFile(path);
+    this.setContents(path, "abcd");
+
+    try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, READ)) {
+      Object attachment = new Object();
+      byte[] data = new byte[2];
+      ByteBuffer buffer = ByteBuffer.wrap(data);
+
+      CompletionHandlerStub<Integer, Object> handler = new CompletionHandlerStub<>();
+
+      channel.read(buffer, 1L, attachment, handler);
+
+      handler.await();
+
+      assertTrue(handler.isCompleted());
+      assertFalse(handler.isFailed());
+
+      assertSame("attachment", attachment, handler.getAttachment());
+      assertEquals("bytes read", 2, handler.getResult().intValue());
+      assertArrayEquals(new byte[]{'b', 'c'}, data);
+    }
+
+    assertContents(path, "abcd");
+  }
+
+  @Test
+  public void writeAsyncChannelWriteIoException() throws IOException, InterruptedException, ExecutionException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
@@ -374,7 +404,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void writeAsyncChannelCompletionFuture() throws IOException, InterruptedException, ExecutionException {
+  public void writeAsyncChannelWriteCompletionFuture() throws IOException, InterruptedException, ExecutionException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
@@ -394,7 +424,29 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void writeAsyncChannelCompletionFutureFailed() throws IOException, InterruptedException, ExecutionException {
+  public void writeAsyncChannelReadCompletionFuture() throws IOException, InterruptedException, ExecutionException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path path = fileSystem.getPath("async.txt");
+    Files.createFile(path);
+    this.setContents(path, "abcd");
+
+    try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, READ)) {
+      byte[] data = new byte[2];
+      ByteBuffer buffer = ByteBuffer.wrap(data);
+
+      Future<Integer> future = channel.read(buffer, 1);
+
+      Integer read = future.get();
+      assertEquals(2, read.intValue());
+      assertArrayEquals(new byte[]{'b', 'c'},  data);
+    }
+
+    assertContents(path, "abcd");
+  }
+
+  @Test
+  public void writeAsyncChannelWriteCompletionFutureFailed() throws IOException, InterruptedException, ExecutionException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");

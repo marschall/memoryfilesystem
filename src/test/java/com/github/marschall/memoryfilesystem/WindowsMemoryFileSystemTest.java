@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -14,7 +15,9 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.DosFileAttributeView;
+import java.nio.file.attribute.DosFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileTime;
 import java.text.ParseException;
@@ -96,6 +99,68 @@ public class WindowsMemoryFileSystemTest {
     c2 = fileSystem.getPath("c:\\temp");
     assertEquals("c:\\temp", c2.toString());
     assertEquals(c1.hashCode(), c2.hashCode());
+  }
+
+  @Test
+  public void copyAttributes() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path source = fileSystem.getPath("source.txt");
+    Path target = fileSystem.getPath("target.txt");
+    Files.createDirectories(source.toAbsolutePath().getParent());
+
+    Files.createFile(source);
+
+    DosFileAttributeView sourceDosFileAttributeView = Files.getFileAttributeView(source, DosFileAttributeView.class);
+    DosFileAttributes sourceDosAttributes = sourceDosFileAttributeView.readAttributes();
+    assertFalse(sourceDosAttributes.isArchive());
+    assertFalse(sourceDosAttributes.isHidden());
+    assertFalse(sourceDosAttributes.isReadOnly());
+    assertFalse(sourceDosAttributes.isSystem());
+
+    sourceDosFileAttributeView.setArchive(true);
+    sourceDosFileAttributeView.setHidden(true);
+    sourceDosFileAttributeView.setReadOnly(true);
+    sourceDosFileAttributeView.setSystem(true);
+
+    Files.copy(source, target, StandardCopyOption.COPY_ATTRIBUTES);
+
+    DosFileAttributeView targetDosFileAttributeView = Files.getFileAttributeView(target, DosFileAttributeView.class);
+    DosFileAttributes targetDosAttributes = targetDosFileAttributeView.readAttributes();
+    assertFalse(targetDosAttributes.isArchive());
+    assertFalse(targetDosAttributes.isHidden());
+    assertFalse(targetDosAttributes.isReadOnly());
+    assertFalse(targetDosAttributes.isSystem());
+  }
+
+  @Test
+  public void donCopyAttributes() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path source = fileSystem.getPath("source.txt");
+    Path target = fileSystem.getPath("target.txt");
+    Files.createDirectories(source.toAbsolutePath().getParent());
+
+    Files.createFile(source);
+
+    DosFileAttributeView sourceDosFileAttributeView = Files.getFileAttributeView(source, DosFileAttributeView.class);
+    DosFileAttributes sourceDosAttributes = sourceDosFileAttributeView.readAttributes();
+    assertFalse(sourceDosAttributes.isArchive());
+    assertFalse(sourceDosAttributes.isHidden());
+    assertFalse(sourceDosAttributes.isReadOnly());
+    assertFalse(sourceDosAttributes.isSystem());
+
+    sourceDosFileAttributeView.setArchive(true);
+    sourceDosFileAttributeView.setHidden(true);
+    sourceDosFileAttributeView.setReadOnly(true);
+    sourceDosFileAttributeView.setSystem(true);
+
+    Files.copy(source, target, StandardCopyOption.COPY_ATTRIBUTES);
+
+    DosFileAttributeView targetDosFileAttributeView = Files.getFileAttributeView(target, DosFileAttributeView.class);
+    DosFileAttributes targetDosAttributes = targetDosFileAttributeView.readAttributes();
+    assertFalse(targetDosAttributes.isArchive());
+    assertFalse(targetDosAttributes.isHidden());
+    assertFalse(targetDosAttributes.isReadOnly());
+    assertFalse(targetDosAttributes.isSystem());
   }
 
   @Test
