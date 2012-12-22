@@ -66,7 +66,7 @@ MIT
 Yes, but hasn't been subject much scrutiny so bugs are likely. 
 
 ### Does it work with the zipfs provider?
-No, see http://bugs.sun.com/view_bug.do?bug_id=8004789
+Not with the one that ships with the JDK because of [bug 8004789](http://bugs.sun.com/view_bug.do?bug_id=8004789). However there's a [repackaged version](https://github.com/marschall/zipfilesystem-standalone) that fixes this bug and is compatible.
 
 ### Is it production ready?
 No, it's only intended for testing purposes.
@@ -162,16 +162,15 @@ The `com.github.marschall.memoryfilesystem.MemoryFileSystemFactoryBean` provides
 
 ```xml
   <bean id="memoryFileSystemFactory"
-      class="com.github.marschall.memoryfilesystem.MemoryFileSystemFactoryBean">
-    <property name="name" value="test" />
-  </bean>
+      class="com.github.marschall.memoryfilesystem.MemoryFileSystemFactoryBean"/>
 
   <bean id="memoryFileSystem" destroy-method="close"
-    factory-bean="memoryFileSystemFactory" factory-method="getObject" />
+    factory-bean="memoryFileSystemFactory" factory-method="getObject"/>
 ```
 
 You can of course also write a [Java Configuration](http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/beans.html#beans-java) class and a `@Bean` method that uses `MemoryFileSystemBuilder` to create a new file system. Or a CDI class with a `@Produces` method that uses `MemoryFileSystemBuilder` to create a new file system. 
 
+By setting the "type" attribute to "windows", "linux" or "macos" you can control the semantics of the created file system.
 
 Guidelines for Testable File Code
 ================================
