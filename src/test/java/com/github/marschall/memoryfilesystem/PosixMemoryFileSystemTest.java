@@ -33,7 +33,6 @@ public class PosixMemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path file = fileSystem.getPath("file.txt");
 
-    Files.createDirectories(file.toAbsolutePath().getParent());
     Files.createFile(file);
 
     PosixFileAttributeView sourcePosixFileAttributeView = Files.getFileAttributeView(file, PosixFileAttributeView.class);
@@ -49,7 +48,6 @@ public class PosixMemoryFileSystemTest {
     Path source = fileSystem.getPath("source.txt");
     Path target = fileSystem.getPath("target.txt");
 
-    Files.createDirectories(source.toAbsolutePath().getParent());
     Files.createFile(source);
 
     PosixFileAttributeView sourcePosixFileAttributeView = Files.getFileAttributeView(source, PosixFileAttributeView.class);
@@ -71,7 +69,6 @@ public class PosixMemoryFileSystemTest {
     Path source = fileSystem.getPath("source.txt");
     Path target = fileSystem.getPath("target.txt");
 
-    Files.createDirectories(source.toAbsolutePath().getParent());
     Files.createFile(source);
 
     PosixFileAttributeView sourcePosixFileAttributeView = Files.getFileAttributeView(source, PosixFileAttributeView.class);

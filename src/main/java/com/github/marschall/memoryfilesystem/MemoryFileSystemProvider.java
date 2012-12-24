@@ -14,6 +14,7 @@ import java.nio.file.FileStore;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystemAlreadyExistsException;
 import java.nio.file.FileSystemNotFoundException;
+import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
@@ -112,7 +113,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     }
   }
 
-  private MemoryFileSystem createNewFileSystem(String key, EnvironmentParser parser) {
+  private MemoryFileSystem createNewFileSystem(String key, EnvironmentParser parser) throws IOException {
     ClosedFileSystemChecker checker = new ClosedFileSystemChecker();
     String separator = parser.getSeparator();
     StringTransformer storeTransformer = parser.getStoreTransformer();
@@ -127,6 +128,11 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     fileSystem.setRootDirectories(this.buildRootsDirectories(parser, fileSystem, additionalViews));
     String defaultDirectory = parser.getDefaultDirectory();
     fileSystem.setCurrentWorkingDirectory(defaultDirectory);
+    AbstractPath defaultPath = fileSystem.getDefaultPath();
+    if (!defaultPath.isRoot()) {
+      // TODO configure owner and permissions
+      Files.createDirectories(defaultPath);
+    }
     return fileSystem;
   }
 

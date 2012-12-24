@@ -16,12 +16,14 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.DosFileAttributeView;
 import java.nio.file.attribute.DosFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileTime;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Rule;
@@ -36,9 +38,6 @@ public class WindowsMemoryFileSystemTest {
   public void setAttributes() throws IOException, ParseException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
-    // make sure parent exists
-    Files.createDirectories(fileSystem.getPath(""));
-
     SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
     FileTime lastModifiedTime = FileTime.fromMillis(format.parse("2012-11-07T20:30:22").getTime());
 
@@ -48,6 +47,34 @@ public class WindowsMemoryFileSystemTest {
     Files.createFile(hiddenPath, hiddenAttribute);
     DosFileAttributeView dosAttributeView = Files.getFileAttributeView(hiddenPath, DosFileAttributeView.class);
     assertTrue(dosAttributeView.readAttributes().isHidden());
+  }
+
+  @Test
+  public void readAttributes() throws IOException, ParseException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path path = fileSystem.getPath("C:\\file.txt");
+
+    Files.createFile(path);
+
+    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    FileTime lastModifiedTime = FileTime.fromMillis(format.parse("2012-11-07T20:30:22").getTime());
+    FileTime lastAccessTime = FileTime.fromMillis(format.parse("2012-10-07T20:30:22").getTime());
+    FileTime createTime = FileTime.fromMillis(format.parse("2012-09-07T20:30:22").getTime());
+
+    BasicFileAttributeView basicFileAttributeView = Files.getFileAttributeView(path, BasicFileAttributeView.class);
+    basicFileAttributeView.setTimes(lastModifiedTime, lastAccessTime, createTime);
+    DosFileAttributeView dosFileAttributeView = Files.getFileAttributeView(path, DosFileAttributeView.class);
+    dosFileAttributeView.setHidden(true);
+
+    Map<String, Object> attributes = Files.readAttributes(path, "dos:lastModifiedTime,lastAccessTime,size,hidden");
+
+    Map<String, Object> expected = new HashMap<String, Object>(4);
+    expected.put("size", 0L);
+    expected.put("lastModifiedTime", lastModifiedTime);
+    expected.put("lastAccessTime", lastAccessTime);
+    expected.put("hidden", true);
+
+    assertEquals(expected, attributes);
   }
 
   @Test
@@ -106,7 +133,6 @@ public class WindowsMemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path source = fileSystem.getPath("source.txt");
     Path target = fileSystem.getPath("target.txt");
-    Files.createDirectories(source.toAbsolutePath().getParent());
 
     Files.createFile(source);
 
@@ -137,7 +163,6 @@ public class WindowsMemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path source = fileSystem.getPath("source.txt");
     Path target = fileSystem.getPath("target.txt");
-    Files.createDirectories(source.toAbsolutePath().getParent());
 
     Files.createFile(source);
 

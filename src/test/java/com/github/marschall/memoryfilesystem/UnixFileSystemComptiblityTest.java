@@ -85,7 +85,6 @@ public class UnixFileSystemComptiblityTest {
   @Test
   public void isHidden() throws IOException {
     Path hidden = this.getFileSystem().getPath(".hidden");
-    Files.createDirectories(hidden.toAbsolutePath().getParent());
     Files.createFile(hidden);
     try {
       assertTrue(Files.isHidden(hidden));
@@ -97,7 +96,6 @@ public class UnixFileSystemComptiblityTest {
   @Test
   public void isNotHidden() throws IOException {
     Path hidden = this.getFileSystem().getPath("not_hidden");
-    Files.createDirectories(hidden.toAbsolutePath().getParent());
     Files.createFile(hidden);
     try {
       assertFalse(Files.isHidden(hidden));
@@ -136,7 +134,6 @@ public class UnixFileSystemComptiblityTest {
     FileAttribute<?> lastModifiedAttribute = new StubFileAttribute<>(attributeName, time);
 
     Path path = this.getFileSystem().getPath("time");
-    Files.createDirectories(path.toAbsolutePath().getParent());
     Files.createFile(path, lastModifiedAttribute);
     fail("'" + attributeName + "' not supported as initial attribute");
   }

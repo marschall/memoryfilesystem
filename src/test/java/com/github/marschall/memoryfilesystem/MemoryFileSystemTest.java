@@ -58,6 +58,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -1639,6 +1640,30 @@ public class MemoryFileSystemTest {
     assertThat(b, hasContents("aaa"));
   }
 
+  @Test
+  public void readAttributes() throws IOException, ParseException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path patch = fileSystem.getPath("/file.txt");
+
+    Files.createFile(patch);
+
+    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    FileTime lastModifiedTime = FileTime.fromMillis(format.parse("2012-11-07T20:30:22").getTime());
+    FileTime lastAccessTime = FileTime.fromMillis(format.parse("2012-10-07T20:30:22").getTime());
+    FileTime createTime = FileTime.fromMillis(format.parse("2012-09-07T20:30:22").getTime());
+
+    BasicFileAttributeView basicFileAttributeView = Files.getFileAttributeView(patch, BasicFileAttributeView.class);
+    basicFileAttributeView.setTimes(lastModifiedTime, lastAccessTime, createTime);
+
+    Map<String, Object> attributes = Files.readAttributes(patch, "lastModifiedTime,lastAccessTime,size");
+
+    Map<String, Object> expected = new HashMap<String, Object>(3);
+    expected.put("size", 0L);
+    expected.put("lastModifiedTime", lastModifiedTime);
+    expected.put("lastAccessTime", lastAccessTime);
+
+    assertEquals(expected, attributes);
+  }
 
   @Test
   public void copyAttributes() throws IOException, ParseException {
@@ -1800,7 +1825,7 @@ public class MemoryFileSystemTest {
 
   private void createAndSetContents(Path path, String contents) throws IOException {
     Path parent = path.toAbsolutePath().getParent();
-    if (parent.getParent() != null) { // check for root
+    if (!parent.equals(parent.getRoot())) {
       Files.createDirectories(parent);
     }
     try (SeekableByteChannel channel = Files.newByteChannel(path, WRITE, CREATE_NEW)) {

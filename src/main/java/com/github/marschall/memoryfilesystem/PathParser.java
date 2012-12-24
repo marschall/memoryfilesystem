@@ -1,6 +1,5 @@
 package com.github.marschall.memoryfilesystem;
 
-import java.nio.file.Path;
 import java.util.Map;
 
 abstract class PathParser {
@@ -19,7 +18,7 @@ abstract class PathParser {
     return s.charAt(0) == '/' || s.charAt(0) == this.separator;
   }
 
-  abstract Path parse(Map<String, Root> roots, String first, String... more);
+  abstract AbstractPath parse(Map<String, Root> roots, String first, String... more);
 
 
   boolean startWithSeparator(String first, String... more) {

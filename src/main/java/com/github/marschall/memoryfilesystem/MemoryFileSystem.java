@@ -69,7 +69,7 @@ class MemoryFileSystem extends FileSystem {
 
   private volatile Map<String, Root> rootByKey;
 
-  private volatile Path defaultPath;
+  private volatile AbstractPath defaultPath;
 
   private final MemoryUserPrincipalLookupService userPrincipalLookupService;
 
@@ -196,7 +196,7 @@ class MemoryFileSystem extends FileSystem {
     }
   }
 
-  Path getDefaultPath() {
+  AbstractPath getDefaultPath() {
     return this.defaultPath;
   }
 
@@ -918,7 +918,7 @@ class MemoryFileSystem extends FileSystem {
 
 
   @Override
-  public Path getPath(String first, String... more) {
+  public AbstractPath getPath(String first, String... more) {
     this.checker.check();
     // TODO check for maximum length
     // TODO check for valid characters
