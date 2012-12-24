@@ -185,7 +185,6 @@ abstract class MemoryEntry {
   <A extends FileAttributeView> A getFileAttributeView(Class<A> type) {
     try (AutoRelease lock = this.readLock()) {
       if (type == BasicFileAttributeView.class) {
-        this.accessed();
         return (A) this.getBasicFileAttributeView();
       } else {
         String name = null;
@@ -205,7 +204,6 @@ abstract class MemoryEntry {
         }
         FileAttributeView view = this.additionalAttributes.get(name);
         if (view != null) {
-          this.accessed();
           return (A) view;
         } else {
           throw new UnsupportedOperationException("file attribute view" + type + " not supported");
@@ -217,14 +215,12 @@ abstract class MemoryEntry {
   <A extends BasicFileAttributes> A readAttributes(Class<A> type) throws IOException {
     try (AutoRelease lock = this.readLock()) {
       if (type == BasicFileAttributes.class) {
-        this.accessed();
         return (A) this.getBasicFileAttributes();
       } else {
         String viewName = FileAttributeViews.mapFileAttributes(type);
         if (viewName != null) {
           FileAttributeView view = this.additionalAttributes.get(viewName);
           if (view instanceof BasicFileAttributeView) {
-            this.accessed();
             return (A) ((BasicFileAttributeView) view).readAttributes();
           } else {
             throw new UnsupportedOperationException("file attributes " + type + " not supported");
