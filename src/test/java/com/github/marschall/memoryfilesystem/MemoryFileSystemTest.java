@@ -305,6 +305,40 @@ public class MemoryFileSystemTest {
   }
 
   @Test
+  public void writeAsyncChannelTruncate() throws IOException, InterruptedException, ExecutionException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path path = fileSystem.getPath("async.txt");
+    Files.createFile(path);
+    this.setContents(path, "abc");
+
+    try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, WRITE)) {
+      assertEquals(3L, channel.size());
+      AsynchronousFileChannel result = channel.truncate(2L);
+      assertSame(channel, result);
+      assertEquals(2L, channel.size());
+    }
+    assertThat(path, hasContents("abc"));
+  }
+
+  @Test
+  public void writeSyncChannelTruncate() throws IOException, InterruptedException, ExecutionException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path path = fileSystem.getPath("async.txt");
+    Files.createFile(path);
+    this.setContents(path, "abc");
+
+    try (FileChannel channel = FileChannel.open(path, WRITE)) {
+      assertEquals(3L, channel.size());
+      FileChannel result = channel.truncate(2L);
+      assertSame(channel, result);
+      assertEquals(2L, channel.size());
+    }
+    assertThat(path, hasContents("abc"));
+  }
+
+  @Test
   public void writeAsyncChannelBasicMethods() throws IOException, InterruptedException, ExecutionException {
     FileSystem fileSystem = this.rule.getFileSystem();
 

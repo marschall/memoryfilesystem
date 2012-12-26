@@ -53,6 +53,7 @@ Not Supported
   * SYNC
   * DSYNC
 * hard links
+* <code>URL</code> interoperability, needs a custom <code>URLStreamHandler</code> which [ins't very nice](http://www.unicon.net/node/776). That means you can't for example create an <code>URLClassLoader</code> on a memory file system. 
 
 FAQ
 ---
