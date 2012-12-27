@@ -17,6 +17,8 @@ final class MemoryUserPrincipalLookupService extends UserPrincipalLookupService 
   private final StringTransformer stringTransformer;
   private final ClosedFileSystemChecker checker;
 
+  private UserPrincipal defaultUser;
+
   MemoryUserPrincipalLookupService(List<String> userNames, List<String> groupNames,
           StringTransformer stringTransformer, ClosedFileSystemChecker checker) {
     this.checker = checker;
@@ -24,6 +26,9 @@ final class MemoryUserPrincipalLookupService extends UserPrincipalLookupService 
     this.groups = new HashMap<>(groupNames.size());
     for (String userName : userNames) {
       UserPrincipal user = new MemoryUser(userName);
+      if (this.defaultUser == null) {
+        this.defaultUser = user;
+      }
       String key = stringTransformer.transform(userName);
       this.users.put(key, user);
     }
@@ -33,6 +38,10 @@ final class MemoryUserPrincipalLookupService extends UserPrincipalLookupService 
       this.groups.put(key, group);
     }
     this.stringTransformer = stringTransformer;
+  }
+
+  UserPrincipal getDefaultUser() {
+    return this.defaultUser;
   }
 
 

@@ -43,22 +43,22 @@ abstract class MemoryEntry {
 
   private final Map<String, InitializingFileAttributeView> additionalAttributes;
 
-  MemoryEntry(String originalName, Set<Class<? extends FileAttributeView>> additionalViews, Set<PosixFilePermission> umask) {
+  MemoryEntry(String originalName, EntryCreationContext context) {
     this.originalName = originalName;
     this.lock = new ReentrantReadWriteLock();
     FileTime now = this.getNow();
     this.lastAccessTime = now;
     this.lastModifiedTime = now;
     this.creationTime = now;
-    if (additionalViews.isEmpty()) {
+    if (context.additionalViews.isEmpty()) {
       this.additionalAttributes = Collections.emptyMap();
-    } else if (additionalViews.size() == 1) {
-      InitializingFileAttributeView view = this.instantiate(additionalViews.iterator().next(), umask);
+    } else if (context.additionalViews.size() == 1) {
+      InitializingFileAttributeView view = this.instantiate(context.firstView(), context);
       this.additionalAttributes = Collections.singletonMap(view.name(), view);
     } else {
-      this.additionalAttributes = new HashMap<>(additionalViews.size());
-      for (Class<? extends FileAttributeView> viewClass : additionalViews) {
-        InitializingFileAttributeView view = this.instantiate(viewClass, umask);
+      this.additionalAttributes = new HashMap<>(context.additionalViews.size());
+      for (Class<? extends FileAttributeView> viewClass : context.additionalViews) {
+        InitializingFileAttributeView view = this.instantiate(viewClass, context);
         this.additionalAttributes.put(view.name(), view);
       }
     }
@@ -83,9 +83,9 @@ abstract class MemoryEntry {
   }
 
   private InitializingFileAttributeView instantiate(Class<? extends FileAttributeView> viewClass,
-          Set<PosixFilePermission> umask) {
+          EntryCreationContext context) {
     if (viewClass == PosixFileAttributeView.class) {
-      return new MemoryPosixFileAttributeView(umask);
+      return new MemoryPosixFileAttributeView(context);
     } else if (viewClass == DosFileAttributeView.class) {
       return new MemoryDosFileAttributeView();
     } if (viewClass == UserDefinedFileAttributeView.class) {
@@ -466,6 +466,13 @@ abstract class MemoryEntry {
 
     private UserPrincipal owner;
 
+    MemoryFileOwnerAttributeView(EntryCreationContext context) {
+      if (context.user == null) {
+        throw new NullPointerException("owner");
+      }
+      this.owner = context.user;
+    }
+
     @Override
     public UserPrincipal getOwner() {
       try (AutoRelease lock = MemoryEntry.this.readLock()) {
@@ -492,8 +499,13 @@ abstract class MemoryEntry {
     private GroupPrincipal group;
     private Set<PosixFilePermission> perms;
 
-    MemoryPosixFileAttributeView(Set<PosixFilePermission> umask) {
-      this.perms = this.saveCopy(umask);
+    MemoryPosixFileAttributeView(EntryCreationContext context) {
+      super(context);
+      if (context.group == null) {
+        throw new NullPointerException("group");
+      }
+      this.group = context.group;
+      this.perms = this.saveCopy(context.umask);
     }
 
     @Override

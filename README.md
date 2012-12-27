@@ -38,6 +38,7 @@ Supported
   * DELETE_ON_CLOSE
 * symbolic links
 * symbolic link loop detection
+* switching the current user
 
 Not Supported
 -------------
@@ -89,6 +90,9 @@ No
 
 ### But I want all my file access logged
 A logging file system that wraps an other file system is the best way to do this.
+
+### How can I set the current user?
+User `CurrentUser#useDuring`
 
 Usage
 -----

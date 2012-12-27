@@ -15,8 +15,6 @@ import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileAttributeView;
-import java.nio.file.attribute.PosixFilePermission;
 import java.util.Set;
 
 class MemoryFile extends MemoryEntry implements MemoryContents {
@@ -69,12 +67,12 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
 
   private int indirectBlocksAllocated;
 
-  MemoryFile(String originalName, Set<Class<? extends FileAttributeView>> additionalViews, Set<PosixFilePermission> umask) {
-    this(originalName, additionalViews, umask, 0);
+  MemoryFile(String originalName, EntryCreationContext context) {
+    this(originalName, context, 0);
   }
 
-  MemoryFile(String originalName, Set<Class<? extends FileAttributeView>> additionalViews, Set<PosixFilePermission> umask, int initialBlocks) {
-    super(originalName, additionalViews, umask);
+  MemoryFile(String originalName, EntryCreationContext context, int initialBlocks) {
+    super(originalName, context);
     this.attributes = new MemoryFileAttributes();
     this.basicFileAttributeView = new MemoryFileAttributesView();
 
@@ -95,8 +93,8 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
     this.openCount = 0;
   }
 
-  MemoryFile(String originalName, Set<Class<? extends FileAttributeView>> additionalViews, Set<PosixFilePermission> umask, MemoryFile other) {
-    super(originalName, additionalViews, umask);
+  MemoryFile(String originalName, EntryCreationContext context, MemoryFile other) {
+    super(originalName, context);
     this.attributes = new MemoryFileAttributes();
     this.basicFileAttributeView = new MemoryFileAttributesView();
 

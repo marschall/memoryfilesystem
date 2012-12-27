@@ -7,10 +7,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Path;
-import java.nio.file.attribute.FileAttributeView;
-import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.easymock.EasyMock;
@@ -59,7 +56,7 @@ public class MemoryContentsBoundaryTest {
 
   @Before
   public void setUp() {
-    this.contents = new MemoryFile("", Collections.<Class<? extends FileAttributeView>>emptySet(), Collections.<PosixFilePermission>emptySet(), this.initialBlocks);
+    this.contents = new MemoryFile("", EntryCreationContext.empty(), this.initialBlocks);
   }
 
   @Test

@@ -31,7 +31,9 @@ import java.nio.file.attribute.DosFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.attribute.FileOwnerAttributeView;
+import java.nio.file.attribute.GroupPrincipal;
 import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.nio.file.spi.FileSystemProvider;
 import java.text.Collator;
@@ -155,6 +157,25 @@ class MemoryFileSystem extends FileSystem {
     return this.umask;
   }
 
+  EntryCreationContext newEntryCreationContext() throws IOException {
+    UserPrincipal user = this.getCurrentUser();
+    GroupPrincipal group = this.getGroupOf(user);
+    return new EntryCreationContext(this.additionalViews, this.umask, user, group);
+  }
+
+  private UserPrincipal getCurrentUser() {
+    UserPrincipal currentUser = CurrentUser.get();
+    if (currentUser != null) {
+      return currentUser;
+    } else {
+      return this.userPrincipalLookupService.getDefaultUser();
+    }
+  }
+
+  private GroupPrincipal getGroupOf(UserPrincipal user) throws IOException {
+    return this.userPrincipalLookupService.lookupPrincipalByGroupName(user.getName());
+  }
+
   EmptyPath getEmptyPath() {
     return this.emptyPath;
   }
@@ -272,7 +293,7 @@ class MemoryFileSystem extends FileSystem {
         String key = MemoryFileSystem.this.lookUpTransformer.transform(fileName);
         if (isCreateNew) {
           String name = MemoryFileSystem.this.storeTransformer.transform(fileName);
-          MemoryFile file = new MemoryFile(name, MemoryFileSystem.this.additionalViews, MemoryFileSystem.this.umask);
+          MemoryFile file = new MemoryFile(name, MemoryFileSystem.this.newEntryCreationContext());
           checkSupportedInitialAttributes(attrs);
           AttributeAccessors.setAttributes(file, attrs);
           // will throw an exception if already present
@@ -284,7 +305,7 @@ class MemoryFileSystem extends FileSystem {
             boolean isCreate = options.contains(StandardOpenOption.CREATE);
             if (isCreate) {
               String name = MemoryFileSystem.this.storeTransformer.transform(fileName);
-              MemoryFile file = new MemoryFile(name, MemoryFileSystem.this.additionalViews, MemoryFileSystem.this.umask);
+              MemoryFile file = new MemoryFile(name, MemoryFileSystem.this.newEntryCreationContext());
               checkSupportedInitialAttributes(attrs);
               AttributeAccessors.setAttributes(file, attrs);
               directory.addEntry(key, file);
@@ -327,7 +348,7 @@ class MemoryFileSystem extends FileSystem {
 
       @Override
       public MemoryEntry create(String name) throws IOException {
-        MemoryDirectory directory = new MemoryDirectory(name, MemoryFileSystem.this.additionalViews, MemoryFileSystem.this.umask);
+        MemoryDirectory directory = new MemoryDirectory(name, MemoryFileSystem.this.newEntryCreationContext());
         AttributeAccessors.setAttributes(directory, attrs);
         return directory;
       }
@@ -340,7 +361,7 @@ class MemoryFileSystem extends FileSystem {
 
       @Override
       public MemoryEntry create(String name) throws IOException {
-        MemorySymbolicLink symbolicLink = new MemorySymbolicLink(name, target, MemoryFileSystem.this.additionalViews, MemoryFileSystem.this.umask);
+        MemorySymbolicLink symbolicLink = new MemorySymbolicLink(name, target, MemoryFileSystem.this.newEntryCreationContext());
         AttributeAccessors.setAttributes(symbolicLink, attrs);
         return symbolicLink;
       }
@@ -1007,18 +1028,18 @@ class MemoryFileSystem extends FileSystem {
     if (sourceEntry instanceof MemoryFile) {
       MemoryFile sourceFile = (MemoryFile) sourceEntry;
       try (AutoRelease lock = sourceFile.readLock()) {
-        return new MemoryFile(targetElementName, this.additionalViews, this.umask, sourceFile);
+        return new MemoryFile(targetElementName, this.newEntryCreationContext(), sourceFile);
       }
     } else if (sourceEntry instanceof MemoryDirectory) {
       MemoryDirectory sourceDirectory = (MemoryDirectory) sourceEntry;
       try (AutoRelease lock = sourceDirectory.readLock()) {
         sourceDirectory.checkEmpty(absoluteTargetPath);
-        return new MemoryDirectory(targetElementName, MemoryFileSystem.this.additionalViews, MemoryFileSystem.this.umask);
+        return new MemoryDirectory(targetElementName, MemoryFileSystem.this.newEntryCreationContext());
       }
     } else if (sourceEntry instanceof MemorySymbolicLink) {
       MemorySymbolicLink sourceLink = (MemorySymbolicLink) sourceEntry;
       try (AutoRelease lock = sourceLink.readLock()) {
-        return new MemorySymbolicLink(targetElementName, (AbstractPath) sourceLink.getTarget(), MemoryFileSystem.this.additionalViews, MemoryFileSystem.this.umask);
+        return new MemorySymbolicLink(targetElementName, (AbstractPath) sourceLink.getTarget(), MemoryFileSystem.this.newEntryCreationContext());
       }
     } else {
       throw new AssertionError("unknown entry type:" + sourceEntry);

@@ -189,9 +189,9 @@ class EnvironmentParser {
   }
 
   List<String> getGroupNames() {
-    List<String> groupNames = this.parseStringProperty(MemoryFileSystemProperties.USERS_PROPERTY, true);
+    List<String> groupNames = this.parseStringProperty(MemoryFileSystemProperties.GROUPS_PROPERTY, true);
     if (groupNames == null) {
-      return Collections.emptyList();
+      return Collections.singletonList(this.getSystemUserName());
     } else {
       return groupNames;
     }

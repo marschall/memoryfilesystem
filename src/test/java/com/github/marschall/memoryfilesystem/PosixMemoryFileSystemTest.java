@@ -17,7 +17,6 @@ import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.EnumSet;
 
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -28,7 +27,6 @@ public class PosixMemoryFileSystemTest {
   public final PosixFileSystemRule rule = new PosixFileSystemRule();
 
   @Test
-  @Ignore("permissions not yet read")
   public void defaultAttributes() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path file = fileSystem.getPath("file.txt");
