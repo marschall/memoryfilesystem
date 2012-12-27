@@ -1,5 +1,9 @@
 package com.github.marschall.memoryfilesystem;
 
+import static java.nio.file.attribute.PosixFilePermission.GROUP_EXECUTE;
+import static java.nio.file.attribute.PosixFilePermission.OTHERS_EXECUTE;
+import static java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE;
+
 import java.io.IOException;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.DirectoryStream;
@@ -12,6 +16,7 @@ import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,15 +30,26 @@ class MemoryDirectory extends MemoryEntry {
 
   private final InitializingFileAttributeView basicFileAttributeView;
 
+  private static final Set<PosixFilePermission> EXECUTE = EnumSet.of(OWNER_EXECUTE, GROUP_EXECUTE, OTHERS_EXECUTE);
+
   MemoryDirectory(String originalName) {
     this(originalName, Collections.<Class<? extends FileAttributeView>>emptySet(), Collections.<PosixFilePermission>emptySet());
   }
 
   MemoryDirectory(String originalName, Set<Class<? extends FileAttributeView>> additionalViews, Set<PosixFilePermission> umask) {
-    super(originalName, additionalViews, umask);
+    super(originalName, additionalViews, addExecute(umask));
     this.entries = new HashMap<>();
     this.attributes = new MemoryDirectoryFileAttributes();
     this.basicFileAttributeView = new MemoryDirectoryFileAttributesView();
+  }
+
+  private static Set<PosixFilePermission> addExecute(Set<PosixFilePermission> umask) {
+    if (umask.isEmpty()) {
+      return EXECUTE;
+    }
+    Set<PosixFilePermission> copy = EnumSet.copyOf(umask);
+    copy.addAll(EXECUTE);
+    return copy;
   }
 
   DirectoryStream<Path> newDirectoryStream(Path basePath, Filter<? super Path> filter) {
