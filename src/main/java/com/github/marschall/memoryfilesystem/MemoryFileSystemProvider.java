@@ -22,6 +22,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileAttributeView;
+import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.spi.FileSystemProvider;
 import java.text.Collator;
 import java.util.Collections;
@@ -123,8 +124,9 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     Set<Class<? extends FileAttributeView>> additionalViews = parser.getAdditionalViews();
     MemoryUserPrincipalLookupService userPrincipalLookupService = this.createUserPrincipalLookupService(parser, checker);
     PathParser pathParser = this.buildPathParser(parser);
+    Set<PosixFilePermission> umask = parser.getUmask();
     MemoryFileSystem fileSystem = new MemoryFileSystem(key, separator, pathParser, this, memoryStore,
-            userPrincipalLookupService, checker, storeTransformer, lookUpTransformer, collator, additionalViews);
+            userPrincipalLookupService, checker, storeTransformer, lookUpTransformer, collator, additionalViews, umask);
     fileSystem.setRootDirectories(this.buildRootsDirectories(parser, fileSystem, additionalViews));
     String defaultDirectory = parser.getDefaultDirectory();
     fileSystem.setCurrentWorkingDirectory(defaultDirectory);
@@ -168,7 +170,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   private Map<Root, MemoryDirectory> buildRootsDirectories(EnvironmentParser parser, MemoryFileSystem fileSystem, Set<Class<? extends FileAttributeView>> additionalViews) {
     if (parser.isSingleEmptyRoot()) {
       Root root = new EmptyRoot(fileSystem);
-      MemoryDirectory directory = new MemoryDirectory("", additionalViews);
+      MemoryDirectory directory = new MemoryDirectory("", additionalViews, fileSystem.getUmask());
       directory.initializeRoot();
       return Collections.singletonMap(root, directory);
     } else {
@@ -176,7 +178,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
       Map<Root, MemoryDirectory> paths = new LinkedHashMap<>(roots.size());
       for (String root : roots) {
         NamedRoot namedRoot = new NamedRoot(fileSystem, root);
-        MemoryDirectory rootDirectory = new MemoryDirectory(namedRoot.getKey(), additionalViews);
+        MemoryDirectory rootDirectory = new MemoryDirectory(namedRoot.getKey(), additionalViews, fileSystem.getUmask());
         rootDirectory.initializeRoot();
         paths.put(namedRoot, rootDirectory);
       }

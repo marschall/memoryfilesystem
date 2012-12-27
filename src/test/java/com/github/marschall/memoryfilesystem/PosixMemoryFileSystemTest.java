@@ -2,11 +2,10 @@ package com.github.marschall.memoryfilesystem;
 
 import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
-import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.nio.file.FileSystem;
@@ -22,13 +21,14 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
-@Ignore("permissions not yet read")
+
 public class PosixMemoryFileSystemTest {
 
   @Rule
   public final PosixFileSystemRule rule = new PosixFileSystemRule();
 
   @Test
+  @Ignore("permissions not yet read")
   public void defaultAttributes() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path file = fileSystem.getPath("file.txt");
@@ -58,9 +58,9 @@ public class PosixMemoryFileSystemTest {
     Files.copy(source, target, StandardCopyOption.COPY_ATTRIBUTES);
 
     PosixFileAttributeView targetPosixFileAttributeView = Files.getFileAttributeView(target, PosixFileAttributeView.class);
-    PosixFileAttributes targetDosAttributes = targetPosixFileAttributeView.readAttributes();
-    assertEquals(permissions, targetDosAttributes.permissions());
-    assertNotSame(permissions, targetDosAttributes.permissions());
+    PosixFileAttributes targetPosixAttributes = targetPosixFileAttributeView.readAttributes();
+    assertEquals(permissions, targetPosixAttributes.permissions());
+    assertNotSame(permissions, targetPosixAttributes.permissions());
   }
 
   @Test
@@ -79,8 +79,8 @@ public class PosixMemoryFileSystemTest {
     Files.copy(source, target);
 
     PosixFileAttributeView targetPosixFileAttributeView = Files.getFileAttributeView(target, PosixFileAttributeView.class);
-    PosixFileAttributes targetDosAttributes = targetPosixFileAttributeView.readAttributes();
-    assertThat(targetDosAttributes.permissions(), empty());
+    PosixFileAttributes targetPosixAttributes = targetPosixFileAttributeView.readAttributes();
+    assertNotEquals(permissions, targetPosixAttributes.permissions());
   }
 
 }

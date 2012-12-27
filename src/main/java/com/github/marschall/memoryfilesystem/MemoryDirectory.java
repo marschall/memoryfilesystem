@@ -9,6 +9,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttributeView;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,11 +26,11 @@ class MemoryDirectory extends MemoryEntry {
   private final InitializingFileAttributeView basicFileAttributeView;
 
   MemoryDirectory(String originalName) {
-    this(originalName, Collections.<Class<? extends FileAttributeView>>emptySet());
+    this(originalName, Collections.<Class<? extends FileAttributeView>>emptySet(), Collections.<PosixFilePermission>emptySet());
   }
 
-  MemoryDirectory(String originalName, Set<Class<? extends FileAttributeView>> additionalViews) {
-    super(originalName, additionalViews);
+  MemoryDirectory(String originalName, Set<Class<? extends FileAttributeView>> additionalViews, Set<PosixFilePermission> umask) {
+    super(originalName, additionalViews, umask);
     this.entries = new HashMap<>();
     this.attributes = new MemoryDirectoryFileAttributes();
     this.basicFileAttributeView = new MemoryDirectoryFileAttributesView();

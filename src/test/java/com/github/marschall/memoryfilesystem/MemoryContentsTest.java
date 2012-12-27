@@ -13,6 +13,7 @@ import java.nio.channels.NonWritableChannelException;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttributeView;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -54,7 +55,7 @@ public class MemoryContentsTest {
 
   @Before
   public void setUp() {
-    this.contents = new MemoryFile("", Collections.<Class<? extends FileAttributeView>>emptySet(), INITIAL_BLOCKS);
+    this.contents = new MemoryFile("", Collections.<Class<? extends FileAttributeView>>emptySet(), Collections.<PosixFilePermission>emptySet(), INITIAL_BLOCKS);
   }
 
 

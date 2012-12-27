@@ -31,6 +31,7 @@ import java.nio.file.attribute.DosFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.attribute.FileOwnerAttributeView;
+import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.nio.file.spi.FileSystemProvider;
 import java.text.Collator;
@@ -98,6 +99,8 @@ class MemoryFileSystem extends FileSystem {
    */
   private final ReadWriteLock pathOrderingLock;
 
+  private final Set<PosixFilePermission> umask;
+
   static {
     Set<String> unsupported = new HashSet<>(3);
     unsupported.add("lastAccessTime");
@@ -108,7 +111,8 @@ class MemoryFileSystem extends FileSystem {
 
   MemoryFileSystem(String key, String separator, PathParser pathParser, MemoryFileSystemProvider provider, MemoryFileStore store,
           MemoryUserPrincipalLookupService userPrincipalLookupService, ClosedFileSystemChecker checker, StringTransformer storeTransformer,
-          StringTransformer lookUpTransformer, Collator collator, Set<Class<? extends FileAttributeView>> additionalViews) {
+          StringTransformer lookUpTransformer, Collator collator, Set<Class<? extends FileAttributeView>> additionalViews,
+          Set<PosixFilePermission> umask) {
     this.key = key;
     this.separator = separator;
     this.pathParser = pathParser;
@@ -120,6 +124,7 @@ class MemoryFileSystem extends FileSystem {
     this.lookUpTransformer = lookUpTransformer;
     this.collator = collator;
     this.additionalViews = additionalViews;
+    this.umask = umask;
     this.stores = Collections.<FileStore>singletonList(store);
     this.emptyPath = new EmptyPath(this);
     this.supportedFileAttributeViews = this.buildSupportedFileAttributeViews(additionalViews);
@@ -144,6 +149,10 @@ class MemoryFileSystem extends FileSystem {
 
   String getKey() {
     return this.key;
+  }
+
+  Set<PosixFilePermission> getUmask() {
+    return this.umask;
   }
 
   EmptyPath getEmptyPath() {
@@ -263,7 +272,7 @@ class MemoryFileSystem extends FileSystem {
         String key = MemoryFileSystem.this.lookUpTransformer.transform(fileName);
         if (isCreateNew) {
           String name = MemoryFileSystem.this.storeTransformer.transform(fileName);
-          MemoryFile file = new MemoryFile(name, MemoryFileSystem.this.additionalViews);
+          MemoryFile file = new MemoryFile(name, MemoryFileSystem.this.additionalViews, MemoryFileSystem.this.umask);
           checkSupportedInitialAttributes(attrs);
           AttributeAccessors.setAttributes(file, attrs);
           // will throw an exception if already present
@@ -275,7 +284,7 @@ class MemoryFileSystem extends FileSystem {
             boolean isCreate = options.contains(StandardOpenOption.CREATE);
             if (isCreate) {
               String name = MemoryFileSystem.this.storeTransformer.transform(fileName);
-              MemoryFile file = new MemoryFile(name, MemoryFileSystem.this.additionalViews);
+              MemoryFile file = new MemoryFile(name, MemoryFileSystem.this.additionalViews, MemoryFileSystem.this.umask);
               checkSupportedInitialAttributes(attrs);
               AttributeAccessors.setAttributes(file, attrs);
               directory.addEntry(key, file);
@@ -318,7 +327,7 @@ class MemoryFileSystem extends FileSystem {
 
       @Override
       public MemoryEntry create(String name) throws IOException {
-        MemoryDirectory directory = new MemoryDirectory(name, MemoryFileSystem.this.additionalViews);
+        MemoryDirectory directory = new MemoryDirectory(name, MemoryFileSystem.this.additionalViews, MemoryFileSystem.this.umask);
         AttributeAccessors.setAttributes(directory, attrs);
         return directory;
       }
@@ -331,7 +340,7 @@ class MemoryFileSystem extends FileSystem {
 
       @Override
       public MemoryEntry create(String name) throws IOException {
-        MemorySymbolicLink symbolicLink = new MemorySymbolicLink(name, target, MemoryFileSystem.this.additionalViews);
+        MemorySymbolicLink symbolicLink = new MemorySymbolicLink(name, target, MemoryFileSystem.this.additionalViews, MemoryFileSystem.this.umask);
         AttributeAccessors.setAttributes(symbolicLink, attrs);
         return symbolicLink;
       }
@@ -998,18 +1007,18 @@ class MemoryFileSystem extends FileSystem {
     if (sourceEntry instanceof MemoryFile) {
       MemoryFile sourceFile = (MemoryFile) sourceEntry;
       try (AutoRelease lock = sourceFile.readLock()) {
-        return new MemoryFile(targetElementName, MemoryFileSystem.this.additionalViews, sourceFile);
+        return new MemoryFile(targetElementName, this.additionalViews, this.umask, sourceFile);
       }
     } else if (sourceEntry instanceof MemoryDirectory) {
       MemoryDirectory sourceDirectory = (MemoryDirectory) sourceEntry;
       try (AutoRelease lock = sourceDirectory.readLock()) {
         sourceDirectory.checkEmpty(absoluteTargetPath);
-        return new MemoryDirectory(targetElementName, MemoryFileSystem.this.additionalViews);
+        return new MemoryDirectory(targetElementName, MemoryFileSystem.this.additionalViews, MemoryFileSystem.this.umask);
       }
     } else if (sourceEntry instanceof MemorySymbolicLink) {
       MemorySymbolicLink sourceLink = (MemorySymbolicLink) sourceEntry;
       try (AutoRelease lock = sourceLink.readLock()) {
-        return new MemorySymbolicLink(targetElementName, (AbstractPath) sourceLink.getTarget(), MemoryFileSystem.this.additionalViews);
+        return new MemorySymbolicLink(targetElementName, (AbstractPath) sourceLink.getTarget(), MemoryFileSystem.this.additionalViews, MemoryFileSystem.this.umask);
       }
     } else {
       throw new AssertionError("unknown entry type:" + sourceEntry);

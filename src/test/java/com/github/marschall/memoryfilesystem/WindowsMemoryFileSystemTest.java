@@ -152,14 +152,14 @@ public class WindowsMemoryFileSystemTest {
 
     DosFileAttributeView targetDosFileAttributeView = Files.getFileAttributeView(target, DosFileAttributeView.class);
     DosFileAttributes targetDosAttributes = targetDosFileAttributeView.readAttributes();
-    assertFalse(targetDosAttributes.isArchive());
-    assertFalse(targetDosAttributes.isHidden());
-    assertFalse(targetDosAttributes.isReadOnly());
-    assertFalse(targetDosAttributes.isSystem());
+    assertTrue(targetDosAttributes.isArchive());
+    assertTrue(targetDosAttributes.isHidden());
+    assertTrue(targetDosAttributes.isReadOnly());
+    assertTrue(targetDosAttributes.isSystem());
   }
 
   @Test
-  public void donCopyAttributes() throws IOException {
+  public void dontCopyAttributes() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path source = fileSystem.getPath("source.txt");
     Path target = fileSystem.getPath("target.txt");
@@ -178,7 +178,7 @@ public class WindowsMemoryFileSystemTest {
     sourceDosFileAttributeView.setReadOnly(true);
     sourceDosFileAttributeView.setSystem(true);
 
-    Files.copy(source, target, StandardCopyOption.COPY_ATTRIBUTES);
+    Files.copy(source, target);
 
     DosFileAttributeView targetDosFileAttributeView = Files.getFileAttributeView(target, DosFileAttributeView.class);
     DosFileAttributes targetDosAttributes = targetDosFileAttributeView.readAttributes();

@@ -7,6 +7,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.attribute.DosFileAttributeView;
 import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.attribute.PosixFileAttributeView;
+import java.nio.file.attribute.PosixFilePermission;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,6 +26,8 @@ public final class MemoryFileSystemBuilder {
   private final List<String> groups;
 
   private final Set<String> additionalFileAttributeViews;
+
+  private Set<PosixFilePermission> umask;
 
   private String separator;
 
@@ -59,6 +62,17 @@ public final class MemoryFileSystemBuilder {
 
   public MemoryFileSystemBuilder addUser(String userName) {
     this.users.add(userName);
+    return this;
+  }
+
+  /**
+   * Sets the permissions that will be applied to new files.
+   * 
+   * @param umask the permissions that will be applied to new files
+   * @return the receiver
+   */
+  public MemoryFileSystemBuilder setUmask(Set<PosixFilePermission> umask) {
+    this.umask = umask;
     return this;
   }
 
@@ -208,6 +222,9 @@ public final class MemoryFileSystemBuilder {
     }
     if (this.additionalFileAttributeViews != null) {
       env.put(MemoryFileSystemProperties.FILE_ATTRIBUTE_VIEWS_PROPERTY, this.additionalFileAttributeViews);
+    }
+    if (this.additionalFileAttributeViews != null) {
+      env.put(MemoryFileSystemProperties.UMASK_PROPERTY, this.umask);
     }
     return env;
   }
