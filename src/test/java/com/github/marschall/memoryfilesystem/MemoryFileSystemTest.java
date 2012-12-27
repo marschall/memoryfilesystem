@@ -318,7 +318,7 @@ public class MemoryFileSystemTest {
       assertSame(channel, result);
       assertEquals(2L, channel.size());
     }
-    assertThat(path, hasContents("abc"));
+    assertThat(path, hasContents("ab"));
   }
 
   @Test
@@ -335,7 +335,7 @@ public class MemoryFileSystemTest {
       assertSame(channel, result);
       assertEquals(2L, channel.size());
     }
-    assertThat(path, hasContents("abc"));
+    assertThat(path, hasContents("ab"));
   }
 
   @Test

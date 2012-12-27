@@ -41,19 +41,19 @@ Supported
 
 Not Supported
 -------------
-* <code>FileChannel#map</code>, <code>MappedByteBuffer</code> has final methods that call native methods
-* <code>WatchService</code>
-* <code>FileTypeDetector</code>
+* `FileChannel#map`, `MappedByteBuffer` has final methods that call native methods
+* `WatchService`
+* `FileTypeDetector`
 * faked DOS attribute view under Linux, totally unspecified
-* <code>UnixFileAttributeView</code>, [sun package](http://www.oracle.com/technetwork/java/faq-sun-packages-142232.html), totally unspecified
+* `UnixFileAttributeView`, [sun package](http://www.oracle.com/technetwork/java/faq-sun-packages-142232.html), totally unspecified
 * any meaningful access checks
 * files larger than 16MB
-* <code>StandardOpenOption</code>
+* `StandardOpenOption`
   * SPARSE
   * SYNC
   * DSYNC
 * hard links
-* <code>URL</code> interoperability, needs a custom <code>URLStreamHandler</code> which [ins't very nice](http://www.unicon.net/node/776). That means you can't for example create an <code>URLClassLoader</code> on a memory file system. 
+* `URL` interoperability, needs a custom `URLStreamHandler` which [ins't very nice](http://www.unicon.net/node/776). That means you can't for example create an `URLClassLoader` on a memory file system. However if you really want to create a `ClassLoader` on a memory file system you can use [path-classloader](https://github.com/marschall/path-classloader) which is completely portable across Java 7 file systems.
 
 FAQ
 ---
