@@ -184,6 +184,7 @@ abstract class MemoryEntry {
 
   <A extends FileAttributeView> A getFileAttributeView(Class<A> type) {
     try (AutoRelease lock = this.readLock()) {
+      this.checkAccess(AccessMode.READ);
       if (type == BasicFileAttributeView.class) {
         return (A) this.getBasicFileAttributeView();
       } else {
@@ -214,6 +215,7 @@ abstract class MemoryEntry {
 
   <A extends BasicFileAttributes> A readAttributes(Class<A> type) throws IOException {
     try (AutoRelease lock = this.readLock()) {
+      this.checkAccess(AccessMode.READ);
       if (type == BasicFileAttributes.class) {
         return (A) this.getBasicFileAttributes();
       } else {
@@ -380,6 +382,7 @@ abstract class MemoryEntry {
 
     @Override
     public DosFileAttributes readAttributes() {
+      MemoryEntry.this.checkAccess(AccessMode.READ);
       return this;
     }
 
@@ -430,7 +433,6 @@ abstract class MemoryEntry {
     @Override
     public boolean isHidden() {
       try (AutoRelease lock = MemoryEntry.this.readLock()) {
-        MemoryEntry.this.checkAccess(AccessMode.WRITE);
         return this.hidden;
       }
     }
@@ -438,7 +440,6 @@ abstract class MemoryEntry {
     @Override
     public boolean isArchive() {
       try (AutoRelease lock = MemoryEntry.this.readLock()) {
-        MemoryEntry.this.checkAccess(AccessMode.WRITE);
         return this.archive;
       }
     }
@@ -446,7 +447,6 @@ abstract class MemoryEntry {
     @Override
     public boolean isSystem() {
       try (AutoRelease lock = MemoryEntry.this.readLock()) {
-        MemoryEntry.this.checkAccess(AccessMode.WRITE);
         return this.system;
       }
     }
@@ -455,7 +455,6 @@ abstract class MemoryEntry {
     @Override
     public boolean isReadOnly() {
       try (AutoRelease lock = MemoryEntry.this.readLock()) {
-        MemoryEntry.this.checkAccess(AccessMode.WRITE);
         return this.readOnly;
       }
     }
@@ -546,6 +545,7 @@ abstract class MemoryEntry {
 
     @Override
     public PosixFileAttributes readAttributes() throws IOException {
+      MemoryEntry.this.checkAccess(AccessMode.READ);
       return this;
     }
 

@@ -5,6 +5,7 @@ import static java.nio.file.attribute.PosixFilePermission.OTHERS_EXECUTE;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE;
 
 import java.io.IOException;
+import java.nio.file.AccessMode;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryStream.Filter;
@@ -117,6 +118,7 @@ class MemoryDirectory extends MemoryEntry {
 
     @Override
     public BasicFileAttributes readAttributes() throws IOException {
+      MemoryDirectory.this.checkAccess(AccessMode.READ);
       return MemoryDirectory.this.attributes;
     }
 

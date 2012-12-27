@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.nio.file.AccessMode;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.OpenOption;
@@ -129,6 +130,7 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
 
     @Override
     public BasicFileAttributes readAttributes() throws IOException {
+      MemoryFile.this.checkAccess(AccessMode.READ);
       return MemoryFile.this.attributes;
     }
 

@@ -1,6 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
 import java.io.IOException;
+import java.nio.file.AccessMode;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 
@@ -48,6 +49,7 @@ class MemorySymbolicLink extends MemoryEntry {
 
     @Override
     public BasicFileAttributes readAttributes() throws IOException {
+      MemorySymbolicLink.this.checkAccess(AccessMode.READ);
       return MemorySymbolicLink.this.attributes;
     }
 
