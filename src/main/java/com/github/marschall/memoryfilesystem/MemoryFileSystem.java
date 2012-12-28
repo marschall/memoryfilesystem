@@ -281,7 +281,11 @@ class MemoryFileSystem extends FileSystem {
   }
 
   private MemoryFile getFile(final AbstractPath path, final Set<? extends OpenOption> options, final FileAttribute<?>... attrs) throws IOException {
-    final ElementPath absolutePath = (ElementPath) path.toAbsolutePath().normalize();
+    AbstractPath absolutePath = (AbstractPath) path.toAbsolutePath().normalize();
+    if (absolutePath.isRoot()) {
+      throw new FileSystemException(path.toString(), null, "is not a file");
+    }
+    final ElementPath elementPath = (ElementPath) absolutePath;
     MemoryDirectory rootDirectory = this.getRootDirectory(absolutePath);
 
     return this.withWriteLockOnLastDo(rootDirectory, (AbstractPath) absolutePath.getParent(), Options.isFollowSymLinks(options), new MemoryDirectoryBlock<MemoryFile>() {
@@ -289,7 +293,7 @@ class MemoryFileSystem extends FileSystem {
       @Override
       public MemoryFile value(MemoryDirectory directory) throws IOException {
         boolean isCreateNew = options.contains(StandardOpenOption.CREATE_NEW);
-        String fileName = absolutePath.getLastNameElement();
+        String fileName = elementPath.getLastNameElement();
         String key = MemoryFileSystem.this.lookUpTransformer.transform(fileName);
         if (isCreateNew) {
           String name = MemoryFileSystem.this.storeTransformer.transform(fileName);
