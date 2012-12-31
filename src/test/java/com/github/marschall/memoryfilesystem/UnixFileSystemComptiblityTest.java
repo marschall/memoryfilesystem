@@ -1,5 +1,6 @@
 package com.github.marschall.memoryfilesystem;
 
+import static com.github.marschall.memoryfilesystem.FileContentsMatcher.hasContents;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasItem;
@@ -12,7 +13,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,7 +45,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class UnixFileSystemComptiblityTest {
 
   @Rule
-  public final UnixFileSystemRule rule = new UnixFileSystemRule();
+  public final PosixFileSystemRule rule = new PosixFileSystemRule();
 
   private FileSystem fileSystem;
 
@@ -85,7 +84,6 @@ public class UnixFileSystemComptiblityTest {
   @Test
   public void isHidden() throws IOException {
     Path hidden = this.getFileSystem().getPath(".hidden");
-    Files.createDirectories(hidden.toAbsolutePath().getParent());
     Files.createFile(hidden);
     try {
       assertTrue(Files.isHidden(hidden));
@@ -97,7 +95,6 @@ public class UnixFileSystemComptiblityTest {
   @Test
   public void isNotHidden() throws IOException {
     Path hidden = this.getFileSystem().getPath("not_hidden");
-    Files.createDirectories(hidden.toAbsolutePath().getParent());
     Files.createFile(hidden);
     try {
       assertFalse(Files.isHidden(hidden));
@@ -136,7 +133,6 @@ public class UnixFileSystemComptiblityTest {
     FileAttribute<?> lastModifiedAttribute = new StubFileAttribute<>(attributeName, time);
 
     Path path = this.getFileSystem().getPath("time");
-    Files.createDirectories(path.toAbsolutePath().getParent());
     Files.createFile(path, lastModifiedAttribute);
     fail("'" + attributeName + "' not supported as initial attribute");
   }
@@ -153,18 +149,6 @@ public class UnixFileSystemComptiblityTest {
     assertNotNull(attributeView);
   }
 
-  private static void assertContents(Path p, byte[] contents) throws IOException {
-    int expectedContentSize = contents.length;
-    byte[] buffer = new byte[expectedContentSize + 1];
-    try (InputStream input = Files.newInputStream(p)) {
-      assertEquals(expectedContentSize, input.read(buffer, 0, expectedContentSize));
-      assertEquals(-1, input.read(buffer, expectedContentSize, 1));
-      for (int i = 0; i < expectedContentSize; i++) {
-        assertEquals(contents[i], buffer[i]);
-      }
-    }
-  }
-
 
   @Test
   public void outputStreamDontTruncate() throws IOException {
@@ -178,7 +162,7 @@ public class UnixFileSystemComptiblityTest {
       try (OutputStream output = Files.newOutputStream(path, StandardOpenOption.WRITE)) {
         output.write("22".getBytes("US-ASCII"));
       }
-      assertContents(path, "22111".getBytes("US-ASCII"));
+      assertThat(path, hasContents("22111"));
     } finally {
       Files.deleteIfExists(path);
     }
@@ -197,7 +181,7 @@ public class UnixFileSystemComptiblityTest {
       try (OutputStream output = Files.newOutputStream(path, StandardOpenOption.APPEND)) {
         output.write("22".getBytes("US-ASCII"));
       }
-      assertContents(path, "1111122".getBytes("US-ASCII"));
+      assertThat(path, hasContents("1111122"));
     } finally {
       Files.deleteIfExists(path);
     }
@@ -217,7 +201,7 @@ public class UnixFileSystemComptiblityTest {
       try (OutputStream output = Files.newOutputStream(path)) {
         output.write("22".getBytes("US-ASCII"));
       }
-      assertContents(path, "22".getBytes("US-ASCII"));
+      assertThat(path, hasContents("22"));
     } finally {
       Files.deleteIfExists(path);
     }
@@ -225,7 +209,6 @@ public class UnixFileSystemComptiblityTest {
   }
 
   @Test
-  @Ignore("security not yet in place")
   public void readOwner() throws IOException {
     Path path = this.getFileSystem().getPath("/");
     Map<String, Object> attributes = Files.readAttributes(path, "owner:owner");

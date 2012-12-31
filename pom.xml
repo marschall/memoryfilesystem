@@ -15,7 +15,6 @@
     <connection>scm:git:git@github.com:marschall/memoryfilesystem.git</connection>
     <developerConnection>scm:git:git@github.com:marschall/memoryfilesystem.git</developerConnection>
     <url>${project.url}</url>
-    <tag>HEAD</tag>
   </scm>
 
   <developers>
@@ -74,6 +73,12 @@
       <groupId>org.springframework</groupId>
       <artifactId>spring-test</artifactId>
       <version>${spring.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.marschall</groupId>
+      <artifactId>zipfilesystem-standalone</artifactId>
+      <version>1.0.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>

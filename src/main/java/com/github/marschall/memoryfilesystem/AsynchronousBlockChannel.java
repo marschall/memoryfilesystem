@@ -9,13 +9,13 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
-final class AsynchronousMemoryFileChannel extends AsynchronousFileChannel {
+final class AsynchronousBlockChannel extends AsynchronousFileChannel {
 
   private final BlockChannel delegate;
   private final ExecutorService workExecutor;
   private final ExecutorService callbackExecutor;
 
-  AsynchronousMemoryFileChannel(BlockChannel delegate, ExecutorService workExecutor, ExecutorService callbackExecutor) {
+  AsynchronousBlockChannel(BlockChannel delegate, ExecutorService workExecutor, ExecutorService callbackExecutor) {
     this.delegate = delegate;
     this.workExecutor = workExecutor;
     this.callbackExecutor = callbackExecutor;
@@ -76,11 +76,11 @@ final class AsynchronousMemoryFileChannel extends AsynchronousFileChannel {
       @Override
       public void run() {
         try {
-          MemoryFileLock l = new MemoryFileLock(AsynchronousMemoryFileChannel.this, position, size, shared);
-          FileLock lock = AsynchronousMemoryFileChannel.this.delegate.lock(l);
-          AsynchronousMemoryFileChannel.this.completed(lock, attachment, handler);
+          MemoryFileLock l = new MemoryFileLock(AsynchronousBlockChannel.this, position, size, shared);
+          FileLock lock = AsynchronousBlockChannel.this.delegate.lock(l);
+          AsynchronousBlockChannel.this.completed(lock, attachment, handler);
         } catch (IOException | RuntimeException e) {
-          AsynchronousMemoryFileChannel.this.failed(e, attachment, handler);
+          AsynchronousBlockChannel.this.failed(e, attachment, handler);
         }
 
       }
@@ -94,8 +94,8 @@ final class AsynchronousMemoryFileChannel extends AsynchronousFileChannel {
 
       @Override
       public FileLock call() throws Exception {
-        MemoryFileLock l = new MemoryFileLock(AsynchronousMemoryFileChannel.this, position, size, shared);
-        return AsynchronousMemoryFileChannel.this.delegate.lock(l);
+        MemoryFileLock l = new MemoryFileLock(AsynchronousBlockChannel.this, position, size, shared);
+        return AsynchronousBlockChannel.this.delegate.lock(l);
       }
     });
   }
@@ -112,10 +112,10 @@ final class AsynchronousMemoryFileChannel extends AsynchronousFileChannel {
       @Override
       public void run() {
         try {
-          final int read = AsynchronousMemoryFileChannel.this.delegate.read(dst, position);
-          AsynchronousMemoryFileChannel.this.completed(read, attachment, handler);
+          final int read = AsynchronousBlockChannel.this.delegate.read(dst, position);
+          AsynchronousBlockChannel.this.completed(read, attachment, handler);
         } catch (IOException | RuntimeException e) {
-          AsynchronousMemoryFileChannel.this.failed(e, attachment, handler);
+          AsynchronousBlockChannel.this.failed(e, attachment, handler);
         }
 
       }
@@ -128,7 +128,7 @@ final class AsynchronousMemoryFileChannel extends AsynchronousFileChannel {
 
       @Override
       public Integer call() throws Exception {
-        return AsynchronousMemoryFileChannel.this.delegate.read(dst, position);
+        return AsynchronousBlockChannel.this.delegate.read(dst, position);
       }
     });
   }
@@ -140,10 +140,10 @@ final class AsynchronousMemoryFileChannel extends AsynchronousFileChannel {
       @Override
       public void run() {
         try {
-          final int written = AsynchronousMemoryFileChannel.this.delegate.write(src, position);
-          AsynchronousMemoryFileChannel.this.completed(written, attachment, handler);
+          final int written = AsynchronousBlockChannel.this.delegate.write(src, position);
+          AsynchronousBlockChannel.this.completed(written, attachment, handler);
         } catch (IOException | RuntimeException e) {
-          AsynchronousMemoryFileChannel.this.failed(e, attachment, handler);
+          AsynchronousBlockChannel.this.failed(e, attachment, handler);
         }
 
       }
@@ -156,7 +156,7 @@ final class AsynchronousMemoryFileChannel extends AsynchronousFileChannel {
 
       @Override
       public Integer call() throws Exception {
-        return AsynchronousMemoryFileChannel.this.delegate.write(src, position);
+        return AsynchronousBlockChannel.this.delegate.write(src, position);
       }
     });
   }

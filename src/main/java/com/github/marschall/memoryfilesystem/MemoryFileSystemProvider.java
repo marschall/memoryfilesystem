@@ -14,6 +14,7 @@ import java.nio.file.FileStore;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystemAlreadyExistsException;
 import java.nio.file.FileSystemNotFoundException;
+import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
@@ -21,6 +22,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileAttributeView;
+import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.spi.FileSystemProvider;
 import java.text.Collator;
 import java.util.Collections;
@@ -112,7 +114,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     }
   }
 
-  private MemoryFileSystem createNewFileSystem(String key, EnvironmentParser parser) {
+  private MemoryFileSystem createNewFileSystem(String key, EnvironmentParser parser) throws IOException {
     ClosedFileSystemChecker checker = new ClosedFileSystemChecker();
     String separator = parser.getSeparator();
     StringTransformer storeTransformer = parser.getStoreTransformer();
@@ -122,11 +124,17 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     Set<Class<? extends FileAttributeView>> additionalViews = parser.getAdditionalViews();
     MemoryUserPrincipalLookupService userPrincipalLookupService = this.createUserPrincipalLookupService(parser, checker);
     PathParser pathParser = this.buildPathParser(parser);
+    Set<PosixFilePermission> umask = parser.getUmask();
     MemoryFileSystem fileSystem = new MemoryFileSystem(key, separator, pathParser, this, memoryStore,
-            userPrincipalLookupService, checker, storeTransformer, lookUpTransformer, collator, additionalViews);
+            userPrincipalLookupService, checker, storeTransformer, lookUpTransformer, collator, additionalViews, umask);
     fileSystem.setRootDirectories(this.buildRootsDirectories(parser, fileSystem, additionalViews));
     String defaultDirectory = parser.getDefaultDirectory();
     fileSystem.setCurrentWorkingDirectory(defaultDirectory);
+    AbstractPath defaultPath = fileSystem.getDefaultPath();
+    if (!defaultPath.isRoot()) {
+      // TODO configure owner and permissions
+      Files.createDirectories(defaultPath);
+    }
     return fileSystem;
   }
 
@@ -159,10 +167,10 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     }
   }
 
-  private Map<Root, MemoryDirectory> buildRootsDirectories(EnvironmentParser parser, MemoryFileSystem fileSystem, Set<Class<? extends FileAttributeView>> additionalViews) {
+  private Map<Root, MemoryDirectory> buildRootsDirectories(EnvironmentParser parser, MemoryFileSystem fileSystem, Set<Class<? extends FileAttributeView>> additionalViews) throws IOException {
     if (parser.isSingleEmptyRoot()) {
       Root root = new EmptyRoot(fileSystem);
-      MemoryDirectory directory = new MemoryDirectory("", additionalViews);
+      MemoryDirectory directory = new MemoryDirectory("", fileSystem.newEntryCreationContext());
       directory.initializeRoot();
       return Collections.singletonMap(root, directory);
     } else {
@@ -170,7 +178,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
       Map<Root, MemoryDirectory> paths = new LinkedHashMap<>(roots.size());
       for (String root : roots) {
         NamedRoot namedRoot = new NamedRoot(fileSystem, root);
-        MemoryDirectory rootDirectory = new MemoryDirectory(namedRoot.getKey(), additionalViews);
+        MemoryDirectory rootDirectory = new MemoryDirectory(namedRoot.getKey(), fileSystem.newEntryCreationContext());
         rootDirectory.initializeRoot();
         paths.put(namedRoot, rootDirectory);
       }
@@ -227,7 +235,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   @Override
   public AsynchronousFileChannel newAsynchronousFileChannel(Path path, Set<? extends OpenOption> options, ExecutorService executor, FileAttribute<?>... attrs) throws IOException {
     BlockChannel fileChannel = this.newFileChannel(path, options, attrs);
-    return new AsynchronousMemoryFileChannel(fileChannel,
+    return new AsynchronousBlockChannel(fileChannel,
             executor != null ? executor : this.workExecutor, executor != null ? executor : this.callbackExecutor);
   }
 

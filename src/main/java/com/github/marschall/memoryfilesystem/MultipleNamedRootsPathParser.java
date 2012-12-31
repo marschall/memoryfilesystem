@@ -3,7 +3,6 @@ package com.github.marschall.memoryfilesystem;
 import static java.lang.Math.min;
 
 import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +19,7 @@ final class MultipleNamedRootsPathParser extends PathParser {
 
 
   @Override
-  public Path parse(Map<String, Root> roots, String first, String... more) {
+  public AbstractPath parse(Map<String, Root> roots, String first, String... more) {
     if (this.startWithSeparator(first, more)) {
       // TODO build string
       throw new InvalidPathException(first, "path must not start with separator", 1);

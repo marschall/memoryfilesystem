@@ -7,8 +7,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileAttributeView;
-import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -19,7 +17,7 @@ public class MemoryFileTest {
 
   @Before
   public void setUp() {
-    this.memoryFile = new MemoryFile("", Collections.<Class<? extends FileAttributeView>>emptySet());
+    this.memoryFile = new MemoryFile("", EntryCreationContext.empty());
   }
 
   @Test

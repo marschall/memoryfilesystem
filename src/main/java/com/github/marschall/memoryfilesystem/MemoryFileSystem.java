@@ -31,6 +31,9 @@ import java.nio.file.attribute.DosFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.attribute.FileOwnerAttributeView;
+import java.nio.file.attribute.GroupPrincipal;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.nio.file.spi.FileSystemProvider;
 import java.text.Collator;
@@ -69,7 +72,7 @@ class MemoryFileSystem extends FileSystem {
 
   private volatile Map<String, Root> rootByKey;
 
-  private volatile Path defaultPath;
+  private volatile AbstractPath defaultPath;
 
   private final MemoryUserPrincipalLookupService userPrincipalLookupService;
 
@@ -98,6 +101,8 @@ class MemoryFileSystem extends FileSystem {
    */
   private final ReadWriteLock pathOrderingLock;
 
+  private final Set<PosixFilePermission> umask;
+
   static {
     Set<String> unsupported = new HashSet<>(3);
     unsupported.add("lastAccessTime");
@@ -108,7 +113,8 @@ class MemoryFileSystem extends FileSystem {
 
   MemoryFileSystem(String key, String separator, PathParser pathParser, MemoryFileSystemProvider provider, MemoryFileStore store,
           MemoryUserPrincipalLookupService userPrincipalLookupService, ClosedFileSystemChecker checker, StringTransformer storeTransformer,
-          StringTransformer lookUpTransformer, Collator collator, Set<Class<? extends FileAttributeView>> additionalViews) {
+          StringTransformer lookUpTransformer, Collator collator, Set<Class<? extends FileAttributeView>> additionalViews,
+          Set<PosixFilePermission> umask) {
     this.key = key;
     this.separator = separator;
     this.pathParser = pathParser;
@@ -120,6 +126,7 @@ class MemoryFileSystem extends FileSystem {
     this.lookUpTransformer = lookUpTransformer;
     this.collator = collator;
     this.additionalViews = additionalViews;
+    this.umask = umask;
     this.stores = Collections.<FileStore>singletonList(store);
     this.emptyPath = new EmptyPath(this);
     this.supportedFileAttributeViews = this.buildSupportedFileAttributeViews(additionalViews);
@@ -144,6 +151,29 @@ class MemoryFileSystem extends FileSystem {
 
   String getKey() {
     return this.key;
+  }
+
+  Set<PosixFilePermission> getUmask() {
+    return this.umask;
+  }
+
+  EntryCreationContext newEntryCreationContext() throws IOException {
+    UserPrincipal user = this.getCurrentUser();
+    GroupPrincipal group = this.getGroupOf(user);
+    return new EntryCreationContext(this.additionalViews, this.umask, user, group);
+  }
+
+  private UserPrincipal getCurrentUser() {
+    UserPrincipal currentUser = CurrentUser.get();
+    if (currentUser != null) {
+      return currentUser;
+    } else {
+      return this.userPrincipalLookupService.getDefaultUser();
+    }
+  }
+
+  private GroupPrincipal getGroupOf(UserPrincipal user) throws IOException {
+    return this.userPrincipalLookupService.lookupPrincipalByGroupName(user.getName());
   }
 
   EmptyPath getEmptyPath() {
@@ -196,7 +226,7 @@ class MemoryFileSystem extends FileSystem {
     }
   }
 
-  Path getDefaultPath() {
+  AbstractPath getDefaultPath() {
     return this.defaultPath;
   }
 
@@ -251,7 +281,11 @@ class MemoryFileSystem extends FileSystem {
   }
 
   private MemoryFile getFile(final AbstractPath path, final Set<? extends OpenOption> options, final FileAttribute<?>... attrs) throws IOException {
-    final ElementPath absolutePath = (ElementPath) path.toAbsolutePath().normalize();
+    AbstractPath absolutePath = (AbstractPath) path.toAbsolutePath().normalize();
+    if (absolutePath.isRoot()) {
+      throw new FileSystemException(path.toString(), null, "is not a file");
+    }
+    final ElementPath elementPath = (ElementPath) absolutePath;
     MemoryDirectory rootDirectory = this.getRootDirectory(absolutePath);
 
     return this.withWriteLockOnLastDo(rootDirectory, (AbstractPath) absolutePath.getParent(), Options.isFollowSymLinks(options), new MemoryDirectoryBlock<MemoryFile>() {
@@ -259,11 +293,11 @@ class MemoryFileSystem extends FileSystem {
       @Override
       public MemoryFile value(MemoryDirectory directory) throws IOException {
         boolean isCreateNew = options.contains(StandardOpenOption.CREATE_NEW);
-        String fileName = absolutePath.getLastNameElement();
+        String fileName = elementPath.getLastNameElement();
         String key = MemoryFileSystem.this.lookUpTransformer.transform(fileName);
         if (isCreateNew) {
           String name = MemoryFileSystem.this.storeTransformer.transform(fileName);
-          MemoryFile file = new MemoryFile(name, MemoryFileSystem.this.additionalViews);
+          MemoryFile file = new MemoryFile(name, MemoryFileSystem.this.newEntryCreationContext());
           checkSupportedInitialAttributes(attrs);
           AttributeAccessors.setAttributes(file, attrs);
           // will throw an exception if already present
@@ -275,7 +309,7 @@ class MemoryFileSystem extends FileSystem {
             boolean isCreate = options.contains(StandardOpenOption.CREATE);
             if (isCreate) {
               String name = MemoryFileSystem.this.storeTransformer.transform(fileName);
-              MemoryFile file = new MemoryFile(name, MemoryFileSystem.this.additionalViews);
+              MemoryFile file = new MemoryFile(name, MemoryFileSystem.this.newEntryCreationContext());
               checkSupportedInitialAttributes(attrs);
               AttributeAccessors.setAttributes(file, attrs);
               directory.addEntry(key, file);
@@ -318,7 +352,7 @@ class MemoryFileSystem extends FileSystem {
 
       @Override
       public MemoryEntry create(String name) throws IOException {
-        MemoryDirectory directory = new MemoryDirectory(name, MemoryFileSystem.this.additionalViews);
+        MemoryDirectory directory = new MemoryDirectory(name, MemoryFileSystem.this.newEntryCreationContext());
         AttributeAccessors.setAttributes(directory, attrs);
         return directory;
       }
@@ -331,7 +365,7 @@ class MemoryFileSystem extends FileSystem {
 
       @Override
       public MemoryEntry create(String name) throws IOException {
-        MemorySymbolicLink symbolicLink = new MemorySymbolicLink(name, target, MemoryFileSystem.this.additionalViews);
+        MemorySymbolicLink symbolicLink = new MemorySymbolicLink(name, target, MemoryFileSystem.this.newEntryCreationContext());
         AttributeAccessors.setAttributes(symbolicLink, attrs);
         return symbolicLink;
       }
@@ -918,7 +952,7 @@ class MemoryFileSystem extends FileSystem {
 
 
   @Override
-  public Path getPath(String first, String... more) {
+  public AbstractPath getPath(String first, String... more) {
     this.checker.check();
     // TODO check for maximum length
     // TODO check for valid characters
@@ -998,18 +1032,18 @@ class MemoryFileSystem extends FileSystem {
     if (sourceEntry instanceof MemoryFile) {
       MemoryFile sourceFile = (MemoryFile) sourceEntry;
       try (AutoRelease lock = sourceFile.readLock()) {
-        return new MemoryFile(targetElementName, MemoryFileSystem.this.additionalViews, sourceFile);
+        return new MemoryFile(targetElementName, this.newEntryCreationContext(), sourceFile);
       }
     } else if (sourceEntry instanceof MemoryDirectory) {
       MemoryDirectory sourceDirectory = (MemoryDirectory) sourceEntry;
       try (AutoRelease lock = sourceDirectory.readLock()) {
         sourceDirectory.checkEmpty(absoluteTargetPath);
-        return new MemoryDirectory(targetElementName, MemoryFileSystem.this.additionalViews);
+        return new MemoryDirectory(targetElementName, MemoryFileSystem.this.newEntryCreationContext());
       }
     } else if (sourceEntry instanceof MemorySymbolicLink) {
       MemorySymbolicLink sourceLink = (MemorySymbolicLink) sourceEntry;
       try (AutoRelease lock = sourceLink.readLock()) {
-        return new MemorySymbolicLink(targetElementName, (AbstractPath) sourceLink.getTarget(), MemoryFileSystem.this.additionalViews);
+        return new MemorySymbolicLink(targetElementName, (AbstractPath) sourceLink.getTarget(), MemoryFileSystem.this.newEntryCreationContext());
       }
     } else {
       throw new AssertionError("unknown entry type:" + sourceEntry);

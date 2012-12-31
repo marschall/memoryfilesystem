@@ -1,6 +1,11 @@
 package com.github.marschall.memoryfilesystem;
 
+import static java.nio.file.attribute.PosixFilePermission.GROUP_EXECUTE;
+import static java.nio.file.attribute.PosixFilePermission.OTHERS_EXECUTE;
+import static java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE;
+
 import java.io.IOException;
+import java.nio.file.AccessMode;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryStream.Filter;
@@ -8,9 +13,9 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileAttributeView;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,15 +29,26 @@ class MemoryDirectory extends MemoryEntry {
 
   private final InitializingFileAttributeView basicFileAttributeView;
 
+  private static final Set<PosixFilePermission> EXECUTE = EnumSet.of(OWNER_EXECUTE, GROUP_EXECUTE, OTHERS_EXECUTE);
+
   MemoryDirectory(String originalName) {
-    this(originalName, Collections.<Class<? extends FileAttributeView>>emptySet());
+    this(originalName, EntryCreationContext.empty());
   }
 
-  MemoryDirectory(String originalName, Set<Class<? extends FileAttributeView>> additionalViews) {
-    super(originalName, additionalViews);
+  MemoryDirectory(String originalName, EntryCreationContext context) {
+    super(originalName, context);
     this.entries = new HashMap<>();
     this.attributes = new MemoryDirectoryFileAttributes();
     this.basicFileAttributeView = new MemoryDirectoryFileAttributesView();
+  }
+
+  private static Set<PosixFilePermission> addExecute(Set<PosixFilePermission> umask) {
+    if (umask.isEmpty()) {
+      return EXECUTE;
+    }
+    Set<PosixFilePermission> copy = EnumSet.copyOf(umask);
+    copy.addAll(EXECUTE);
+    return copy;
   }
 
   DirectoryStream<Path> newDirectoryStream(Path basePath, Filter<? super Path> filter) {
@@ -102,6 +118,7 @@ class MemoryDirectory extends MemoryEntry {
 
     @Override
     public BasicFileAttributes readAttributes() throws IOException {
+      MemoryDirectory.this.checkAccess(AccessMode.READ);
       return MemoryDirectory.this.attributes;
     }
 

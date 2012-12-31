@@ -1,6 +1,5 @@
 package com.github.marschall.memoryfilesystem;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +11,7 @@ final class SingleEmptyRootPathParser extends PathParser {
   }
 
   @Override
-  public Path parse(Map<String, Root> roots, String first, String... more) {
+  public AbstractPath parse(Map<String, Root> roots, String first, String... more) {
     List<String> elements = new ArrayList<>(count(first, more));
     this.parseInto(first, elements);
     if (more != null && more.length > 0) {

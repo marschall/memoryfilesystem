@@ -6,17 +6,25 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
-@Ignore("needs to be cross checked")
+//@Ignore("needs to be cross checked")
 public class FileSystemComptiblity {
+
+  @Test
+  public void t() throws IOException {
+    FileSystem fileSystem = FileSystems.getDefault();
+    Path path = fileSystem.getPath("/Users/marschall/Documents");
+
+    System.out.println(Files.readAttributes(path, "posix:*"));
+  }
 
   @Test
   public void iterator() {

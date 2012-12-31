@@ -33,6 +33,8 @@ public class MemoryFileSystemProperties {
 
   public static final String COLLATOR_PROPERTY = "collator";
 
+  public static final String UMASK_PROPERTY = "file.umask";
+
   static final String UNIX_ROOT = "/";
 
   static final List<String> DEFAULT_ROOTS = Collections.singletonList(UNIX_ROOT);

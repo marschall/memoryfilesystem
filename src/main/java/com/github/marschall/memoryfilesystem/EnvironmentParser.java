@@ -1,8 +1,15 @@
 package com.github.marschall.memoryfilesystem;
 
+import static java.nio.file.attribute.PosixFilePermission.GROUP_READ;
+import static java.nio.file.attribute.PosixFilePermission.OTHERS_READ;
+import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
+import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
+
 import java.nio.file.attribute.FileAttributeView;
+import java.nio.file.attribute.PosixFilePermission;
 import java.text.Collator;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -117,6 +124,47 @@ class EnvironmentParser {
     }
   }
 
+  Set<PosixFilePermission> getUmask() {
+    String property = MemoryFileSystemProperties.UMASK_PROPERTY;
+    Object value = this.env.get(property);
+    if (value != null) {
+      if (value instanceof Set) {
+        Set<?> values = (Set<?>) value;
+        if (values.isEmpty()) {
+          return Collections.emptySet();
+        } else if (values.size() == 1) {
+          Object permission = values.iterator().next();
+          if (permission instanceof PosixFilePermission) {
+            return Collections.singleton((PosixFilePermission) permission);
+          } else {
+            throw new IllegalArgumentException(property + " values must be a "
+                    + PosixFilePermission.class + " but was " + permission);
+          }
+        } else {
+          Set<PosixFilePermission> permissions = EnumSet.noneOf(PosixFilePermission.class);
+          for (Object permission : values) {
+            if (permission instanceof PosixFilePermission) {
+              permissions.add((PosixFilePermission) permission);
+            } else {
+              throw new IllegalArgumentException(property + " values must be a "
+                      + PosixFilePermission.class + " but was " + permission);
+            }
+          }
+          return permissions;
+        }
+      } else {
+        throw new IllegalArgumentException(property + " must be a "
+                + Set.class + " but was " + value.getClass());
+      }
+    } else {
+      return this.defaultPermssions();
+    }
+  }
+
+  Set<PosixFilePermission> defaultPermssions() {
+    return EnumSet.of(OWNER_WRITE, OWNER_READ, GROUP_READ, OTHERS_READ);
+  }
+
 
   StringTransformer getPrincipalNameTransfomer() {
     return this.getStringTranformer(MemoryFileSystemProperties.PRINCIPAL_TRANSFORMER_PROPERTY);
@@ -141,9 +189,9 @@ class EnvironmentParser {
   }
 
   List<String> getGroupNames() {
-    List<String> groupNames = this.parseStringProperty(MemoryFileSystemProperties.USERS_PROPERTY, true);
+    List<String> groupNames = this.parseStringProperty(MemoryFileSystemProperties.GROUPS_PROPERTY, true);
     if (groupNames == null) {
-      return Collections.emptyList();
+      return Collections.singletonList(this.getSystemUserName());
     } else {
       return groupNames;
     }

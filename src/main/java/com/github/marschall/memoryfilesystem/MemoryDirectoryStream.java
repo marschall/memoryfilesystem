@@ -11,6 +11,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 final class MemoryDirectoryStream implements DirectoryStream<Path>, Iterator<Path> {
 
+  //TODO ClosedDirectoryStreamException
+
   private final Path basePath;
   private final Iterator<String> iterator;
   private final AtomicBoolean iteratorCalled = new AtomicBoolean(false);

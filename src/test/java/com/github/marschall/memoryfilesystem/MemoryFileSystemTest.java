@@ -1,6 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_ENV;
+import static com.github.marschall.memoryfilesystem.FileContentsMatcher.hasContents;
 import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.file.StandardOpenOption.APPEND;
@@ -19,13 +20,13 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -48,10 +49,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributeView;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -174,7 +181,7 @@ public class MemoryFileSystemTest {
       outputStream.write(data, 1, 2);
     }
 
-    assertContents(path, "zbc");
+    assertThat(path, hasContents("zbc"));
   }
 
   @Test
@@ -188,7 +195,7 @@ public class MemoryFileSystemTest {
       outputStream.write(data, 1, 2);
     }
 
-    assertContents(path, "bc");
+    assertThat(path, hasContents("bc"));
   }
 
   @Test
@@ -273,7 +280,7 @@ public class MemoryFileSystemTest {
       long written = channel.write(new ByteBuffer[]{a, b, c, d}, 1, 2);
       assertEquals("byte written", 2L, written);
     }
-    assertContents(path, "bc");
+    assertThat(path, hasContents("bc"));
   }
 
   @Test
@@ -294,7 +301,41 @@ public class MemoryFileSystemTest {
       long written = channel.write(new ByteBuffer[]{a, b, c, d}, 1, 2);
       assertEquals("byte written", 2L, written);
     }
-    assertContents(path, "zbc");
+    assertThat(path, hasContents("zbc"));
+  }
+
+  @Test
+  public void writeAsyncChannelTruncate() throws IOException, InterruptedException, ExecutionException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path path = fileSystem.getPath("async.txt");
+    Files.createFile(path);
+    this.setContents(path, "abc");
+
+    try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, WRITE)) {
+      assertEquals(3L, channel.size());
+      AsynchronousFileChannel result = channel.truncate(2L);
+      assertSame(channel, result);
+      assertEquals(2L, channel.size());
+    }
+    assertThat(path, hasContents("ab"));
+  }
+
+  @Test
+  public void writeSyncChannelTruncate() throws IOException, InterruptedException, ExecutionException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path path = fileSystem.getPath("async.txt");
+    Files.createFile(path);
+    this.setContents(path, "abc");
+
+    try (FileChannel channel = FileChannel.open(path, WRITE)) {
+      assertEquals(3L, channel.size());
+      FileChannel result = channel.truncate(2L);
+      assertSame(channel, result);
+      assertEquals(2L, channel.size());
+    }
+    assertThat(path, hasContents("ab"));
   }
 
   @Test
@@ -317,7 +358,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void writeAsyncChannelCompletionHandler() throws IOException, InterruptedException, ExecutionException {
+  public void writeAsyncChannelWriteCompletionHandler() throws IOException, InterruptedException, ExecutionException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
@@ -341,11 +382,41 @@ public class MemoryFileSystemTest {
       assertEquals("bytes written", 2, handler.getResult().intValue());
     }
 
-    assertContents(path, "zab");
+    assertThat(path, hasContents("zab"));
   }
 
   @Test
-  public void writeAsyncChannelIoException() throws IOException, InterruptedException, ExecutionException {
+  public void writeAsyncChannelReadCompletionHandler() throws IOException, InterruptedException, ExecutionException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path path = fileSystem.getPath("async.txt");
+    Files.createFile(path);
+    this.setContents(path, "abcd");
+
+    try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, READ)) {
+      Object attachment = new Object();
+      byte[] data = new byte[2];
+      ByteBuffer buffer = ByteBuffer.wrap(data);
+
+      CompletionHandlerStub<Integer, Object> handler = new CompletionHandlerStub<>();
+
+      channel.read(buffer, 1L, attachment, handler);
+
+      handler.await();
+
+      assertTrue(handler.isCompleted());
+      assertFalse(handler.isFailed());
+
+      assertSame("attachment", attachment, handler.getAttachment());
+      assertEquals("bytes read", 2, handler.getResult().intValue());
+      assertArrayEquals(new byte[]{'b', 'c'}, data);
+    }
+
+    assertThat(path, hasContents("abcd"));
+  }
+
+  @Test
+  public void writeAsyncChannelWriteIoException() throws IOException, InterruptedException, ExecutionException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
@@ -370,11 +441,11 @@ public class MemoryFileSystemTest {
       assertThat(handler.getException(), isA((Class<Throwable>) (Object) NonWritableChannelException.class));
     }
 
-    assertContents(path, "z");
+    assertThat(path, hasContents("z"));
   }
 
   @Test
-  public void writeAsyncChannelCompletionFuture() throws IOException, InterruptedException, ExecutionException {
+  public void writeAsyncChannelWriteCompletionFuture() throws IOException, InterruptedException, ExecutionException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
@@ -390,11 +461,33 @@ public class MemoryFileSystemTest {
       assertEquals(2, written.intValue());
     }
 
-    assertContents(path, "zab");
+    assertThat(path, hasContents("zab"));
   }
 
   @Test
-  public void writeAsyncChannelCompletionFutureFailed() throws IOException, InterruptedException, ExecutionException {
+  public void writeAsyncChannelReadCompletionFuture() throws IOException, InterruptedException, ExecutionException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path path = fileSystem.getPath("async.txt");
+    Files.createFile(path);
+    this.setContents(path, "abcd");
+
+    try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, READ)) {
+      byte[] data = new byte[2];
+      ByteBuffer buffer = ByteBuffer.wrap(data);
+
+      Future<Integer> future = channel.read(buffer, 1);
+
+      Integer read = future.get();
+      assertEquals(2, read.intValue());
+      assertArrayEquals(new byte[]{'b', 'c'},  data);
+    }
+
+    assertThat(path, hasContents("abcd"));
+  }
+
+  @Test
+  public void writeAsyncChannelWriteCompletionFutureFailed() throws IOException, InterruptedException, ExecutionException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
@@ -416,7 +509,7 @@ public class MemoryFileSystemTest {
         assertThat(cause, isA((Class<Throwable>) (Object) NonWritableChannelException.class));
       }
     }
-    assertContents(path, "z");
+    assertThat(path, hasContents("z"));
   }
 
   @Test
@@ -1558,8 +1651,8 @@ public class MemoryFileSystemTest {
     assertThat(a, exists());
     assertThat(b, exists());
 
-    assertContents(a, "aaa");
-    assertContents(b, "aaa");
+    assertThat(a, hasContents("aaa"));
+    assertThat(b, hasContents("aaa"));
   }
 
   @Test
@@ -1577,8 +1670,63 @@ public class MemoryFileSystemTest {
     assertThat(a, exists());
     assertThat(b, exists());
 
-    assertContents(a, "aaa");
-    assertContents(b, "aaa");
+    assertThat(a, hasContents("aaa"));
+    assertThat(b, hasContents("aaa"));
+  }
+
+  @Test
+  public void readAttributes() throws IOException, ParseException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path patch = fileSystem.getPath("/file.txt");
+
+    Files.createFile(patch);
+
+    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    FileTime lastModifiedTime = FileTime.fromMillis(format.parse("2012-11-07T20:30:22").getTime());
+    FileTime lastAccessTime = FileTime.fromMillis(format.parse("2012-10-07T20:30:22").getTime());
+    FileTime createTime = FileTime.fromMillis(format.parse("2012-09-07T20:30:22").getTime());
+
+    BasicFileAttributeView basicFileAttributeView = Files.getFileAttributeView(patch, BasicFileAttributeView.class);
+    basicFileAttributeView.setTimes(lastModifiedTime, lastAccessTime, createTime);
+
+    Map<String, Object> attributes = Files.readAttributes(patch, "lastModifiedTime,lastAccessTime,size");
+
+    Map<String, Object> expected = new HashMap<String, Object>(3);
+    expected.put("size", 0L);
+    expected.put("lastModifiedTime", lastModifiedTime);
+    expected.put("lastAccessTime", lastAccessTime);
+
+    assertEquals(expected, attributes);
+  }
+
+  @Test
+  public void copyAttributes() throws IOException, ParseException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path source = fileSystem.getPath("/source.txt");
+    Path target = fileSystem.getPath("/target.txt");
+
+    Files.createFile(source);
+
+    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    FileTime lastModifiedTime = FileTime.fromMillis(format.parse("2012-11-07T20:30:22").getTime());
+    FileTime lastAccessedTime = FileTime.fromMillis(format.parse("2012-10-07T20:30:22").getTime());
+    FileTime createTime = FileTime.fromMillis(format.parse("2012-09-07T20:30:22").getTime());
+
+    BasicFileAttributeView sourceBasicFileAttributeView = Files.getFileAttributeView(source, BasicFileAttributeView.class);
+    BasicFileAttributes sourceBasicAttributes = sourceBasicFileAttributeView.readAttributes();
+
+    assertNotEquals(lastModifiedTime, sourceBasicAttributes.lastModifiedTime());
+    assertNotEquals(lastAccessedTime, sourceBasicAttributes.lastAccessTime());
+    assertNotEquals(createTime, sourceBasicAttributes.creationTime());
+    sourceBasicFileAttributeView.setTimes(lastModifiedTime, lastAccessedTime, createTime);
+
+    Files.copy(source, target, StandardCopyOption.COPY_ATTRIBUTES);
+
+    BasicFileAttributeView targetBasicFileAttributeView = Files.getFileAttributeView(target, BasicFileAttributeView.class);
+    BasicFileAttributes targetBasicAttributes = targetBasicFileAttributeView.readAttributes();
+    assertNotEquals(lastModifiedTime, targetBasicAttributes.lastModifiedTime());
+    assertNotEquals(lastAccessedTime, targetBasicAttributes.lastAccessTime());
+    assertNotEquals(createTime, targetBasicAttributes.creationTime());
   }
 
   @Test
@@ -1596,13 +1744,13 @@ public class MemoryFileSystemTest {
     assertThat(a, exists());
     assertThat(b, exists());
 
-    assertContents(a, "aaa");
-    assertContents(b, "aaa");
+    assertThat(a, hasContents("aaa"));
+    assertThat(b, hasContents("aaa"));
 
     this.setContents(a, "a1");
 
-    assertContents(a, "a1");
-    assertContents(b, "aaa");
+    assertThat(a, hasContents("a1"));
+    assertThat(b, hasContents("aaa"));
   }
 
   @Test
@@ -1620,13 +1768,13 @@ public class MemoryFileSystemTest {
       assertThat(a, exists());
       assertThat(b, exists());
 
-      assertContents(a, "aaa");
-      assertContents(b, "aaa");
+      assertThat(a, hasContents("aaa"));
+      assertThat(b, hasContents("aaa"));
 
       this.setContents(a, "a1");
 
-      assertContents(a, "a1");
-      assertContents(b, "aaa");
+      assertThat(a, hasContents("a1"));
+      assertThat(b, hasContents("aaa"));
     }
   }
 
@@ -1645,13 +1793,13 @@ public class MemoryFileSystemTest {
     assertThat(a, exists());
     assertThat(b, exists());
 
-    assertContents(a, "aaa");
-    assertContents(b, "aaa");
+    assertThat(a, hasContents("aaa"));
+    assertThat(b, hasContents("aaa"));
 
     this.setContents(a, "a1");
 
-    assertContents(a, "a1");
-    assertContents(b, "aaa");
+    assertThat(a, hasContents("a1"));
+    assertThat(b, hasContents("aaa"));
   }
 
   @Test
@@ -1669,7 +1817,7 @@ public class MemoryFileSystemTest {
     assertThat(a, not(exists()));
     assertThat(b, exists());
 
-    assertContents(b, "aaa");
+    assertThat(b, hasContents("aaa"));
   }
 
   @Test
@@ -1687,7 +1835,7 @@ public class MemoryFileSystemTest {
       assertThat(a, not(exists()));
       assertThat(b, exists());
 
-      assertContents(b, "aaa");
+      assertThat(b, hasContents("aaa"));
     }
   }
 
@@ -1706,12 +1854,12 @@ public class MemoryFileSystemTest {
     assertThat(a, not(exists()));
     assertThat(b, exists());
 
-    assertContents(b, "aaa");
+    assertThat(b, hasContents("aaa"));
   }
 
   private void createAndSetContents(Path path, String contents) throws IOException {
     Path parent = path.toAbsolutePath().getParent();
-    if (parent.getParent() != null) { // check for root
+    if (!parent.equals(parent.getRoot())) {
       Files.createDirectories(parent);
     }
     try (SeekableByteChannel channel = Files.newByteChannel(path, WRITE, CREATE_NEW)) {
@@ -1723,18 +1871,6 @@ public class MemoryFileSystemTest {
     try (SeekableByteChannel channel = Files.newByteChannel(path, WRITE, TRUNCATE_EXISTING)) {
       channel.write(ByteBuffer.wrap(contents.getBytes(US_ASCII)));
     }
-  }
-
-  private static void assertContents(Path path, String expected) throws IOException {
-    ByteArrayOutputStream outputStream = new ByteArrayOutputStream(expected.length());
-    try (InputStream input = Files.newInputStream(path, READ)) {
-      int read;
-      byte[] buffer = new byte[512];
-      while ((read = input.read(buffer)) != -1) {
-        outputStream.write(buffer, 0, read);
-      }
-    }
-    assertEquals(expected, new String(outputStream.toByteArray(), US_ASCII));
   }
 
   static final class CompletionHandlerStub<V, A> implements CompletionHandler<V, A> {

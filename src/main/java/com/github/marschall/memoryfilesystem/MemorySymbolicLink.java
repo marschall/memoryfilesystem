@@ -1,11 +1,9 @@
 package com.github.marschall.memoryfilesystem;
 
 import java.io.IOException;
+import java.nio.file.AccessMode;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileAttributeView;
-import java.util.Collections;
-import java.util.Set;
 
 class MemorySymbolicLink extends MemoryEntry {
 
@@ -16,12 +14,12 @@ class MemorySymbolicLink extends MemoryEntry {
   private final InitializingFileAttributeView basicFileAttributeView;
 
   MemorySymbolicLink(String originalName, AbstractPath target) {
-    this(originalName, target, Collections.<Class<? extends FileAttributeView>>emptySet());
+    this(originalName, target, EntryCreationContext.empty());
   }
 
 
-  MemorySymbolicLink(String originalName, AbstractPath target, Set<Class<? extends FileAttributeView>> additionalViews) {
-    super(originalName, additionalViews);
+  MemorySymbolicLink(String originalName, AbstractPath target, EntryCreationContext context) {
+    super(originalName, context);
     this.target = target;
     this.attributes = new MemorySymbolicLinkAttributes();
     this.basicFileAttributeView = new MemorySymbolicLinkAttributesView();
@@ -51,6 +49,7 @@ class MemorySymbolicLink extends MemoryEntry {
 
     @Override
     public BasicFileAttributes readAttributes() throws IOException {
+      MemorySymbolicLink.this.checkAccess(AccessMode.READ);
       return MemorySymbolicLink.this.attributes;
     }
 
