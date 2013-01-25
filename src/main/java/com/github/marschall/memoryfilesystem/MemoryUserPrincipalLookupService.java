@@ -5,7 +5,6 @@ import java.nio.file.attribute.GroupPrincipal;
 import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.nio.file.attribute.UserPrincipalNotFoundException;
-import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,7 +69,7 @@ final class MemoryUserPrincipalLookupService extends UserPrincipalLookupService 
     }
   }
 
-  static abstract class MemoryPrincial implements Principal {
+  static abstract class MemoryPrincial implements UserPrincipal {
 
     private final String name;
 
@@ -91,7 +90,7 @@ final class MemoryUserPrincipalLookupService extends UserPrincipalLookupService 
     }
   }
 
-  static final class MemoryUser extends MemoryPrincial implements UserPrincipal {
+  static final class MemoryUser extends MemoryPrincial {
 
     MemoryUser(String name) {
       super(name);
