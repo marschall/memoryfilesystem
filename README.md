@@ -56,6 +56,7 @@ Not Supported
   * DSYNC
 * hard links
 * `URL` interoperability, needs a custom `URLStreamHandler` which [ins't very nice](http://www.unicon.net/node/776). That means you can't for example create an `URLClassLoader` on a memory file system. However if you really want to create a `ClassLoader` on a memory file system you can use [path-classloader](https://github.com/marschall/path-classloader) which is completely portable across Java 7 file systems.
+* maximum path length checks
 
 FAQ
 ---
