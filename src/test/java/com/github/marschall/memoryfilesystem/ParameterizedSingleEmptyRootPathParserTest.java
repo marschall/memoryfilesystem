@@ -63,7 +63,7 @@ public class ParameterizedSingleEmptyRootPathParserTest {
 
   @Before
   public void setUp() {
-    this.parser = new SingleEmptyRootPathParser("/");
+    this.parser = new SingleEmptyRootPathParser("/", EmptyCharacterSet.INSTANCE);
     Root root = (Root) this.rule.getFileSystem().getRootDirectories().iterator().next();
     this.expected = AbstractPath.createAboslute(root.getMemoryFileSystem(), root, Arrays.asList("a", "b", "c"));
   }

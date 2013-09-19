@@ -161,9 +161,9 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   private PathParser buildPathParser(EnvironmentParser parser) {
     String separator = parser.getSeparator();
     if (parser.isSingleEmptyRoot()) {
-      return new SingleEmptyRootPathParser(separator);
+      return new SingleEmptyRootPathParser(separator, parser.getForbiddenCharacters());
     } else {
-      return new MultipleNamedRootsPathParser(separator, parser.getStoreTransformer());
+      return new MultipleNamedRootsPathParser(separator, parser.getStoreTransformer(), parser.getForbiddenCharacters());
     }
   }
 

@@ -21,6 +21,8 @@ public class MemoryFileSystemProperties {
 
   public static final String FILE_ATTRIBUTE_VIEWS_PROPERTY = "file.attrs";
 
+  public static final String FORBIDDEN_CHARACTERS = "file.name.forbidden";
+
   public static final String USERS_PROPERTY = "users";
 
   public static final String GROUPS_PROPERTY = "groups";

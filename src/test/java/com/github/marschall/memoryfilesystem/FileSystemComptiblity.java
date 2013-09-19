@@ -10,13 +10,31 @@ import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Iterator;
 
 import org.junit.Test;
 
 //@Ignore("needs to be cross checked")
 public class FileSystemComptiblity {
+
+  @Test
+  public void forbidden() throws IOException {
+    for (int i = 0; i < 128; ++i) {
+      char c = (char) i;
+      if (c != '/') {
+        try {
+          Path path = Paths.get(c + ".txt");
+          Files.createFile(path);
+          Files.delete(path);
+        } catch (InvalidPathException e) {
+          System.out.println("forbidden: " + Integer.toHexString(c));
+        }
+      }
+    }
+  }
 
   @Test
   public void t() throws IOException {

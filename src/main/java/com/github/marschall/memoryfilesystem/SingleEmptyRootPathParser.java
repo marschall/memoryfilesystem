@@ -6,8 +6,8 @@ import java.util.Map;
 
 final class SingleEmptyRootPathParser extends PathParser {
 
-  SingleEmptyRootPathParser(String separator) {
-    super(separator);
+  SingleEmptyRootPathParser(String separator, CharacterSet forbiddenCharacters) {
+    super(separator, forbiddenCharacters);
   }
 
   @Override
@@ -21,6 +21,7 @@ final class SingleEmptyRootPathParser extends PathParser {
     }
     Root root = roots.values().iterator().next();
     MemoryFileSystem memoryFileSystem = root.getMemoryFileSystem();
+    this.check(elements);
     if (this.startWithSeparator(first, more)) {
       return AbstractPath.createAboslute(memoryFileSystem, root, elements);
     } else {
