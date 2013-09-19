@@ -47,6 +47,7 @@ Not Supported
 * `FileTypeDetector`
 * faked DOS attribute view under Linux, totally unspecified
 * `UnixFileAttributeView`, [sun package](http://www.oracle.com/technetwork/java/faq-sun-packages-142232.html), totally unspecified
+* `AclFileAttributeView`
 * any meaningful access checks
 * files larger than 16MB
 * `StandardOpenOption`
