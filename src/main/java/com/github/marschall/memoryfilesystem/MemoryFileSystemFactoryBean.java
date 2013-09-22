@@ -24,7 +24,7 @@ import java.util.UUID;
  * &lt;bean id="memoryFileSystem" destroy-method="close"
  *     factory-bean="memoryFileSystemFactory" factory-method="getObject"/&gt;
  * 
- * </pre></code>
+ * </code></pre>
  * 
  * <p>You can also save the <tt>destroy-method</tt> enable {@code @PreDestroy} with:</p>
  * <pre><code>
@@ -35,7 +35,7 @@ import java.util.UUID;
  *     factory-bean="memoryFileSystemFactory" factory-method="getObject"/&gt;
  * 
  * &lt;context:annotation-config/&gt;
- * </pre></code>
+ * </code></pre>
  */
 public class MemoryFileSystemFactoryBean {
 
