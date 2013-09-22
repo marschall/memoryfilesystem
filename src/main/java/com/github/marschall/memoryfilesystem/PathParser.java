@@ -27,7 +27,8 @@ abstract class PathParser {
 
 
   boolean startWithSeparator(String s) {
-    return s.charAt(0) == '/' || s.charAt(0) == this.separator;
+    char first = s.charAt(0);
+    return first == '/' || first == this.separator;
   }
 
   abstract AbstractPath parse(Map<String, Root> roots, String first, String... more);
