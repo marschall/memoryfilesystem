@@ -1,7 +1,9 @@
 package com.github.marschall.memoryfilesystem;
 
+import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -103,6 +105,26 @@ public class WindowsFileSystemComptiblityTest {
     assertTrue(dosFileAttributes.isHidden());
     assertTrue(dosFileAttributes.isSystem());
     assertFalse(dosFileAttributes.isReadOnly());
+  }
+
+  @Test
+  public void caseInsensitiveCasePreserving() throws IOException {
+    FileSystem fileSystem = this.getFileSystem();
+    Path root = fileSystem.getPath("C:\\");
+    Path testFile = root.resolve("tesT");
+    try {
+      Files.createFile(testFile);
+      assertEquals("C:\\tesT", testFile.toRealPath().toString());
+
+      Path testFile2 = root.resolve("Test");
+      assertThat(testFile2, exists());
+
+      assertEquals("C:\\tesT", testFile2.toRealPath().toString());
+
+    } finally {
+      Files.delete(testFile);
+    }
+
   }
 
   @Test
