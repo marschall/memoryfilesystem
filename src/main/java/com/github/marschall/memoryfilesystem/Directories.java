@@ -1,5 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
+import static java.nio.file.FileVisitResult.CONTINUE;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.CopyOption;
@@ -209,7 +211,7 @@ public final class Directories {
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
       Files.copy(file, this.relativize(file), this.copyOptions);
-      return FileVisitResult.CONTINUE;
+      return CONTINUE;
     }
 
     @Override
@@ -218,7 +220,7 @@ public final class Directories {
         // skip creating root on target file system
         Files.createDirectory(this.relativize(dir));
       }
-      return FileVisitResult.CONTINUE;
+      return CONTINUE;
     }
 
     @Override
@@ -226,7 +228,7 @@ public final class Directories {
       if (this.copyAttribues) {
         copyAttributes(this.source, this.relativize(dir), this.sameFileSystem, this.supportedAttribueViews, this.linkOptions);
       }
-      return FileVisitResult.CONTINUE;
+      return CONTINUE;
     }
   }
 
