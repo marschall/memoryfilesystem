@@ -44,7 +44,7 @@ Not Supported
 -------------
 * `FileChannel#map`, `MappedByteBuffer` has final methods that call native methods
 * `WatchService`
-* `FileTypeDetector`
+* `FileTypeDetector`, has to be accessible by system classloader
 * faked DOS attribute view under Linux, totally unspecified
 * `UnixFileAttributeView`, [sun package](http://www.oracle.com/technetwork/java/faq-sun-packages-142232.html), totally unspecified
 * `AclFileAttributeView`
