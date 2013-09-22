@@ -190,5 +190,5 @@ The following guidelines are designed to help you write code that can easily be 
   * Use `SeekableByteChannel` instead of `RandomAccessFile`. Use `Files#newByteChannel` to create an instance of `SeekableByteChannel`.
   * Use `Files#newInputStream` and `Files#newOutputStream` to create `InputStream`s and `OutputStream`s on files.
   * Use `FileChannel#open` instead of `FileInputStream#getChannel()`, `FileOutputStream#getChannel()`, or `RandomAccessFile#getChannel()` to create a `FileChannel`
-* Use `FileSystem#getPath(String, String...)` instead of `Paths#get` to create a `Path` instance because the latter creates an instance on the default file system.
+* Use `FileSystem#getPath(String, String...)` instead of `Paths#get(String, String...)` to create a `Path` instance because the latter creates an instance on the default file system.
 
