@@ -202,6 +202,7 @@
             <Bundle-SymbolicName>${project.groupId}.${project.artifactId};singleton:=true</Bundle-SymbolicName>
             <Bundle-Activator>com.github.marschall.memoryfilesystem.Activator</Bundle-Activator>
             <Bundle-RequiredExecutionEnvironment>JavaSE-1.7</Bundle-RequiredExecutionEnvironment>
+            <Bundle-ActivationPolicy>lazy</Bundle-ActivationPolicy>
             <!-- <Include-Resource>/META-INF/jandex.idx=${project.build.outputDirectory}/META-INF/jandex.idx</Include-Resource> -->
             <Include-Resource>
               {maven-resources},
