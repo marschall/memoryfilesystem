@@ -58,13 +58,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.osgi</groupId>
-      <artifactId>org.osgi.core</artifactId>
-      <version>4.3.1</version>
-      <!-- will be only used in OSGi environment where import-package will kick in -->
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-all</artifactId>
       <version>1.3</version>
@@ -197,7 +190,6 @@
               javax.annotation;resolution:=optional
             </Import-Package>
             <Bundle-SymbolicName>${project.groupId}.${project.artifactId};singleton:=true</Bundle-SymbolicName>
-            <Bundle-Activator>com.github.marschall.memoryfilesystem.Activator</Bundle-Activator>
             <Bundle-RequiredExecutionEnvironment>JavaSE-1.7</Bundle-RequiredExecutionEnvironment>
             <!-- otherwise Equinox won't run the activator -->
             <Bundle-ActivationPolicy>lazy</Bundle-ActivationPolicy>
