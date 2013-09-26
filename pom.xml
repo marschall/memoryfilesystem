@@ -139,7 +139,6 @@
         <configuration>
           <links>
             <link>http://docs.oracle.com/javase/7/docs/api/</link>
-            <link>http://www.osgi.org/javadoc/r4v43/core/</link>
           </links>
         </configuration>
         <executions>
@@ -186,7 +185,6 @@
           <instructions>
             <Export-Package>com.github.marschall.memoryfilesystem;version="${project.version}"</Export-Package>
             <Import-Package>
-              org.osgi.framework;version="[1.0.0,2.0.0)",
               javax.annotation;resolution:=optional
             </Import-Package>
             <Bundle-SymbolicName>${project.groupId}.${project.artifactId};singleton:=true</Bundle-SymbolicName>
