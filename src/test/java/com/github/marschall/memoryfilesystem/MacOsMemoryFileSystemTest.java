@@ -90,7 +90,6 @@ public class MacOsMemoryFileSystemTest {
         Files.delete(createdFile);
       }
     }
-
   }
 
   @Test

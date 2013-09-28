@@ -1,6 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.FileContentsMatcher.hasContents;
+import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
@@ -493,6 +494,47 @@ public class UnixFileSystemComptiblityTest {
 
     assertEquals(fileSystem.getPath("/"), fileSystem.getPath("/a").resolveSibling(fileSystem.getPath("")));
     assertEquals(fileSystem.getPath(""), fileSystem.getPath("a").resolveSibling(fileSystem.getPath("")));
+  }
+
+  @Test
+  public void unixNoNormalization() throws IOException {
+    /*
+     * Verifies that Linux does no Unicode normalization and that we can have
+     * both a NFC and NFD file.
+     */
+    FileSystem fileSystem = this.getFileSystem();
+    String aUmlaut = "\u00C4";
+    Path nfcPath = fileSystem.getPath(aUmlaut);
+    String normalized = Normalizer.normalize(aUmlaut, Form.NFD);
+    Path nfdPath = fileSystem.getPath(normalized);
+
+    Path nfcFile = null;
+    Path nfdFile = null;
+    try {
+      nfcFile = Files.createFile(nfcPath);
+      assertEquals(1, nfcFile.getFileName().toString().length());
+      assertEquals(1, nfcFile.toAbsolutePath().getFileName().toString().length());
+      assertEquals(1, nfcFile.toRealPath().getFileName().toString().length());
+
+      assertThat(nfcPath, exists());
+      assertThat(nfdPath, not(exists()));
+
+      nfdFile = Files.createFile(nfdPath);
+      assertEquals(2, nfdFile.getFileName().toString().length());
+      assertEquals(2, nfdFile.toAbsolutePath().getFileName().toString().length());
+      assertEquals(2, nfdFile.toRealPath().getFileName().toString().length());
+
+      assertThat(nfcPath, not(equalTo(nfdPath)));
+      assertFalse(Files.isSameFile(nfcPath, nfdPath));
+      assertFalse(Files.isSameFile(nfdPath, nfcPath));
+    } finally {
+      if (nfcFile != null) {
+        Files.delete(nfcFile);
+      }
+      if (nfdFile != null) {
+        Files.delete(nfdFile);
+      }
+    }
   }
 
   @Test
