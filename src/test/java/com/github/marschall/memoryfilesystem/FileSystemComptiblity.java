@@ -40,8 +40,9 @@ public class FileSystemComptiblity {
   public void t() throws IOException {
     FileSystem fileSystem = FileSystems.getDefault();
     Path path = fileSystem.getPath("/Users/marschall/Documents");
-
-    System.out.println(Files.readAttributes(path, "posix:*"));
+    if (Files.exists(path)) {
+      System.out.println(Files.readAttributes(path, "posix:*"));
+    }
   }
 
   @Test
