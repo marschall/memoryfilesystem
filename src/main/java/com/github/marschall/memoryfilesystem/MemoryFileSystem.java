@@ -955,7 +955,6 @@ class MemoryFileSystem extends FileSystem {
   public AbstractPath getPath(String first, String... more) {
     this.checker.check();
     // TODO check for maximum length
-    // TODO check for valid characters
     return this.pathParser.parse(this.rootByKey, first, more);
   }
 

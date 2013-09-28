@@ -5,12 +5,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.text.Normalizer;
 import java.text.Normalizer.Form;
@@ -105,6 +108,28 @@ public class MacOsMemoryFileSystemTest {
     } finally {
       if (createdFile != null) {
         Files.delete(createdFile);
+      }
+    }
+  }
+
+
+  @Test
+  public void forbiddenCharacters() throws IOException {
+    try {
+      char c = 0;
+      this.getFileSystem().getPath(c + ".txt");
+      fail("0x00 should be forbidden");
+    } catch (InvalidPathException e) {
+      // should reach here
+    }
+  }
+
+  @Test
+  public void notForbiddenCharacters() throws IOException {
+    for (int i = 1; i < 128; ++i) {
+      char c = (char) i;
+      if (c != '/') {
+        assertNotNull(this.getFileSystem().getPath(c + ".txt"));
       }
     }
   }

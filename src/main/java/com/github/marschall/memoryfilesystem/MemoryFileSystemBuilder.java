@@ -26,6 +26,8 @@ public final class MemoryFileSystemBuilder {
 
   private final Set<String> groups;
 
+  private final Set<Character> forbiddenCharacters;
+
   private final Set<String> additionalFileAttributeViews;
 
   private Set<PosixFilePermission> umask;
@@ -49,6 +51,7 @@ public final class MemoryFileSystemBuilder {
     this.users = new LinkedHashSet<>();
     this.groups = new LinkedHashSet<>();
     this.additionalFileAttributeViews = new HashSet<>();
+    this.forbiddenCharacters = new HashSet<>();
   }
 
   public MemoryFileSystemBuilder addRoot(String root) {
@@ -58,6 +61,11 @@ public final class MemoryFileSystemBuilder {
 
   public MemoryFileSystemBuilder setSeprator(String separator) {
     this.separator = separator;
+    return this;
+  }
+
+  public MemoryFileSystemBuilder addForbiddenCharacter(char c) {
+    this.forbiddenCharacters.add(c);
     return this;
   }
 
@@ -173,7 +181,8 @@ public final class MemoryFileSystemBuilder {
             .setCurrentWorkingDirectory("/Users/" + getSystemUserName())
             .setCollator(MemoryFileSystemProperties.caseSensitiveCollator(builder.getLocale()))
             .setLookUpTransformer(StringTransformers.caseInsensitiveMacOS(builder.getLocale()))
-            .setStoreTransformer(StringTransformers.MAC_OS);
+            .setStoreTransformer(StringTransformers.MAC_OS)
+            .addForbiddenCharacter((char) 0);
   }
 
   public static MemoryFileSystemBuilder newWindows() {
@@ -185,7 +194,24 @@ public final class MemoryFileSystemBuilder {
     .addFileAttributeView(DosFileAttributeView.class)
     .setCurrentWorkingDirectory("C:\\Users\\" + getSystemUserName())
     .setStoreTransformer(StringTransformers.IDENTIY)
-    .setCaseSensitive(false);
+    .setCaseSensitive(false)
+    // TODO check
+    // CON, PRN, AUX, CLOCK$, NUL
+    // COM1, COM2, COM3, COM4, COM5, COM6, COM7, COM8, COM9
+    // LPT1, LPT2, LPT3, LPT4, LPT5, LPT6, LPT7, LPT8, and LPT9
+    // TODO check
+    // $Mft, $MftMirr, $LogFile, $Volume, $AttrDef, $Bitmap, $Boot, $BadClus, $Secure,
+    // $Upcase, $Extend, $Quota, $ObjId and $Reparse
+    // TODO check for 0x00
+    .addForbiddenCharacter('\\')
+    .addForbiddenCharacter('/')
+    .addForbiddenCharacter(':')
+    .addForbiddenCharacter('*')
+    .addForbiddenCharacter('?')
+    .addForbiddenCharacter('"')
+    .addForbiddenCharacter('<')
+    .addForbiddenCharacter('>')
+    .addForbiddenCharacter('|');
   }
 
   static String getSystemUserName() {
@@ -225,8 +251,11 @@ public final class MemoryFileSystemBuilder {
     if (this.additionalFileAttributeViews != null) {
       env.put(MemoryFileSystemProperties.FILE_ATTRIBUTE_VIEWS_PROPERTY, this.additionalFileAttributeViews);
     }
-    if (this.additionalFileAttributeViews != null) {
+    if (this.umask != null) {
       env.put(MemoryFileSystemProperties.UMASK_PROPERTY, this.umask);
+    }
+    if (this.forbiddenCharacters != null) {
+      env.put(MemoryFileSystemProperties.FORBIDDEN_CHARACTERS, this.forbiddenCharacters);
     }
     return env;
   }

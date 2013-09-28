@@ -1,6 +1,6 @@
 configurable
- - path characters to reject
- - FileTypeDetector
+ - path characters to reject on Windows/Linux
+ - forbidden file names on Windows
  - Paths.get lazily create file system?
  - configure range of setTimes (past 2038)
  - security manager restrictions

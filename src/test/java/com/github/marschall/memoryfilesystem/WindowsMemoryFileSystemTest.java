@@ -8,12 +8,14 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributeView;
@@ -112,6 +114,21 @@ public class WindowsMemoryFileSystemTest {
       // different file systems
       assertThat(c1, not(equalTo(c2)));
       assertThat(c2, not(equalTo(c1)));
+    }
+  }
+
+
+
+  @Test
+  public void forbiddenCharacters() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    for (char c : "\\/:?\"<>|".toCharArray()) {
+      try {
+        fileSystem.getPath(Character.toString(c) + ".txt");
+        fail(c + " should be forbidden");
+      } catch (InvalidPathException e) {
+        // should reach here
+      }
     }
   }
 

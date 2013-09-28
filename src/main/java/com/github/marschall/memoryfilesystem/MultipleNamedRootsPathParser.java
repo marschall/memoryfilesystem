@@ -12,8 +12,8 @@ final class MultipleNamedRootsPathParser extends PathParser {
   private final StringTransformer pathTransformer;
 
 
-  MultipleNamedRootsPathParser(String separator, StringTransformer pathTransformer) {
-    super(separator);
+  MultipleNamedRootsPathParser(String separator, StringTransformer pathTransformer, CharacterSet forbiddenCharacters) {
+    super(separator, forbiddenCharacters);
     this.pathTransformer = pathTransformer;
   }
 
@@ -37,8 +37,11 @@ final class MultipleNamedRootsPathParser extends PathParser {
     MemoryFileSystem memoryFileSystem = this.getFileSystem(roots);
     if (this.isAbsolute(elements)) {
       Root root = this.getRoot(memoryFileSystem, roots, elements);
-      return AbstractPath.createAboslute(memoryFileSystem, root, elements.subList(1, elements.size()));
+      elements = elements.subList(1, elements.size());
+      this.check(elements);
+      return AbstractPath.createAboslute(memoryFileSystem, root, elements);
     } else {
+      this.check(elements);
       return AbstractPath.createRelative(memoryFileSystem, elements);
     }
   }

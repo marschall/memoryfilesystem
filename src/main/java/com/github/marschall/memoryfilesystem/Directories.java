@@ -1,5 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
+import static java.nio.file.FileVisitResult.CONTINUE;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.CopyOption;
@@ -83,6 +85,7 @@ public final class Directories {
   private static Set<Class<? extends FileAttributeView>> supportedAttribueViews(Path source, Path target, boolean sameFileSystem) {
     Set<String> viewNames = source.getFileSystem().supportedFileAttributeViews();
     if (!sameFileSystem) {
+      viewNames = new HashSet<>(viewNames); // can be unmodifyable
       viewNames.retainAll(target.getFileSystem().supportedFileAttributeViews());
     }
     Set<Class<? extends FileAttributeView>> supportedAttribueViews = new HashSet<>(viewNames.size());
@@ -109,12 +112,20 @@ public final class Directories {
     if (attribueViews.contains(UserDefinedFileAttributeView.class)) {
       UserDefinedFileAttributeView sourceAttributes = Files.getFileAttributeView(source, UserDefinedFileAttributeView.class, linkOptions);
       UserDefinedFileAttributeView targeAttributes = Files.getFileAttributeView(target, UserDefinedFileAttributeView.class, linkOptions);
-      for (String each : sourceAttributes.list()) {
-        //TODO reuse buffer
-        //TODO retry harder
 
+      // try to reuse the buffer
+      // TODO reuse buffer across files
+      ByteBuffer buffer = null;
+      for (String each : sourceAttributes.list()) {
         int size = sourceAttributes.size(each);
-        ByteBuffer buffer = ByteBuffer.allocate(size);
+        if (buffer == null) {
+          buffer = ByteBuffer.allocate(size);
+        } else {
+          buffer.reset();
+          if (buffer.capacity() < size) {
+            buffer = ByteBuffer.allocate(size);
+          }
+        }
         int read = sourceAttributes.read(each, buffer);
         if (read != size) {
           throw new IOException("could not read attribute: " + each + " of " + source);
@@ -200,7 +211,7 @@ public final class Directories {
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
       Files.copy(file, this.relativize(file), this.copyOptions);
-      return FileVisitResult.CONTINUE;
+      return CONTINUE;
     }
 
     @Override
@@ -209,7 +220,7 @@ public final class Directories {
         // skip creating root on target file system
         Files.createDirectory(this.relativize(dir));
       }
-      return FileVisitResult.CONTINUE;
+      return CONTINUE;
     }
 
     @Override
@@ -217,7 +228,7 @@ public final class Directories {
       if (this.copyAttribues) {
         copyAttributes(this.source, this.relativize(dir), this.sameFileSystem, this.supportedAttribueViews, this.linkOptions);
       }
-      return FileVisitResult.CONTINUE;
+      return CONTINUE;
     }
   }
 

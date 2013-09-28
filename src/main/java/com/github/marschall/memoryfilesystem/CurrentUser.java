@@ -34,7 +34,7 @@ public final class CurrentUser {
     USER.remove();
   }
 
-  interface UserTask<V> extends Callable<V> {
+  public interface UserTask<V> extends Callable<V> {
 
     @Override
     public V call() throws IOException;

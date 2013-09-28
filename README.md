@@ -44,9 +44,10 @@ Not Supported
 -------------
 * `FileChannel#map`, `MappedByteBuffer` has final methods that call native methods
 * `WatchService`
-* `FileTypeDetector`
+* `FileTypeDetector`, has to be accessible by system classloader
 * faked DOS attribute view under Linux, totally unspecified
 * `UnixFileAttributeView`, [sun package](http://www.oracle.com/technetwork/java/faq-sun-packages-142232.html), totally unspecified
+* `AclFileAttributeView`
 * any meaningful access checks
 * files larger than 16MB
 * `StandardOpenOption`
@@ -55,6 +56,7 @@ Not Supported
   * DSYNC
 * hard links
 * `URL` interoperability, needs a custom `URLStreamHandler` which [ins't very nice](http://www.unicon.net/node/776). That means you can't for example create an `URLClassLoader` on a memory file system. However if you really want to create a `ClassLoader` on a memory file system you can use [path-classloader](https://github.com/marschall/path-classloader) which is completely portable across Java 7 file systems.
+* maximum path length checks
 
 FAQ
 ---
@@ -80,7 +82,7 @@ No
 No
 
 ### Does it work with Spring?
-Yes, there is a POJO factory bean. It has been tested with Spring 3.1.3 but since it doesn't have any dependencies on Spring it should work with every ⩾ 2.x version. You can of course also use Java configuration or any other IoC container.
+Yes, there is a POJO factory bean. It has been tested with Spring 3.2.4 but since it doesn't have any dependencies on Spring it should work with every ⩾ 2.x version. You can of course also use Java configuration or any other IoC container.
 
 ### Does it work with OSGi?
 Yes, it's a bundle and there's an activator that prevents class loader leaks. You should use the `MemoryFileSystemBuilder` instead of `FileSystems#newFileSystem` because `ServiceLoader` uses the thread context class loader. `MemoryFileSystemBuilder` avoids this by passing in the correct class loader.
@@ -183,10 +185,10 @@ Guidelines for Testable File Code
 The following guidelines are designed to help you write code that can easily be tested using this project. In general code using the old `File` API has to moved over to the new Java 7 API.
 
 * Inject a `Path` or `FileSystem` instance into the object doing the file handling. This allows you to pass in an instance of a memory file system when testing and an instance of the default file system when running in production. You can always the the file system of a path by using `Path#getFileSystem()`.
-* Don't use `File`, `FileInputStream`, `FileOutputStream` and `RandomAccessFile`. These classes are hard wired to the default file system.
+* Don't use `File`, `FileInputStream`, `FileOutputStream`, `RandomAccessFile` and `Path#toFile()`. These classes are hard wired to the default file system.
   * Use `Path` instead of `File`.
   * Use `SeekableByteChannel` instead of `RandomAccessFile`. Use `Files#newByteChannel` to create an instance of `SeekableByteChannel`.
   * Use `Files#newInputStream` and `Files#newOutputStream` to create `InputStream`s and `OutputStream`s on files.
-  * Use `FileChannel#open` instead of `FileInputStream#getChannel()`, `FileOutputStream#getChannel()`, or `RandomAccessFile#getChannel()` to create a ``FileChannel`
-* Use `FileSystem#getPath(String, String...)` instead of `Paths#get` to create a `Path` instance because the latter creates an instance on the default file system.
+  * Use `FileChannel#open` instead of `FileInputStream#getChannel()`, `FileOutputStream#getChannel()`, or `RandomAccessFile#getChannel()` to create a `FileChannel`
+* Use `FileSystem#getPath(String, String...)` instead of `Paths#get(String, String...)` to create a `Path` instance because the latter creates an instance on the default file system.
 

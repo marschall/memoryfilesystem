@@ -85,6 +85,37 @@ class EnvironmentParser {
     }
   }
 
+  CharacterSet getForbiddenCharacters() {
+    String property = MemoryFileSystemProperties.FORBIDDEN_CHARACTERS;
+    Object value = this.env.get(property);
+    if (value != null) {
+      if (value instanceof Set) {
+        Set<?> values = (Set<?>) value;
+        if (values.isEmpty()) {
+          return EmptyCharacterSet.INSTANCE;
+        } else {
+          char[] characters = new char[values.size()];
+          int i = 0;
+          for (Object each : values) {
+            if (each instanceof Character) {
+              characters[i] = (Character) each;
+            } else {
+              throw new IllegalArgumentException(MemoryFileSystemProperties.FORBIDDEN_CHARACTERS + " values must be a "
+                      + String.class + " but was " + each);
+            }
+            i += 1;
+          }
+          return new ArrayCharacterSet(characters);
+        }
+      } else {
+        throw new IllegalArgumentException(MemoryFileSystemProperties.FORBIDDEN_CHARACTERS + " must be a "
+                + Set.class + " but was " + value.getClass());
+      }
+    } else {
+      return EmptyCharacterSet.INSTANCE;
+    }
+  }
+
   Set<Class<? extends FileAttributeView>> getAdditionalViews() {
     String property = MemoryFileSystemProperties.FILE_ATTRIBUTE_VIEWS_PROPERTY;
     Object value = this.env.get(property);

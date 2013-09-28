@@ -1,10 +1,14 @@
 package com.github.marschall.memoryfilesystem;
 
+import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
+import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.nio.file.FileSystem;
@@ -16,9 +20,11 @@ import java.nio.file.attribute.DosFileAttributes;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -103,6 +109,51 @@ public class WindowsFileSystemComptiblityTest {
     assertTrue(dosFileAttributes.isHidden());
     assertTrue(dosFileAttributes.isSystem());
     assertFalse(dosFileAttributes.isReadOnly());
+  }
+
+  @Test
+  @Ignore("not ready")
+  public void forbiddenFileNames() {
+    FileSystem fileSystem = this.getFileSystem();
+    Path root = fileSystem.getPath("C:\\");
+    List<String> forbidden = asList("CON", "PRN", "AUX", "CLOCK$", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9");
+    for (String each : forbidden) {
+      Path forbiddenPath = root.resolve(each);
+      try {
+        Files.createFile(forbiddenPath);
+        fail(forbiddenPath + " should be forbidden");
+      } catch (IOException e) {
+        // should reach here
+      }
+
+      forbiddenPath = root.resolve(each.toLowerCase(Locale.US));
+      try {
+        Files.createFile(forbiddenPath);
+        fail(forbiddenPath + " should be forbidden");
+      } catch (IOException e) {
+        // should reach here
+      }
+    }
+  }
+
+  @Test
+  public void caseInsensitiveCasePreserving() throws IOException {
+    FileSystem fileSystem = this.getFileSystem();
+    Path root = fileSystem.getPath("C:\\");
+    Path testFile = root.resolve("tesT");
+    try {
+      Files.createFile(testFile);
+      assertEquals("C:\\tesT", testFile.toRealPath().toString());
+
+      Path testFile2 = root.resolve("Test");
+      assertThat(testFile2, exists());
+
+      assertEquals("C:\\tesT", testFile2.toRealPath().toString());
+
+    } finally {
+      Files.delete(testFile);
+    }
+
   }
 
   @Test
