@@ -15,9 +15,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Iterator;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
-//@Ignore("needs to be cross checked")
+@Ignore("not portable")
 public class FileSystemComptiblity {
 
   @Test

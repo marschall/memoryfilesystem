@@ -8,7 +8,9 @@ public final class StringTransformers {
 
   public static final StringTransformer IDENTIY = new IdentityTransformer();
 
-  public static final StringTransformer MAC_OS = new MacOS();
+  public static final StringTransformer NFD = new NFD();
+
+  public static final StringTransformer NFC = new NFC();
 
   public StringTransformer caseInsensitive() {
     return caseInsensitive(Locale.getDefault());
@@ -18,11 +20,15 @@ public final class StringTransformers {
     return new CaseInsenstive(locale);
   }
 
-  public  static StringTransformer caseInsensitiveMacOS(Locale locale) {
-    return new CaseInsenstiveMacOS(locale);
+  public  static StringTransformer caseInsensitiveMacOSNative(Locale locale) {
+    return new CaseInsenstiveMacOSNative(locale);
   }
 
-  static final class MacOS implements StringTransformer {
+  public  static StringTransformer caseInsensitiveMacOSJvm(Locale locale) {
+    return new CaseInsenstiveMacOSJvm(locale);
+  }
+
+  static final class NFD implements StringTransformer {
 
     @Override
     public String transform(String s) {
@@ -33,17 +39,41 @@ public final class StringTransformers {
 
   }
 
-  static final class CaseInsenstiveMacOS implements StringTransformer {
+  static final class NFC implements StringTransformer {
+
+    @Override
+    public String transform(String s) {
+      return Normalizer.normalize(s, Form.NFC);
+    }
+
+  }
+
+  static final class CaseInsenstiveMacOSNative implements StringTransformer {
 
     private final Locale locale;
 
-    CaseInsenstiveMacOS(Locale locale) {
+    CaseInsenstiveMacOSNative(Locale locale) {
       this.locale = locale;
     }
 
     @Override
     public String transform(String s) {
       return Normalizer.normalize(s, Form.NFD).toUpperCase(this.locale);
+    }
+
+  }
+
+  static final class CaseInsenstiveMacOSJvm implements StringTransformer {
+
+    private final Locale locale;
+
+    CaseInsenstiveMacOSJvm(Locale locale) {
+      this.locale = locale;
+    }
+
+    @Override
+    public String transform(String s) {
+      return Normalizer.normalize(s, Form.NFC).toUpperCase(this.locale);
     }
 
   }

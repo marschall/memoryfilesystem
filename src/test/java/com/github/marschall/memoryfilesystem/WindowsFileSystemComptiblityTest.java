@@ -2,6 +2,7 @@ package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static java.util.Arrays.asList;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
@@ -17,6 +18,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.DosFileAttributes;
+import java.text.Normalizer;
+import java.text.Normalizer.Form;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -116,7 +119,7 @@ public class WindowsFileSystemComptiblityTest {
   public void forbiddenFileNames() {
     FileSystem fileSystem = this.getFileSystem();
     Path root = fileSystem.getPath("C:\\");
-    List<String> forbidden = asList("CON", "PRN", "AUX", "CLOCK$", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9");
+    List<String> forbidden = asList("CON", "PRN", "AUX", "CLOCK$", "NULL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9");
     for (String each : forbidden) {
       Path forbiddenPath = root.resolve(each);
       try {
@@ -136,24 +139,23 @@ public class WindowsFileSystemComptiblityTest {
     }
   }
 
+
   @Test
   public void caseInsensitiveCasePreserving() throws IOException {
     FileSystem fileSystem = this.getFileSystem();
-    Path root = fileSystem.getPath("C:\\");
-    Path testFile = root.resolve("tesT");
+    Path testFile = fileSystem.getPath("tesT");
     try {
       Files.createFile(testFile);
-      assertEquals("C:\\tesT", testFile.toRealPath().toString());
+      assertEquals("tesT", testFile.toRealPath().getFileName().toString());
 
-      Path testFile2 = root.resolve("Test");
+      Path testFile2 = fileSystem.getPath("Test");
       assertThat(testFile2, exists());
 
-      assertEquals("C:\\tesT", testFile2.toRealPath().toString());
+      assertEquals("tesT", testFile2.toRealPath().getFileName().toString());
 
     } finally {
       Files.delete(testFile);
     }
-
   }
 
   @Test
@@ -170,6 +172,76 @@ public class WindowsFileSystemComptiblityTest {
     assertThat(keys, not(hasItem("isHidden")));
     assertThat(keys, not(hasItem("isArchive")));
     assertThat(keys, not(hasItem("isSystem")));
+  }
+
+  @Test
+  public void windowsNormalization() throws IOException {
+    FileSystem fileSystem = this.getFileSystem();
+    String aUmlaut = "\u00C4";
+    Path aPath = fileSystem.getPath(aUmlaut);
+    String normalized = Normalizer.normalize(aUmlaut, Form.NFD);
+    Path nPath = fileSystem.getPath(normalized);
+
+    Path createdFile = null;
+    try {
+      createdFile = Files.createFile(nPath);
+      assertEquals(2, createdFile.getFileName().toString().length());
+      assertEquals(2, createdFile.toAbsolutePath().getFileName().toString().length());
+      // REVIEW ??
+      assertEquals(2, createdFile.toRealPath().getFileName().toString().length());
+
+      assertThat(aPath, not(exists()));
+      assertThat(nPath, exists());
+      //assertTrue(Files.isSameFile(aPath, nPath));
+      //assertTrue(Files.isSameFile(nPath, aPath));
+      assertThat(aPath, not(equalTo(nPath)));
+    } finally {
+      if (createdFile != null) {
+        Files.delete(createdFile);
+      }
+    }
+  }
+
+
+  @Test
+  public void windowsNoNormalization() throws IOException {
+    /*
+     * Verifies that Windows does no Unicode normalization and that we can have
+     * both a NFC and NFD file.
+     */
+    FileSystem fileSystem = this.getFileSystem();
+    String aUmlaut = "\u00C4";
+    Path nfcPath = fileSystem.getPath(aUmlaut);
+    String normalized = Normalizer.normalize(aUmlaut, Form.NFD);
+    Path nfdPath = fileSystem.getPath(normalized);
+
+    Path nfcFile = null;
+    Path nfdFile = null;
+    try {
+      nfcFile = Files.createFile(nfcPath);
+      assertEquals(1, nfcFile.getFileName().toString().length());
+      assertEquals(1, nfcFile.toAbsolutePath().getFileName().toString().length());
+      assertEquals(1, nfcFile.toRealPath().getFileName().toString().length());
+
+      assertThat(nfcPath, exists());
+      assertThat(nfdPath, not(exists()));
+
+      nfdFile = Files.createFile(nfdPath);
+      assertEquals(2, nfdFile.getFileName().toString().length());
+      assertEquals(2, nfdFile.toAbsolutePath().getFileName().toString().length());
+      assertEquals(2, nfdFile.toRealPath().getFileName().toString().length());
+
+      assertThat(nfcPath, not(equalTo(nfdPath)));
+      assertFalse(Files.isSameFile(nfcPath, nfdPath));
+      assertFalse(Files.isSameFile(nfdPath, nfcPath));
+    } finally {
+      if (nfcFile != null) {
+        Files.delete(nfcFile);
+      }
+      if (nfdFile != null) {
+        Files.delete(nfdFile);
+      }
+    }
   }
 
 }

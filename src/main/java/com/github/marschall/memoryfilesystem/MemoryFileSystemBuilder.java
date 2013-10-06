@@ -171,6 +171,7 @@ public final class MemoryFileSystemBuilder {
   }
 
   public static MemoryFileSystemBuilder newMacOs() {
+    // new JVMs use NFC instead of the native NFD
     MemoryFileSystemBuilder builder = new MemoryFileSystemBuilder();
     return builder
             .addRoot(MemoryFileSystemProperties.UNIX_ROOT)
@@ -180,8 +181,24 @@ public final class MemoryFileSystemBuilder {
             .addFileAttributeView(PosixFileAttributeView.class)
             .setCurrentWorkingDirectory("/Users/" + getSystemUserName())
             .setCollator(MemoryFileSystemProperties.caseSensitiveCollator(builder.getLocale()))
-            .setLookUpTransformer(StringTransformers.caseInsensitiveMacOS(builder.getLocale()))
-            .setStoreTransformer(StringTransformers.MAC_OS)
+            .setLookUpTransformer(StringTransformers.caseInsensitiveMacOSJvm(builder.getLocale()))
+            .setStoreTransformer(StringTransformers.NFC)
+            .addForbiddenCharacter((char) 0);
+  }
+
+  public static MemoryFileSystemBuilder newMacOsOldJvm() {
+    // old JVMs used the native NFC
+    MemoryFileSystemBuilder builder = new MemoryFileSystemBuilder();
+    return builder
+            .addRoot(MemoryFileSystemProperties.UNIX_ROOT)
+            .setSeprator(MemoryFileSystemProperties.UNIX_SEPARATOR)
+            .addUser(getSystemUserName())
+            .addGroup(getSystemUserName())
+            .addFileAttributeView(PosixFileAttributeView.class)
+            .setCurrentWorkingDirectory("/Users/" + getSystemUserName())
+            .setCollator(MemoryFileSystemProperties.caseSensitiveCollator(builder.getLocale()))
+            .setLookUpTransformer(StringTransformers.caseInsensitiveMacOSNative(builder.getLocale()))
+            .setStoreTransformer(StringTransformers.NFD)
             .addForbiddenCharacter((char) 0);
   }
 
@@ -196,7 +213,7 @@ public final class MemoryFileSystemBuilder {
     .setStoreTransformer(StringTransformers.IDENTIY)
     .setCaseSensitive(false)
     // TODO check
-    // CON, PRN, AUX, CLOCK$, NUL
+    // CON, PRN, AUX, CLOCK$, NULL
     // COM1, COM2, COM3, COM4, COM5, COM6, COM7, COM8, COM9
     // LPT1, LPT2, LPT3, LPT4, LPT5, LPT6, LPT7, LPT8, and LPT9
     // TODO check

@@ -992,7 +992,6 @@ class MemoryFileSystem extends FileSystem {
   @Override
   public WatchService newWatchService() throws IOException {
     this.checker.check();
-    // TODO Auto-generated method stub
     // TODO make configurable
     throw new UnsupportedOperationException();
   }
