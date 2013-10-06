@@ -78,13 +78,13 @@ public class MacOsMemoryFileSystemTest {
       createdFile = Files.createFile(aPath);
       assertEquals(1, createdFile.getFileName().toString().length());
       assertEquals(1, createdFile.toAbsolutePath().getFileName().toString().length());
-      assertEquals(2, createdFile.toRealPath().getFileName().toString().length());
+      assertEquals(1, createdFile.toRealPath().getFileName().toString().length());
 
       assertThat(aPath, exists());
       assertThat(nPath, exists());
       assertTrue(Files.isSameFile(aPath, nPath));
       assertTrue(Files.isSameFile(nPath, aPath));
-      assertThat(aPath, not(equalTo(nPath)));
+      assertThat(aPath, equalTo(nPath));
     } finally {
       if (createdFile != null) {
         Files.delete(createdFile);
@@ -149,7 +149,7 @@ public class MacOsMemoryFileSystemTest {
     Path aPath = fileSystem.getPath("/" + aUmlaut);
     Path nPath = fileSystem.getPath("/" + normalized);
     assertEquals(1, aPath.getName(0).toString().length());
-    assertThat(aPath, not(equalTo(nPath)));
+    assertThat(aPath, equalTo(nPath));
   }
 
 }

@@ -41,9 +41,13 @@ public class MemoryFileSystemProperties {
 
   static final List<String> DEFAULT_ROOTS = Collections.singletonList(UNIX_ROOT);
 
-  static Collator caseSensitiveCollator(Locale locale) {
+  static Collator caseSensitiveCollator(Locale locale, boolean decomposition) {
     Collator collator = Collator.getInstance(locale);
-    collator.setDecomposition(Collator.NO_DECOMPOSITION);
+    if (decomposition) {
+      collator.setDecomposition(Collator.CANONICAL_DECOMPOSITION);
+    } else {
+      collator.setDecomposition(Collator.NO_DECOMPOSITION);
+    }
     collator.setStrength(Collator.IDENTICAL);
     return collator;
   }

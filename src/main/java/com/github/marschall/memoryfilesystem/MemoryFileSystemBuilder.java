@@ -135,7 +135,7 @@ public final class MemoryFileSystemBuilder {
   public MemoryFileSystemBuilder setCaseSensitive(boolean caseSensitive) {
     if (caseSensitive) {
       this.lookUpTransformer = StringTransformers.IDENTIY;
-      this.collator = MemoryFileSystemProperties.caseSensitiveCollator(this.getLocale());
+      this.collator = MemoryFileSystemProperties.caseSensitiveCollator(this.getLocale(), false);
     } else {
       this.lookUpTransformer = StringTransformers.caseInsensitive(this.getLocale());
       this.collator = MemoryFileSystemProperties.caseInsensitiveCollator(this.getLocale());
@@ -181,7 +181,7 @@ public final class MemoryFileSystemBuilder {
             .addGroup(getSystemUserName())
             .addFileAttributeView(PosixFileAttributeView.class)
             .setCurrentWorkingDirectory("/Users/" + getSystemUserName())
-            .setCollator(MemoryFileSystemProperties.caseSensitiveCollator(builder.getLocale()))
+            .setCollator(MemoryFileSystemProperties.caseSensitiveCollator(builder.getLocale(), true))
             .setLookUpTransformer(StringTransformers.caseInsensitiveMacOSJvm(builder.getLocale()))
             .setStoreTransformer(StringTransformers.NFC)
             .addForbiddenCharacter((char) 0);
@@ -197,7 +197,7 @@ public final class MemoryFileSystemBuilder {
             .addGroup(getSystemUserName())
             .addFileAttributeView(PosixFileAttributeView.class)
             .setCurrentWorkingDirectory("/Users/" + getSystemUserName())
-            .setCollator(MemoryFileSystemProperties.caseSensitiveCollator(builder.getLocale()))
+            .setCollator(MemoryFileSystemProperties.caseSensitiveCollator(builder.getLocale(), false))
             .setLookUpTransformer(StringTransformers.caseInsensitiveMacOSNative(builder.getLocale()))
             .setStoreTransformer(StringTransformers.NFD)
             .addForbiddenCharacter((char) 0);

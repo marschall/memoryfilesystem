@@ -81,7 +81,7 @@ class EnvironmentParser {
                 + Collator.class + " but was " + value.getClass());
       }
     } else {
-      return MemoryFileSystemProperties.caseSensitiveCollator(Locale.getDefault());
+      return MemoryFileSystemProperties.caseSensitiveCollator(Locale.getDefault(), false);
     }
   }
 
