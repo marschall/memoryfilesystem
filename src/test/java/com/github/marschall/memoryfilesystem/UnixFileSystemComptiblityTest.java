@@ -1,10 +1,13 @@
 package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.FileContentsMatcher.hasContents;
+import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.lessThan;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -17,6 +20,7 @@ import java.io.OutputStream;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -26,6 +30,8 @@ import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.GroupPrincipal;
 import java.nio.file.attribute.UserPrincipal;
+import java.text.Normalizer;
+import java.text.Normalizer.Form;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -78,6 +84,34 @@ public class UnixFileSystemComptiblityTest {
               new Object[]{false});
     } else {
       return Collections.singletonList(new Object[]{false});
+    }
+  }
+
+
+  @Test
+  public void forbiddenCharacters() throws IOException {
+    try {
+      char c = 0;
+      this.getFileSystem().getPath(c + ".txt");
+      fail("0x00 should be forbidden");
+    } catch (InvalidPathException e) {
+      // should reach here
+    }
+  }
+
+  @Test
+  public void notForbiddenCharacters() throws IOException {
+    for (int i = 1; i < 128; ++i) {
+      char c = (char) i;
+      if (c != '/') {
+        Path path = this.getFileSystem().getPath(c + ".txt");
+        assertNotNull(path);
+        try {
+          Files.createFile(path);
+        } finally {
+          Files.delete(path);
+        }
+      }
     }
   }
 
@@ -460,6 +494,61 @@ public class UnixFileSystemComptiblityTest {
 
     assertEquals(fileSystem.getPath("/"), fileSystem.getPath("/a").resolveSibling(fileSystem.getPath("")));
     assertEquals(fileSystem.getPath(""), fileSystem.getPath("a").resolveSibling(fileSystem.getPath("")));
+  }
+
+  @Test
+  public void unixNoNormalization() throws IOException {
+    /*
+     * Verifies that Linux does no Unicode normalization and that we can have
+     * both a NFC and NFD file.
+     */
+    FileSystem fileSystem = this.getFileSystem();
+    String aUmlaut = "\u00C4";
+    Path nfcPath = fileSystem.getPath(aUmlaut);
+    String normalized = Normalizer.normalize(aUmlaut, Form.NFD);
+    Path nfdPath = fileSystem.getPath(normalized);
+
+    Path nfcFile = null;
+    Path nfdFile = null;
+    try {
+      nfcFile = Files.createFile(nfcPath);
+      assertEquals(1, nfcFile.getFileName().toString().length());
+      assertEquals(1, nfcFile.toAbsolutePath().getFileName().toString().length());
+      assertEquals(1, nfcFile.toRealPath().getFileName().toString().length());
+
+      assertThat(nfcPath, exists());
+      assertThat(nfdPath, not(exists()));
+
+      nfdFile = Files.createFile(nfdPath);
+      assertEquals(2, nfdFile.getFileName().toString().length());
+      assertEquals(2, nfdFile.toAbsolutePath().getFileName().toString().length());
+      assertEquals(2, nfdFile.toRealPath().getFileName().toString().length());
+
+      assertThat(nfcPath, not(equalTo(nfdPath)));
+      assertFalse(Files.isSameFile(nfcPath, nfdPath));
+      assertFalse(Files.isSameFile(nfdPath, nfcPath));
+    } finally {
+      if (nfcFile != null) {
+        Files.delete(nfcFile);
+      }
+      if (nfdFile != null) {
+        Files.delete(nfdFile);
+      }
+    }
+  }
+
+  @Test
+  public void unixPaths() throws IOException {
+    FileSystem fileSystem = this.getFileSystem();
+    String aUmlaut = "\u00C4";
+    String normalized = Normalizer.normalize(aUmlaut, Form.NFD);
+    assertEquals(1, aUmlaut.length());
+    assertEquals(2, normalized.length());
+    Path aPath = fileSystem.getPath("/" + aUmlaut);
+    Path nPath = fileSystem.getPath("/" + normalized);
+    assertEquals(1, aPath.getName(0).toString().length());
+    // verify a NFC path is not equal to a NFD path
+    assertThat(aPath, not(equalTo(nPath)));
   }
 
 }

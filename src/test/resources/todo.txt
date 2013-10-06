@@ -4,3 +4,4 @@ configurable
  - Paths.get lazily create file system?
  - configure range of setTimes (past 2038)
  - security manager restrictions
+ - add a way stop threads in Java EE / OSGi

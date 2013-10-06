@@ -90,7 +90,6 @@ public class MacOsMemoryFileSystemTest {
         Files.delete(createdFile);
       }
     }
-
   }
 
   @Test
@@ -129,7 +128,13 @@ public class MacOsMemoryFileSystemTest {
     for (int i = 1; i < 128; ++i) {
       char c = (char) i;
       if (c != '/') {
-        assertNotNull(this.getFileSystem().getPath(c + ".txt"));
+        Path path = this.getFileSystem().getPath(c + ".txt");
+        assertNotNull(path);
+        try {
+          Files.createFile(path);
+        } finally {
+          Files.delete(path);
+        }
       }
     }
   }

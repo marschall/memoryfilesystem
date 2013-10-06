@@ -167,7 +167,8 @@ public final class MemoryFileSystemBuilder {
     .addFileAttributeView(PosixFileAttributeView.class)
     .setCurrentWorkingDirectory("/home/" + getSystemUserName())
     .setStoreTransformer(StringTransformers.IDENTIY)
-    .setCaseSensitive(true);
+    .setCaseSensitive(true)
+    .addForbiddenCharacter((char) 0);
   }
 
   public static MemoryFileSystemBuilder newMacOs() {
