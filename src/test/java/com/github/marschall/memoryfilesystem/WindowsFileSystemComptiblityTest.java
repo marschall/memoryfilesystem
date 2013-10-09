@@ -175,6 +175,7 @@ public class WindowsFileSystemComptiblityTest {
   }
 
   @Test
+  @Ignore
   public void windowsNormalization() throws IOException {
     FileSystem fileSystem = this.getFileSystem();
     String aUmlaut = "\u00C4";
@@ -204,6 +205,7 @@ public class WindowsFileSystemComptiblityTest {
 
 
   @Test
+  @Ignore
   public void windowsNoNormalization() throws IOException {
     /*
      * Verifies that Windows does no Unicode normalization and that we can have

@@ -213,11 +213,11 @@ public final class MemoryFileSystemBuilder {
     .setCurrentWorkingDirectory("C:\\Users\\" + getSystemUserName())
     .setStoreTransformer(StringTransformers.IDENTIY)
     .setCaseSensitive(false)
-    // TODO check
+    // TODO forbid
     // CON, PRN, AUX, CLOCK$, NULL
     // COM1, COM2, COM3, COM4, COM5, COM6, COM7, COM8, COM9
     // LPT1, LPT2, LPT3, LPT4, LPT5, LPT6, LPT7, LPT8, and LPT9
-    // TODO check
+    // TODO forbid
     // $Mft, $MftMirr, $LogFile, $Volume, $AttrDef, $Bitmap, $Boot, $BadClus, $Secure,
     // $Upcase, $Extend, $Quota, $ObjId and $Reparse
     // TODO check for 0x00
