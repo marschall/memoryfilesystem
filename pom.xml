@@ -72,7 +72,7 @@
     <dependency>
       <groupId>com.github.marschall</groupId>
       <artifactId>zipfilesystem-standalone</artifactId>
-      <version>1.0.0</version>
+      <version>1.0.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
