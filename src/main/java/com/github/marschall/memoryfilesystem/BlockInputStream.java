@@ -59,20 +59,15 @@ final class BlockInputStream extends InputStream {
   @Override
   public long skip(long n) throws IOException {
     this.checker.check();
-    boolean success = false;
-    long skipped = 0;
-    while (!success) {
-      long positionBefore = this.position.get();
-      long fileSize = this.memoryContents.size();
-      // do not skip more than MAX_SKIP_SIZE
-      // this intentionally introduces a subtle bug in code that doesn't check
-      // for the return value of #skip
-      // REVIEW subtle issue when fileSize - positionBefore becomes negative
-      // due to concurrent updates
-      skipped = min(min(positionBefore + n, fileSize - positionBefore), MAX_SKIP_SIZE);
-      this.position.compareAndSet(positionBefore, positionBefore + skipped);
-
-    }
+    long positionBefore = this.position.get();
+    long fileSize = this.memoryContents.size();
+    // do not skip more than MAX_SKIP_SIZE
+    // this intentionally introduces a subtle bug in code that doesn't check
+    // for the return value of #skip
+    // REVIEW subtle issue when fileSize - positionBefore becomes negative
+    // due to concurrent updates
+    long skipped = min(min(n, fileSize - positionBefore), MAX_SKIP_SIZE);
+    this.position.compareAndSet(positionBefore, positionBefore + skipped);
     return skipped;
   }
 
