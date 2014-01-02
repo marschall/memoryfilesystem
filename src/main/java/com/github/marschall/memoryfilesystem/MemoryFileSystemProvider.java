@@ -282,6 +282,15 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     memoryFileSystem.createSymbolicLink(linkPath, targetPath, attrs);
   }
 
+  @Override
+  public Path readSymbolicLink(Path link) throws IOException {
+    AbstractPath linkPath = this.castPath(link);
+    MemorySymbolicLink symlink = linkPath.getMemoryFileSystem().readSymbolicLink(linkPath);
+    if (symlink == null) {
+      return null;
+    }
+    return symlink.getTarget();
+  }
 
   @Override
   public void delete(Path path) throws IOException {
@@ -289,7 +298,6 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
     memoryFileSystem.delete(abstractPath);
   }
-
 
   @Override
   public void copy(Path source, Path target, CopyOption... options) throws IOException {
