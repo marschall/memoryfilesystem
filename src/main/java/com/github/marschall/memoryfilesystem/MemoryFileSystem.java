@@ -1040,6 +1040,31 @@ class MemoryFileSystem extends FileSystem {
     }
   }
 
+  public MemorySymbolicLink readSymbolicLink(final AbstractPath path) throws IOException {
+    AbstractPath absolutePath = (AbstractPath) path.toAbsolutePath().normalize();
+    if (absolutePath.isRoot()) {
+      throw new FileSystemException(path.toString(), null, "is not a file");
+    }
+    final ElementPath elementPath = (ElementPath) absolutePath;
+    MemoryDirectory rootDirectory = this.getRootDirectory(absolutePath);
+    return this.withWriteLockOnLastDo(rootDirectory, (AbstractPath) absolutePath.getParent(), true, new MemoryDirectoryBlock<MemorySymbolicLink>() {
+
+      @Override
+      public MemorySymbolicLink value(MemoryDirectory directory) throws IOException {
+        String fileName = elementPath.getLastNameElement();
+        String key = MemoryFileSystem.this.lookUpTransformer.transform(fileName);
+        MemoryEntry storedEntry = directory.getEntry(key);
+        if (storedEntry == null) {
+          throw new NoSuchFileException(path.toString(), null, "the file doesn't exist");
+        }
+        if (!(storedEntry instanceof MemorySymbolicLink)) {
+          throw new IOException("file is not a symbolic link");
+        }
+        return (MemorySymbolicLink) storedEntry;
+      }
+    });
+  }
+
   static void handleTwoPathOperation(CopyContext copyContext, MemoryDirectory firstDirectory, MemoryDirectory secondDirectory) throws IOException {
 
     EndPointCopyContext sourceContext = copyContext.source;

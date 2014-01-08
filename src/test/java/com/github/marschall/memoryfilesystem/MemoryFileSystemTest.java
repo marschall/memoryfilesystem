@@ -713,6 +713,36 @@ public class MemoryFileSystemTest {
     Path b = fileSystem.getPath("/b");
     Files.createSymbolicLink(a, b);
     Files.createSymbolicLink(b, a);
+
+    Path aAsSymlink = Files.readSymbolicLink(a);
+    assertEquals("/b", aAsSymlink.toString());
+    a.toRealPath();
+  }
+
+  @Test
+  public void readSymlink() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path a = fileSystem.getPath("/a");
+    Path b = fileSystem.getPath("/b");
+    Files.createFile(b);
+    Files.createSymbolicLink(a, b);
+
+    Path aAsSymlink = Files.readSymbolicLink(a);
+    assertEquals("/b", aAsSymlink.toString());
+    a.toRealPath();
+  }
+
+  @Test
+  public void readSymlinkInDirectory() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path a = Files.createDirectory(fileSystem.getPath("/dir1")).resolve("a");
+    Path b = Files.createDirectory(fileSystem.getPath("/dir2")).resolve("b");
+    Files.createFile(b);
+    Files.createSymbolicLink(a, b);
+
+    Path aAsSymlink = Files.readSymbolicLink(a);
+    assertEquals("/dir2/b", aAsSymlink.toString());
     a.toRealPath();
   }
 
