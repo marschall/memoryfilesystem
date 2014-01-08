@@ -4,6 +4,7 @@ import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_ENV;
 import static com.github.marschall.memoryfilesystem.FileContentsMatcher.hasContents;
 import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
 import static java.nio.file.StandardOpenOption.DELETE_ON_CLOSE;
@@ -39,6 +40,7 @@ import java.nio.channels.FileLock;
 import java.nio.channels.NonWritableChannelException;
 import java.nio.channels.OverlappingFileLockException;
 import java.nio.channels.SeekableByteChannel;
+import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystem;
@@ -1698,6 +1700,173 @@ public class MemoryFileSystemTest {
     expected.put("lastAccessTime", lastAccessTime);
 
     assertEquals(expected, attributes);
+  }
+
+  @Test
+  public void copyAlreadyExists() throws IOException, ParseException {
+    // copying a folder to an already existing one should throw FileAlreadyExistsException
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path source = fileSystem.getPath("source");
+    Path target = fileSystem.getPath("target");
+
+    Files.createDirectory(source);
+    Files.createDirectory(target);
+
+    try {
+      Files.copy(source, target);
+      fail("should not be able to overwrite exsiting directories");
+    } catch (FileAlreadyExistsException e) {
+      // should reach here
+      assert(true);
+    }
+
+  }
+
+  @Test
+  public void moveAlreadyExistsNotEmpty() throws IOException, ParseException {
+    // moving a folder to an already existing one that is not empty should throw DirectoryNotEmptyException
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path source = fileSystem.getPath("source");
+    Path target = fileSystem.getPath("target");
+
+    Files.createDirectory(source);
+    Files.createDirectory(target);
+
+    try {
+      Files.move(source, target, REPLACE_EXISTING);
+      fail("should not be able to overwrite non-empty directories");
+    } catch (DirectoryNotEmptyException e) {
+      // should reach here
+      assert(true);
+    }
+
+  }
+
+  @Test
+  public void copyAlreadyExistsNotEmpty() throws IOException, ParseException {
+    // copying a folder to an already existing one that is not empty should throw DirectoryNotEmptyException
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path source = fileSystem.getPath("source");
+    Path target = fileSystem.getPath("target");
+    Path child = fileSystem.getPath("target/child.txt");
+
+    Files.createDirectory(source);
+    Files.createDirectory(target);
+    Files.createFile(child);
+
+    try {
+      Files.copy(source, target, REPLACE_EXISTING);
+      fail("should not be able to overwrite non-empty directories");
+    } catch (DirectoryNotEmptyException e) {
+      // should reach here
+      assert(true);
+    }
+
+  }
+
+  @Test
+  public void moveAlreadyExists() throws IOException, ParseException {
+    // moving a folder to an already existing one should throw FileAlreadyExistsException
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path source = fileSystem.getPath("source");
+    Path target = fileSystem.getPath("target");
+
+    Files.createDirectory(source);
+    Files.createDirectory(target);
+
+    try {
+      Files.move(source, target);
+      fail("should not be able to overwrite exsiting directories");
+    } catch (FileAlreadyExistsException e) {
+      // should reach here
+      assert(true);
+    }
+
+  }
+
+  @Test
+  public void copyOverwriteExists() throws IOException, ParseException {
+    // copying a folder to an already existing one should work with REPLACE_EXISTING
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path source = fileSystem.getPath("source");
+    Path target = fileSystem.getPath("target");
+
+    Files.createDirectory(source);
+    Files.createDirectory(target);
+
+    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    FileTime sourceTime = FileTime.fromMillis(format.parse("2012-11-07T20:30:22").getTime());
+    FileTime targetTime = FileTime.fromMillis(format.parse("2012-10-07T20:30:22").getTime());
+    Files.setLastModifiedTime(source, sourceTime);
+    Files.setLastModifiedTime(target, targetTime);
+
+    assertEquals(sourceTime, Files.getLastModifiedTime(source));
+    assertEquals(targetTime, Files.getLastModifiedTime(target));
+
+    Files.copy(source, target, REPLACE_EXISTING);
+    assertThat(source, exists());
+    assertThat(target, exists());
+
+    assertEquals(sourceTime, Files.getLastModifiedTime(source));
+    assertEquals(sourceTime, Files.getLastModifiedTime(target));
+  }
+
+  @Test
+  public void moveOverwriteExists() throws IOException, ParseException {
+    // moving a folder to an already existing one should work with REPLACE_EXISTING
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path source = fileSystem.getPath("source");
+    Path target = fileSystem.getPath("target");
+
+    Files.createDirectory(source);
+    Files.createDirectory(target);
+
+    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    FileTime sourceTime = FileTime.fromMillis(format.parse("2012-11-07T20:30:22").getTime());
+    FileTime targetTime = FileTime.fromMillis(format.parse("2012-10-07T20:30:22").getTime());
+    Files.setLastModifiedTime(source, sourceTime);
+    Files.setLastModifiedTime(target, targetTime);
+
+    assertEquals(sourceTime, Files.getLastModifiedTime(source));
+    assertEquals(targetTime, Files.getLastModifiedTime(target));
+
+    Files.move(source, target, REPLACE_EXISTING);
+    assertThat(source, not(exists()));
+    assertThat(target, exists());
+
+    assertEquals(sourceTime, Files.getLastModifiedTime(target));
+  }
+
+  @Test
+  public void setTimesNull() throws IOException, ParseException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path source = fileSystem.getPath("/source.txt");
+    Files.createFile(source);
+
+    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    FileTime originalTime = FileTime.fromMillis(format.parse("2011-11-01T20:30:15").getTime());
+    FileTime lastModifiedTime = FileTime.fromMillis(format.parse("2012-11-07T20:30:22").getTime());
+    FileTime lastAccessedTime = FileTime.fromMillis(format.parse("2012-10-07T20:30:22").getTime());
+    FileTime createTime = FileTime.fromMillis(format.parse("2012-09-07T20:30:22").getTime());
+
+    Files.getFileAttributeView(source, BasicFileAttributeView.class).setTimes(originalTime, originalTime, originalTime);
+
+    Files.getFileAttributeView(source, BasicFileAttributeView.class).setTimes(null, null, createTime);
+    assertEquals(createTime, Files.getAttribute(source, "creationTime"));
+    assertEquals(originalTime, Files.getAttribute(source, "lastModifiedTime"));
+    assertEquals(originalTime, Files.getAttribute(source, "lastAccessTime"));
+
+    Files.getFileAttributeView(source, BasicFileAttributeView.class).setTimes(null, lastAccessedTime, null);
+    assertEquals(createTime, Files.getAttribute(source, "creationTime"));
+    assertEquals(originalTime, Files.getAttribute(source, "lastModifiedTime"));
+    assertEquals(lastAccessedTime, Files.getAttribute(source, "lastAccessTime"));
+
+    Files.getFileAttributeView(source, BasicFileAttributeView.class).setTimes(lastModifiedTime, null, null);
+    assertEquals(createTime, Files.getAttribute(source, "creationTime"));
+    assertEquals(lastModifiedTime, Files.getAttribute(source, "lastModifiedTime"));
+    assertEquals(lastAccessedTime, Files.getAttribute(source, "lastAccessTime"));
+
+
   }
 
   @Test

@@ -165,20 +165,17 @@ abstract class MemoryEntry {
   }
 
   void setTimes(FileTime lastModifiedTime, FileTime lastAccessTime, FileTime createTime) {
-    if (lastModifiedTime == null) {
-      throw new IllegalArgumentException("lastModifiedTime must not be null");
-    }
-    if (lastAccessTime == null) {
-      throw new IllegalArgumentException("lastAccessTime must not be null");
-    }
-    if (createTime == null) {
-      throw new IllegalArgumentException("createTime must not be null");
-    }
     try (AutoRelease lock = this.writeLock()) {
       this.checkAccess(AccessMode.WRITE);
-      this.lastModifiedTime = lastModifiedTime;
-      this.lastAccessTime = lastAccessTime;
-      this.creationTime = createTime;
+      if (lastModifiedTime != null) {
+        this.lastModifiedTime = lastModifiedTime;
+      }
+      if (lastAccessTime != null) {
+        this.lastAccessTime = lastAccessTime;
+      }
+      if (createTime != null) {
+        this.creationTime = createTime;
+      }
     }
   }
 

@@ -669,14 +669,6 @@ class MemoryFileSystem extends FileSystem {
     return directory;
   }
 
-  void copy(AbstractPath source, final AbstractPath target, final CopyOption... options) throws IOException {
-    this.copyOrMove(source, target, TwoPathOperation.COPY, options);
-  }
-
-  void move(AbstractPath source, final AbstractPath target, final CopyOption... options) throws IOException {
-    this.copyOrMove(source, target, TwoPathOperation.MOVE, options);
-  }
-
   void copyOrMove(AbstractPath source, AbstractPath target, TwoPathOperation operation, CopyOption... options) throws IOException {
     try (AutoRelease autoRelease = autoRelease(this.pathOrderingLock.writeLock())) {
 
