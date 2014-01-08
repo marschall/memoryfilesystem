@@ -1728,9 +1728,11 @@ public class MemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path source = fileSystem.getPath("source");
     Path target = fileSystem.getPath("target");
+    Path child = fileSystem.getPath("target/child.txt");
 
     Files.createDirectory(source);
     Files.createDirectory(target);
+    Files.createFile(child);
 
     try {
       Files.move(source, target, REPLACE_EXISTING);
