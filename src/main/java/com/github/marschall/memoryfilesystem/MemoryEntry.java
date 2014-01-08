@@ -66,7 +66,7 @@ abstract class MemoryEntry {
 
   void initializeAttributes(MemoryEntry other) throws IOException {
     try (AutoRelease lock = this.writeLock()) {
-      other.getBasicFileAttributeView().initializeFrom(this.getBasicFileAttributeView());
+      this.getBasicFileAttributeView().initializeFrom(other.getBasicFileAttributeView());
       for (InitializingFileAttributeView view : this.additionalAttributes.values()) {
         view.initializeFrom(other.additionalAttributes);
       }

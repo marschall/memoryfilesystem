@@ -4,6 +4,7 @@ import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_ENV;
 import static com.github.marschall.memoryfilesystem.FileContentsMatcher.hasContents;
 import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
@@ -1805,7 +1806,7 @@ public class MemoryFileSystemTest {
     assertEquals(sourceTime, Files.getLastModifiedTime(source));
     assertEquals(targetTime, Files.getLastModifiedTime(target));
 
-    Files.copy(source, target, REPLACE_EXISTING);
+    Files.copy(source, target, REPLACE_EXISTING, COPY_ATTRIBUTES);
     assertThat(source, exists());
     assertThat(target, exists());
 
@@ -1896,9 +1897,9 @@ public class MemoryFileSystemTest {
 
     BasicFileAttributeView targetBasicFileAttributeView = Files.getFileAttributeView(target, BasicFileAttributeView.class);
     BasicFileAttributes targetBasicAttributes = targetBasicFileAttributeView.readAttributes();
-    assertNotEquals(lastModifiedTime, targetBasicAttributes.lastModifiedTime());
-    assertNotEquals(lastAccessedTime, targetBasicAttributes.lastAccessTime());
-    assertNotEquals(createTime, targetBasicAttributes.creationTime());
+    assertEquals(lastModifiedTime, targetBasicAttributes.lastModifiedTime());
+    assertEquals(lastAccessedTime, targetBasicAttributes.lastAccessTime());
+    assertEquals(createTime, targetBasicAttributes.creationTime());
   }
 
   @Test
