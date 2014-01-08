@@ -21,6 +21,7 @@ import java.nio.file.FileSystemLoopException;
 import java.nio.file.LinkOption;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.NotDirectoryException;
+import java.nio.file.NotLinkException;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
@@ -1040,28 +1041,32 @@ class MemoryFileSystem extends FileSystem {
     }
   }
 
-  public MemorySymbolicLink readSymbolicLink(final AbstractPath path) throws IOException {
-    AbstractPath absolutePath = (AbstractPath) path.toAbsolutePath().normalize();
-    if (absolutePath.isRoot()) {
-      throw new FileSystemException(path.toString(), null, "is not a file");
-    }
-    final ElementPath elementPath = (ElementPath) absolutePath;
-    MemoryDirectory rootDirectory = this.getRootDirectory(absolutePath);
-    return this.withWriteLockOnLastDo(rootDirectory, (AbstractPath) absolutePath.getParent(), true, new MemoryDirectoryBlock<MemorySymbolicLink>() {
+  MemorySymbolicLink readSymbolicLink(final AbstractPath path) throws IOException {
+    // look up the parent following symlinks
+    // then look up the child not following symlinks
+    AbstractPath parent = (AbstractPath) path.toAbsolutePath().getParent();
+    return this.accessFileReading(parent, true, new MemoryEntryBlock<MemorySymbolicLink>() {
 
       @Override
-      public MemorySymbolicLink value(MemoryDirectory directory) throws IOException {
-        String fileName = elementPath.getLastNameElement();
-        String key = MemoryFileSystem.this.lookUpTransformer.transform(fileName);
-        MemoryEntry storedEntry = directory.getEntry(key);
-        if (storedEntry == null) {
-          throw new NoSuchFileException(path.toString(), null, "the file doesn't exist");
+      public MemorySymbolicLink value(MemoryEntry parentEntry) throws IOException {
+        if (!(parentEntry instanceof MemoryDirectory)) {
+          throw new IOException("parent is not a directory");
         }
-        if (!(storedEntry instanceof MemorySymbolicLink)) {
-          throw new IOException("file is not a symbolic link");
-        }
-        return (MemorySymbolicLink) storedEntry;
+        MemoryDirectory directory = (MemoryDirectory) parentEntry;
+        return MemoryFileSystem.this.withReadLockDo(directory, (AbstractPath) path.getFileName(), false, new MemoryEntryBlock<MemorySymbolicLink>() {
+
+          @Override
+          public MemorySymbolicLink value(MemoryEntry entry) throws IOException {
+            if (!(entry instanceof MemorySymbolicLink)) {
+              throw new NotLinkException("file is not a symbolic link");
+            }
+            return (MemorySymbolicLink) entry;
+          }
+
+        });
+
       }
+
     });
   }
 
