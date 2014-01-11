@@ -1041,26 +1041,26 @@ class MemoryFileSystem extends FileSystem {
     }
   }
 
-  MemorySymbolicLink readSymbolicLink(final AbstractPath path) throws IOException {
+  Path readSymbolicLink(final AbstractPath path) throws IOException {
     // look up the parent following symlinks
     // then look up the child not following symlinks
     AbstractPath parent = (AbstractPath) path.toAbsolutePath().getParent();
-    return this.accessFileReading(parent, true, new MemoryEntryBlock<MemorySymbolicLink>() {
+    return this.accessFileReading(parent, true, new MemoryEntryBlock<Path>() {
 
       @Override
-      public MemorySymbolicLink value(MemoryEntry parentEntry) throws IOException {
+      public Path value(MemoryEntry parentEntry) throws IOException {
         if (!(parentEntry instanceof MemoryDirectory)) {
           throw new IOException("parent is not a directory");
         }
         MemoryDirectory directory = (MemoryDirectory) parentEntry;
-        return MemoryFileSystem.this.withReadLockDo(directory, (AbstractPath) path.getFileName(), false, new MemoryEntryBlock<MemorySymbolicLink>() {
+        return MemoryFileSystem.this.withReadLockDo(directory, (AbstractPath) path.getFileName(), false, new MemoryEntryBlock<Path>() {
 
           @Override
-          public MemorySymbolicLink value(MemoryEntry entry) throws IOException {
+          public Path value(MemoryEntry entry) throws IOException {
             if (!(entry instanceof MemorySymbolicLink)) {
               throw new NotLinkException("file is not a symbolic link");
             }
-            return (MemorySymbolicLink) entry;
+            return ((MemorySymbolicLink) entry).getTarget();
           }
 
         });

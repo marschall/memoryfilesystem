@@ -4,6 +4,7 @@ import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_ENV;
 import static com.github.marschall.memoryfilesystem.FileContentsMatcher.hasContents;
 import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.nio.file.StandardOpenOption.APPEND;
@@ -44,11 +45,13 @@ import java.nio.channels.SeekableByteChannel;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.FileStore;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystemException;
 import java.nio.file.FileSystemLoopException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.NotLinkException;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.StandardCopyOption;
@@ -706,7 +709,45 @@ public class MemoryFileSystemTest {
   }
 
 
-  @Test(expected = FileSystemLoopException.class)
+  @Test
+  public void getFileStore() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path root = fileSystem.getPath("/");
+    FileStore fileStore = Files.getFileStore(root);
+    assertNotNull(fileStore);
+  }
+
+  @Test
+  public void targetDoesNotExist() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path link = fileSystem.getPath("/link");
+    Path target = fileSystem.getPath("/target");
+    Files.createSymbolicLink(link, target);
+
+    Path readBack = Files.readSymbolicLink(link);
+    assertThat(readBack, not(exists()));
+    assertEquals("/target", readBack.toString());
+  }
+
+  @Test
+  public void targetIsLink() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    // a -> b -> c
+    Path a = fileSystem.getPath("/a");
+    Path b = fileSystem.getPath("/b");
+    Path c = fileSystem.getPath("/c");
+    Files.createSymbolicLink(a, b);
+    Files.createSymbolicLink(b, c);
+
+    Path readBack = Files.readSymbolicLink(a);
+    assertThat(readBack, exists(NOFOLLOW_LINKS));
+    assertThat(readBack, not(exists()));
+    assertTrue(Files.isSymbolicLink(readBack));
+    assertEquals("/b", readBack.toString());
+  }
+
+
+  @Test
   public void symbolicLinkLoop() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path a = fileSystem.getPath("/a");
@@ -716,34 +757,55 @@ public class MemoryFileSystemTest {
 
     Path aAsSymlink = Files.readSymbolicLink(a);
     assertEquals("/b", aAsSymlink.toString());
-    a.toRealPath();
+
+    try {
+      a.toRealPath();
+      fail("FileSystemLoopException expected");
+    } catch (FileSystemLoopException e) {
+      assertTrue("expected", true);
+    }
+  }
+
+  @Test(expected = NotLinkException.class)
+  public void readSymbolicLinkNotALink() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path target = fileSystem.getPath("/target");
+    Files.createFile(target);
+
+    Files.readSymbolicLink(target);
   }
 
   @Test
-  public void readSymlink() throws IOException {
+  public void readSymbolicLink() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
-    Path a = fileSystem.getPath("/a");
-    Path b = fileSystem.getPath("/b");
-    Files.createFile(b);
-    Files.createSymbolicLink(a, b);
+    Path link = fileSystem.getPath("/link");
+    Path target = fileSystem.getPath("/target");
+    Files.createFile(target);
+    Files.createSymbolicLink(link, target);
 
-    Path aAsSymlink = Files.readSymbolicLink(a);
-    assertEquals("/b", aAsSymlink.toString());
-    a.toRealPath();
+    Path resolvedSymbolicLink = Files.readSymbolicLink(link);
+    assertEquals("/target", resolvedSymbolicLink.toString());
+
+    resolvedSymbolicLink = Files.readSymbolicLink(this.rule.getFileSystem().getPath("/link/.././link/"));
+    assertEquals("/target", resolvedSymbolicLink.toString());
+
+    assertEquals("/target", link.toRealPath().toString());
+    assertEquals("/link", link.toRealPath(NOFOLLOW_LINKS).toString());
   }
 
   @Test
-  public void readSymlinkInDirectory() throws IOException {
+  public void readSymbolicLinkDirectory() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
-    Path a = Files.createDirectory(fileSystem.getPath("/dir1")).resolve("a");
-    Path b = Files.createDirectory(fileSystem.getPath("/dir2")).resolve("b");
-    Files.createFile(b);
-    Files.createSymbolicLink(a, b);
+    Path link = Files.createDirectory(fileSystem.getPath("/dir1")).resolve("link");
+    Path target = Files.createDirectory(fileSystem.getPath("/dir2")).resolve("target");
+    Files.createFile(target);
+    Files.createSymbolicLink(link, target);
 
-    Path aAsSymlink = Files.readSymbolicLink(a);
-    assertEquals("/dir2/b", aAsSymlink.toString());
-    a.toRealPath();
+    Path aAsSymlink = Files.readSymbolicLink(link);
+    assertEquals("/dir2/target", aAsSymlink.toString());
+    assertEquals("/dir1/link", link.toRealPath(NOFOLLOW_LINKS).toString());
+    assertEquals("/dir2/target", link.toRealPath().toString());
   }
 
   @Test(expected = FileSystemException.class)

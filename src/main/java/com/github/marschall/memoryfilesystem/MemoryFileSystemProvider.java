@@ -285,11 +285,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   @Override
   public Path readSymbolicLink(Path link) throws IOException {
     AbstractPath linkPath = this.castPath(link);
-    MemorySymbolicLink symlink = linkPath.getMemoryFileSystem().readSymbolicLink(linkPath);
-    if (symlink == null) {
-      return null;
-    }
-    return symlink.getTarget();
+    return linkPath.getMemoryFileSystem().readSymbolicLink(linkPath);
   }
 
   @Override

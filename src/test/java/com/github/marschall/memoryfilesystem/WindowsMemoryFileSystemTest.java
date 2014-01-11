@@ -1,5 +1,6 @@
 package com.github.marschall.memoryfilesystem;
 
+import static com.github.marschall.memoryfilesystem.IsHiddenMatcher.isHidden;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
@@ -203,6 +204,24 @@ public class WindowsMemoryFileSystemTest {
     assertFalse(targetDosAttributes.isHidden());
     assertFalse(targetDosAttributes.isReadOnly());
     assertFalse(targetDosAttributes.isSystem());
+  }
+
+
+
+  @Test
+  public void isHiddenPathResolution() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path hidden = fileSystem.getPath("hidden.txt");
+    Files.createFile(hidden);
+
+    DosFileAttributeView attributeView = Files.getFileAttributeView(hidden, DosFileAttributeView.class);
+    attributeView.setHidden(true);
+
+    assertThat(hidden, isHidden());
+
+    hidden = fileSystem.getPath("hidden.txt/.././hidden.txt");
+    assertThat(hidden, isHidden());
   }
 
   @Test
