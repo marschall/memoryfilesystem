@@ -154,6 +154,7 @@ final class AbsolutePath extends NonEmptyPath {
           Modifier... modifiers) throws IOException {
     // TODO report bug
     // TODO Auto-generated function stub
+    // TODO java.nio.file.NotDirectoryException
     throw new UnsupportedOperationException();
   }
 
@@ -161,6 +162,7 @@ final class AbsolutePath extends NonEmptyPath {
   @Override
   public WatchKey register(WatchService watcher, Kind<?>... events) throws IOException {
     // TODO Auto-generated function stub
+    // TODO java.nio.file.NotDirectoryException
     throw new UnsupportedOperationException();
   }
 
