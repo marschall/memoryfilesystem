@@ -179,7 +179,7 @@ The `com.github.marschall.memoryfilesystem.MemoryFileSystemFactoryBean` provides
     factory-bean="memoryFileSystemFactory" factory-method="getObject"/>
 ```
 
-You can of course also write a [Java Configuration](http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/beans.html#beans-java) class and a `@Bean` method that uses `MemoryFileSystemBuilder` to create a new file system. Or a CDI class with a `@Produces` method that uses `MemoryFileSystemBuilder` to create a new file system. 
+You can of course also write a [Java Configuration](http://static.springsource.org/spring/docs/4.0.x/spring-framework-reference/html/beans.html#beans-java) class and a `@Bean` method that uses `MemoryFileSystemBuilder` to create a new file system. Or a CDI class with a `@Produces` method that uses `MemoryFileSystemBuilder` to create a new file system. 
 
 By setting the "type" attribute to "windows", "linux" or "macos" you can control the semantics of the created file system.
 
