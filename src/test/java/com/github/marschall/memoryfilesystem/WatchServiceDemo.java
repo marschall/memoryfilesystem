@@ -16,7 +16,7 @@ import java.util.List;
 public class WatchServiceDemo {
 
   public static void main(String[] args) throws IOException, InterruptedException {
-    Path dir = Paths.get("/Users/marschall/tmp/watch");
+    Path dir = Paths.get("/Users/marschall/tmp/watch/file.txt");
 
     FileSystem fileSystem = dir.getFileSystem();
     try (WatchService service = fileSystem.newWatchService()) {

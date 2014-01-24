@@ -13,7 +13,10 @@ final class MemoryFileSystemWatchService implements WatchService {
 
   private final BlockingQueue<MemoryWatchKey> readyKeys;
 
-  MemoryFileSystemWatchService() {
+  private final MemoryFileSystem memoryFileSystem;
+
+  MemoryFileSystemWatchService(MemoryFileSystem memoryFileSystem) {
+    this.memoryFileSystem = memoryFileSystem;
     this.checker = new ClosedWatchServiceChecker();
     this.readyKeys = new LinkedBlockingQueue<>();
   }
@@ -42,6 +45,10 @@ final class MemoryFileSystemWatchService implements WatchService {
   public WatchKey take() throws InterruptedException {
     this.checker.check();
     return this.readyKeys.take();
+  }
+
+  MemoryFileSystem getMemoryFileSystem() {
+    return this.memoryFileSystem;
   }
 
 }

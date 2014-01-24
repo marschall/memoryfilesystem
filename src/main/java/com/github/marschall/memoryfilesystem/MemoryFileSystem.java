@@ -46,6 +46,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -72,6 +75,8 @@ class MemoryFileSystem extends FileSystem {
   private volatile Map<Root, MemoryDirectory> roots;
 
   private volatile Map<String, Root> rootByKey;
+
+  private final ConcurrentMap<AbsolutePath, List<MemoryWatchKey>> watchKeys;
 
   private volatile AbstractPath defaultPath;
 
@@ -129,6 +134,7 @@ class MemoryFileSystem extends FileSystem {
     this.additionalViews = additionalViews;
     this.umask = umask;
     this.stores = Collections.<FileStore>singletonList(store);
+    this.watchKeys = new ConcurrentHashMap<>(1);
     this.emptyPath = new EmptyPath(this);
     this.supportedFileAttributeViews = this.buildSupportedFileAttributeViews(additionalViews);
     this.pathOrderingLock = new ReentrantReadWriteLock();
@@ -986,7 +992,25 @@ class MemoryFileSystem extends FileSystem {
   public WatchService newWatchService() throws IOException {
     this.checker.check();
     // TODO make configurable
-    throw new UnsupportedOperationException();
+    if (true) {
+      throw new UnsupportedOperationException();
+    }
+    return new MemoryFileSystemWatchService(this);
+  }
+
+
+  void register(MemoryWatchKey watchKey) {
+    this.checker.check();
+    AbsolutePath absolutePath = (AbsolutePath) watchKey.watchable().toAbsolutePath();
+    List<MemoryWatchKey> keys = this.watchKeys.get(watchKey);
+    if (keys == null) {
+      keys = new CopyOnWriteArrayList<>();
+      List<MemoryWatchKey> previous = this.watchKeys.putIfAbsent(absolutePath, keys);
+      if (previous != null) {
+        keys = previous;
+      }
+    }
+    keys.add(watchKey);
   }
 
 

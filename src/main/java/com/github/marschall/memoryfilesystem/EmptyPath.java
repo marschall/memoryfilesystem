@@ -4,10 +4,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
-import java.nio.file.WatchEvent.Kind;
-import java.nio.file.WatchEvent.Modifier;
-import java.nio.file.WatchKey;
-import java.nio.file.WatchService;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -93,19 +89,6 @@ final class EmptyPath extends ElementPath {
   @Override
   public Path toRealPath(LinkOption... options) throws IOException {
     return this.getMemoryFileSystem().getDefaultPath();
-  }
-
-  @Override
-  public WatchKey register(WatchService watcher, Kind<?>[] events,
-          Modifier... modifiers) throws IOException {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public WatchKey register(WatchService watcher, Kind<?>... events) throws IOException {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException();
   }
 
   @Override

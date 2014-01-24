@@ -1,12 +1,22 @@
 package com.github.marschall.memoryfilesystem;
 
+import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
+import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
+import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
+
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.nio.file.ProviderMismatchException;
-import java.nio.file.spi.FileSystemProvider;
+import java.nio.file.WatchEvent.Kind;
+import java.nio.file.WatchEvent.Modifier;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 abstract class AbstractPath implements Path {
 
@@ -149,12 +159,10 @@ abstract class AbstractPath implements Path {
       return 0;
     }
 
-    FileSystemProvider thisProvider = this.getFileSystem().provider();
-    FileSystemProvider otherProvider = other.getFileSystem().provider();
-    if (thisProvider != otherProvider) {
-      String message = this + " can only be compared to paths of provider: " + thisProvider
-              + " but " + other + " had provider: " + otherProvider;
-      throw new ClassCastException(message);
+    MemoryFileSystemProvider otherProvider = (MemoryFileSystemProvider) other.getFileSystem().provider();
+    if (otherProvider == null) {
+      // can't happen, just there to shut up compiler about unsed variable
+      throw new ClassCastException("no file system provider given");
     }
     AbstractPath otherPath = (AbstractPath) other;
     String otherFileSystemKey = otherPath.getMemoryFileSystem().getKey();
@@ -168,6 +176,63 @@ abstract class AbstractPath implements Path {
   }
 
   abstract int compareTo(AbstractPath other);
+
+  @Override
+  public WatchKey register(WatchService watcher, Kind<?>[] events, Modifier... modifiers) throws IOException {
+    // TODO report bug
+    // TODO java.nio.file.NotDirectoryException
+    if (true) {
+      throw new UnsupportedOperationException();
+    }
+    if (modifiers != null && modifiers.length > 0) {
+      throw new UnsupportedOperationException("no modifiers supported");
+    }
+    if (watcher == null) {
+      throw new NullPointerException("watcher is null");
+    }
+    // triggers class cast exception but this is API in other cases
+    MemoryFileSystemWatchService memoryWatcher = (MemoryFileSystemWatchService) watcher;
+    if (memoryWatcher.getMemoryFileSystem() != this.fileSystem) {
+      throw new IllegalArgumentException("watcher has to be from the same file system");
+    }
+    MemoryWatchKey watchKey = new MemoryWatchKey(this, memoryWatcher, this.asSet(events));
+    this.fileSystem.register(watchKey);
+    return watchKey;
+  }
+
+  private Set<Kind<?>> asSet(Kind<?>[] eventKinds) {
+    if (eventKinds == null) {
+      throw new NullPointerException("watcher is null");
+    }
+    int numberOfKinds = eventKinds.length;
+    if (numberOfKinds == 0) {
+      throw new IllegalArgumentException("no events specified");
+    }
+    if (numberOfKinds == 1) {
+      Kind<?> eventKind = eventKinds[0];
+      this.validate(eventKind);
+      return Collections.<Kind<?>>singleton(eventKind);
+    } else {
+      Set<Kind<?>> set = new HashSet<>(numberOfKinds);
+      for (Kind<?> kind : eventKinds) {
+        this.validate(kind);
+        set.add(kind);
+      }
+      return set;
+    }
+  }
+
+  private void validate(Kind<?> eventKind) {
+    if (eventKind != ENTRY_CREATE && eventKind != ENTRY_DELETE && eventKind != ENTRY_MODIFY) {
+      throw new UnsupportedOperationException("unsupported event kind: " + eventKind);
+    }
+  }
+
+
+  @Override
+  public WatchKey register(WatchService watcher, Kind<?>... events) throws IOException {
+    return this.register(watcher, events, (Modifier[]) null);
+  }
 
 
 }

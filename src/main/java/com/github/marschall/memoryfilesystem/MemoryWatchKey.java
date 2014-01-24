@@ -4,11 +4,12 @@ import static com.github.marschall.memoryfilesystem.MemoryWatchKey.State.READY;
 import static com.github.marschall.memoryfilesystem.MemoryWatchKey.State.SIGNALLED;
 
 import java.nio.file.WatchEvent;
+import java.nio.file.WatchEvent.Kind;
 import java.nio.file.WatchKey;
-import java.nio.file.Watchable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -19,14 +20,22 @@ final class MemoryWatchKey implements WatchKey {
   private boolean isOverflow;
   private State state;
   private boolean valid;
+  private final Set<Kind<?>> events;
   private List<WatchEvent<?>> accumulatedEvents;
   private Map<AbstractPath, Integer> accumulatedModificationEvents;
   private List<WatchEvent<?>> pendingEvents;
+  private final MemoryFileSystemWatchService watcher;
 
-  MemoryWatchKey(AbstractPath path) {
+  MemoryWatchKey(AbstractPath path, MemoryFileSystemWatchService watcher, Set<Kind<?>> events) {
     this.path = path;
+    this.watcher = watcher;
+    this.events = events;
     this.state = READY;
     this.lock = new ReentrantLock();
+  }
+
+  boolean accepts(Kind<?> event) {
+    return this.events.contains(event);
   }
 
   @Override
@@ -76,7 +85,7 @@ final class MemoryWatchKey implements WatchKey {
   }
 
   @Override
-  public Watchable watchable() {
+  public AbstractPath watchable() {
     return this.path;
   }
 

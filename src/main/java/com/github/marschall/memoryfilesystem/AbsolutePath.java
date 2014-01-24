@@ -3,14 +3,9 @@ package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.MemoryFileSystemProvider.SCHEME;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.nio.file.WatchEvent.Kind;
-import java.nio.file.WatchEvent.Modifier;
-import java.nio.file.WatchKey;
-import java.nio.file.WatchService;
 import java.text.CollationKey;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -147,23 +142,6 @@ final class AbsolutePath extends NonEmptyPath {
   @Override
   public Path toAbsolutePath() {
     return this;
-  }
-
-  @Override
-  public WatchKey register(WatchService watcher, Kind<?>[] events,
-          Modifier... modifiers) throws IOException {
-    // TODO report bug
-    // TODO Auto-generated function stub
-    // TODO java.nio.file.NotDirectoryException
-    throw new UnsupportedOperationException();
-  }
-
-
-  @Override
-  public WatchKey register(WatchService watcher, Kind<?>... events) throws IOException {
-    // TODO Auto-generated function stub
-    // TODO java.nio.file.NotDirectoryException
-    throw new UnsupportedOperationException();
   }
 
   @Override

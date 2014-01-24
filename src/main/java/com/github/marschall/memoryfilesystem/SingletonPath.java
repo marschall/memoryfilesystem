@@ -4,10 +4,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
-import java.nio.file.WatchEvent.Kind;
-import java.nio.file.WatchEvent.Modifier;
-import java.nio.file.WatchKey;
-import java.nio.file.WatchService;
 import java.text.CollationKey;
 import java.text.Collator;
 import java.util.Arrays;
@@ -98,18 +94,6 @@ final class SingletonPath extends ElementPath {
   @Override
   public Path toRealPath(LinkOption... options) throws IOException {
     return this.getMemoryFileSystem().toRealPath(this, options);
-  }
-
-  @Override
-  public WatchKey register(WatchService watcher, Kind<?>[] events, Modifier... modifiers) throws IOException {
-    // TODO Auto-generated function stub
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public WatchKey register(WatchService watcher, Kind<?>... events) throws IOException {
-    // TODO Auto-generated function stub
-    throw new UnsupportedOperationException();
   }
 
   @Override
