@@ -72,7 +72,7 @@ MIT
 Yes, but hasn't been subject much scrutiny so bugs are likely. 
 
 ### Does it work with the zipfs provider?
-Not with the one that ships with the JDK because of [bug 8004789](http://bugs.sun.com/view_bug.do?bug_id=8004789). However there's a [repackaged version](https://github.com/marschall/zipfilesystem-standalone) that fixes this bug and is compatible.
+Not with the one that ships with the JDK 7 because of [bug 8004789](http://bugs.sun.com/view_bug.do?bug_id=8004789). However there's a [repackaged version](https://github.com/marschall/zipfilesystem-standalone) that fixes this bug and is compatible. It should work fine in JDK 8.
 
 ### Is it production ready?
 No, it's only intended for testing purposes.
