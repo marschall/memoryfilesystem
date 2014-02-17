@@ -4,6 +4,7 @@ import static com.github.marschall.memoryfilesystem.AutoReleaseLock.autoRelease;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.AccessMode;
 import java.nio.file.FileSystemException;
 import java.nio.file.attribute.BasicFileAttributeView;
@@ -35,9 +36,11 @@ abstract class MemoryEntry {
   private final String originalName;
 
   // protected by read and write locks
+  // TODO optimize?
   private FileTime lastModifiedTime;
   private FileTime lastAccessTime;
   private FileTime creationTime;
+  private final MemoryFileSystem fileSystem;
 
   private final ReadWriteLock lock;
 
@@ -45,6 +48,7 @@ abstract class MemoryEntry {
 
   MemoryEntry(String originalName, EntryCreationContext context) {
     this.originalName = originalName;
+    this.fileSystem = context.fileSystem;
     this.lock = new ReentrantReadWriteLock();
     FileTime now = this.getNow();
     this.lastAccessTime = now;
@@ -132,14 +136,33 @@ abstract class MemoryEntry {
     }
   }
 
-  void checkAccess(AccessMode... modes) {
+  void checkAccess(AccessMode... modes) throws AccessDeniedException {
     try (AutoRelease lock = this.readLock()) {
       AccessMode unsupported = this.getUnsupported(modes);
       if (unsupported != null) {
         throw new UnsupportedOperationException("access mode " + unsupported + " is not supported");
       }
-      // TODO implement
-      // throw new AccessDeniedException
+      for (Object attributeView : this.additionalAttributes.values()) {
+        if (attributeView instanceof AccessCheck) {
+          AccessCheck accessCheck = (AccessCheck) attributeView;
+          accessCheck.checkAccess(modes);
+        }
+      }
+    }
+  }
+
+  void checkAccess(AccessMode mode) throws AccessDeniedException {
+    try (AutoRelease lock = this.readLock()) {
+      AccessMode unsupported = this.getUnsupported(mode);
+      if (unsupported != null) {
+        throw new UnsupportedOperationException("access mode " + unsupported + " is not supported");
+      }
+      for (Object attributeView : this.additionalAttributes.values()) {
+        if (attributeView instanceof AccessCheck) {
+          AccessCheck accessCheck = (AccessCheck) attributeView;
+          accessCheck.checkAccess(mode);
+        }
+      }
     }
   }
 
@@ -148,6 +171,13 @@ abstract class MemoryEntry {
       if (!(mode == AccessMode.READ || mode == AccessMode.WRITE || mode == AccessMode.EXECUTE)) {
         return mode;
       }
+    }
+    return null;
+  }
+
+  private AccessMode getUnsupported(AccessMode mode) {
+    if (!(mode == AccessMode.READ || mode == AccessMode.WRITE || mode == AccessMode.EXECUTE)) {
+      return mode;
     }
     return null;
   }
@@ -164,7 +194,7 @@ abstract class MemoryEntry {
     this.lastAccessTime = this.getNow();
   }
 
-  void setTimes(FileTime lastModifiedTime, FileTime lastAccessTime, FileTime createTime) {
+  void setTimes(FileTime lastModifiedTime, FileTime lastAccessTime, FileTime createTime) throws AccessDeniedException {
     try (AutoRelease lock = this.writeLock()) {
       this.checkAccess(AccessMode.WRITE);
       if (lastModifiedTime != null) {
@@ -179,7 +209,7 @@ abstract class MemoryEntry {
     }
   }
 
-  <A extends FileAttributeView> A getFileAttributeView(Class<A> type) {
+  <A extends FileAttributeView> A getFileAttributeView(Class<A> type) throws AccessDeniedException {
     try (AutoRelease lock = this.readLock()) {
       this.checkAccess(AccessMode.READ);
       if (type == BasicFileAttributeView.class) {
@@ -259,7 +289,7 @@ abstract class MemoryEntry {
     }
 
     @Override
-    public void setTimes(FileTime lastModifiedTime, FileTime lastAccessTime, FileTime createTime) {
+    public void setTimes(FileTime lastModifiedTime, FileTime lastAccessTime, FileTime createTime) throws IOException {
       MemoryEntry.this.setTimes(lastModifiedTime, lastAccessTime, createTime);
     }
 
@@ -359,7 +389,7 @@ abstract class MemoryEntry {
 
   }
 
-  class MemoryDosFileAttributeView extends DelegatingFileAttributes implements DosFileAttributeView, DosFileAttributes {
+  class MemoryDosFileAttributeView extends DelegatingFileAttributes implements DosFileAttributeView, DosFileAttributes, AccessCheck {
 
     private boolean readOnly;
     private boolean hidden;
@@ -378,7 +408,7 @@ abstract class MemoryEntry {
     }
 
     @Override
-    public DosFileAttributes readAttributes() {
+    public DosFileAttributes readAttributes() throws IOException {
       MemoryEntry.this.checkAccess(AccessMode.READ);
       return this;
     }
@@ -393,35 +423,35 @@ abstract class MemoryEntry {
     }
 
     @Override
-    public void setReadOnly(boolean value) {
+    public void setReadOnly(boolean value) throws IOException {
       try (AutoRelease lock = MemoryEntry.this.writeLock()) {
-        MemoryEntry.this.checkAccess(AccessMode.WRITE);
+        // don't check access
         this.readOnly = value;
       }
     }
 
     @Override
-    public void setHidden(boolean value) {
+    public void setHidden(boolean value)  throws IOException{
       try (AutoRelease lock = MemoryEntry.this.writeLock()) {
-        MemoryEntry.this.checkAccess(AccessMode.WRITE);
+        // don't check access
         this.hidden = value;
       }
 
     }
 
     @Override
-    public void setSystem(boolean value) {
+    public void setSystem(boolean value) throws IOException {
       try (AutoRelease lock = MemoryEntry.this.writeLock()) {
-        MemoryEntry.this.checkAccess(AccessMode.WRITE);
+        // don't check access
         this.system = value;
       }
 
     }
 
     @Override
-    public void setArchive(boolean value) {
+    public void setArchive(boolean value) throws IOException {
       try (AutoRelease lock = MemoryEntry.this.writeLock()) {
-        MemoryEntry.this.checkAccess(AccessMode.WRITE);
+        // don't check access
         this.archive = value;
       }
 
@@ -453,6 +483,33 @@ abstract class MemoryEntry {
     public boolean isReadOnly() {
       try (AutoRelease lock = MemoryEntry.this.readLock()) {
         return this.readOnly;
+      }
+    }
+
+    @Override
+    public void checkAccess(AccessMode mode) throws AccessDeniedException {
+      switch (mode) {
+        case READ:
+          // always fine
+          break;
+        case WRITE:
+          if (this.readOnly) {
+            // TODO pass in file
+            throw new AccessDeniedException(null);
+          }
+          break;
+        case EXECUTE:
+          // always fine
+          break;
+        default:
+          throw new UnsupportedOperationException("access mode " + mode + " is not supported");
+      }
+    }
+
+    @Override
+    public void checkAccess(AccessMode[] modes) throws AccessDeniedException {
+      for (AccessMode mode : modes) {
+        this.checkAccess(mode);
       }
     }
 
@@ -490,7 +547,7 @@ abstract class MemoryEntry {
 
   }
 
-  class MemoryPosixFileAttributeView extends MemoryFileOwnerAttributeView implements PosixFileAttributeView, PosixFileAttributes {
+  class MemoryPosixFileAttributeView extends MemoryFileOwnerAttributeView implements PosixFileAttributeView, PosixFileAttributes, AccessCheck {
 
     private GroupPrincipal group;
     private Set<PosixFilePermission> perms;
@@ -580,6 +637,87 @@ abstract class MemoryEntry {
       }
     }
 
+    private UserPrincipal getCurrentUser() {
+      UserPrincipal user = CurrentUser.get();
+      if (user == null) {
+        return MemoryEntry.this.fileSystem.getUserPrincipalLookupService().getDefaultUser();
+      } else {
+        return user;
+      }
+    }
+
+    private GroupPrincipal getCurrentGroup() {
+      // TODO special case for just one user
+      return CurrentGroup.get();
+    }
+
+    @Override
+    public void checkAccess(AccessMode mode) throws AccessDeniedException {
+      UserPrincipal user = this.getCurrentUser();
+      PosixFilePermission permission;
+      if (user == this.owner()) {
+        permission = this.translateOwnerMode(mode);
+      } else {
+        GroupPrincipal group = this.getCurrentGroup();
+        if (group == this.group()) {
+          permission = this.translateGroupMode(mode);
+        } else {
+          permission = this.translateOthersMode(mode);
+        }
+      }
+      if (!this.perms.contains(permission)) {
+        // TODO pass in file
+        throw new AccessDeniedException(null);
+      }
+    }
+
+    @Override
+    public void checkAccess(AccessMode[] modes) throws AccessDeniedException {
+      for (AccessMode mode : modes) {
+        // TODO optimize user lookup
+        this.checkAccess(mode);
+      }
+    }
+
+    private PosixFilePermission translateOwnerMode(AccessMode mode) {
+      switch (mode) {
+        case READ:
+          return PosixFilePermission.OWNER_READ;
+        case WRITE:
+          return PosixFilePermission.OWNER_WRITE;
+        case EXECUTE:
+          return PosixFilePermission.OWNER_EXECUTE;
+        default:
+          throw new UnsupportedOperationException("access mode " + mode + " is not supported");
+      }
+    }
+
+    private PosixFilePermission translateGroupMode(AccessMode mode) {
+      switch (mode) {
+        case READ:
+          return PosixFilePermission.GROUP_READ;
+        case WRITE:
+          return PosixFilePermission.GROUP_WRITE;
+        case EXECUTE:
+          return PosixFilePermission.GROUP_EXECUTE;
+        default:
+          throw new UnsupportedOperationException("access mode " + mode + " is not supported");
+      }
+    }
+
+    private PosixFilePermission translateOthersMode(AccessMode mode) {
+      switch (mode) {
+        case READ:
+          return PosixFilePermission.OTHERS_READ;
+        case WRITE:
+          return PosixFilePermission.OTHERS_WRITE;
+        case EXECUTE:
+          return PosixFilePermission.OTHERS_EXECUTE;
+        default:
+          throw new UnsupportedOperationException("access mode " + mode + " is not supported");
+      }
+    }
+
   }
 
   class MemoryUserDefinedFileAttributeView extends DelegatingFileAttributes implements UserDefinedFileAttributeView {
@@ -640,7 +778,7 @@ abstract class MemoryEntry {
       }
     }
 
-    private byte[] getValue(String name) throws FileSystemException {
+    private byte[] getValue(String name) throws IOException {
       if (name == null) {
         throw new NullPointerException("name is null");
       }

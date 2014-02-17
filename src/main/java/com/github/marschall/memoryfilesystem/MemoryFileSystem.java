@@ -35,7 +35,6 @@ import java.nio.file.attribute.FileOwnerAttributeView;
 import java.nio.file.attribute.GroupPrincipal;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.UserPrincipal;
-import java.nio.file.attribute.UserPrincipalLookupService;
 import java.nio.file.spi.FileSystemProvider;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -167,7 +166,7 @@ class MemoryFileSystem extends FileSystem {
   EntryCreationContext newEntryCreationContext() throws IOException {
     UserPrincipal user = this.getCurrentUser();
     GroupPrincipal group = this.getGroupOf(user);
-    return new EntryCreationContext(this.additionalViews, this.umask, user, group);
+    return new EntryCreationContext(this.additionalViews, this.umask, user, group, this);
   }
 
   private UserPrincipal getCurrentUser() {
@@ -180,6 +179,7 @@ class MemoryFileSystem extends FileSystem {
   }
 
   private GroupPrincipal getGroupOf(UserPrincipal user) throws IOException {
+    // TODO is this always true?
     return this.userPrincipalLookupService.lookupPrincipalByGroupName(user.getName());
   }
 
@@ -982,7 +982,7 @@ class MemoryFileSystem extends FileSystem {
 
 
   @Override
-  public UserPrincipalLookupService getUserPrincipalLookupService() {
+  public MemoryUserPrincipalLookupService getUserPrincipalLookupService() {
     this.checker.check();
     return this.userPrincipalLookupService;
   }

@@ -16,14 +16,16 @@ final class EntryCreationContext {
   final Set<PosixFilePermission> umask;
   final UserPrincipal user;
   final GroupPrincipal group;
+  final MemoryFileSystem fileSystem;
 
   EntryCreationContext(Set<Class<? extends FileAttributeView>> additionalViews,
           Set<PosixFilePermission> umask, UserPrincipal user,
-          GroupPrincipal group) {
+          GroupPrincipal group, MemoryFileSystem fileSystem) {
     this.additionalViews = additionalViews;
     this.umask = umask;
     this.user = user;
     this.group = group;
+    this.fileSystem = fileSystem;
   }
 
   Class<? extends FileAttributeView> firstView() {
@@ -32,7 +34,7 @@ final class EntryCreationContext {
 
   static EntryCreationContext empty() {
     return new EntryCreationContext(Collections.<Class<? extends FileAttributeView>>emptySet(),
-            Collections.<PosixFilePermission>emptySet(), new MemoryUser("dummy"), new MemoryGroup("dummy"));
+            Collections.<PosixFilePermission>emptySet(), new MemoryUser("dummy"), new MemoryGroup("dummy"), null);
   }
 
 }

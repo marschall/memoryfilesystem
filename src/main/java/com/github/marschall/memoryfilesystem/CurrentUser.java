@@ -30,9 +30,6 @@ public final class CurrentUser {
     return USER.get();
   }
 
-  public static void remove() {
-    USER.remove();
-  }
 
   public interface UserTask<V> extends Callable<V> {
 

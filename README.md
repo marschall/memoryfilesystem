@@ -39,6 +39,9 @@ Supported
 * symbolic links
 * symbolic link loop detection
 * switching the current user
+* switching the current group
+* DOS access checks
+* POSIX access checks
 
 Not Supported
 -------------
@@ -48,7 +51,6 @@ Not Supported
 * faked DOS attribute view under Linux, totally unspecified
 * `UnixFileAttributeView`, [sun package](http://www.oracle.com/technetwork/java/faq-sun-packages-142232.html), totally unspecified
 * `AclFileAttributeView`
-* any meaningful access checks
 * files larger than 16MB
 * `StandardOpenOption`
   * SPARSE
@@ -94,7 +96,10 @@ No
 A logging file system that wraps an other file system is the best way to do this.
 
 ### How can I set the current user?
-User `CurrentUser#useDuring`
+Use `CurrentUser#useDuring`
+
+### How can I set the current group?
+Use `CurrentGroup#useDuring`
 
 ### How does this compare to ShrinkWrap NIO.2?
 [ShrinkWrap NIO.2](http://exitcondition.alrubinger.com/2012/08/17/shrinkwrap-nio2/) seems to be mainly targeted at interacting with a ShrinkWrap archive instead of simulating a file system. Also [their implementation](https://github.com/shrinkwrap/shrinkwrap/tree/master/impl-nio2/src/main/java/org/jboss/shrinkwrap/impl/nio/file) of JSR-203 seems to be less complete than [ours](https://github.com/marschall/memoryfilesystem/tree/master/src/main/java/com/github/marschall/memoryfilesystem).
