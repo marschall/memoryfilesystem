@@ -101,8 +101,11 @@ Use `CurrentUser#useDuring`
 ### How can I set the current group?
 Use `CurrentGroup#useDuring`
 
+### Are there other similar projects?
+Yes, [openCage/memoryfs](https://github.com/openCage/memoryfs) seems similar.
+
 ### How does this compare to ShrinkWrap NIO.2?
-[ShrinkWrap NIO.2](http://exitcondition.alrubinger.com/2012/08/17/shrinkwrap-nio2/) seems to be mainly targeted at interacting with a ShrinkWrap archive instead of simulating a file system. Also [their implementation](https://github.com/shrinkwrap/shrinkwrap/tree/master/impl-nio2/src/main/java/org/jboss/shrinkwrap/impl/nio/file) of JSR-203 seems to be less complete than [ours](https://github.com/marschall/memoryfilesystem/tree/master/src/main/java/com/github/marschall/memoryfilesystem).
+[ShrinkWrap NIO.2](http://exitcondition.alrubinger.com/2012/08/17/shrinkwrap-nio2/) seems to be mainly targeted at interacting with a ShrinkWrap archive instead of simulating a file system.
 
 
 Usage
