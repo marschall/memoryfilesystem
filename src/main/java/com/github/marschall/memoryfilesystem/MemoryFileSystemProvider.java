@@ -427,7 +427,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
       return;
     }
     for (AccessMode mode : modes) {
-      if (!(mode == AccessMode.READ || mode == AccessMode.WRITE || mode == AccessMode.WRITE)) {
+      if (!(mode == AccessMode.READ || mode == AccessMode.WRITE || mode == AccessMode.EXECUTE)) {
         throw new UnsupportedOperationException("mode " + mode + " not supported");
       }
     }

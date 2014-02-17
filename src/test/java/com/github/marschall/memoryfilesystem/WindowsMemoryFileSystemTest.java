@@ -1,6 +1,9 @@
 package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.IsHiddenMatcher.isHidden;
+import static java.nio.file.AccessMode.EXECUTE;
+import static java.nio.file.AccessMode.READ;
+import static java.nio.file.AccessMode.WRITE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
@@ -13,6 +16,7 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -24,6 +28,7 @@ import java.nio.file.attribute.DosFileAttributeView;
 import java.nio.file.attribute.DosFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileTime;
+import java.nio.file.spi.FileSystemProvider;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
@@ -144,6 +149,34 @@ public class WindowsMemoryFileSystemTest {
     c2 = fileSystem.getPath("c:\\temp");
     assertEquals("c:\\temp", c2.toString());
     assertEquals(c1.hashCode(), c2.hashCode());
+  }
+
+  @Test
+  public void checkAccess() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path file = fileSystem.getPath("file.txt");
+
+    Files.createFile(file);
+    DosFileAttributeView attributeView = Files.getFileAttributeView(file, DosFileAttributeView.class);
+    DosFileAttributes attributes = attributeView.readAttributes();
+    assertFalse("is read only", attributes.isReadOnly());
+
+    FileSystemProvider provider = file.getFileSystem().provider();
+    provider.checkAccess(file, READ);
+    provider.checkAccess(file, WRITE);
+    provider.checkAccess(file, EXECUTE);
+
+    attributeView.setReadOnly(true);
+    provider.checkAccess(file, READ);
+    provider.checkAccess(file, EXECUTE);
+
+    try {
+      provider.checkAccess(file, WRITE);
+      fail("write should not be permitted");
+    } catch (AccessDeniedException e) {
+      // should reach here
+    }
+
   }
 
   @Test
