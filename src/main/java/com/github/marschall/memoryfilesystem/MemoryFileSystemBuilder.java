@@ -275,6 +275,12 @@ public final class MemoryFileSystemBuilder {
     if (this.forbiddenCharacters != null) {
       env.put(MemoryFileSystemProperties.FORBIDDEN_CHARACTERS, this.forbiddenCharacters);
     }
+    if (!this.users.isEmpty()) {
+      env.put(MemoryFileSystemProperties.USERS_PROPERTY, new ArrayList<>(this.users));
+    }
+    if (!this.groups.isEmpty()) {
+      env.put(MemoryFileSystemProperties.GROUPS_PROPERTY, new ArrayList<>(this.groups));
+    }
     return env;
   }
 
