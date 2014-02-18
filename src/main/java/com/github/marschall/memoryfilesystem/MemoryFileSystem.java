@@ -1,7 +1,5 @@
 package com.github.marschall.memoryfilesystem;
 
-import static com.github.marschall.memoryfilesystem.AutoReleaseLock.autoRelease;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -55,9 +53,13 @@ import java.util.regex.Pattern;
 
 import javax.annotation.PreDestroy;
 
+import static com.github.marschall.memoryfilesystem.AutoReleaseLock.autoRelease;
+
 class MemoryFileSystem extends FileSystem {
 
   private static final Set<String> UNSUPPORTED_INITIAL_ATTRIBUES;
+
+  private static final Set<OpenOption> DEFAULT_OPEN_OPTIONS;
 
   private final String key;
 
@@ -113,7 +115,15 @@ class MemoryFileSystem extends FileSystem {
     unsupported.add("lastAccessTime");
     unsupported.add("creationTime");
     unsupported.add("lastModifiedTime");
+
+    // TODO optimize
+    Set<OpenOption> defaultOpenOptions = new HashSet<>(3);
+    defaultOpenOptions.add(StandardOpenOption.CREATE);
+    defaultOpenOptions.add(StandardOpenOption.TRUNCATE_EXISTING);
+    defaultOpenOptions.add(StandardOpenOption.WRITE);
+
     UNSUPPORTED_INITIAL_ATTRIBUES = Collections.unmodifiableSet(unsupported);
+    DEFAULT_OPEN_OPTIONS = Collections.unmodifiableSet(defaultOpenOptions);
   }
 
   MemoryFileSystem(String key, String separator, PathParser pathParser, MemoryFileSystemProvider provider, MemoryFileStore store,
@@ -265,7 +275,7 @@ class MemoryFileSystem extends FileSystem {
     this.checker.check();
     Set<OpenOption> optionsSet;
     if (options == null || options.length == 0) {
-      optionsSet = Collections.emptySet();
+      optionsSet = DEFAULT_OPEN_OPTIONS;
     } else {
       optionsSet = new HashSet<>(options.length);
       for (OpenOption option : options) {
