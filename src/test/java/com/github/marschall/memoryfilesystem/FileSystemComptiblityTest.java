@@ -1,11 +1,14 @@
 package com.github.marschall.memoryfilesystem;
 
+import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isAbsolute;
+import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isRelative;
 import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.READ;
 import static java.nio.file.StandardOpenOption.WRITE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -99,7 +102,7 @@ public class FileSystemComptiblityTest {
   public void emptyPath() {
     FileSystem fileSystem = this.getFileSystem();
     Path path = fileSystem.getPath("");
-    assertFalse(path.isAbsolute());
+    assertThat(path, isRelative());
     assertNull(path.getRoot());
     assertEquals(path, path.getFileName());
     assertEquals(1, path.getNameCount());
@@ -147,7 +150,7 @@ public class FileSystemComptiblityTest {
   public void root() {
     FileSystem fileSystem = this.getFileSystem();
     for (Path root : fileSystem.getRootDirectories()) {
-      assertTrue(root.isAbsolute());
+      assertThat(root, isAbsolute());
       assertEquals(root, root.getRoot());
       assertNull(root.getFileName());
       assertNull(root.getParent());

@@ -1,9 +1,12 @@
 package com.github.marschall.memoryfilesystem;
 
+import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isAbsolute;
+import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isRelative;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -53,7 +56,7 @@ public class FileSystemComptiblity {
     Iterator<Path> iterator = path.iterator();
     while (iterator.hasNext()) {
       Path next = iterator.next();
-      assertFalse(next.isAbsolute());
+      assertThat(next, isRelative());
     }
   }
 
@@ -69,14 +72,14 @@ public class FileSystemComptiblity {
 
     Path fileName = usrBin.getFileName();
     assertEquals(fileName, bin);
-    assertFalse(fileName.isAbsolute());
+    assertThat(fileName, isRelative());
   }
 
   @Test
   public void relativePath() {
     FileSystem fileSystem = FileSystems.getDefault();
     Path path = fileSystem.getPath("Documents");
-    assertFalse(path.isAbsolute());
+    assertThat(path, isRelative());
     assertNull(path.getRoot());
   }
 
@@ -84,7 +87,7 @@ public class FileSystemComptiblity {
   public void absolutePath() {
     FileSystem fileSystem = FileSystems.getDefault();
     Path path = fileSystem.getPath("/Documents");
-    assertTrue(path.isAbsolute());
+    assertThat(path, isAbsolute());
     assertNotNull(path.getRoot());
   }
 

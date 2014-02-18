@@ -2,6 +2,7 @@ package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_ENV;
 import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_URI;
+import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isAbsolute;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
@@ -49,7 +50,7 @@ public class RootTest {
     assertEquals(root, root.normalize());
     assertEquals(root, root.toAbsolutePath());
 
-    assertTrue(root.isAbsolute());
+    assertThat(root, isAbsolute());
     assertEquals(root, root.getRoot());
     assertNull(root.getFileName());
     assertNull(root.getParent());
