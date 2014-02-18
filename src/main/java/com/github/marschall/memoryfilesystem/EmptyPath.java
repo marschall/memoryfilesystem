@@ -37,7 +37,7 @@ final class EmptyPath extends ElementPath {
 
   @Override
   public int getNameCount() {
-    return 0;
+    return 1;
   }
 
   @Override
@@ -108,12 +108,16 @@ final class EmptyPath extends ElementPath {
 
   @Override
   String getNameElement(int index) {
-    throw new IndexOutOfBoundsException("empty path does not support #getNameElement(int)");
+    if (index == 0) {
+      return "";
+    } else {
+      throw new IndexOutOfBoundsException("invalid index: " + index);
+    }
   }
 
   @Override
   String getLastNameElement() {
-    throw new IndexOutOfBoundsException("empty path does not support #getLastNameElement()");
+    return "";
   }
 
 
