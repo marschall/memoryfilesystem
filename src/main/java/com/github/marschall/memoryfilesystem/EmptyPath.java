@@ -27,7 +27,7 @@ final class EmptyPath extends ElementPath {
 
   @Override
   public Path getFileName() {
-    return null;
+    return this;
   }
 
   @Override

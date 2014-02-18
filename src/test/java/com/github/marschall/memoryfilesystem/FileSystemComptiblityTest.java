@@ -101,7 +101,9 @@ public class FileSystemComptiblityTest {
     Path path = fileSystem.getPath("");
     assertFalse(path.isAbsolute());
     assertNull(path.getRoot());
+    assertEquals(path, path.getFileName());
   }
+
 
 
   @Test
