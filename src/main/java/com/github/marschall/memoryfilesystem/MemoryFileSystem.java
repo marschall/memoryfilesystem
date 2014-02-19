@@ -358,7 +358,7 @@ class MemoryFileSystem extends FileSystem {
           throw new NotDirectoryException(abstractPath.toString());
         }
         MemoryDirectory directory = (MemoryDirectory) entry;
-        return directory.newDirectoryStream(absolutePath, filter);
+        return directory.newDirectoryStream(abstractPath, filter);
       }
     });
   }
