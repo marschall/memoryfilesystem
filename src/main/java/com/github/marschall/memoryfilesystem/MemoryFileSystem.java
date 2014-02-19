@@ -1,5 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
+import static com.github.marschall.memoryfilesystem.AutoReleaseLock.autoRelease;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -52,8 +54,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Pattern;
 
 import javax.annotation.PreDestroy;
-
-import static com.github.marschall.memoryfilesystem.AutoReleaseLock.autoRelease;
 
 class MemoryFileSystem extends FileSystem {
 
