@@ -7,6 +7,8 @@ import java.nio.ByteBuffer;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.AccessMode;
 import java.nio.file.FileSystemException;
+import java.nio.file.attribute.AclEntry;
+import java.nio.file.attribute.AclFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.DosFileAttributeView;
@@ -353,6 +355,38 @@ abstract class MemoryEntry {
 
   }
 
+  abstract class MemoryAclFileAttributeView extends MemoryFileOwnerAttributeView implements AclFileAttributeView, AccessCheck {
+
+    private List<AclEntry> acl;
+
+    MemoryAclFileAttributeView(EntryCreationContext context) {
+      super(context);
+    }
+
+    @Override
+    public String name() {
+      return FileAttributeViews.ACL;
+    }
+
+    @Override
+    public void setAcl(List<AclEntry> acl) throws IOException {
+      // TODO check access
+      try (AutoRelease lock = MemoryEntry.this.writeLock()) {
+        this.acl = new ArrayList<>(acl); // will to null check
+      }
+    }
+
+    @Override
+    public List<AclEntry> getAcl() throws IOException {
+      // TODO check access
+      try (AutoRelease lock = MemoryEntry.this.readLock()) {
+        return new ArrayList<>(this.acl);
+      }
+    }
+
+
+
+  }
 
   class MemoryDosFileAttributeView extends DelegatingFileAttributesView implements DosFileAttributeView, AccessCheck {
 
@@ -363,7 +397,7 @@ abstract class MemoryEntry {
 
     @Override
     public String name() {
-      return "dos";
+      return FileAttributeViews.DOS;
     }
 
     @Override
@@ -807,7 +841,7 @@ abstract class MemoryEntry {
 
     @Override
     public String name() {
-      return "user";
+      return FileAttributeViews.USER;
     }
 
     @Override
