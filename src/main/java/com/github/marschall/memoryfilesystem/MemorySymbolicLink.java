@@ -43,9 +43,11 @@ class MemorySymbolicLink extends MemoryEntry {
     @Override
     public BasicFileAttributes readAttributes() throws IOException {
       MemorySymbolicLink.this.checkAccess(AccessMode.READ);
-      MemorySymbolicLink.this.checkAccess(AccessMode.READ);
       try (AutoRelease lock = MemorySymbolicLink.this.readLock()) {
-        return new MemorySymbolicLinkAttributes(MemorySymbolicLink.this, MemorySymbolicLink.this.lastModifiedTime, MemorySymbolicLink.this.lastAccessTime, MemorySymbolicLink.this.creationTime);
+        FileTime lastModifiedTime = MemorySymbolicLink.this.lastModifiedTime();
+        FileTime lastAccessTime = MemorySymbolicLink.this.lastAccessTime();
+        FileTime creationTime = MemorySymbolicLink.this.creationTime();
+        return new MemorySymbolicLinkAttributes(MemorySymbolicLink.this, lastModifiedTime, lastAccessTime, creationTime);
       }
     }
 

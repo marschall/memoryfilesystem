@@ -113,7 +113,10 @@ class MemoryDirectory extends MemoryEntry {
     public BasicFileAttributes readAttributes() throws IOException {
       MemoryDirectory.this.checkAccess(AccessMode.READ);
       try (AutoRelease lock = MemoryDirectory.this.readLock()) {
-        return new MemoryDirectoryFileAttributes(MemoryDirectory.this, MemoryDirectory.this.lastModifiedTime, MemoryDirectory.this.lastAccessTime, MemoryDirectory.this.creationTime);
+        FileTime creationTime = MemoryDirectory.this.creationTime();
+        FileTime lastModifiedTime = MemoryDirectory.this.lastModifiedTime();
+        FileTime lastAccessTime = MemoryDirectory.this.lastAccessTime();
+        return new MemoryDirectoryFileAttributes(MemoryDirectory.this, lastModifiedTime, lastAccessTime, creationTime);
       }
     }
 

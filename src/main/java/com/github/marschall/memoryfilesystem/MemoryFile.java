@@ -117,6 +117,18 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
     return this.basicFileAttributeView;
   }
 
+  @Override
+  public void accessed() {
+    // here to increase the scope to public
+    super.accessed();
+  }
+
+  @Override
+  public void modified() {
+    // here to increase the scope to public
+    super.modified();
+  }
+
 
   class MemoryFileAttributesView extends MemoryEntryFileAttributesView {
 
@@ -124,7 +136,10 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
     public BasicFileAttributes readAttributes() throws IOException {
       MemoryFile.this.checkAccess(AccessMode.READ);
       try (AutoRelease lock = MemoryFile.this.readLock()) {
-        return new MemoryFileAttributes(MemoryFile.this, MemoryFile.this.lastModifiedTime, MemoryFile.this.lastAccessTime, MemoryFile.this.creationTime, MemoryFile.this.size);
+        FileTime lastModifiedTime = MemoryFile.this.lastModifiedTime();
+        FileTime lastAccessTime = MemoryFile.this.lastAccessTime();
+        FileTime creationTime = MemoryFile.this.creationTime();
+        return new MemoryFileAttributes(MemoryFile.this, lastModifiedTime, lastAccessTime, creationTime, MemoryFile.this.size);
       }
     }
 
@@ -540,17 +555,6 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
       }
     }
   }
-
-  @Override
-  public void modified() {
-    super.modified();
-  }
-
-  @Override
-  public void accessed() {
-    super.accessed();
-  }
-
 
   @Override
   public MemoryFileLock tryLock(MemoryFileLock lock) {

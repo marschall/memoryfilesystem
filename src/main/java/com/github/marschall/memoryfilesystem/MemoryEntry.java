@@ -36,10 +36,9 @@ abstract class MemoryEntry {
   private final String originalName;
 
   // protected by read and write locks
-  // TODO optimize?
-  FileTime lastModifiedTime;
-  FileTime lastAccessTime;
-  FileTime creationTime;
+  private long lastModifiedTime;
+  private long lastAccessTime;
+  private long creationTime;
   private final MemoryFileSystem fileSystem;
 
   private final ReadWriteLock lock;
@@ -50,7 +49,7 @@ abstract class MemoryEntry {
     this.originalName = originalName;
     this.fileSystem = context.fileSystem;
     this.lock = new ReentrantReadWriteLock();
-    FileTime now = this.getNow();
+    long now = this.getNow();
     this.lastAccessTime = now;
     this.lastModifiedTime = now;
     this.creationTime = now;
@@ -104,9 +103,8 @@ abstract class MemoryEntry {
     return this.originalName;
   }
 
-  private FileTime getNow() {
-    long now = System.currentTimeMillis();
-    return FileTime.fromMillis(now);
+  long getNow() {
+    return System.currentTimeMillis();
   }
 
 
@@ -119,21 +117,15 @@ abstract class MemoryEntry {
   }
 
   FileTime lastModifiedTime() {
-    try (AutoRelease lock = this.readLock()) {
-      return this.lastModifiedTime;
-    }
+    return FileTime.fromMillis(this.lastModifiedTime);
   }
 
   FileTime lastAccessTime() {
-    try (AutoRelease lock = this.readLock()) {
-      return this.lastAccessTime;
-    }
+    return FileTime.fromMillis(this.lastAccessTime);
   }
 
   FileTime creationTime() {
-    try (AutoRelease lock = this.readLock()) {
-      return this.creationTime;
-    }
+    return FileTime.fromMillis(this.creationTime);
   }
 
   void checkAccess(AccessMode... modes) throws AccessDeniedException {
@@ -184,7 +176,7 @@ abstract class MemoryEntry {
 
   void modified() {
     // No write lock because this was to be folded in an operation with a write lock
-    FileTime now = this.getNow();
+    long now = this.getNow();
     this.lastAccessTime = now;
     this.lastModifiedTime = now;
   }
@@ -198,13 +190,13 @@ abstract class MemoryEntry {
     try (AutoRelease lock = this.writeLock()) {
       this.checkAccess(AccessMode.WRITE);
       if (lastModifiedTime != null) {
-        this.lastModifiedTime = lastModifiedTime;
+        this.lastModifiedTime = lastModifiedTime.toMillis();
       }
       if (lastAccessTime != null) {
-        this.lastAccessTime = lastAccessTime;
+        this.lastAccessTime = lastAccessTime.toMillis();
       }
       if (createTime != null) {
-        this.creationTime = createTime;
+        this.creationTime = createTime.toMillis();
       }
     }
   }
