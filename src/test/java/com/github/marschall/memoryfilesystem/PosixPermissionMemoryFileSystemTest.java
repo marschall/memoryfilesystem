@@ -9,6 +9,7 @@ import static java.nio.file.attribute.PosixFilePermission.OTHERS_WRITE;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -21,8 +22,10 @@ import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.spi.FileSystemProvider;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.Ignore;
@@ -55,6 +58,25 @@ public class PosixPermissionMemoryFileSystemTest {
     this.checkPermission(READ, OTHERS_READ, PosixPermissionFileSystemRule.OTHER);
     this.checkPermission(WRITE, OTHERS_WRITE, PosixPermissionFileSystemRule.OTHER);
     this.checkPermission(EXECUTE, OTHERS_EXECUTE, PosixPermissionFileSystemRule.OTHER);
+  }
+
+
+  private static Set<PosixFilePermission> asSet(PosixFilePermission... permissions) {
+    return new HashSet<>(Arrays.asList(permissions));
+  }
+
+  @Test
+  public void toSet() {
+    assertEquals(asSet(OWNER_READ), MemoryEntry.toSet(0b1));
+    assertEquals(asSet(OTHERS_EXECUTE), MemoryEntry.toSet(0b100000000));
+    assertEquals(asSet(OWNER_READ, OTHERS_EXECUTE), MemoryEntry.toSet(0b100000001));
+  }
+
+  @Test
+  public void toMask() {
+    assertEquals(0b1, MemoryEntry.toMask(asSet(OWNER_READ)));
+    assertEquals(0b100000000, MemoryEntry.toMask(asSet(OTHERS_EXECUTE)));
+    assertEquals(0b100000001, MemoryEntry.toMask(asSet(OWNER_READ, OTHERS_EXECUTE)));
   }
 
 

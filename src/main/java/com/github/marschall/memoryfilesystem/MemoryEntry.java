@@ -608,10 +608,30 @@ abstract class MemoryEntry {
 
   }
 
+
+  static Set<PosixFilePermission> toSet(int mask) {
+    Set<PosixFilePermission> set = EnumSet.noneOf(PosixFilePermission.class);
+    for (PosixFilePermission permission : PosixFilePermission.values()) {
+      int flag = 1 << permission.ordinal() & mask;
+      if (flag != 0) {
+        set.add(permission);
+      }
+    }
+    return set;
+  }
+
+  static int toMask(Set<PosixFilePermission> permissions) {
+    int mask = 0;
+    for (PosixFilePermission permission : permissions) {
+      mask |= 1 << permission.ordinal();
+    }
+    return mask;
+  }
+
   class MemoryPosixFileAttributeView extends MemoryFileOwnerAttributeView implements PosixFileAttributeView, AccessCheck {
 
     private GroupPrincipal group;
-    private Set<PosixFilePermission> perms;
+    private int perms;
 
     MemoryPosixFileAttributeView(EntryCreationContext context) {
       super(context);
@@ -619,8 +639,9 @@ abstract class MemoryEntry {
         throw new NullPointerException("group");
       }
       this.group = context.group;
-      this.perms = this.saveCopy(context.umask);
+      this.perms = toMask(context.umask);
     }
+
 
     @Override
     public String name() {
@@ -631,7 +652,7 @@ abstract class MemoryEntry {
     void initializeFromSelf(FileAttributeView selfAttributes) {
       MemoryPosixFileAttributeView other = (MemoryPosixFileAttributeView) selfAttributes;
       this.group = other.group;
-      this.perms = this.saveCopy(other.perms);
+      this.perms = other.perms;
     }
 
     @Override
@@ -651,23 +672,7 @@ abstract class MemoryEntry {
       MemoryEntry.this.checkAccess(AccessMode.READ);
       try (AutoRelease lock = MemoryEntry.this.readLock()) {
         BasicFileAttributeView view = MemoryEntry.this.getFileAttributeView(BasicFileAttributeView.class);
-        return new MemoryPosixFileAttributes(view.readAttributes(), this.getOwner(), this.group, this.saveCopy(this.perms));
-      }
-    }
-
-    private Set<PosixFilePermission> saveCopy(Set<PosixFilePermission> perms) {
-      if (perms.isEmpty()) {
-        return Collections.emptySet();
-      } else if (perms.size() == 1) {
-        return Collections.singleton(perms.iterator().next());
-      } else {
-        // make a defensive copy
-        // does a type check on all elements
-        // checks all elements for null
-        // efficient storage
-        Set<PosixFilePermission> copy = EnumSet.noneOf(PosixFilePermission.class);
-        copy.addAll(perms);
-        return copy;
+        return new MemoryPosixFileAttributes(view.readAttributes(), this.getOwner(), this.group, toSet(this.perms));
       }
     }
 
@@ -678,7 +683,7 @@ abstract class MemoryEntry {
       }
       try (AutoRelease lock = MemoryEntry.this.writeLock()) {
         MemoryEntry.this.checkAccess(AccessMode.WRITE);
-        this.perms = this.saveCopy(perms);
+        this.perms = toMask(perms);
       }
     }
 
@@ -710,7 +715,8 @@ abstract class MemoryEntry {
           permission = this.translateOthersMode(mode);
         }
       }
-      if (!this.perms.contains(permission)) {
+      int flag = 1 << permission.ordinal() & this.perms;
+      if (flag == 0) {
         // TODO pass in file
         throw new AccessDeniedException(null);
       }

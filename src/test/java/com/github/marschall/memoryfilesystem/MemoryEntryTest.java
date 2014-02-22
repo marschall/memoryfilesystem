@@ -70,5 +70,4 @@ public class MemoryEntryTest {
     assertEquals(mTime, attributes.lastModifiedTime());
     assertEquals(aTime, attributes.lastAccessTime());
   }
-
 }
