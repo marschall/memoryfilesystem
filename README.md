@@ -23,6 +23,7 @@ Supported
 * <code>PosixFileAttributeView</code>, <code>PosixFileAttributes</code>
 * <code>UserDefinedFileAttributeView</code>
 * <code>FileLock</code>
+* <code>DirectoryStream</code>
 * <code>PathMatcher</code>
   * glob
   * regex
@@ -46,6 +47,7 @@ Supported
 Not Supported
 -------------
 * `FileChannel#map`, `MappedByteBuffer` has final methods that call native methods
+* `SecureDirectoryStream`
 * `WatchService`
 * `FileTypeDetector`, has to be accessible by system classloader
 * faked DOS attribute view under Linux, totally unspecified
