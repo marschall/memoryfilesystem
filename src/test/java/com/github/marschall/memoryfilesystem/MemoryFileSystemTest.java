@@ -1989,6 +1989,29 @@ public class MemoryFileSystemTest {
     assertEquals(sourceTime, Files.getLastModifiedTime(target));
   }
 
+
+  @Test
+  public void notChangingAttributes() throws IOException, ParseException {
+    // https://github.com/marschall/memoryfilesystem/issues/16
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path source = fileSystem.getPath("/source.txt");
+    Files.createFile(source);
+
+    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    FileTime originalTime = FileTime.fromMillis(format.parse("2011-11-01T20:30:15").getTime());
+    FileTime newTime = FileTime.fromMillis(format.parse("2012-11-07T20:30:22").getTime());
+
+    BasicFileAttributeView attributeView = Files.getFileAttributeView(source, BasicFileAttributeView.class);
+    attributeView.setTimes(originalTime, originalTime, originalTime);
+
+    BasicFileAttributes attributes = Files.readAttributes(source, BasicFileAttributes.class);
+    attributeView.setTimes(newTime, newTime, newTime);
+
+    assertEquals(originalTime, attributes.lastModifiedTime());
+    assertEquals(originalTime, attributes.lastAccessTime());
+    assertEquals(originalTime, attributes.creationTime());
+  }
+
   @Test
   public void setTimesNull() throws IOException, ParseException {
     FileSystem fileSystem = this.rule.getFileSystem();
@@ -2017,8 +2040,6 @@ public class MemoryFileSystemTest {
     assertEquals(createTime, Files.getAttribute(source, "creationTime"));
     assertEquals(lastModifiedTime, Files.getAttribute(source, "lastModifiedTime"));
     assertEquals(lastAccessedTime, Files.getAttribute(source, "lastAccessTime"));
-
-
   }
 
   @Test

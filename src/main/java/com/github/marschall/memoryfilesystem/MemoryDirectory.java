@@ -13,6 +13,7 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -25,8 +26,6 @@ class MemoryDirectory extends MemoryEntry {
 
   private final Map<String, MemoryEntry> entries;
 
-  private final BasicFileAttributes attributes;
-
   private final InitializingFileAttributeView basicFileAttributeView;
 
   private static final Set<PosixFilePermission> EXECUTE = EnumSet.of(OWNER_EXECUTE, GROUP_EXECUTE, OTHERS_EXECUTE);
@@ -38,7 +37,6 @@ class MemoryDirectory extends MemoryEntry {
   MemoryDirectory(String originalName, EntryCreationContext context) {
     super(originalName, context);
     this.entries = new HashMap<>();
-    this.attributes = new MemoryDirectoryFileAttributes();
     this.basicFileAttributeView = new MemoryDirectoryFileAttributesView();
   }
 
@@ -61,11 +59,6 @@ class MemoryDirectory extends MemoryEntry {
   @Override
   InitializingFileAttributeView getBasicFileAttributeView() {
     return this.basicFileAttributeView;
-  }
-
-  @Override
-  BasicFileAttributes getBasicFileAttributes() {
-    return this.attributes;
   }
 
   MemoryEntry getEntry(String name) {
@@ -119,12 +112,18 @@ class MemoryDirectory extends MemoryEntry {
     @Override
     public BasicFileAttributes readAttributes() throws IOException {
       MemoryDirectory.this.checkAccess(AccessMode.READ);
-      return MemoryDirectory.this.attributes;
+      try (AutoRelease lock = MemoryDirectory.this.readLock()) {
+        return new MemoryDirectoryFileAttributes(MemoryDirectory.this, MemoryDirectory.this.lastModifiedTime, MemoryDirectory.this.lastAccessTime, MemoryDirectory.this.creationTime);
+      }
     }
 
   }
 
-  final class MemoryDirectoryFileAttributes extends MemoryEntryFileAttributes {
+  static final class MemoryDirectoryFileAttributes extends MemoryEntryFileAttributes {
+
+    MemoryDirectoryFileAttributes(Object fileKey, FileTime lastModifiedTime, FileTime lastAccessTime, FileTime creationTime) {
+      super(fileKey, lastModifiedTime, lastAccessTime, creationTime);
+    }
 
     @Override
     public boolean isRegularFile() {
@@ -150,12 +149,6 @@ class MemoryDirectory extends MemoryEntry {
     public long size() {
       // REVIEW make configurable
       return -1L;
-    }
-
-    @Override
-    public Object fileKey() {
-      // REVIEW think about it
-      return MemoryDirectory.this;
     }
 
   }

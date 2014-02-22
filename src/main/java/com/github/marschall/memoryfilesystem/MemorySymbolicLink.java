@@ -4,12 +4,11 @@ import java.io.IOException;
 import java.nio.file.AccessMode;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 
 class MemorySymbolicLink extends MemoryEntry {
 
   private final Path target;
-
-  private final BasicFileAttributes attributes;
 
   private final InitializingFileAttributeView basicFileAttributeView;
 
@@ -21,7 +20,6 @@ class MemorySymbolicLink extends MemoryEntry {
   MemorySymbolicLink(String originalName, AbstractPath target, EntryCreationContext context) {
     super(originalName, context);
     this.target = target;
-    this.attributes = new MemorySymbolicLinkAttributes();
     this.basicFileAttributeView = new MemorySymbolicLinkAttributesView();
   }
 
@@ -32,11 +30,6 @@ class MemorySymbolicLink extends MemoryEntry {
   @Override
   InitializingFileAttributeView getBasicFileAttributeView() {
     return this.basicFileAttributeView;
-  }
-
-  @Override
-  BasicFileAttributes getBasicFileAttributes() {
-    return this.attributes;
   }
 
 
@@ -50,12 +43,19 @@ class MemorySymbolicLink extends MemoryEntry {
     @Override
     public BasicFileAttributes readAttributes() throws IOException {
       MemorySymbolicLink.this.checkAccess(AccessMode.READ);
-      return MemorySymbolicLink.this.attributes;
+      MemorySymbolicLink.this.checkAccess(AccessMode.READ);
+      try (AutoRelease lock = MemorySymbolicLink.this.readLock()) {
+        return new MemorySymbolicLinkAttributes(MemorySymbolicLink.this, MemorySymbolicLink.this.lastModifiedTime, MemorySymbolicLink.this.lastAccessTime, MemorySymbolicLink.this.creationTime);
+      }
     }
 
   }
 
-  final class MemorySymbolicLinkAttributes extends MemoryEntryFileAttributes {
+  static final class MemorySymbolicLinkAttributes extends MemoryEntryFileAttributes {
+
+    MemorySymbolicLinkAttributes(Object fileKey, FileTime lastModifiedTime, FileTime lastAccessTime, FileTime creationTime) {
+      super(fileKey, lastModifiedTime, lastAccessTime, creationTime);
+    }
 
     @Override
     public boolean isRegularFile() {
@@ -81,12 +81,6 @@ class MemorySymbolicLink extends MemoryEntry {
     public long size() {
       // REVIEW make configurable
       return -1L;
-    }
-
-    @Override
-    public Object fileKey() {
-      // REVIEW think about it
-      return MemorySymbolicLink.this;
     }
 
   }

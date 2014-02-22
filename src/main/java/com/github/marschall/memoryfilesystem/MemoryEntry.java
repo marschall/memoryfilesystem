@@ -37,14 +37,14 @@ abstract class MemoryEntry {
 
   // protected by read and write locks
   // TODO optimize?
-  private FileTime lastModifiedTime;
-  private FileTime lastAccessTime;
-  private FileTime creationTime;
+  FileTime lastModifiedTime;
+  FileTime lastAccessTime;
+  FileTime creationTime;
   private final MemoryFileSystem fileSystem;
 
   private final ReadWriteLock lock;
 
-  private final Map<String, InitializingFileAttributeView> additionalAttributes;
+  private final Map<String, InitializingFileAttributeView> additionalViews;
 
   MemoryEntry(String originalName, EntryCreationContext context) {
     this.originalName = originalName;
@@ -55,15 +55,15 @@ abstract class MemoryEntry {
     this.lastModifiedTime = now;
     this.creationTime = now;
     if (context.additionalViews.isEmpty()) {
-      this.additionalAttributes = Collections.emptyMap();
+      this.additionalViews = Collections.emptyMap();
     } else if (context.additionalViews.size() == 1) {
       InitializingFileAttributeView view = this.instantiate(context.firstView(), context);
-      this.additionalAttributes = Collections.singletonMap(view.name(), view);
+      this.additionalViews = Collections.singletonMap(view.name(), view);
     } else {
-      this.additionalAttributes = new HashMap<>(context.additionalViews.size());
+      this.additionalViews = new HashMap<>(context.additionalViews.size());
       for (Class<? extends FileAttributeView> viewClass : context.additionalViews) {
         InitializingFileAttributeView view = this.instantiate(viewClass, context);
-        this.additionalAttributes.put(view.name(), view);
+        this.additionalViews.put(view.name(), view);
       }
     }
   }
@@ -71,8 +71,8 @@ abstract class MemoryEntry {
   void initializeAttributes(MemoryEntry other) throws IOException {
     try (AutoRelease lock = this.writeLock()) {
       this.getBasicFileAttributeView().initializeFrom(other.getBasicFileAttributeView());
-      for (InitializingFileAttributeView view : this.additionalAttributes.values()) {
-        view.initializeFrom(other.additionalAttributes);
+      for (InitializingFileAttributeView view : this.additionalViews.values()) {
+        view.initializeFrom(other.additionalViews);
       }
     }
   }
@@ -80,7 +80,7 @@ abstract class MemoryEntry {
 
   void initializeRoot() {
     try (AutoRelease lock = this.readLock()) {
-      for (InitializingFileAttributeView view : this.additionalAttributes.values()) {
+      for (InitializingFileAttributeView view : this.additionalViews.values()) {
         view.initializeRoot();
       }
     }
@@ -142,7 +142,7 @@ abstract class MemoryEntry {
       if (unsupported != null) {
         throw new UnsupportedOperationException("access mode " + unsupported + " is not supported");
       }
-      for (Object attributeView : this.additionalAttributes.values()) {
+      for (Object attributeView : this.additionalViews.values()) {
         if (attributeView instanceof AccessCheck) {
           AccessCheck accessCheck = (AccessCheck) attributeView;
           accessCheck.checkAccess(modes);
@@ -157,7 +157,7 @@ abstract class MemoryEntry {
       if (unsupported != null) {
         throw new UnsupportedOperationException("access mode " + unsupported + " is not supported");
       }
-      for (Object attributeView : this.additionalAttributes.values()) {
+      for (Object attributeView : this.additionalViews.values()) {
         if (attributeView instanceof AccessCheck) {
           AccessCheck accessCheck = (AccessCheck) attributeView;
           accessCheck.checkAccess(mode);
@@ -219,9 +219,9 @@ abstract class MemoryEntry {
         if (type == FileOwnerAttributeView.class) {
           // owner is either mapped to POSIX or ACL
           // TODO POSIX and ACL?
-          if (this.additionalAttributes.containsKey(FileAttributeViews.POSIX)) {
+          if (this.additionalViews.containsKey(FileAttributeViews.POSIX)) {
             name = FileAttributeViews.POSIX;
-          } else if (this.additionalAttributes.containsKey(FileAttributeViews.ACL)) {
+          } else if (this.additionalViews.containsKey(FileAttributeViews.ACL)) {
             name = FileAttributeViews.ACL;
           }
         } else {
@@ -230,7 +230,7 @@ abstract class MemoryEntry {
         if (name == null) {
           throw new UnsupportedOperationException("file attribute view" + type + " not supported");
         }
-        FileAttributeView view = this.additionalAttributes.get(name);
+        FileAttributeView view = this.additionalViews.get(name);
         if (view != null) {
           return (A) view;
         } else {
@@ -244,11 +244,11 @@ abstract class MemoryEntry {
     try (AutoRelease lock = this.readLock()) {
       this.checkAccess(AccessMode.READ);
       if (type == BasicFileAttributes.class) {
-        return (A) this.getBasicFileAttributes();
+        return (A) this.getBasicFileAttributeView().readAttributes();
       } else {
         String viewName = FileAttributeViews.mapFileAttributes(type);
         if (viewName != null) {
-          FileAttributeView view = this.additionalAttributes.get(viewName);
+          FileAttributeView view = this.additionalViews.get(viewName);
           if (view instanceof BasicFileAttributeView) {
             return (A) ((BasicFileAttributeView) view).readAttributes();
           } else {
@@ -262,7 +262,6 @@ abstract class MemoryEntry {
   }
 
   abstract InitializingFileAttributeView getBasicFileAttributeView();
-  abstract BasicFileAttributes getBasicFileAttributes();
 
   abstract class MemoryEntryFileAttributesView implements InitializingFileAttributeView {
 
@@ -295,26 +294,43 @@ abstract class MemoryEntry {
 
   }
 
-  abstract class MemoryEntryFileAttributes implements BasicFileAttributes {
+  static abstract class MemoryEntryFileAttributes implements BasicFileAttributes {
+
+    private final FileTime lastModifiedTime;
+    private final FileTime lastAccessTime;
+    private final FileTime creationTime;
+    private final Object fileKey;
+
+    MemoryEntryFileAttributes(Object fileKey, FileTime lastModifiedTime, FileTime lastAccessTime, FileTime creationTime) {
+      this.fileKey = fileKey;
+      this.lastModifiedTime = lastModifiedTime;
+      this.lastAccessTime = lastAccessTime;
+      this.creationTime = creationTime;
+    }
 
     @Override
     public FileTime lastModifiedTime() {
-      return MemoryEntry.this.lastModifiedTime();
+      return this.lastModifiedTime;
     }
 
     @Override
     public FileTime lastAccessTime() {
-      return MemoryEntry.this.lastAccessTime();
+      return this.lastAccessTime;
     }
 
     @Override
     public FileTime creationTime() {
-      return MemoryEntry.this.creationTime();
+      return this.creationTime;
+    }
+
+    @Override
+    public Object fileKey() {
+      return this.fileKey;
     }
 
   }
 
-  abstract class DelegatingFileAttributes implements BasicFileAttributeView, BasicFileAttributes, InitializingFileAttributeView {
+  abstract class DelegatingFileAttributesView implements BasicFileAttributeView, InitializingFileAttributeView {
 
 
     @Override
@@ -342,54 +358,10 @@ abstract class MemoryEntry {
 
     abstract void initializeFromSelf(FileAttributeView selfAttributes);
 
-    @Override
-    public FileTime lastModifiedTime() {
-      return MemoryEntry.this.getBasicFileAttributes().lastModifiedTime();
-    }
-
-    @Override
-    public FileTime lastAccessTime() {
-      return MemoryEntry.this.getBasicFileAttributes().lastAccessTime();
-    }
-
-    @Override
-    public FileTime creationTime() {
-      return MemoryEntry.this.getBasicFileAttributes().creationTime();
-    }
-
-    @Override
-    public boolean isRegularFile() {
-      return MemoryEntry.this.getBasicFileAttributes().isRegularFile();
-    }
-
-    @Override
-    public boolean isDirectory() {
-      return MemoryEntry.this.getBasicFileAttributes().isDirectory();
-    }
-
-    @Override
-    public boolean isSymbolicLink() {
-      return MemoryEntry.this.getBasicFileAttributes().isSymbolicLink();
-    }
-
-    @Override
-    public boolean isOther() {
-      return MemoryEntry.this.getBasicFileAttributes().isOther();
-    }
-
-    @Override
-    public long size() {
-      return MemoryEntry.this.getBasicFileAttributes().size();
-    }
-
-    @Override
-    public Object fileKey() {
-      return MemoryEntry.this.getBasicFileAttributes().fileKey();
-    }
-
   }
 
-  class MemoryDosFileAttributeView extends DelegatingFileAttributes implements DosFileAttributeView, DosFileAttributes, AccessCheck {
+
+  class MemoryDosFileAttributeView extends DelegatingFileAttributesView implements DosFileAttributeView, AccessCheck {
 
     private boolean readOnly;
     private boolean hidden;
@@ -410,7 +382,10 @@ abstract class MemoryEntry {
     @Override
     public DosFileAttributes readAttributes() throws IOException {
       MemoryEntry.this.checkAccess(AccessMode.READ);
-      return this;
+      try (AutoRelease lock = MemoryEntry.this.readLock()) {
+        BasicFileAttributeView view = MemoryEntry.this.getFileAttributeView(BasicFileAttributeView.class);
+        return new MemoryDosFileAttributes(view.readAttributes(), this.readOnly, this.hidden, this.system, this.archive);
+      }
     }
 
     @Override
@@ -458,35 +433,6 @@ abstract class MemoryEntry {
     }
 
     @Override
-    public boolean isHidden() {
-      try (AutoRelease lock = MemoryEntry.this.readLock()) {
-        return this.hidden;
-      }
-    }
-
-    @Override
-    public boolean isArchive() {
-      try (AutoRelease lock = MemoryEntry.this.readLock()) {
-        return this.archive;
-      }
-    }
-
-    @Override
-    public boolean isSystem() {
-      try (AutoRelease lock = MemoryEntry.this.readLock()) {
-        return this.system;
-      }
-    }
-
-
-    @Override
-    public boolean isReadOnly() {
-      try (AutoRelease lock = MemoryEntry.this.readLock()) {
-        return this.readOnly;
-      }
-    }
-
-    @Override
     public void checkAccess(AccessMode mode) throws AccessDeniedException {
       switch (mode) {
         case READ:
@@ -512,10 +458,133 @@ abstract class MemoryEntry {
         this.checkAccess(mode);
       }
     }
+  }
+
+
+  static class DelegatingAttributes implements BasicFileAttributes {
+
+    private final BasicFileAttributes delegate;
+
+    DelegatingAttributes(BasicFileAttributes delegate) {
+      this.delegate = delegate;
+    }
+
+    @Override
+    public FileTime lastModifiedTime() {
+      return this.delegate.lastModifiedTime();
+    }
+
+    @Override
+    public FileTime lastAccessTime() {
+      return this.delegate.lastAccessTime();
+    }
+
+    @Override
+    public FileTime creationTime() {
+      return this.delegate.creationTime();
+    }
+
+    @Override
+    public boolean isRegularFile() {
+      return this.delegate.isRegularFile();
+    }
+
+    @Override
+    public boolean isDirectory() {
+      return this.delegate.isDirectory();
+    }
+
+    @Override
+    public boolean isSymbolicLink() {
+      return this.delegate.isSymbolicLink();
+    }
+
+    @Override
+    public boolean isOther() {
+      return this.delegate.isOther();
+    }
+
+    @Override
+    public long size() {
+      return this.delegate.size();
+    }
+
+    @Override
+    public Object fileKey() {
+      return this.delegate.fileKey();
+    }
 
   }
 
-  abstract class MemoryFileOwnerAttributeView extends DelegatingFileAttributes implements FileOwnerAttributeView {
+  static class MemoryPosixFileAttributes extends DelegatingAttributes implements PosixFileAttributes {
+
+    private final UserPrincipal owner;
+    private final GroupPrincipal group;
+    private final Set<PosixFilePermission> permissions;
+
+    MemoryPosixFileAttributes(BasicFileAttributes delegate, UserPrincipal owner, GroupPrincipal group, Set<PosixFilePermission> permissions) {
+      super(delegate);
+      this.owner = owner;
+      this.group = group;
+      this.permissions = permissions;
+    }
+
+    @Override
+    public UserPrincipal owner() {
+      return this.owner;
+    }
+
+    @Override
+    public GroupPrincipal group() {
+      return this.group;
+    }
+
+    @Override
+    public Set<PosixFilePermission> permissions() {
+      return this.permissions;
+    }
+
+  }
+
+  static class MemoryDosFileAttributes extends DelegatingAttributes implements DosFileAttributes {
+
+    private final boolean readOnly;
+    private final boolean hidden;
+    private final boolean system;
+    private final boolean archive;
+
+    MemoryDosFileAttributes(BasicFileAttributes delegate, boolean readOnly, boolean hidden, boolean system, boolean archive) {
+      super(delegate);
+      this.readOnly = readOnly;
+      this.hidden = hidden;
+      this.system = system;
+      this.archive = archive;
+    }
+
+    @Override
+    public boolean isReadOnly() {
+      return this.readOnly;
+    }
+
+    @Override
+    public boolean isHidden() {
+      return this.hidden;
+    }
+
+    @Override
+    public boolean isArchive() {
+      return this.archive;
+    }
+
+    @Override
+    public boolean isSystem() {
+      return this.system;
+    }
+
+  }
+
+
+  abstract class MemoryFileOwnerAttributeView extends DelegatingFileAttributesView implements FileOwnerAttributeView {
 
     private UserPrincipal owner;
 
@@ -547,7 +616,7 @@ abstract class MemoryEntry {
 
   }
 
-  class MemoryPosixFileAttributeView extends MemoryFileOwnerAttributeView implements PosixFileAttributeView, PosixFileAttributes, AccessCheck {
+  class MemoryPosixFileAttributeView extends MemoryFileOwnerAttributeView implements PosixFileAttributeView, AccessCheck {
 
     private GroupPrincipal group;
     private Set<PosixFilePermission> perms;
@@ -574,18 +643,6 @@ abstract class MemoryEntry {
     }
 
     @Override
-    public GroupPrincipal group() {
-      try (AutoRelease lock = MemoryEntry.this.readLock()) {
-        return this.group;
-      }
-    }
-
-    @Override
-    public UserPrincipal owner() {
-      return this.getOwner();
-    }
-
-    @Override
     public void setGroup(GroupPrincipal group) throws IOException {
       // TODO check same file system
       if (group == null) {
@@ -600,13 +657,9 @@ abstract class MemoryEntry {
     @Override
     public PosixFileAttributes readAttributes() throws IOException {
       MemoryEntry.this.checkAccess(AccessMode.READ);
-      return this;
-    }
-
-    @Override
-    public Set<PosixFilePermission> permissions() {
       try (AutoRelease lock = MemoryEntry.this.readLock()) {
-        return this.perms;
+        BasicFileAttributeView view = MemoryEntry.this.getFileAttributeView(BasicFileAttributeView.class);
+        return new MemoryPosixFileAttributes(view.readAttributes(), this.getOwner(), this.group, this.saveCopy(this.perms));
       }
     }
 
@@ -655,11 +708,11 @@ abstract class MemoryEntry {
     public void checkAccess(AccessMode mode) throws AccessDeniedException {
       UserPrincipal user = this.getCurrentUser();
       PosixFilePermission permission;
-      if (user == this.owner()) {
+      if (user == this.getOwner()) {
         permission = this.translateOwnerMode(mode);
       } else {
         GroupPrincipal group = this.getCurrentGroup();
-        if (group == this.group()) {
+        if (group == this.group) {
           permission = this.translateGroupMode(mode);
         } else {
           permission = this.translateOthersMode(mode);
@@ -720,7 +773,7 @@ abstract class MemoryEntry {
 
   }
 
-  class MemoryUserDefinedFileAttributeView extends DelegatingFileAttributes implements UserDefinedFileAttributeView {
+  class MemoryUserDefinedFileAttributeView extends DelegatingFileAttributesView implements UserDefinedFileAttributeView {
 
     // can potentially be null
     // try to delay instantiating as long as possible to keep per file object overhead minimal

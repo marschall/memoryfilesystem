@@ -16,6 +16,7 @@ import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.util.Set;
 
 class MemoryFile extends MemoryEntry implements MemoryContents {
@@ -37,8 +38,6 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
   private static final int ARRAY_HEADER = 8 + 8 + 4;
 
   static final int BLOCK_SIZE = 4096 - ARRAY_HEADER; //make sure it fits into a 4k memory region
-
-  private final BasicFileAttributes attributes;
 
   private final InitializingFileAttributeView basicFileAttributeView;
 
@@ -74,7 +73,6 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
 
   MemoryFile(String originalName, EntryCreationContext context, int initialBlocks) {
     super(originalName, context);
-    this.attributes = new MemoryFileAttributes();
     this.basicFileAttributeView = new MemoryFileAttributesView();
 
     if (initialBlocks == 0) {
@@ -96,7 +94,6 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
 
   MemoryFile(String originalName, EntryCreationContext context, MemoryFile other) {
     super(originalName, context);
-    this.attributes = new MemoryFileAttributes();
     this.basicFileAttributeView = new MemoryFileAttributesView();
 
     if (other.directBlock != null) {
@@ -120,23 +117,27 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
     return this.basicFileAttributeView;
   }
 
-  @Override
-  BasicFileAttributes getBasicFileAttributes() {
-    return this.attributes;
-  }
-
 
   class MemoryFileAttributesView extends MemoryEntryFileAttributesView {
 
     @Override
     public BasicFileAttributes readAttributes() throws IOException {
       MemoryFile.this.checkAccess(AccessMode.READ);
-      return MemoryFile.this.attributes;
+      try (AutoRelease lock = MemoryFile.this.readLock()) {
+        return new MemoryFileAttributes(MemoryFile.this, MemoryFile.this.lastModifiedTime, MemoryFile.this.lastAccessTime, MemoryFile.this.creationTime, MemoryFile.this.size);
+      }
     }
 
   }
 
-  final class MemoryFileAttributes extends MemoryEntryFileAttributes {
+  static final class MemoryFileAttributes extends MemoryEntryFileAttributes {
+
+    private final long size;
+
+    MemoryFileAttributes(Object fileKey, FileTime lastModifiedTime, FileTime lastAccessTime, FileTime creationTime, long size) {
+      super(fileKey, lastModifiedTime, lastAccessTime, creationTime);
+      this.size = size;
+    }
 
     @Override
     public boolean isRegularFile() {
@@ -160,13 +161,7 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
 
     @Override
     public long size() {
-      return MemoryFile.this.size();
-    }
-
-    @Override
-    public Object fileKey() {
-      // REVIEW think about it
-      return MemoryFile.this;
+      return this.size;
     }
 
   }

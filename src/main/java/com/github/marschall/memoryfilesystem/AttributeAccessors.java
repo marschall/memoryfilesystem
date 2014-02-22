@@ -1,6 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
 import java.io.IOException;
+import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.DosFileAttributeView;
 import java.nio.file.attribute.DosFileAttributes;
@@ -85,14 +86,13 @@ final class AttributeAccessors {
   static final class LastModifiedTimeAccessor implements AttributeAccessor {
 
     @Override
-    public Object readAttribute(MemoryEntry entry) {
-      return entry.getBasicFileAttributes().lastModifiedTime();
+    public Object readAttribute(AtributeReadContext context) throws IOException {
+      return context.getBasicFileAttributes().lastModifiedTime();
     }
 
     @Override
     public void writeAttribute(Object value, MemoryEntry entry) throws IOException {
-      BasicFileAttributes basicFileAttributes = entry.getBasicFileAttributes();
-      entry.getBasicFileAttributeView().setTimes((FileTime) value, basicFileAttributes.lastAccessTime(), basicFileAttributes.creationTime());
+      entry.getBasicFileAttributeView().setTimes((FileTime) value, null, null);
     }
 
   }
@@ -100,14 +100,13 @@ final class AttributeAccessors {
   static final class LastAccessTimeAccessor implements AttributeAccessor {
 
     @Override
-    public Object readAttribute(MemoryEntry entry) {
-      return entry.getBasicFileAttributes().lastAccessTime();
+    public Object readAttribute(AtributeReadContext context) throws IOException {
+      return context.getBasicFileAttributes().lastAccessTime();
     }
 
     @Override
     public void writeAttribute(Object value, MemoryEntry entry) throws IOException {
-      BasicFileAttributes basicFileAttributes = entry.getBasicFileAttributes();
-      entry.getBasicFileAttributeView().setTimes(basicFileAttributes.lastModifiedTime(), (FileTime) value, basicFileAttributes.creationTime());
+      entry.getBasicFileAttributeView().setTimes(null, (FileTime) value, null);
     }
 
   }
@@ -115,14 +114,13 @@ final class AttributeAccessors {
   static final class CreationTimeAccessor implements AttributeAccessor {
 
     @Override
-    public Object readAttribute(MemoryEntry entry) {
-      return entry.getBasicFileAttributes().creationTime();
+    public Object readAttribute(AtributeReadContext context) throws IOException {
+      return context.getBasicFileAttributes().creationTime();
     }
 
     @Override
     public void writeAttribute(Object value, MemoryEntry entry) throws IOException {
-      BasicFileAttributes basicFileAttributes = entry.getBasicFileAttributes();
-      entry.getBasicFileAttributeView().setTimes(basicFileAttributes.lastModifiedTime(), basicFileAttributes.lastAccessTime(), (FileTime) value);
+      entry.getBasicFileAttributeView().setTimes(null, null, (FileTime) value);
     }
 
   }
@@ -130,8 +128,8 @@ final class AttributeAccessors {
   static final class IsRegularFileAccessor implements AttributeAccessor {
 
     @Override
-    public Object readAttribute(MemoryEntry entry) {
-      return entry.getBasicFileAttributes().isRegularFile();
+    public Object readAttribute(AtributeReadContext context) throws IOException {
+      return context.getBasicFileAttributes().isRegularFile();
     }
 
     @Override
@@ -144,8 +142,8 @@ final class AttributeAccessors {
   static final class IsDirectoryAccessor implements AttributeAccessor {
 
     @Override
-    public Object readAttribute(MemoryEntry entry) {
-      return entry.getBasicFileAttributes().isDirectory();
+    public Object readAttribute(AtributeReadContext context) throws IOException {
+      return context.getBasicFileAttributes().isDirectory();
     }
 
     @Override
@@ -158,8 +156,8 @@ final class AttributeAccessors {
   static final class IsOtherAccessor implements AttributeAccessor {
 
     @Override
-    public Object readAttribute(MemoryEntry entry) {
-      return entry.getBasicFileAttributes().isOther();
+    public Object readAttribute(AtributeReadContext context) throws IOException {
+      return context.getBasicFileAttributes().isOther();
     }
 
     @Override
@@ -172,8 +170,8 @@ final class AttributeAccessors {
   static final class IsSymbolicLinkAccessor implements AttributeAccessor {
 
     @Override
-    public Object readAttribute(MemoryEntry entry) {
-      return entry.getBasicFileAttributes().isSymbolicLink();
+    public Object readAttribute(AtributeReadContext context) throws IOException {
+      return context.getBasicFileAttributes().isSymbolicLink();
     }
 
     @Override
@@ -186,8 +184,8 @@ final class AttributeAccessors {
   static final class SizeAccessor implements AttributeAccessor {
 
     @Override
-    public Object readAttribute(MemoryEntry entry) {
-      return entry.getBasicFileAttributes().size();
+    public Object readAttribute(AtributeReadContext context) throws IOException {
+      return context.getBasicFileAttributes().size();
     }
 
     @Override
@@ -200,8 +198,8 @@ final class AttributeAccessors {
   static final class FileKeyAccessor implements AttributeAccessor {
 
     @Override
-    public Object readAttribute(MemoryEntry entry) {
-      return entry.getBasicFileAttributes().fileKey();
+    public Object readAttribute(AtributeReadContext context) throws IOException {
+      return context.getBasicFileAttributes().fileKey();
     }
 
     @Override
@@ -214,8 +212,8 @@ final class AttributeAccessors {
   static final class OwnerAccessor implements AttributeAccessor {
 
     @Override
-    public Object readAttribute(MemoryEntry entry) throws IOException {
-      return entry.getFileAttributeView(FileOwnerAttributeView.class).getOwner();
+    public Object readAttribute(AtributeReadContext context) throws IOException {
+      return context.getFileOwnerAttributeView().getOwner();
     }
 
     @Override
@@ -228,8 +226,8 @@ final class AttributeAccessors {
   static final class GroupAccessor implements AttributeAccessor {
 
     @Override
-    public Object readAttribute(MemoryEntry entry) throws IOException {
-      return entry.readAttributes(PosixFileAttributes.class).group();
+    public Object readAttribute(AtributeReadContext context) throws IOException {
+      return context.getPosixFileAttributes().group();
     }
 
     @Override
@@ -242,8 +240,8 @@ final class AttributeAccessors {
   static final class PermissionsAccessor implements AttributeAccessor {
 
     @Override
-    public Object readAttribute(MemoryEntry entry) throws IOException {
-      return entry.readAttributes(PosixFileAttributes.class).permissions();
+    public Object readAttribute(AtributeReadContext context) throws IOException {
+      return context.getPosixFileAttributes().permissions();
     }
 
     @Override
@@ -256,8 +254,8 @@ final class AttributeAccessors {
   static final class IsHiddenAccessor implements AttributeAccessor {
 
     @Override
-    public Object readAttribute(MemoryEntry entry) throws IOException {
-      return entry.readAttributes(DosFileAttributes.class).isHidden();
+    public Object readAttribute(AtributeReadContext context) throws IOException {
+      return context.getDosFileAttributes().isHidden();
     }
 
     @Override
@@ -270,8 +268,8 @@ final class AttributeAccessors {
   static final class IsReadOnlyAccessor implements AttributeAccessor {
 
     @Override
-    public Object readAttribute(MemoryEntry entry) throws IOException {
-      return entry.readAttributes(DosFileAttributes.class).isReadOnly();
+    public Object readAttribute(AtributeReadContext context) throws IOException {
+      return context.getDosFileAttributes().isReadOnly();
     }
 
     @Override
@@ -284,8 +282,8 @@ final class AttributeAccessors {
   static final class IsSystemAccessor implements AttributeAccessor {
 
     @Override
-    public Object readAttribute(MemoryEntry entry) throws IOException {
-      return entry.readAttributes(DosFileAttributes.class).isSystem();
+    public Object readAttribute(AtributeReadContext context) throws IOException {
+      return context.getDosFileAttributes().isSystem();
     }
 
     @Override
@@ -298,8 +296,8 @@ final class AttributeAccessors {
   static final class IsArchiveAccessor implements AttributeAccessor {
 
     @Override
-    public Object readAttribute(MemoryEntry entry) throws IOException {
-      return entry.readAttributes(DosFileAttributes.class).isArchive();
+    public Object readAttribute(AtributeReadContext context) throws IOException {
+      return context.getDosFileAttributes().isArchive();
     }
 
     @Override
@@ -357,27 +355,30 @@ final class AttributeAccessors {
       throw new IllegalArgumentException("attribute \"" + attribute + "\" is not supported");
 
     }
-    Object value = accessor.readAttribute(entry);
+    AtributeReadContext context = new AtributeReadContext(entry);
+    Object value = accessor.readAttribute(context);
     return Collections.singletonMap(attribute, value);
   }
 
   private static Map<String, Object> readAttributes(MemoryEntry entry, String[] attributes, Map<String, AttributeAccessor> viewMap) throws IOException {
     Map<String, Object> values = new HashMap<>(attributes.length);
+    AtributeReadContext context = new AtributeReadContext(entry);
     for (String each : attributes) {
       AttributeAccessor accessor = viewMap.get(each);
       if (accessor == null) {
         throw new IllegalArgumentException("attribute \"" + each + "\" is not supported");
       }
-      values.put(each, accessor.readAttribute(entry));
+      values.put(each, accessor.readAttribute(context));
     }
     return values;
   }
 
   private static Map<String, Object> readAllAttributes(MemoryEntry entry, Map<String, AttributeAccessor> viewMap) throws IOException {
     Map<String, Object> values = new HashMap<>(viewMap.size());
+    AtributeReadContext context = new AtributeReadContext(entry);
     for (Entry<String, AttributeAccessor> each : viewMap.entrySet()) {
       AttributeAccessor accessor = each.getValue();
-      values.put(each.getKey(), accessor.readAttribute(entry));
+      values.put(each.getKey(), accessor.readAttribute(context));
     }
     return values;
   }
@@ -410,9 +411,52 @@ final class AttributeAccessors {
     return accessor;
   }
 
+  static final class AtributeReadContext {
+
+    private final MemoryEntry entry;
+
+    private BasicFileAttributes basicFileAttributes;
+    private DosFileAttributes dosFileAttributes;
+    private PosixFileAttributes posixFileAttributes;
+    private FileOwnerAttributeView fileOwnerAttributeView;
+
+    AtributeReadContext(MemoryEntry entry) {
+      this.entry = entry;
+    }
+
+    BasicFileAttributes getBasicFileAttributes() throws IOException {
+      if (this.basicFileAttributes == null) {
+        this.basicFileAttributes = this.entry.getFileAttributeView(BasicFileAttributeView.class).readAttributes();
+      }
+      return this.basicFileAttributes;
+    }
+
+    public DosFileAttributes getDosFileAttributes() throws IOException {
+      if (this.dosFileAttributes == null) {
+        this.dosFileAttributes = this.entry.getFileAttributeView(DosFileAttributeView.class).readAttributes();
+      }
+      return this.dosFileAttributes;
+    }
+
+    public PosixFileAttributes getPosixFileAttributes() throws IOException {
+      if (this.posixFileAttributes == null) {
+        this.posixFileAttributes = this.entry.getFileAttributeView(PosixFileAttributeView.class).readAttributes();
+      }
+      return this.posixFileAttributes;
+    }
+
+    public FileOwnerAttributeView getFileOwnerAttributeView() throws IOException {
+      if (this.fileOwnerAttributeView == null) {
+        this.fileOwnerAttributeView = this.entry.getFileAttributeView(FileOwnerAttributeView.class);
+      }
+      return this.fileOwnerAttributeView;
+    }
+
+  }
+
   interface AttributeAccessor {
 
-    Object readAttribute(MemoryEntry entry) throws IOException;
+    Object readAttribute(AtributeReadContext context) throws IOException;
 
     void writeAttribute(Object value, MemoryEntry entry) throws IOException;
 
