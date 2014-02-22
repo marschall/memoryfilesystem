@@ -323,6 +323,7 @@ abstract class MemoryEntry {
   }
 
   abstract class DelegatingFileAttributesView implements BasicFileAttributeView, InitializingFileAttributeView {
+    // TODO has too many this pointers, should have explicit reference
 
 
     @Override
