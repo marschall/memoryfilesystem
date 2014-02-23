@@ -15,6 +15,7 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.AccessMode;
+import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,6 +39,31 @@ public class PosixPermissionMemoryFileSystemTest {
 
   @Rule
   public final PosixPermissionFileSystemRule rule = new PosixPermissionFileSystemRule();
+
+  @Test
+  public void directoryRead() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    final Path directory = fileSystem.getPath("directory");
+    Path file = directory.resolve("file");
+    Files.createDirectory(directory);
+    Files.createFile(file);
+
+    Files.setAttribute(directory, "posix:permissions", asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE));
+    UserPrincipal user = fileSystem.getUserPrincipalLookupService().lookupPrincipalByName(PosixPermissionFileSystemRule.OTHER);
+    CurrentUser.useDuring(user, new UserTask<Void>() {
+
+      @Override
+      public Void call() throws IOException {
+        try (DirectoryStream<?> stream = Files.newDirectoryStream(directory)) {
+          fail("should not be allowd to open a directory stram");
+        } catch (AccessDeniedException e) {
+          // should reach here
+        }
+        return null;
+      }
+    });
+
+  }
 
   @Test
   public void owner() throws IOException {

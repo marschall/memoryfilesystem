@@ -341,7 +341,7 @@ class MemoryFileSystem extends FileSystem {
   DirectoryStream<Path> newDirectoryStream(final AbstractPath abstractPath, final Filter<? super Path> filter) throws IOException {
     final AbstractPath absolutePath = (AbstractPath) abstractPath.toAbsolutePath().normalize();
     MemoryDirectory root = this.getRootDirectory(absolutePath);
-    return this.withReadLockDo(root, abstractPath, false, new MemoryEntryBlock<DirectoryStream<Path>>() {
+    return this.withReadLockDo(root, absolutePath, false, new MemoryEntryBlock<DirectoryStream<Path>>() {
 
       @Override
       public DirectoryStream<Path> value(MemoryEntry entry) throws IOException {
