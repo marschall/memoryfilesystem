@@ -104,7 +104,7 @@ class MemoryDirectory extends MemoryEntry {
     return "directory(" + this.getOriginalName() + ')';
   }
 
-  void removeEntry(String name) {
+  void removeEntry(String name) throws AccessDeniedException {
     // TODO check for result
     this.entries.remove(name);
     this.modified();

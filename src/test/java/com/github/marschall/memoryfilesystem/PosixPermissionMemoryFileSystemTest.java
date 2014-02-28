@@ -181,4 +181,158 @@ public class PosixPermissionMemoryFileSystemTest {
     });
   }
 
+  @Test
+  public void deletePermission() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path sourceDirectory = Files.createDirectory(fileSystem.getPath("source-directory"));
+    final Path file = Files.createFile(sourceDirectory.resolve("file.txt"));
+
+    PosixFileAttributeView view = Files.getFileAttributeView(sourceDirectory, PosixFileAttributeView.class);
+    view.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE));
+
+    UserPrincipal user = fileSystem.getUserPrincipalLookupService().lookupPrincipalByName(PosixPermissionFileSystemRule.OTHER);
+
+    CurrentUser.useDuring(user, new UserTask<Void>() {
+
+      @Override
+      public Void call() throws IOException {
+        try {
+          Files.delete(file);
+          fail("should not be delete to create files");
+        } catch (AccessDeniedException e) {
+          // should reach here
+        }
+        return null;
+      }
+    });
+
+
+    view.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_WRITE));
+    CurrentUser.useDuring(user, new UserTask<Void>() {
+
+      @Override
+      public Void call() throws IOException {
+        Files.delete(file);
+        return null;
+      }
+    });
+  }
+
+  @Test
+  public void movePermission() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path sourceDirectory = Files.createDirectory(fileSystem.getPath("source-directory"));
+    Path targetDirectory = Files.createDirectory(fileSystem.getPath("target-directory"));
+    final Path source = Files.createFile(sourceDirectory.resolve("file.txt"));
+    final Path target = targetDirectory.resolve("file.txt");
+    UserPrincipal user = fileSystem.getUserPrincipalLookupService().lookupPrincipalByName(PosixPermissionFileSystemRule.OTHER);
+
+    PosixFileAttributeView sourceView = Files.getFileAttributeView(sourceDirectory, PosixFileAttributeView.class);
+    sourceView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE));
+
+    PosixFileAttributeView targetView = Files.getFileAttributeView(targetDirectory, PosixFileAttributeView.class);
+    targetView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE));
+
+    // no write permission is not enough
+    CurrentUser.useDuring(user, new UserTask<Void>() {
+
+      @Override
+      public Void call() throws IOException {
+        try {
+          Files.move(source, target);
+          fail("should not be allowed to move files");
+        } catch (AccessDeniedException e) {
+          // should reach here
+        }
+        return null;
+      }
+    });
+
+    sourceView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_WRITE));
+    targetView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE));
+
+    // write permission on source only is not enough
+    CurrentUser.useDuring(user, new UserTask<Void>() {
+
+      @Override
+      public Void call() throws IOException {
+        try {
+          Files.move(source, target);
+          fail("should not be allowed to move files");
+        } catch (AccessDeniedException e) {
+          // should reach here
+        }
+        return null;
+      }
+    });
+
+    sourceView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE));
+    targetView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_WRITE));
+
+    // write permission on target only is not enough
+    CurrentUser.useDuring(user, new UserTask<Void>() {
+
+      @Override
+      public Void call() throws IOException {
+        try {
+          Files.move(source, target);
+          fail("should not be allowed to move files");
+        } catch (AccessDeniedException e) {
+          // should reach here
+        }
+        return null;
+      }
+    });
+
+    sourceView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_WRITE));
+    targetView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_WRITE));
+
+    // write permission on source and target is enough
+    CurrentUser.useDuring(user, new UserTask<Void>() {
+
+      @Override
+      public Void call() throws IOException {
+        Files.move(source, target);
+        return null;
+      }
+    });
+  }
+
+  @Test
+  public void createPermission() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path sourceDirectory = Files.createDirectory(fileSystem.getPath("source-directory"));
+    final Path file = sourceDirectory.resolve("file.txt");
+
+    PosixFileAttributeView view = Files.getFileAttributeView(sourceDirectory, PosixFileAttributeView.class);
+    view.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE));
+
+    UserPrincipal user = fileSystem.getUserPrincipalLookupService().lookupPrincipalByName(PosixPermissionFileSystemRule.OTHER);
+
+    CurrentUser.useDuring(user, new UserTask<Void>() {
+
+      @Override
+      public Void call() throws IOException {
+        try {
+          Files.createFile(file);
+          fail("should not be allowed to create files");
+        } catch (AccessDeniedException e) {
+          // should reach here
+        }
+        return null;
+      }
+    });
+
+
+    view.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_WRITE));
+    CurrentUser.useDuring(user, new UserTask<Void>() {
+
+      @Override
+      public Void call() throws IOException {
+        Files.createFile(file);
+        return null;
+      }
+    });
+  }
+
 }

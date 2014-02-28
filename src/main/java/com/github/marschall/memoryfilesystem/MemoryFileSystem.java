@@ -1,6 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.AutoReleaseLock.autoRelease;
+import static java.nio.file.AccessMode.WRITE;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -308,6 +309,7 @@ class MemoryFileSystem extends FileSystem {
           MemoryFile file = new MemoryFile(name, MemoryFileSystem.this.newEntryCreationContext());
           checkSupportedInitialAttributes(attrs);
           AttributeAccessors.setAttributes(file, attrs);
+          directory.checkAccess(WRITE);
           // will throw an exception if already present
           directory.addEntry(key, file);
           return file;
@@ -320,6 +322,7 @@ class MemoryFileSystem extends FileSystem {
               MemoryFile file = new MemoryFile(name, MemoryFileSystem.this.newEntryCreationContext());
               checkSupportedInitialAttributes(attrs);
               AttributeAccessors.setAttributes(file, attrs);
+              directory.checkAccess(WRITE);
               directory.addEntry(key, file);
               return file;
             } else {
@@ -397,6 +400,7 @@ class MemoryFileSystem extends FileSystem {
         String name = MemoryFileSystem.this.storeTransformer.transform(elementPath.getLastNameElement());
         MemoryEntry newEntry = creator.create(name);
         String key = MemoryFileSystem.this.lookUpTransformer.transform(newEntry.getOriginalName());
+        directory.checkAccess(WRITE);
         directory.addEntry(key, newEntry);
         return null;
       }
@@ -885,6 +889,7 @@ class MemoryFileSystem extends FileSystem {
               }
               file.markForDeletion();
             }
+            directory.checkAccess(WRITE);
             directory.removeEntry(key);
           }
           return null;
@@ -1114,6 +1119,12 @@ class MemoryFileSystem extends FileSystem {
       // source and target are the same, do nothing
       // the way I read Files#copy this is the intention of the spec
       return;
+    }
+
+    // have to check permission first
+    targetParent.checkAccess(WRITE);
+    if (copyContext.operation.isMove()) {
+      sourceParent.checkAccess(WRITE);
     }
 
     if (targetEntry != null) {
