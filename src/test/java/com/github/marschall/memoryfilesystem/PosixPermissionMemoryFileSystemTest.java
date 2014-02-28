@@ -3,6 +3,9 @@ package com.github.marschall.memoryfilesystem;
 import static java.nio.file.AccessMode.EXECUTE;
 import static java.nio.file.AccessMode.READ;
 import static java.nio.file.AccessMode.WRITE;
+import static java.nio.file.attribute.PosixFilePermission.GROUP_EXECUTE;
+import static java.nio.file.attribute.PosixFilePermission.GROUP_READ;
+import static java.nio.file.attribute.PosixFilePermission.GROUP_WRITE;
 import static java.nio.file.attribute.PosixFilePermission.OTHERS_EXECUTE;
 import static java.nio.file.attribute.PosixFilePermission.OTHERS_READ;
 import static java.nio.file.attribute.PosixFilePermission.OTHERS_WRITE;
@@ -19,6 +22,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.GroupPrincipal;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.UserPrincipal;
@@ -29,10 +33,10 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
+import com.github.marschall.memoryfilesystem.CurrentGroup.GroupTask;
 import com.github.marschall.memoryfilesystem.CurrentUser.UserTask;
 
 public class PosixPermissionMemoryFileSystemTest {
@@ -73,10 +77,10 @@ public class PosixPermissionMemoryFileSystemTest {
   }
 
   @Test
-  @Ignore()
-  public void group() {
-    // TODO implement
-    fail("implement");
+  public void group() throws IOException {
+    this.checkPermission(READ, GROUP_READ, PosixPermissionFileSystemRule.GROUP);
+    this.checkPermission(WRITE, GROUP_WRITE, PosixPermissionFileSystemRule.GROUP);
+    this.checkPermission(EXECUTE, GROUP_EXECUTE, PosixPermissionFileSystemRule.GROUP);
   }
 
   @Test
@@ -114,30 +118,43 @@ public class PosixPermissionMemoryFileSystemTest {
     Files.createFile(negative);
 
     UserPrincipal user = fileSystem.getUserPrincipalLookupService().lookupPrincipalByName(userName);
-    this.checkPermissionPositive(mode, permission, positive, user);
-    this.checkPermissionNegative(mode, permission, negative, user);
+    GroupPrincipal group = fileSystem.getUserPrincipalLookupService().lookupPrincipalByGroupName(userName);
+    this.checkPermissionPositive(mode, permission, positive, user, group);
+    this.checkPermissionNegative(mode, permission, negative, user, group);
   }
 
-  private void checkPermissionPositive(final AccessMode mode, PosixFilePermission permission, final Path file, UserPrincipal user) throws IOException {
+  private void checkPermissionPositive(final AccessMode mode, PosixFilePermission permission, final Path file, UserPrincipal user, final GroupPrincipal group) throws IOException {
     PosixFileAttributeView view = Files.getFileAttributeView(file, PosixFileAttributeView.class);
+    FileSystem fileSystem = this.rule.getFileSystem();
+    GroupPrincipal fileGroup = fileSystem.getUserPrincipalLookupService().lookupPrincipalByGroupName(PosixPermissionFileSystemRule.GROUP);
+    view.setGroup(fileGroup); // change group before changing permissions
     view.setPermissions(Collections.singleton(permission));
 
     CurrentUser.useDuring(user, new UserTask<Void>() {
 
       @Override
       public Void call() throws IOException {
-        FileSystemProvider provider = file.getFileSystem().provider();
-        provider.checkAccess(file, mode);
-        return null;
+        return CurrentGroup.useDuring(group, new GroupTask<Void>() {
+
+          @Override
+          public Void call() throws IOException {
+            FileSystemProvider provider = file.getFileSystem().provider();
+            provider.checkAccess(file, mode);
+            return null;
+          }
+        });
       }
 
     });
   }
 
-  private void checkPermissionNegative(final AccessMode mode, PosixFilePermission permission, final Path file, UserPrincipal user) throws IOException {
+  private void checkPermissionNegative(final AccessMode mode, PosixFilePermission permission, final Path file, UserPrincipal user, final GroupPrincipal group) throws IOException {
     PosixFileAttributeView view = Files.getFileAttributeView(file, PosixFileAttributeView.class);
 
     Set<PosixFilePermission> permissions = EnumSet.allOf(PosixFilePermission.class);
+    FileSystem fileSystem = this.rule.getFileSystem();
+    GroupPrincipal fileGroup = fileSystem.getUserPrincipalLookupService().lookupPrincipalByGroupName(PosixPermissionFileSystemRule.GROUP);
+    view.setGroup(fileGroup); // change group before changing permissions
     permissions.remove(permission);
     view.setPermissions(permissions);
 
@@ -145,14 +162,20 @@ public class PosixPermissionMemoryFileSystemTest {
 
       @Override
       public Void call() throws IOException {
-        FileSystemProvider provider = file.getFileSystem().provider();
-        try {
-          provider.checkAccess(file, mode);
-          fail("should not be able to access");
-        } catch (AccessDeniedException e) {
-          // should reach here
-        }
-        return null;
+        return CurrentGroup.useDuring(group, new GroupTask<Void>() {
+
+          @Override
+          public Void call() throws IOException {
+            FileSystemProvider provider = file.getFileSystem().provider();
+            try {
+              provider.checkAccess(file, mode);
+              fail("should not be able to access");
+            } catch (AccessDeniedException e) {
+              // should reach here
+            }
+            return null;
+          }
+        });
       }
 
     });

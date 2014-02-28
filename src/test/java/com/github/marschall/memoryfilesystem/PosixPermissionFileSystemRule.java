@@ -10,6 +10,7 @@ import org.junit.runners.model.Statement;
 final class PosixPermissionFileSystemRule implements TestRule {
 
   static final String OWNER = "owner";
+  static final String GROUP = "group";
   static final String OTHER = "other";
 
   private FileSystem fileSystem;
@@ -31,6 +32,8 @@ final class PosixPermissionFileSystemRule implements TestRule {
                 .setSeprator(MemoryFileSystemProperties.UNIX_SEPARATOR)
                 .addUser(OWNER)
                 .addGroup(OWNER)
+                .addUser(GROUP)
+                .addGroup(GROUP)
                 .addUser(OTHER)
                 .addGroup(OTHER)
                 .addFileAttributeView(PosixFileAttributeView.class)
