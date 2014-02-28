@@ -87,6 +87,9 @@ class MemoryDirectory extends MemoryEntry {
     }
   }
 
+  // caller have to check for write permissions
+  // we can't do it here because that may break operations that involve
+  // two directories
   void addEntry(String name, MemoryEntry entry) throws IOException {
     MemoryEntry previous = this.entries.put(name, entry);
     if (previous != null) {
@@ -104,6 +107,9 @@ class MemoryDirectory extends MemoryEntry {
     return "directory(" + this.getOriginalName() + ')';
   }
 
+  //caller have to check for write permissions
+  // we can't do it here because that may break operations that involve
+  // two directories
   void removeEntry(String name) throws AccessDeniedException {
     // TODO check for result
     this.entries.remove(name);
