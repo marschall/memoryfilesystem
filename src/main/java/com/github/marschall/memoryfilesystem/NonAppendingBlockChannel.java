@@ -87,6 +87,9 @@ final class NonAppendingBlockChannel extends BlockChannel {
 
   @Override
   public FileChannel truncate(long size) throws IOException {
+    if (size < 0L) {
+      throw new IllegalArgumentException("size must be non-negative but was: " + size);
+    }
     try (AutoRelease lock = this.writeLock()) {
       this.memoryContents.truncate(size);
       // REVIEW, not sure from doc but kinda makes sense

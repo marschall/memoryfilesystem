@@ -78,6 +78,27 @@ public class FileSystemComptiblityTest {
   }
 
   @Test
+  public void truncate() throws IOException {
+    Path currentDirectory = this.getFileSystem().getPath("");
+    Path path = Files.createTempFile(currentDirectory, "sample", ".txt");
+    try {
+      try (SeekableByteChannel channel = Files.newByteChannel(path, WRITE)) {
+        channel.write(ByteBuffer.wrap(new byte[]{1, 2, 3, 4, 5}));
+      }
+      try (SeekableByteChannel channel = Files.newByteChannel(path, WRITE)) {
+        try {
+          channel.truncate(-1L);
+          fail("negative trucation should not be allowed");
+        } catch (IllegalArgumentException e) {
+          // should reach here
+        }
+      }
+    } finally {
+      Files.delete(path);
+    }
+  }
+
+  @Test
   public void position() throws IOException {
     Path currentDirectory = this.getFileSystem().getPath("");
     Path path = Files.createTempFile(currentDirectory, "sample", ".txt");
