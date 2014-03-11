@@ -58,6 +58,8 @@ import java.nio.file.Files;
 import java.nio.file.NotLinkException;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
+import java.nio.file.Paths;
+import java.nio.file.ProviderMismatchException;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -1812,6 +1814,12 @@ public class MemoryFileSystemTest {
   public void moveRootIntoItself() throws IOException {
     Path root = this.rule.getFileSystem().getPath("/");
     Files.move(root, root);
+  }
+
+  @Test(expected = ProviderMismatchException.class)
+  public void providerMismatch() throws IOException {
+    Path root = Paths.get("");
+    this.rule.getFileSystem().provider().move(root, root);
   }
 
   @Test

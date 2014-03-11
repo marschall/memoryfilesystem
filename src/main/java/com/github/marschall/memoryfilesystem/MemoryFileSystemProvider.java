@@ -18,6 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
+import java.nio.file.ProviderMismatchException;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
@@ -344,7 +345,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   private AbstractPath castPath(Path path) {
     if (!(path instanceof AbstractPath)) {
-      throw new IllegalArgumentException("can only handle paths of this file system provider");
+      throw new ProviderMismatchException("expected a path of provider " + SCHEME + " but got " + path.getFileSystem().provider().getScheme());
     }
     return (AbstractPath) path;
   }
