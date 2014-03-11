@@ -690,8 +690,20 @@ class MemoryFileSystem extends FileSystem {
       int order = this.orderPaths(sourceContext, targetContext);
       final CopyContext copyContext = buildCopyContext(sourceContext, targetContext, operation, options, order);
 
-      MemoryDirectory firstRoot = this.getRootDirectory(copyContext.first.parent);
-      final MemoryDirectory secondRoot = this.getRootDirectory(copyContext.second.parent);
+      if (copyContext.first.parent == null && copyContext.second.parent == null) {
+        // both of the involved paths is a root
+        // simply ignore
+        return;
+      }
+
+      if (copyContext.first.parent == null || copyContext.second.parent == null) {
+        // only one of the involved paths is a root
+        throw new IOException("can't copy or move root directory");
+      }
+
+      MemoryDirectory firstRoot = this.getRootDirectory(copyContext.first.path);
+      final MemoryDirectory secondRoot = this.getRootDirectory(copyContext.second.path);
+
       this.withWriteLockOnLastDo(firstRoot, copyContext.first.parent, copyContext.firstFollowSymLinks, new MemoryDirectoryBlock<Void>() {
 
         @Override
@@ -719,9 +731,12 @@ class MemoryFileSystem extends FileSystem {
 
     int order = orderFileSystems(sourceContext, targetContext);
     final CopyContext copyContext = buildCopyContext(sourceContext, targetContext, operation, options, order);
+    if (copyContext.first.parent == null || copyContext.second.parent == null) {
+      throw new IOException("can't move ore copy the file system root");
+    }
 
-    MemoryDirectory firstRoot = sourceFileSystem.getRootDirectory(copyContext.first.parent);
-    final MemoryDirectory secondRoot = targetFileSystem.getRootDirectory(copyContext.second.parent);
+    MemoryDirectory firstRoot = sourceFileSystem.getRootDirectory(copyContext.first.path);
+    final MemoryDirectory secondRoot = targetFileSystem.getRootDirectory(copyContext.second.path);
     copyContext.first.path.getMemoryFileSystem().withWriteLockOnLastDo(firstRoot, copyContext.first.parent, copyContext.firstFollowSymLinks, new MemoryDirectoryBlock<Void>() {
 
       @Override
@@ -742,11 +757,24 @@ class MemoryFileSystem extends FileSystem {
   }
 
   private int orderPaths(EndPointCopyContext source, EndPointCopyContext target) {
-    int parentOrder = source.parent.compareTo(target.parent);
+    int parentOrder;
+    if (source.parent == null) {
+      parentOrder = target.parent == null ? 0 : -1;
+    } else if (target.parent == null) {
+      parentOrder = 1;
+    } else {
+      parentOrder = source.parent.compareTo(target.parent);
+    }
     if (parentOrder != 0) {
       return parentOrder;
     } else {
-      return MemoryFileSystem.this.collator.compare(source.elementName, target.elementName);
+      if (source.elementName == null) {
+        return target.elementName == null ? 0 : -1;
+      } else if (target.elementName == null) {
+        return 1;
+      } else {
+        return MemoryFileSystem.this.collator.compare(source.elementName, target.elementName);
+      }
     }
   }
 
@@ -764,11 +792,15 @@ class MemoryFileSystem extends FileSystem {
   }
 
   private EndPointCopyContext buildEndpointCopyContext(AbstractPath path) {
-    // TODO check for root
-    ElementPath absolutePath = (ElementPath) path.toAbsolutePath().normalize();
-    AbstractPath parent = (AbstractPath) absolutePath.getParent();
-    String elementName = absolutePath.getLastNameElement();
-    return new EndPointCopyContext(absolutePath, parent, elementName);
+    AbstractPath absolutePath = (AbstractPath) path.toAbsolutePath().normalize();
+    if (absolutePath.isRoot()) {
+      return new EndPointCopyContext(absolutePath, null, null);
+    } else {
+      ElementPath elementPath = (ElementPath) absolutePath;
+      AbstractPath parent = (AbstractPath) elementPath.getParent();
+      String elementName = elementPath.getLastNameElement();
+      return new EndPointCopyContext(elementPath, parent, elementName);
+    }
   }
 
   static final class EndPointCopyContext {

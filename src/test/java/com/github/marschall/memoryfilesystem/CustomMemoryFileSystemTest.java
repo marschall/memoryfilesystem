@@ -5,13 +5,16 @@ import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_URI;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.ClosedFileSystemException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystemAlreadyExistsException;
+import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.FileSystems;
 import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.attribute.UserPrincipalLookupService;
@@ -21,6 +24,23 @@ import java.util.Map;
 import org.junit.Test;
 
 public class CustomMemoryFileSystemTest {
+
+
+  @Test
+  public void getFileSystemUriClosed() throws IOException {
+    URI uri = URI.create("memory:getFileSystemUriClosed");
+    Map<String, ?> env = Collections.<String, Object>emptyMap();
+    try (FileSystem fileSystem = FileSystems.newFileSystem(uri, env)) {
+      assertSame(fileSystem, FileSystems.getFileSystem(uri));
+    }
+    // file system is closed now
+    try {
+      FileSystems.getFileSystem(uri);
+      fail("file system should not exist anymore");
+    } catch (FileSystemNotFoundException e) {
+      // should reach here
+    }
+  }
 
   @Test
   public void lookupPrincipalByName() throws IOException {

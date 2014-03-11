@@ -1809,6 +1809,95 @@ public class MemoryFileSystemTest {
   }
 
   @Test
+  public void moveRootIntoItself() throws IOException {
+    Path root = this.rule.getFileSystem().getPath("/");
+    Files.move(root, root);
+  }
+
+  @Test
+  public void moveRoot() throws IOException {
+    Path root = this.rule.getFileSystem().getPath("/");
+    Path path = this.rule.getFileSystem().getPath("/a");
+    try {
+      Files.move(root, path);
+      fail("moving the root should not work");
+    } catch (IOException e) {
+      // expected
+    }
+    try {
+      Files.move(path, root);
+      fail("moving the root should not work");
+    } catch (IOException e) {
+      // expected
+    }
+  }
+
+  @Test
+  public void copyRootIntoItself() throws IOException {
+    Path root = this.rule.getFileSystem().getPath("/");
+    Files.copy(root, root);
+  }
+
+
+  @Test
+  public void copyRootDifferentFileSystems() throws IOException {
+    Path firstRoot = this.rule.getFileSystem().getPath("/");
+    try (FileSystem second = MemoryFileSystemBuilder.newEmpty().build("second");) {
+      Path secondRoot = second.getPath("/");
+      try {
+        Files.copy(firstRoot, secondRoot);
+        fail("moving the root should not work");
+      } catch (IOException e) {
+        // expected
+      }
+      try {
+        Files.copy(secondRoot, firstRoot);
+        fail("moving the root should not work");
+      } catch (IOException e) {
+        // expected
+      }
+    }
+  }
+
+  @Test
+  public void moveRootDifferentFileSystems() throws IOException {
+    Path firstRoot = this.rule.getFileSystem().getPath("/");
+    try (FileSystem second = MemoryFileSystemBuilder.newEmpty().build("second");) {
+      Path secondRoot = second.getPath("/");
+      try {
+        Files.move(firstRoot, secondRoot);
+        fail("moving the root should not work");
+      } catch (IOException e) {
+        // expected
+      }
+      try {
+        Files.move(secondRoot, firstRoot);
+        fail("moving the root should not work");
+      } catch (IOException e) {
+        // expected
+      }
+    }
+  }
+
+  @Test
+  public void copyRoot() throws IOException {
+    Path root = this.rule.getFileSystem().getPath("/");
+    Path path = this.rule.getFileSystem().getPath("/a");
+    try {
+      Files.copy(root, path);
+      fail("moving the root should not work");
+    } catch (IOException e) {
+      // expected
+    }
+    try {
+      Files.copy(path, root);
+      fail("moving the root should not work");
+    } catch (IOException e) {
+      // expected
+    }
+  }
+
+  @Test
   public void moveSameFile() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
