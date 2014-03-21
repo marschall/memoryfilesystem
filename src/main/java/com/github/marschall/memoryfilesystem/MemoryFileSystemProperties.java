@@ -4,6 +4,7 @@ import java.text.Collator;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class MemoryFileSystemProperties {
 
@@ -41,22 +42,57 @@ public class MemoryFileSystemProperties {
 
   static final List<String> DEFAULT_ROOTS = Collections.singletonList(UNIX_ROOT);
 
+  // single entry caches for collators
+  // profiling has shown that getting collators is a bottleneck
+  private static final AtomicReference<CollatorCache> INSENSITIVE_COLLATOR = new AtomicReference<>();
+  private static final AtomicReference<CollatorCache> DECOMPOSITION_COLLATOR = new AtomicReference<>();
+  private static final AtomicReference<CollatorCache> NO_DECOMPOSITION_COLLATOR = new AtomicReference<>();
+
   static Collator caseSensitiveCollator(Locale locale, boolean decomposition) {
-    Collator collator = Collator.getInstance(locale);
-    if (decomposition) {
-      collator.setDecomposition(Collator.CANONICAL_DECOMPOSITION);
+    AtomicReference<CollatorCache> reference = decomposition ? DECOMPOSITION_COLLATOR : NO_DECOMPOSITION_COLLATOR;
+    int decompositionMode = decomposition ? Collator.CANONICAL_DECOMPOSITION : Collator.NO_DECOMPOSITION;
+    return getCaseSensitiveCollatorFromCache(locale, reference, decompositionMode);
+  }
+
+  private static Collator getCaseSensitiveCollatorFromCache(Locale locale, AtomicReference<CollatorCache> reference, int decompositionMode) {
+    CollatorCache cache = reference.get();
+    if (cache == null || !cache.locale.equals(locale)) {
+      Collator collator = Collator.getInstance(locale);
+      collator.setDecomposition(decompositionMode);
+      collator.setStrength(Collator.IDENTICAL);
+      reference.set(new CollatorCache(locale, collator));
+      return collator;
     } else {
-      collator.setDecomposition(Collator.NO_DECOMPOSITION);
+      return cache.collator;
     }
-    collator.setStrength(Collator.IDENTICAL);
-    return collator;
+
   }
 
   static Collator caseInsensitiveCollator(Locale locale) {
-    Collator collator = Collator.getInstance(locale);
-    collator.setDecomposition(Collator.NO_DECOMPOSITION);
-    collator.setStrength(Collator.SECONDARY);
-    return collator;
+    CollatorCache cache = INSENSITIVE_COLLATOR.get();
+    if (cache == null || !cache.locale.equals(locale)) {
+      Collator collator = Collator.getInstance(locale);
+      collator.setDecomposition(Collator.NO_DECOMPOSITION);
+      collator.setStrength(Collator.SECONDARY);
+
+      INSENSITIVE_COLLATOR.set(new CollatorCache(locale, collator));
+
+      return collator;
+
+    } else {
+      return cache.collator;
+    }
+  }
+
+  static final class CollatorCache {
+
+    final Locale locale;
+    final Collator collator;
+    CollatorCache(Locale locale, Collator collator) {
+      this.locale = locale;
+      this.collator = collator;
+    }
+
   }
 
 }
