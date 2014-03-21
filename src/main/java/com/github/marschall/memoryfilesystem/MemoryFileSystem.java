@@ -192,9 +192,9 @@ class MemoryFileSystem extends FileSystem {
 
   /**
    * Sets the root directories.
-   * 
+   *
    * <p>This is a bit annoying.</p>
-   * 
+   *
    * @param rootDirectories the root directories, not {@code null},
    *  should not be modified, no defensive copy will be made
    */
@@ -222,10 +222,10 @@ class MemoryFileSystem extends FileSystem {
 
   /**
    * Sets the current working directory.
-   * 
+   *
    * <p>This is used to resolve relative paths. This has to be set
    * after {@link #setRootDirectories(Map)}</p>.
-   * 
+   *
    * @param currentWorkingDirectory the default directory path
    */
   void setCurrentWorkingDirectory(String currentWorkingDirectory) {
@@ -1151,6 +1151,11 @@ class MemoryFileSystem extends FileSystem {
       // source and target are the same, do nothing
       // the way I read Files#copy this is the intention of the spec
       return;
+    }
+
+    if (sourceEntry == targetParent) {
+      // copy or move "folder" -> "folder/sub"
+      throw new FileSystemException(sourceContext.path.toString(), targetContext.path.toString(), "invalid argument");
     }
 
     // have to check permission first

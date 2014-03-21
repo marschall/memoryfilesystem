@@ -1816,6 +1816,13 @@ public class MemoryFileSystemTest {
     Files.move(root, root);
   }
 
+  @Test(expected = FileSystemException.class)
+  public void moveRootIntoSubfolder() throws IOException {
+    Path dir = Files.createDirectory(this.rule.getFileSystem().getPath("/dir"));
+    Path sub = dir.resolve("sub");
+    Files.move(dir, sub);
+  }
+
   @Test(expected = ProviderMismatchException.class)
   public void providerMismatch() throws IOException {
     Path root = Paths.get("");
