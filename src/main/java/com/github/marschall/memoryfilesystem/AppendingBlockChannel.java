@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.file.FileSystemException;
 import java.nio.file.Path;
 
 final class AppendingBlockChannel extends BlockChannel {
@@ -26,15 +27,13 @@ final class AppendingBlockChannel extends BlockChannel {
 
   @Override
   public FileChannel truncate(long size) throws IOException {
-    // TODO use FileSystemException?
-    throw new IOException("truncation not supported in append mode");
+    throw new FileSystemException(this.path.toString(), null, "truncation not supported in append mode");
   }
 
   @Override
   public int write(ByteBuffer src, long position) throws IOException {
     // TODO is this correct?
-    // TODO use FileSystemException?
-    throw new IOException("writing to a given position is not supported in append mode");
+    throw new FileSystemException(this.path.toString(), null, "writing to a given position is not supported in append mode");
   }
 
   @Override
@@ -50,8 +49,7 @@ final class AppendingBlockChannel extends BlockChannel {
   @Override
   public long transferFrom(ReadableByteChannel src, long position, long count) throws IOException {
     // TODO is this correct?
-    // TODO use FileSystemException?
-    throw new IOException("writing to a given position is not supported in append mode");
+    throw new FileSystemException(this.path.toString(), null, "writing to a given position is not supported in append mode");
   }
 
   @Override

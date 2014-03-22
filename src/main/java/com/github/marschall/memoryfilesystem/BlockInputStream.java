@@ -17,7 +17,8 @@ final class BlockInputStream extends InputStream {
   private final MemoryContents memoryContents;
   private final ClosedStreamChecker checker;
   private final AtomicLong position;
-  private Path pathToDelete;
+  private final Path path;
+  private final boolean deleteOnClose;
   //
   //  private final Lock markLock;
   //
@@ -27,13 +28,10 @@ final class BlockInputStream extends InputStream {
 
   BlockInputStream(MemoryContents memoryContents, boolean deleteOnClose, Path path) {
     this.memoryContents = memoryContents;
+    this.deleteOnClose = deleteOnClose;
     this.checker = new ClosedStreamChecker();
     this.position = new AtomicLong(0L);
-    if (deleteOnClose) {
-      this.pathToDelete = path;
-    } else {
-      this.pathToDelete = null;
-    }
+    this.path = path;
     //    this.markLock = new ReentrantLock();
     //    this.readLimit = -1;
     //    this.markPositon = -1L;
@@ -42,7 +40,7 @@ final class BlockInputStream extends InputStream {
 
   @Override
   public int read(byte[] b, int off, int len) throws IOException {
-    this.checker.check();
+    this.checker.check(this.path);
     boolean success = false;
     int read = 0;
     while (!success) {
@@ -58,7 +56,7 @@ final class BlockInputStream extends InputStream {
 
   @Override
   public long skip(long n) throws IOException {
-    this.checker.check();
+    this.checker.check(this.path);
     long positionBefore = this.position.get();
     long fileSize = this.memoryContents.size();
     // do not skip more than MAX_SKIP_SIZE
@@ -73,7 +71,7 @@ final class BlockInputStream extends InputStream {
 
   @Override
   public int available() throws IOException {
-    this.checker.check();
+    this.checker.check(this.path);
     long available = this.memoryContents.size() - this.position.get();
     if (available > Integer.MAX_VALUE) {
       return Integer.MAX_VALUE;
@@ -90,7 +88,7 @@ final class BlockInputStream extends InputStream {
   public void close() throws IOException {
     this.checker.close();
     this.memoryContents.accessed();
-    this.memoryContents.closedStream(this.pathToDelete);
+    this.memoryContents.closedStream(this.path, this.deleteOnClose);
   }
 
   // FileInputStream doesn't support marks so neither do we

@@ -17,7 +17,7 @@ final class NonAppendingBlockOutputStream extends BlockOutputStream {
 
   @Override
   public void write(byte[] b, int off, int len) throws IOException {
-    this.checker.check();
+    this.checker.check(this.path);
     this.memoryContents.write(b, this.position.get(), off, len);
     this.position.getAndAdd(len);
   }

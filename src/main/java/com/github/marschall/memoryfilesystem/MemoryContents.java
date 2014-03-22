@@ -45,8 +45,8 @@ interface MemoryContents {
 
   void modified();
 
-  void closedStream(Path toDelete);
+  void closedStream(Path path, boolean delete);
 
-  void closedChannel(Path toDelete);
+  void closedChannel(Path path, boolean delete);
 
 }

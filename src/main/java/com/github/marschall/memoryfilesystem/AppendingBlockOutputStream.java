@@ -11,7 +11,7 @@ class AppendingBlockOutputStream extends BlockOutputStream {
 
   @Override
   public void write(byte[] b, int off, int len) throws IOException {
-    this.checker.check();
+    this.checker.check(this.path);
     this.memoryContents.writeAtEnd(b, off, len);
   }
 

@@ -25,7 +25,7 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
    * It turned out to be easier to implement the contents in this class
    * rather than a separate class since it needs access to a, c, m times
    * and update the open count.
-   * 
+   *
    * #transferTo and #transferFrom are candidates for deadlocks since they
    * acquire two locks without ordering. However one is a read lock
    * and the other is a write lock. So I "think" we're fine for now.
@@ -46,7 +46,7 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
 
   /**
    * The number of open streams or channels.
-   * 
+   *
    * <p>A negative number indicates the file is marked for deletion.
    */
   private int openCount;
@@ -279,14 +279,14 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
   }
 
   @Override
-  public void closedStream(Path toDelete) {
+  public void closedStream(Path path, boolean delete) {
     try (AutoRelease lock = this.writeLock()) {
       this.openCount -= 1;
     }
-    if (toDelete != null) {
+    if (delete) {
       // intentionally not covered by Lock
       try {
-        Files.delete(toDelete);
+        Files.delete(path);
       } catch (IOException e) {
         // ignore, only a best effort is made
       }
@@ -294,14 +294,14 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
   }
 
   @Override
-  public void closedChannel(Path toDelete) {
+  public void closedChannel(Path path, boolean delete) {
     try (AutoRelease lock = this.writeLock()) {
       this.openCount -= 1;
     }
-    if (toDelete != null) {
+    if (delete) {
       // intentionally not covered by Lock
       try {
-        Files.delete(toDelete);
+        Files.delete(path);
       } catch (IOException e) {
         // ignore, only a best effort is made
       }

@@ -8,17 +8,15 @@ abstract class BlockOutputStream extends OutputStream {
 
   final MemoryContents memoryContents;
   final ClosedStreamChecker checker;
-  private final Path pathToDelete;
+  final Path path;
+  private final boolean deleteOnClose;
 
 
   BlockOutputStream(MemoryContents memoryContents, boolean deleteOnClose, Path path) {
     this.memoryContents = memoryContents;
+    this.deleteOnClose = deleteOnClose;
     this.checker = new ClosedStreamChecker();
-    if (deleteOnClose) {
-      this.pathToDelete = path;
-    } else {
-      this.pathToDelete = null;
-    }
+    this.path = path;
   }
 
   @Override
@@ -36,7 +34,7 @@ abstract class BlockOutputStream extends OutputStream {
   public void close() throws IOException {
     this.checker.close();
     this.memoryContents.modified();
-    this.memoryContents.closedStream(this.pathToDelete);
+    this.memoryContents.closedStream(this.path, this.deleteOnClose);
   }
 
 }

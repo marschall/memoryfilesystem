@@ -27,7 +27,7 @@ abstract class BlockChannel extends FileChannel {
   /**
    * The {@link java.nio.channels.WritableByteChannel} documentation says
    * only one write operation may be in progress on a channel at a time.
-   * 
+   *
    * The {@link java.nio.channels.ReadableByteChannel} documentation says
    * only one read operation may be in progress on a channel at a time.
    */
@@ -38,18 +38,17 @@ abstract class BlockChannel extends FileChannel {
    */
   private Set<MemoryFileLock> fileLocks;
 
-  private final Path pathToDelete;
+  final Path path;
+
+  private final boolean deleteOnClose;
 
 
   BlockChannel(MemoryContents memoryContents, boolean readable, boolean deleteOnClose, Path path) {
     this.memoryContents = memoryContents;
     this.readable = readable;
+    this.deleteOnClose = deleteOnClose;
     this.lock = new ReentrantLock();
-    if (deleteOnClose) {
-      this.pathToDelete = path;
-    } else {
-      this.pathToDelete = null;
-    }
+    this.path = path;
   }
 
   void closedCheck() throws ClosedChannelException {
@@ -245,7 +244,7 @@ abstract class BlockChannel extends FileChannel {
           this.memoryContents.unlock(fileLock);
         }
       }
-      this.memoryContents.closedChannel(this.pathToDelete);
+      this.memoryContents.closedChannel(this.path, this.deleteOnClose);
     }
   }
 
