@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -290,7 +291,7 @@ class MemoryFileSystem extends FileSystem {
   }
 
   private MemoryFile getFile(final AbstractPath path, final Set<? extends OpenOption> options, final FileAttribute<?>... attrs) throws IOException {
-    AbstractPath absolutePath = (AbstractPath) path.toAbsolutePath().normalize();
+    final AbstractPath absolutePath = (AbstractPath) path.toAbsolutePath().normalize();
     if (absolutePath.isRoot()) {
       throw new FileSystemException(path.toString(), null, "is not a file");
     }
@@ -332,7 +333,7 @@ class MemoryFileSystem extends FileSystem {
           if (storedEntry instanceof MemoryFile) {
             return (MemoryFile) storedEntry;
           } else {
-            throw new IOException("file is a directory");
+            throw new FileSystemException(absolutePath.toString(), null, "file is a directory");
           }
 
         }
@@ -690,25 +691,27 @@ class MemoryFileSystem extends FileSystem {
       int order = this.orderPaths(sourceContext, targetContext);
       final CopyContext copyContext = buildCopyContext(sourceContext, targetContext, operation, options, order);
 
-      if (copyContext.first.parent == null && copyContext.second.parent == null) {
+      AbstractPath firstParent = copyContext.first.parent;
+      final AbstractPath secondParent = copyContext.second.parent;
+      if (firstParent == null && secondParent == null) {
         // both of the involved paths is a root
         // simply ignore
         return;
       }
 
-      if (copyContext.first.parent == null || copyContext.second.parent == null) {
+      if (firstParent == null || secondParent == null) {
         // only one of the involved paths is a root
-        throw new IOException("can't copy or move root directory");
+        throw new FileSystemException(toStringOrNull(firstParent), toStringOrNull(secondParent), "can't copy or move root directory");
       }
 
       MemoryDirectory firstRoot = this.getRootDirectory(copyContext.first.path);
       final MemoryDirectory secondRoot = this.getRootDirectory(copyContext.second.path);
 
-      this.withWriteLockOnLastDo(firstRoot, copyContext.first.parent, copyContext.firstFollowSymLinks, new MemoryDirectoryBlock<Void>() {
+      this.withWriteLockOnLastDo(firstRoot, firstParent, copyContext.firstFollowSymLinks, new MemoryDirectoryBlock<Void>() {
 
         @Override
         public Void value(final MemoryDirectory firstDirectory) throws IOException {
-          MemoryFileSystem.this.withWriteLockOnLastDo(secondRoot, copyContext.second.parent, copyContext.secondFollowSymLinks, new MemoryDirectoryBlock<Void>() {
+          MemoryFileSystem.this.withWriteLockOnLastDo(secondRoot, secondParent, copyContext.secondFollowSymLinks, new MemoryDirectoryBlock<Void>() {
 
             @Override
             public Void value(MemoryDirectory secondDirectory) throws IOException {
@@ -731,17 +734,19 @@ class MemoryFileSystem extends FileSystem {
 
     int order = orderFileSystems(sourceContext, targetContext);
     final CopyContext copyContext = buildCopyContext(sourceContext, targetContext, operation, options, order);
-    if (copyContext.first.parent == null || copyContext.second.parent == null) {
-      throw new IOException("can't move ore copy the file system root");
+    AbstractPath firstParent = copyContext.first.parent;
+    final AbstractPath secondParent = copyContext.second.parent;
+    if (firstParent == null || secondParent == null) {
+      throw new FileSystemException(toStringOrNull(firstParent), toStringOrNull(secondParent), "can't move ore copy the file system root");
     }
 
     MemoryDirectory firstRoot = sourceFileSystem.getRootDirectory(copyContext.first.path);
     final MemoryDirectory secondRoot = targetFileSystem.getRootDirectory(copyContext.second.path);
-    copyContext.first.path.getMemoryFileSystem().withWriteLockOnLastDo(firstRoot, copyContext.first.parent, copyContext.firstFollowSymLinks, new MemoryDirectoryBlock<Void>() {
+    copyContext.first.path.getMemoryFileSystem().withWriteLockOnLastDo(firstRoot, firstParent, copyContext.firstFollowSymLinks, new MemoryDirectoryBlock<Void>() {
 
       @Override
       public Void value(final MemoryDirectory firstDirectory) throws IOException {
-        copyContext.second.path.getMemoryFileSystem().withWriteLockOnLastDo(secondRoot, copyContext.second.parent, copyContext.secondFollowSymLinks, new MemoryDirectoryBlock<Void>() {
+        copyContext.second.path.getMemoryFileSystem().withWriteLockOnLastDo(secondRoot, secondParent, copyContext.secondFollowSymLinks, new MemoryDirectoryBlock<Void>() {
 
           @Override
           public Void value(MemoryDirectory secondDirectory) throws IOException {
@@ -754,6 +759,10 @@ class MemoryFileSystem extends FileSystem {
       }
 
     });
+  }
+
+  private static String toStringOrNull(AbstractPath path) {
+    return Objects.toString(path, null);
   }
 
   private int orderPaths(EndPointCopyContext source, EndPointCopyContext target) {
@@ -1112,7 +1121,7 @@ class MemoryFileSystem extends FileSystem {
       @Override
       public Path value(MemoryEntry parentEntry) throws IOException {
         if (!(parentEntry instanceof MemoryDirectory)) {
-          throw new IOException("parent is not a directory");
+          throw new FileSystemException(path.toString(), null, "parent is not a directory");
         }
         MemoryDirectory directory = (MemoryDirectory) parentEntry;
         return MemoryFileSystem.this.withReadLockDo(directory, (AbstractPath) path.getFileName(), false, new MemoryEntryBlock<Path>() {
