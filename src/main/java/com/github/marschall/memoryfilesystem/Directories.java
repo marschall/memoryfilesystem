@@ -5,6 +5,7 @@ import static java.nio.file.FileVisitResult.CONTINUE;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.CopyOption;
+import java.nio.file.FileSystemException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
@@ -42,17 +43,17 @@ public final class Directories {
 
   /**
    * Copy a directory to a target directory recursively.
-   * 
+   *
    * <p>This method performs a copy much like
    * {@link Files#copy(Path, Path, CopyOption...)}. Unlike
    * {@link Files#copy(Path, Path, CopyOption...)} is can also copy non-empty
    * directories.</p>
-   * 
+   *
    * <p>This method makes a best effort to copy attributes across
    * different file system providers.</p>
-   * 
+   *
    * @see Files#copy(Path, Path, CopyOption...)
-   * 
+   *
    * @param source the path to the file to copy
    * @param target the path to the target file (may be associated with a different
    *               provider to the source path)
@@ -128,12 +129,12 @@ public final class Directories {
         }
         int read = sourceAttributes.read(each, buffer);
         if (read != size) {
-          throw new IOException("could not read attribute: " + each + " of " + source);
+          throw new FileSystemException(source.toString(), null,"could not read attribute: " + each);
         }
         buffer.flip();
         int written = targeAttributes.write(each, buffer);
         if (written != size) {
-          throw new IOException("could not read attribute: " + each + " of " + target);
+          throw new FileSystemException(target.toString(), null, "could not read attribute: " + each);
         }
 
       }
