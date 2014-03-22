@@ -1816,6 +1816,13 @@ public class MemoryFileSystemTest {
     Files.move(root, root);
   }
 
+  @Test
+  public void normalizeEmptyPath() throws IOException {
+    // https://bugs.openjdk.java.net/browse/JDK-8037945
+    Path path = this.rule.getFileSystem().getPath("");
+    assertEquals(path, path.normalize());
+  }
+
   @Test(expected = FileSystemException.class)
   public void moveRootIntoSubfolder() throws IOException {
     Path dir = Files.createDirectory(this.rule.getFileSystem().getPath("/dir"));
