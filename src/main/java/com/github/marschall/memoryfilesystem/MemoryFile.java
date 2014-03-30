@@ -2,6 +2,12 @@ package com.github.marschall.memoryfilesystem;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static java.nio.file.StandardOpenOption.APPEND;
+import static java.nio.file.StandardOpenOption.DELETE_ON_CLOSE;
+import static java.nio.file.StandardOpenOption.READ;
+import static java.nio.file.StandardOpenOption.SYNC;
+import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
+import static java.nio.file.StandardOpenOption.WRITE;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,7 +20,6 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.util.Set;
@@ -189,19 +194,19 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
   }
 
   InputStream newInputStream(Set<? extends OpenOption> options, Path path) throws IOException {
-    boolean deleteOnClose = options.contains(StandardOpenOption.DELETE_ON_CLOSE);
-    boolean sync = options.contains(StandardOpenOption.SYNC);
+    boolean deleteOnClose = options.contains(DELETE_ON_CLOSE);
+    boolean sync = options.contains(SYNC);
     return this.newInputStream(deleteOnClose, path);
   }
 
   OutputStream newOutputStream(Set<? extends OpenOption> options, Path path) throws IOException {
-    boolean deleteOnClose = options.contains(StandardOpenOption.DELETE_ON_CLOSE);
-    boolean append = options.contains(StandardOpenOption.APPEND);
-    boolean sync = options.contains(StandardOpenOption.SYNC);
+    boolean deleteOnClose = options.contains(DELETE_ON_CLOSE);
+    boolean append = options.contains(APPEND);
+    boolean sync = options.contains(SYNC);
     if (append) {
       return this.newAppendingOutputStream(deleteOnClose, path);
     } else {
-      boolean truncate = options.contains(StandardOpenOption.TRUNCATE_EXISTING);
+      boolean truncate = options.contains(TRUNCATE_EXISTING);
       if (truncate) {
         this.truncate(0L);
       }
@@ -210,16 +215,18 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
   }
 
   BlockChannel newChannel(Set<? extends OpenOption> options, Path path) throws IOException {
-    boolean append = options.contains(StandardOpenOption.APPEND);
-    boolean readable = options.contains(StandardOpenOption.READ);
-    boolean deleteOnClose = options.contains(StandardOpenOption.DELETE_ON_CLOSE);
-    boolean sync = options.contains(StandardOpenOption.SYNC);
+    boolean append = options.contains(APPEND);
+    boolean writable = options.contains(WRITE);
+    // if neither read nor wirte are present we defautl to read
+    // java.nio.file.Files.newByteChannel(Path, Set<? extends OpenOption>, FileAttribute<?>...)
+    boolean readable = options.contains(READ) || (!writable && !append);
+    boolean deleteOnClose = options.contains(DELETE_ON_CLOSE);
+    boolean sync = options.contains(SYNC);
     if (append) {
       return this.newAppendingChannel(readable, deleteOnClose, path);
     } else {
-      boolean writable = options.contains(StandardOpenOption.WRITE);
       if (writable) {
-        boolean truncate = options.contains(StandardOpenOption.TRUNCATE_EXISTING);
+        boolean truncate = options.contains(TRUNCATE_EXISTING);
         if (truncate) {
           this.truncate(0L);
         }

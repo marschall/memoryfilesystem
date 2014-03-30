@@ -6,6 +6,7 @@ import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isAbsolute;
 import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isRelative;
 import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
@@ -348,6 +349,28 @@ public class MemoryFileSystemTest {
       assertEquals(2L, channel.size());
     }
     assertThat(path, hasContents("ab"));
+  }
+
+  @Test
+  public void regressionIssue33() throws IOException {
+    // https://github.com/marschall/memoryfilesystem/issues/33
+    Path path = this.rule.getFileSystem().getPath("one").toAbsolutePath();
+    Files.write(path, "hallo world".getBytes(UTF_8));
+    Files.readAllBytes(path);
+  }
+
+  @Test
+  public void blockChannelRead() throws IOException {
+    // https://github.com/marschall/memoryfilesystem/issues/33
+    Path path = this.rule.getFileSystem().getPath("one").toAbsolutePath();
+    byte[] data = new byte[]{'a', 'b'};
+    Files.write(path, data);
+    byte[] readBack = new byte[data.length];
+    try (SeekableByteChannel channel = Files.newByteChannel(path)) {
+      ByteBuffer buffer = ByteBuffer.wrap(readBack);
+      assertEquals(data.length, channel.read(buffer));
+    }
+    assertArrayEquals(data, readBack);
   }
 
   @Test
