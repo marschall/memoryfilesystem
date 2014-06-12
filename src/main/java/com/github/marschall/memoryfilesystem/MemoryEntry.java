@@ -90,11 +90,11 @@ abstract class MemoryEntry {
   private InitializingFileAttributeView instantiate(Class<? extends FileAttributeView> viewClass,
           EntryCreationContext context) {
     if (viewClass == PosixFileAttributeView.class) {
-      return new MemoryPosixFileAttributeView(context);
+      return new MemoryPosixFileAttributeView(this, context);
     } else if (viewClass == DosFileAttributeView.class) {
-      return new MemoryDosFileAttributeView();
+      return new MemoryDosFileAttributeView(this);
     } if (viewClass == UserDefinedFileAttributeView.class) {
-      return new MemoryUserDefinedFileAttributeView();
+      return new MemoryUserDefinedFileAttributeView(this);
     } else {
       throw new IllegalArgumentException("unknown file attribute view: " + viewClass);
     }
@@ -324,13 +324,18 @@ abstract class MemoryEntry {
 
   }
 
-  abstract class DelegatingFileAttributesView implements BasicFileAttributeView, InitializingFileAttributeView {
-    // TODO has too many this pointers, should have explicit reference
+  static abstract class DelegatingFileAttributesView implements BasicFileAttributeView, InitializingFileAttributeView {
+
+    final MemoryEntry entry;
+
+    DelegatingFileAttributesView(MemoryEntry entry) {
+      this.entry = entry;
+    }
 
 
     @Override
     public void setTimes(FileTime lastModifiedTime, FileTime lastAccessTime, FileTime createTime) throws IOException {
-      MemoryEntry.this.getBasicFileAttributeView().setTimes(lastModifiedTime, lastAccessTime, createTime);
+      this.entry.getBasicFileAttributeView().setTimes(lastModifiedTime, lastAccessTime, createTime);
     }
 
     @Override
@@ -355,12 +360,12 @@ abstract class MemoryEntry {
 
   }
 
-  abstract class MemoryAclFileAttributeView extends MemoryFileOwnerAttributeView implements AclFileAttributeView, AccessCheck {
+  static abstract class MemoryAclFileAttributeView extends MemoryFileOwnerAttributeView implements AclFileAttributeView, AccessCheck {
 
     private List<AclEntry> acl;
 
-    MemoryAclFileAttributeView(EntryCreationContext context) {
-      super(context);
+    MemoryAclFileAttributeView(MemoryEntry entry, EntryCreationContext context) {
+      super(entry, context);
     }
 
     @Override
@@ -371,7 +376,7 @@ abstract class MemoryEntry {
     @Override
     public void setAcl(List<AclEntry> acl) throws IOException {
       // TODO check access
-      try (AutoRelease lock = MemoryEntry.this.writeLock()) {
+      try (AutoRelease lock = this.entry.writeLock()) {
         this.acl = new ArrayList<>(acl); // will to null check
       }
     }
@@ -379,7 +384,7 @@ abstract class MemoryEntry {
     @Override
     public List<AclEntry> getAcl() throws IOException {
       // TODO check access
-      try (AutoRelease lock = MemoryEntry.this.readLock()) {
+      try (AutoRelease lock = this.entry.readLock()) {
         return new ArrayList<>(this.acl);
       }
     }
@@ -388,12 +393,16 @@ abstract class MemoryEntry {
 
   }
 
-  class MemoryDosFileAttributeView extends DelegatingFileAttributesView implements DosFileAttributeView, AccessCheck {
+  static class MemoryDosFileAttributeView extends DelegatingFileAttributesView implements DosFileAttributeView, AccessCheck {
 
     private boolean readOnly;
     private boolean hidden;
     private boolean system;
     private boolean archive;
+
+    MemoryDosFileAttributeView(MemoryEntry entry) {
+      super(entry);
+    }
 
     @Override
     public String name() {
@@ -408,9 +417,9 @@ abstract class MemoryEntry {
 
     @Override
     public DosFileAttributes readAttributes() throws IOException {
-      MemoryEntry.this.checkAccess(AccessMode.READ);
-      try (AutoRelease lock = MemoryEntry.this.readLock()) {
-        BasicFileAttributeView view = MemoryEntry.this.getFileAttributeView(BasicFileAttributeView.class);
+      this.entry.checkAccess(AccessMode.READ);
+      try (AutoRelease lock = this.entry.readLock()) {
+        BasicFileAttributeView view = this.entry.getFileAttributeView(BasicFileAttributeView.class);
         return new MemoryDosFileAttributes(view.readAttributes(), this.readOnly, this.hidden, this.system, this.archive);
       }
     }
@@ -426,7 +435,7 @@ abstract class MemoryEntry {
 
     @Override
     public void setReadOnly(boolean value) throws IOException {
-      try (AutoRelease lock = MemoryEntry.this.writeLock()) {
+      try (AutoRelease lock = this.entry.writeLock()) {
         // don't check access
         this.readOnly = value;
       }
@@ -434,7 +443,7 @@ abstract class MemoryEntry {
 
     @Override
     public void setHidden(boolean value)  throws IOException{
-      try (AutoRelease lock = MemoryEntry.this.writeLock()) {
+      try (AutoRelease lock = this.entry.writeLock()) {
         // don't check access
         this.hidden = value;
       }
@@ -443,7 +452,7 @@ abstract class MemoryEntry {
 
     @Override
     public void setSystem(boolean value) throws IOException {
-      try (AutoRelease lock = MemoryEntry.this.writeLock()) {
+      try (AutoRelease lock = this.entry.writeLock()) {
         // don't check access
         this.system = value;
       }
@@ -452,7 +461,7 @@ abstract class MemoryEntry {
 
     @Override
     public void setArchive(boolean value) throws IOException {
-      try (AutoRelease lock = MemoryEntry.this.writeLock()) {
+      try (AutoRelease lock = this.entry.writeLock()) {
         // don't check access
         this.archive = value;
       }
@@ -611,11 +620,12 @@ abstract class MemoryEntry {
   }
 
 
-  abstract class MemoryFileOwnerAttributeView extends DelegatingFileAttributesView implements FileOwnerAttributeView {
+  static abstract class MemoryFileOwnerAttributeView extends DelegatingFileAttributesView implements FileOwnerAttributeView {
 
     private UserPrincipal owner;
 
-    MemoryFileOwnerAttributeView(EntryCreationContext context) {
+    MemoryFileOwnerAttributeView(MemoryEntry entry, EntryCreationContext context) {
+      super(entry);
       if (context.user == null) {
         throw new NullPointerException("owner");
       }
@@ -624,7 +634,7 @@ abstract class MemoryEntry {
 
     @Override
     public UserPrincipal getOwner() {
-      try (AutoRelease lock = MemoryEntry.this.readLock()) {
+      try (AutoRelease lock = this.entry.readLock()) {
         return this.owner;
       }
     }
@@ -635,41 +645,21 @@ abstract class MemoryEntry {
       if (owner == null) {
         throw new IllegalArgumentException("owner must not be null");
       }
-      try (AutoRelease lock = MemoryEntry.this.writeLock()) {
-        MemoryEntry.this.checkAccess(AccessMode.WRITE);
+      try (AutoRelease lock = this.entry.writeLock()) {
+        this.entry.checkAccess(AccessMode.WRITE);
         this.owner = owner;
       }
     }
 
   }
 
-
-  static Set<PosixFilePermission> toSet(int mask) {
-    Set<PosixFilePermission> set = EnumSet.noneOf(PosixFilePermission.class);
-    for (PosixFilePermission permission : PosixFilePermission.values()) {
-      int flag = 1 << permission.ordinal() & mask;
-      if (flag != 0) {
-        set.add(permission);
-      }
-    }
-    return set;
-  }
-
-  static int toMask(Set<PosixFilePermission> permissions) {
-    int mask = 0;
-    for (PosixFilePermission permission : permissions) {
-      mask |= 1 << permission.ordinal();
-    }
-    return mask;
-  }
-
-  class MemoryPosixFileAttributeView extends MemoryFileOwnerAttributeView implements PosixFileAttributeView, AccessCheck {
+  static class MemoryPosixFileAttributeView extends MemoryFileOwnerAttributeView implements PosixFileAttributeView, AccessCheck {
 
     private GroupPrincipal group;
     private int perms;
 
-    MemoryPosixFileAttributeView(EntryCreationContext context) {
-      super(context);
+    MemoryPosixFileAttributeView(MemoryEntry entry, EntryCreationContext context) {
+      super(entry, context);
       if (context.group == null) {
         throw new NullPointerException("group");
       }
@@ -696,17 +686,17 @@ abstract class MemoryEntry {
       if (group == null) {
         throw new IllegalArgumentException("group must not be null");
       }
-      try (AutoRelease lock = MemoryEntry.this.writeLock()) {
-        MemoryEntry.this.checkAccess(AccessMode.WRITE);
+      try (AutoRelease lock = this.entry.writeLock()) {
+        this.entry.checkAccess(AccessMode.WRITE);
         this.group = group;
       }
     }
 
     @Override
     public PosixFileAttributes readAttributes() throws IOException {
-      MemoryEntry.this.checkAccess(AccessMode.READ);
-      try (AutoRelease lock = MemoryEntry.this.readLock()) {
-        BasicFileAttributeView view = MemoryEntry.this.getFileAttributeView(BasicFileAttributeView.class);
+      this.entry.checkAccess(AccessMode.READ);
+      try (AutoRelease lock = this.entry.readLock()) {
+        BasicFileAttributeView view = this.entry.getFileAttributeView(BasicFileAttributeView.class);
         return new MemoryPosixFileAttributes(view.readAttributes(), this.getOwner(), this.group, toSet(this.perms));
       }
     }
@@ -716,8 +706,8 @@ abstract class MemoryEntry {
       if (perms == null) {
         throw new IllegalArgumentException("permissions must not be null");
       }
-      try (AutoRelease lock = MemoryEntry.this.writeLock()) {
-        MemoryEntry.this.checkAccess(AccessMode.WRITE);
+      try (AutoRelease lock = this.entry.writeLock()) {
+        this.entry.checkAccess(AccessMode.WRITE);
         this.perms = toMask(perms);
       }
     }
@@ -725,7 +715,7 @@ abstract class MemoryEntry {
     private UserPrincipal getCurrentUser() {
       UserPrincipal user = CurrentUser.get();
       if (user == null) {
-        return MemoryEntry.this.fileSystem.getUserPrincipalLookupService().getDefaultUser();
+        return this.entry.fileSystem.getUserPrincipalLookupService().getDefaultUser();
       } else {
         return user;
       }
@@ -806,12 +796,16 @@ abstract class MemoryEntry {
 
   }
 
-  class MemoryUserDefinedFileAttributeView extends DelegatingFileAttributesView implements UserDefinedFileAttributeView {
+  static class MemoryUserDefinedFileAttributeView extends DelegatingFileAttributesView implements UserDefinedFileAttributeView {
 
     // can potentially be null
     // try to delay instantiating as long as possible to keep per file object overhead minimal
     // protected by lock of memory entry
     private Map<String, byte[]> values;
+
+    MemoryUserDefinedFileAttributeView(MemoryEntry entry) {
+      super(entry);
+    }
 
     @Override
     public BasicFileAttributes readAttributes() throws IOException {
@@ -846,7 +840,7 @@ abstract class MemoryEntry {
 
     @Override
     public List<String> list() throws IOException {
-      try (AutoRelease lock = MemoryEntry.this.readLock()) {
+      try (AutoRelease lock = this.entry.readLock()) {
         if (this.values == null) {
           return Collections.emptyList();
         } else {
@@ -858,7 +852,7 @@ abstract class MemoryEntry {
 
     @Override
     public int size(String name) throws IOException {
-      try (AutoRelease lock = MemoryEntry.this.readLock()) {
+      try (AutoRelease lock = this.entry.readLock()) {
         byte[] value = this.getValue(name);
         return value.length;
       }
@@ -880,7 +874,7 @@ abstract class MemoryEntry {
 
     @Override
     public int read(String name, ByteBuffer dst) throws IOException {
-      try (AutoRelease lock = MemoryEntry.this.readLock()) {
+      try (AutoRelease lock = this.entry.readLock()) {
         byte[] value = this.getValue(name);
         int remaining = dst.remaining();
         int required = value.length;
@@ -897,7 +891,7 @@ abstract class MemoryEntry {
 
     @Override
     public int write(String name, ByteBuffer src) throws IOException {
-      try (AutoRelease lock = MemoryEntry.this.writeLock()) {
+      try (AutoRelease lock = this.entry.writeLock()) {
         if (name == null) {
           throw new NullPointerException("name is null");
         }
@@ -917,7 +911,7 @@ abstract class MemoryEntry {
 
     @Override
     public void delete(String name) throws IOException {
-      try (AutoRelease lock = MemoryEntry.this.writeLock()) {
+      try (AutoRelease lock = this.entry.writeLock()) {
         if (this.values != null) {
           if (name == null) {
             throw new NullPointerException("name is null");
@@ -926,6 +920,26 @@ abstract class MemoryEntry {
         }
       }
     }
+  }
+
+
+  static Set<PosixFilePermission> toSet(int mask) {
+    Set<PosixFilePermission> set = EnumSet.noneOf(PosixFilePermission.class);
+    for (PosixFilePermission permission : PosixFilePermission.values()) {
+      int flag = 1 << permission.ordinal() & mask;
+      if (flag != 0) {
+        set.add(permission);
+      }
+    }
+    return set;
+  }
+
+  static int toMask(Set<PosixFilePermission> permissions) {
+    int mask = 0;
+    for (PosixFilePermission permission : permissions) {
+      mask |= 1 << permission.ordinal();
+    }
+    return mask;
   }
 
 }
