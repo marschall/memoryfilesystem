@@ -2,6 +2,9 @@ package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.AutoReleaseLock.autoRelease;
 import static java.nio.file.AccessMode.WRITE;
+import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
+import static java.nio.file.StandardOpenOption.CREATE;
+import static java.nio.file.StandardOpenOption.CREATE_NEW;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,7 +29,6 @@ import java.nio.file.NotLinkException;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
-import java.nio.file.StandardOpenOption;
 import java.nio.file.WatchService;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.DosFileAttributes;
@@ -60,6 +62,8 @@ import javax.annotation.PreDestroy;
 class MemoryFileSystem extends FileSystem {
 
   private static final Set<String> UNSUPPORTED_INITIAL_ATTRIBUES;
+
+  private static final LinkOption[] NO_LINK_OPTIONS = new LinkOption[]{NOFOLLOW_LINKS};
 
   private final String key;
 
@@ -298,11 +302,12 @@ class MemoryFileSystem extends FileSystem {
     final ElementPath elementPath = (ElementPath) absolutePath;
     MemoryDirectory rootDirectory = this.getRootDirectory(absolutePath);
 
-    return this.withWriteLockOnLastDo(rootDirectory, (AbstractPath) absolutePath.getParent(), Options.isFollowSymLinks(options), new MemoryDirectoryBlock<MemoryFile>() {
+    final boolean followSymLinks = Options.isFollowSymLinks(options);
+    return this.withWriteLockOnLastDo(rootDirectory, (AbstractPath) absolutePath.getParent(), followSymLinks, new MemoryDirectoryBlock<MemoryFile>() {
 
       @Override
       public MemoryFile value(MemoryDirectory directory) throws IOException {
-        boolean isCreateNew = options.contains(StandardOpenOption.CREATE_NEW);
+        boolean isCreateNew = options.contains(CREATE_NEW);
         String fileName = elementPath.getLastNameElement();
         String key = MemoryFileSystem.this.lookUpTransformer.transform(fileName);
         if (isCreateNew) {
@@ -317,7 +322,7 @@ class MemoryFileSystem extends FileSystem {
         } else {
           MemoryEntry storedEntry = directory.getEntry(key);
           if (storedEntry == null) {
-            boolean isCreate = options.contains(StandardOpenOption.CREATE);
+            boolean isCreate = options.contains(CREATE);
             if (isCreate) {
               String name = MemoryFileSystem.this.storeTransformer.transform(fileName);
               MemoryFile file = new MemoryFile(name, MemoryFileSystem.this.newEntryCreationContext());
@@ -332,6 +337,10 @@ class MemoryFileSystem extends FileSystem {
           }
           if (storedEntry instanceof MemoryFile) {
             return (MemoryFile) storedEntry;
+          } else if (storedEntry instanceof MemorySymbolicLink && followSymLinks) {
+            AbstractPath target = ((MemorySymbolicLink) storedEntry).getTarget();
+            // TODO requires reentrant lock, should build return value object
+            return MemoryFileSystem.this.getFile(target, options, attrs);
           } else {
             throw new FileSystemException(absolutePath.toString(), null, "file is a directory");
           }
@@ -409,7 +418,7 @@ class MemoryFileSystem extends FileSystem {
 
   }
 
-  Path toRealPath(AbstractPath abstractPath, LinkOption... options)throws IOException  {
+  AbstractPath toRealPath(AbstractPath abstractPath, LinkOption... options) throws IOException  {
     this.checker.check();
     AbstractPath absolutePath = (AbstractPath) abstractPath.toAbsolutePath().normalize();
     boolean followSymLinks = Options.isFollowSymLinks(options);
@@ -426,9 +435,9 @@ class MemoryFileSystem extends FileSystem {
   }
 
 
-  private Path toRealPath(MemoryDirectory root, AbstractPath path, Set<MemorySymbolicLink> encounteredLinks, boolean followSymLinks) throws IOException {
+  private AbstractPath toRealPath(MemoryDirectory root, AbstractPath path, Set<MemorySymbolicLink> encounteredLinks, boolean followSymLinks) throws IOException {
     if (path.isRoot()) {
-      return path.getRoot();
+      return (AbstractPath) path.getRoot();
     } else if (path instanceof ElementPath) {
       Path symLinkTarget = null;
 
@@ -449,7 +458,6 @@ class MemoryFileSystem extends FileSystem {
           if (followSymLinks && current instanceof MemorySymbolicLink) {
             MemorySymbolicLink link = (MemorySymbolicLink) current;
             if (!encounteredLinks.add(link)) {
-              // TODO better error message
               throw new FileSystemLoopException(path.toString());
             }
             symLinkTarget = link.getTarget();
@@ -460,7 +468,6 @@ class MemoryFileSystem extends FileSystem {
           } else if (current instanceof MemoryDirectory) {
             parent = (MemoryDirectory) current;
           } else {
-            //TODO construct better error message
             throw new NotDirectoryException(path.toString());
           }
 
@@ -640,7 +647,6 @@ class MemoryFileSystem extends FileSystem {
           if (followSymLinks && current instanceof MemorySymbolicLink) {
             MemorySymbolicLink link = (MemorySymbolicLink) current;
             if (!encounteredLinks.add(link)) {
-              // TODO better error message
               throw new FileSystemLoopException(path.toString());
             }
             symLinkTarget = link.getTarget();
@@ -651,7 +657,6 @@ class MemoryFileSystem extends FileSystem {
           } else if (current instanceof MemoryDirectory) {
             parent = (MemoryDirectory) current;
           } else {
-            //TODO construct better error message
             throw new NotDirectoryException(path.toString());
           }
 
@@ -1105,7 +1110,7 @@ class MemoryFileSystem extends FileSystem {
     } else if (sourceEntry instanceof MemorySymbolicLink) {
       MemorySymbolicLink sourceLink = (MemorySymbolicLink) sourceEntry;
       try (AutoRelease lock = sourceLink.readLock()) {
-        return new MemorySymbolicLink(targetElementName, (AbstractPath) sourceLink.getTarget(), MemoryFileSystem.this.newEntryCreationContext());
+        return new MemorySymbolicLink(targetElementName, sourceLink.getTarget(), MemoryFileSystem.this.newEntryCreationContext());
       }
     } else {
       throw new AssertionError("unknown entry type:" + sourceEntry);

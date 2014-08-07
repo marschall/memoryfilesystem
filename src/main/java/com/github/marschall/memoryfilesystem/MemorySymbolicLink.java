@@ -2,14 +2,13 @@ package com.github.marschall.memoryfilesystem;
 
 import java.io.IOException;
 import java.nio.file.AccessMode;
-import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 
 class MemorySymbolicLink extends MemoryEntry {
 
-  private final Path target;
+  private final AbstractPath target;
 
   private final MemorySymbolicLinkAttributesView basicFileAttributeView;
 
@@ -24,7 +23,7 @@ class MemorySymbolicLink extends MemoryEntry {
     this.basicFileAttributeView = new MemorySymbolicLinkAttributesView();
   }
 
-  Path getTarget() {
+  AbstractPath getTarget() {
     return this.target;
   }
 
@@ -41,7 +40,7 @@ class MemorySymbolicLink extends MemoryEntry {
 
   @Override
   public String toString() {
-    return "symlin(" + this.getOriginalName() + ") -> " + this.target;
+    return "symlink(" + this.getOriginalName() + ") -> " + this.target;
   }
 
   class MemorySymbolicLinkAttributesView extends MemoryEntryFileAttributesView {

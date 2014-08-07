@@ -5,6 +5,7 @@ import static com.github.marschall.memoryfilesystem.FileContentsMatcher.hasConte
 import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isAbsolute;
 import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isRelative;
+import static com.github.marschall.memoryfilesystem.IsSymbolicLinkMatcher.isSymbolicLink;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
@@ -82,6 +83,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.regex.PatternSyntaxException;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -889,6 +891,103 @@ public class MemoryFileSystemTest {
     assertEquals("/dir1/link", link.toRealPath(NOFOLLOW_LINKS).toString());
     assertEquals("/dir2/target", link.toRealPath().toString());
   }
+
+  /**
+   * Regression test for issue 35.
+   *
+   * @throws IOException if the test fails
+   */
+  @Test
+  public void issue35() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    List<String> lines = Collections.singletonList("Hello world");
+
+    Path file = fileSystem.getPath("/").resolve("file");
+    Files.write(file, lines, UTF_8);
+
+    Path link = file.resolveSibling("link");
+    // link -> file
+    Files.createSymbolicLink(link, file);
+
+    List<String> readBack = Files.readAllLines(link, UTF_8);
+    assertEquals(lines, readBack);
+  }
+  @Test
+  public void readFromSymbolicLink() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    List<String> lines = Collections.singletonList("Hello world");
+
+    Path file = fileSystem.getPath("/").resolve("file");
+    Files.createFile(file);
+
+    Path link = file.resolveSibling("link");
+    // link -> file
+    Files.createSymbolicLink(link, file);
+
+    Files.write(link, lines, UTF_8);
+    List<String> readBack = Files.readAllLines(link, UTF_8);
+    assertEquals(lines, readBack);
+  }
+
+  @Test
+  @Ignore("broken")
+  public void readSymlinkLoop() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path file = fileSystem.getPath("/").resolve("file");
+
+    Path link = file.resolveSibling("link");
+    Files.createSymbolicLink(link, file);
+    Files.createSymbolicLink(file, link);
+
+    try {
+      Files.readAllLines(link, UTF_8);
+      // if the run into a loop we'll actually never reach here
+      fail("loop");
+    } catch (FileSystemLoopException e) {
+      // should reach there
+    }
+  }
+
+  @Test
+  public void copySymbolicLinkNoFollow() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path file = fileSystem.getPath("/").resolve("file");
+    Files.createFile(file);
+
+    Path link1 = file.resolveSibling("link1");
+    Path link2 = file.resolveSibling("link2");
+
+    Files.createSymbolicLink(link1, file);
+    Files.copy(link1, link2, NOFOLLOW_LINKS);
+
+    assertThat(link2, exists());
+    assertThat(link2, isSymbolicLink());
+
+    assertEquals("/file", link2.toRealPath().toString());
+  }
+
+  @Test
+  @Ignore("broken")
+  public void copySymbolicLinkFollow() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path file = fileSystem.getPath("/").resolve("file");
+    Path fileCopy = fileSystem.getPath("/").resolve("copy");
+    Files.createFile(file);
+
+    Path link = file.resolveSibling("link");
+
+    Files.createSymbolicLink(link, file);
+    Files.copy(link, fileCopy);
+
+    assertThat(fileCopy, exists());
+    assertThat(fileCopy, not(isSymbolicLink()));
+  }
+
 
   @Test(expected = FileSystemException.class)
   public void dontDeleteOpenFile() throws IOException {
