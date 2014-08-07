@@ -1,12 +1,13 @@
 package com.github.marschall.memoryfilesystem;
 
 import java.nio.file.FileSystem;
+import java.nio.file.attribute.AclFileAttributeView;
 
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-final class PosixFileSystemRule implements TestRule {
+final class PosixAclFileSystemRule implements TestRule {
 
   private FileSystem fileSystem;
 
@@ -22,12 +23,14 @@ final class PosixFileSystemRule implements TestRule {
 
       @Override
       public void evaluate() throws Throwable {
-        PosixFileSystemRule.this.fileSystem = MemoryFileSystemBuilder.newLinux().build("PosixFileSystemRule");
+        PosixAclFileSystemRule.this.fileSystem = MemoryFileSystemBuilder.newLinux()
+                .addFileAttributeView(AclFileAttributeView.class)
+                .build("PosixAclFileSystemRule");
 
         try {
           base.evaluate();
         } finally {
-          PosixFileSystemRule.this.fileSystem.close();
+          PosixAclFileSystemRule.this.fileSystem.close();
         }
       }
 

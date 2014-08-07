@@ -22,7 +22,7 @@ public class MacOsFileSystemRule implements TestRule {
 
       @Override
       public void evaluate() throws Throwable {
-        MacOsFileSystemRule.this.fileSystem = MemoryFileSystemBuilder.newMacOs().build("name");
+        MacOsFileSystemRule.this.fileSystem = MemoryFileSystemBuilder.newMacOs().build("MacOsFileSystemRule");
 
         try {
           base.evaluate();

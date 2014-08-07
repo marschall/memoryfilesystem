@@ -14,6 +14,7 @@ import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.PosixFilePermission;
@@ -28,7 +29,7 @@ class MemoryDirectory extends MemoryEntry {
 
   private final Map<String, MemoryEntry> entries;
 
-  private final InitializingFileAttributeView basicFileAttributeView;
+  private final MemoryDirectoryFileAttributesView basicFileAttributeView;
 
   private static final Set<PosixFilePermission> EXECUTE = EnumSet.of(OWNER_EXECUTE, GROUP_EXECUTE, OTHERS_EXECUTE);
 
@@ -60,7 +61,12 @@ class MemoryDirectory extends MemoryEntry {
   }
 
   @Override
-  InitializingFileAttributeView getBasicFileAttributeView() {
+  BasicFileAttributeView getBasicFileAttributeView() {
+    return this.basicFileAttributeView;
+  }
+
+  @Override
+  InitializingFileAttributeView getInitializingFileAttributeView() {
     return this.basicFileAttributeView;
   }
 

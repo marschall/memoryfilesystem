@@ -5,7 +5,7 @@ import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.FileAttributeView;
 import java.util.Map;
 
-interface InitializingFileAttributeView extends BasicFileAttributeView {
+interface InitializingFileAttributeView extends FileAttributeView {
 
   void initializeRoot();
 

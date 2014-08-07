@@ -1,6 +1,13 @@
 package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.AutoReleaseLock.autoRelease;
+import static java.nio.file.attribute.AclEntryPermission.EXECUTE;
+import static java.nio.file.attribute.AclEntryPermission.READ_ACL;
+import static java.nio.file.attribute.AclEntryPermission.READ_DATA;
+import static java.nio.file.attribute.AclEntryPermission.WRITE_ACL;
+import static java.nio.file.attribute.AclEntryPermission.WRITE_DATA;
+import static java.nio.file.attribute.AclEntryType.ALLOW;
+import static java.nio.file.attribute.AclEntryType.DENY;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -8,6 +15,8 @@ import java.nio.file.AccessDeniedException;
 import java.nio.file.AccessMode;
 import java.nio.file.FileSystemException;
 import java.nio.file.attribute.AclEntry;
+import java.nio.file.attribute.AclEntryPermission;
+import java.nio.file.attribute.AclEntryType;
 import java.nio.file.attribute.AclFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -71,7 +80,7 @@ abstract class MemoryEntry {
 
   void initializeAttributes(MemoryEntry other) throws IOException {
     try (AutoRelease lock = this.writeLock()) {
-      this.getBasicFileAttributeView().initializeFrom(other.getBasicFileAttributeView());
+      this.getInitializingFileAttributeView().initializeFrom(other.getBasicFileAttributeView());
       for (InitializingFileAttributeView view : this.additionalViews.values()) {
         view.initializeFrom(other.additionalViews);
       }
@@ -93,8 +102,10 @@ abstract class MemoryEntry {
       return new MemoryPosixFileAttributeView(this, context);
     } else if (viewClass == DosFileAttributeView.class) {
       return new MemoryDosFileAttributeView(this);
-    } if (viewClass == UserDefinedFileAttributeView.class) {
+    } else if (viewClass == UserDefinedFileAttributeView.class) {
       return new MemoryUserDefinedFileAttributeView(this);
+    } else if (viewClass == AclFileAttributeView.class) {
+      return new MemoryAclFileAttributeView(this, context);
     } else {
       throw new IllegalArgumentException("unknown file attribute view: " + viewClass);
     }
@@ -158,6 +169,20 @@ abstract class MemoryEntry {
         }
       }
     }
+  }
+
+  private UserPrincipal getCurrentUser() {
+    UserPrincipal user = CurrentUser.get();
+    if (user == null) {
+      return this.fileSystem.getUserPrincipalLookupService().getDefaultUser();
+    } else {
+      return user;
+    }
+  }
+
+  private GroupPrincipal getCurrentGroup() {
+    // TODO special case for just one user
+    return CurrentGroup.get();
   }
 
   private AccessMode getUnsupported(AccessMode... modes) {
@@ -255,9 +280,11 @@ abstract class MemoryEntry {
     }
   }
 
-  abstract InitializingFileAttributeView getBasicFileAttributeView();
+  abstract InitializingFileAttributeView getInitializingFileAttributeView();
 
-  abstract class MemoryEntryFileAttributesView implements InitializingFileAttributeView {
+  abstract BasicFileAttributeView getBasicFileAttributeView();
+
+  abstract class MemoryEntryFileAttributesView implements InitializingFileAttributeView, BasicFileAttributeView {
 
     @Override
     public String name() {
@@ -324,7 +351,7 @@ abstract class MemoryEntry {
 
   }
 
-  static abstract class DelegatingFileAttributesView implements BasicFileAttributeView, InitializingFileAttributeView {
+  static abstract class DelegatingFileAttributesView implements InitializingFileAttributeView {
 
     final MemoryEntry entry;
 
@@ -332,8 +359,6 @@ abstract class MemoryEntry {
       this.entry = entry;
     }
 
-
-    @Override
     public void setTimes(FileTime lastModifiedTime, FileTime lastAccessTime, FileTime createTime) throws IOException {
       this.entry.getBasicFileAttributeView().setTimes(lastModifiedTime, lastAccessTime, createTime);
     }
@@ -360,12 +385,13 @@ abstract class MemoryEntry {
 
   }
 
-  static abstract class MemoryAclFileAttributeView extends MemoryFileOwnerAttributeView implements AclFileAttributeView, AccessCheck {
+  static class MemoryAclFileAttributeView extends MemoryFileOwnerAttributeView implements AclFileAttributeView, AccessCheck {
 
     private List<AclEntry> acl;
 
     MemoryAclFileAttributeView(MemoryEntry entry, EntryCreationContext context) {
       super(entry, context);
+      this.acl = Collections.emptyList();
     }
 
     @Override
@@ -374,18 +400,70 @@ abstract class MemoryEntry {
     }
 
     @Override
+    void initializeFromSelf(FileAttributeView selfAttributes) {
+      this.acl = new ArrayList<>(((MemoryAclFileAttributeView) selfAttributes).acl);
+    }
+
+    @Override
     public void setAcl(List<AclEntry> acl) throws IOException {
-      // TODO check access
+      this.checkAccess(WRITE_ACL);
       try (AutoRelease lock = this.entry.writeLock()) {
-        this.acl = new ArrayList<>(acl); // will to null check
+        this.acl = new ArrayList<>(acl); // will do null check
       }
     }
 
     @Override
     public List<AclEntry> getAcl() throws IOException {
-      // TODO check access
+      this.checkAccess(READ_ACL);
       try (AutoRelease lock = this.entry.readLock()) {
         return new ArrayList<>(this.acl);
+      }
+    }
+
+    public void checkAccess(AclEntryPermission mode) throws AccessDeniedException {
+      // TODO "OWNER@", "GROUP@", and "EVERYONE@"
+      UserPrincipal currentUser = this.entry.getCurrentUser();
+      GroupPrincipal currentGroup = this.entry.getCurrentGroup();
+      for (AclEntry entry : this.acl) {
+        UserPrincipal principal = entry.principal();
+        if (principal.equals(currentUser) || principal.equals(currentGroup)) {
+          Set<AclEntryPermission> permissions = entry.permissions();
+          boolean applies = permissions.contains(mode);
+          AclEntryType type = entry.type();
+          if (applies) {
+            if (type == ALLOW) {
+              return;
+            }
+            if (type == DENY) {
+              // TODO pass in file
+              throw new AccessDeniedException(null);
+            }
+          }
+        }
+      }
+    }
+
+    @Override
+    public void checkAccess(AccessMode mode) throws AccessDeniedException {
+      switch (mode) {
+        case READ:
+          this.checkAccess(READ_DATA);
+          break;
+        case WRITE:
+          this.checkAccess(WRITE_DATA);
+          break;
+        case EXECUTE:
+          this.checkAccess(EXECUTE);
+          break;
+        default:
+          throw new UnsupportedOperationException("access mode " + mode + " is not supported");
+      }
+    }
+
+    @Override
+    public void checkAccess(AccessMode[] modes) throws AccessDeniedException {
+      for (AccessMode mode : modes) {
+        this.checkAccess(mode);
       }
     }
 
@@ -712,28 +790,14 @@ abstract class MemoryEntry {
       }
     }
 
-    private UserPrincipal getCurrentUser() {
-      UserPrincipal user = CurrentUser.get();
-      if (user == null) {
-        return this.entry.fileSystem.getUserPrincipalLookupService().getDefaultUser();
-      } else {
-        return user;
-      }
-    }
-
-    private GroupPrincipal getCurrentGroup() {
-      // TODO special case for just one user
-      return CurrentGroup.get();
-    }
-
     @Override
     public void checkAccess(AccessMode mode) throws AccessDeniedException {
-      UserPrincipal user = this.getCurrentUser();
+      UserPrincipal user = this.entry.getCurrentUser();
       PosixFilePermission permission;
       if (user == this.getOwner()) {
         permission = this.translateOwnerMode(mode);
       } else {
-        GroupPrincipal group = this.getCurrentGroup();
+        GroupPrincipal group = this.entry.getCurrentGroup();
         if (group == this.group) {
           permission = this.translateGroupMode(mode);
         } else {
@@ -796,7 +860,7 @@ abstract class MemoryEntry {
 
   }
 
-  static class MemoryUserDefinedFileAttributeView extends DelegatingFileAttributesView implements UserDefinedFileAttributeView {
+  static class MemoryUserDefinedFileAttributeView extends DelegatingFileAttributesView implements UserDefinedFileAttributeView, BasicFileAttributeView {
 
     // can potentially be null
     // try to delay instantiating as long as possible to keep per file object overhead minimal

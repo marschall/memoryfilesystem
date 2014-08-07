@@ -104,7 +104,7 @@ class MemoryFileSystem extends FileSystem {
    * lock ordering to avoid deadlocks. During the lock acquisition phase
    * no changes must be made that might affect the ordering. This involves
    * deleting and creating files (with a different capitalization) or links.
-   * We assume deleting is less commong so we block this operation.
+   * We assume deleting is less common so we block this operation.
    */
   private final ReadWriteLock pathOrderingLock;
 

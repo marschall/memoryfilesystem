@@ -22,7 +22,7 @@ final class WindowsFileSystemRule implements TestRule {
 
       @Override
       public void evaluate() throws Throwable {
-        WindowsFileSystemRule.this.fileSystem = MemoryFileSystemBuilder.newWindows().build("name");
+        WindowsFileSystemRule.this.fileSystem = MemoryFileSystemBuilder.newWindows().build("WindowsFileSystemRule");
 
         try {
           base.evaluate();

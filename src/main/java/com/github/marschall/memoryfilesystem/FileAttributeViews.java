@@ -1,5 +1,6 @@
 package com.github.marschall.memoryfilesystem;
 
+import java.nio.file.attribute.AclFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.DosFileAttributeView;
 import java.nio.file.attribute.DosFileAttributes;
@@ -40,19 +41,22 @@ final class FileAttributeViews {
     SUPPORTED_VIEWS.add(PosixFileAttributeView.class);
     SUPPORTED_VIEWS.add(UserDefinedFileAttributeView.class);
 
-    SUPPORTED_VIEW_NAMES = new HashSet<>(3);
+    SUPPORTED_VIEW_NAMES = new HashSet<>(4);
     SUPPORTED_VIEW_NAMES.add(POSIX);
     SUPPORTED_VIEW_NAMES.add(DOS);
     SUPPORTED_VIEW_NAMES.add(USER);
+    SUPPORTED_VIEW_NAMES.add(ACL);
 
-    CLASS_TO_NAME_MAP = new HashMap<>(3);
+    CLASS_TO_NAME_MAP = new HashMap<>(4);
     CLASS_TO_NAME_MAP.put(PosixFileAttributeView.class, POSIX);
     CLASS_TO_NAME_MAP.put(DosFileAttributeView.class, DOS);
     CLASS_TO_NAME_MAP.put(UserDefinedFileAttributeView.class, USER);
-    NAME_TO_CLASS_MAP = new HashMap<>(3);
+    CLASS_TO_NAME_MAP.put(AclFileAttributeView.class, ACL);
+    NAME_TO_CLASS_MAP = new HashMap<>(4);
     NAME_TO_CLASS_MAP.put(POSIX, PosixFileAttributeView.class);
     NAME_TO_CLASS_MAP.put(DOS, DosFileAttributeView.class);
     NAME_TO_CLASS_MAP.put(USER, UserDefinedFileAttributeView.class);
+    NAME_TO_CLASS_MAP.put(ACL, AclFileAttributeView.class);
 
     ATTRIBUTES_TO_VIEW_MAP = new HashMap<>(2);
     ATTRIBUTES_TO_VIEW_MAP.put(DosFileAttributes.class, DOS);

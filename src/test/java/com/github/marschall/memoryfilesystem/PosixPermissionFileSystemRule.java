@@ -41,7 +41,7 @@ final class PosixPermissionFileSystemRule implements TestRule {
                 .setStoreTransformer(StringTransformers.IDENTIY)
                 .setCaseSensitive(true)
                 .addForbiddenCharacter((char) 0)
-                .build("posix-permission");
+                .build("PosixPermissionFileSystemRule");
 
         try {
           base.evaluate();
