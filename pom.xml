@@ -128,6 +128,17 @@
   <build>
     <plugins>
       <plugin>
+        <groupId>com.github.marschall</groupId>
+        <artifactId>jdeps-maven-plugin</artifactId>
+        <version>0.2.2</version>
+        <configuration>
+          <profile>true</profile>
+          <!--
+          <dotOutputDirectory>${project.reporting.outputDirectory}/jdeps</dotOutputDirectory>
+           -->
+        </configuration>
+      </plugin>
+      <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
           <source>${java.version}</source>
