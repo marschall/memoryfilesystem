@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.marschall</groupId>
   <artifactId>memoryfilesystem</artifactId>
-  <version>0.6.1</version>
+  <version>0.6.2-SNAPSHOT</version>
   <packaging>bundle</packaging>
   <name>Memory File System</name>
   <description>An in memory implementation of a JSR-203 file system.</description>
@@ -15,7 +15,7 @@
     <connection>scm:git:https://github.com/marschall/memoryfilesystem.git</connection>
     <developerConnection>scm:git:git@github.com:marschall/memoryfilesystem.git</developerConnection>
     <url>${project.url}</url>
-    <tag>0.6.1</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <developers>
