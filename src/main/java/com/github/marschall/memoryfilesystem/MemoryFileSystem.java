@@ -303,7 +303,8 @@ class MemoryFileSystem extends FileSystem {
     MemoryDirectory rootDirectory = this.getRootDirectory(absolutePath);
 
     final boolean followSymLinks = Options.isFollowSymLinks(options);
-    return this.withWriteLockOnLastDo(rootDirectory, (AbstractPath) absolutePath.getParent(), followSymLinks, new MemoryDirectoryBlock<MemoryFile>() {
+    final AbstractPath parent = (AbstractPath) absolutePath.getParent();
+    return this.withWriteLockOnLastDo(rootDirectory, parent, followSymLinks, new MemoryDirectoryBlock<MemoryFile>() {
 
       @Override
       public MemoryFile value(MemoryDirectory directory) throws IOException {
@@ -340,7 +341,11 @@ class MemoryFileSystem extends FileSystem {
           } else if (storedEntry instanceof MemorySymbolicLink && followSymLinks) {
             AbstractPath target = ((MemorySymbolicLink) storedEntry).getTarget();
             // TODO requires reentrant lock, should build return value object
-            return MemoryFileSystem.this.getFile(target, options, attrs);
+            if (target.isAbsolute()) {
+              return MemoryFileSystem.this.getFile(target, options, attrs);
+            } else {
+              return MemoryFileSystem.this.getFile((AbstractPath) parent.resolve(target), options, attrs);
+            }
           } else {
             throw new FileSystemException(absolutePath.toString(), null, "file is a directory");
           }

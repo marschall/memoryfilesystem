@@ -913,6 +913,33 @@ public class MemoryFileSystemTest {
     List<String> readBack = Files.readAllLines(link, UTF_8);
     assertEquals(lines, readBack);
   }
+
+
+  /**
+   * Regression test for issue 38.
+   *
+   * @throws IOException if the test fails
+   */
+  @Test
+  public void issue38() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path root = Files.createDirectory(fileSystem.getPath("/").resolve("root"));
+
+    List<String> lines = Collections.singletonList("Hello world");
+
+    Path target = root.resolve("file");
+    Files.write(target, lines, UTF_8);
+
+    Path link = target.resolveSibling("link");
+    // link -> file
+    Files.createSymbolicLink(link, target.getFileName());
+
+    List<String> readBack = Files.readAllLines(link, UTF_8);
+    assertEquals(lines, readBack);
+
+  }
+
+
   @Test
   public void readFromSymbolicLink() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();

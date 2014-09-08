@@ -40,6 +40,8 @@ public class ParserTest {
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
             { "", null, "" },
+            { "a", null, "a" },
+            { "/a", null, "/a" },
             { "/a", new String[]{"b", "c"}, "/a/b/c" },
             { "/a", new String[]{"/b/", "c"}, "/a/b/c" },
             { "/a", new String[]{"/b//", "c"}, "/a/b/c" },
