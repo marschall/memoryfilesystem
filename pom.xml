@@ -12,7 +12,7 @@
   <url>https://github.com/marschall/memoryfilesystem</url>
 
   <scm>
-    <connection>scm:git:git@github.com:marschall/memoryfilesystem.git</connection>
+    <connection>scm:git:https://github.com/marschall/memoryfilesystem.git</connection>
     <developerConnection>scm:git:git@github.com:marschall/memoryfilesystem.git</developerConnection>
     <url>${project.url}</url>
     <tag>HEAD</tag>
