@@ -10,6 +10,13 @@ An in memory implementation of a [JSR-203](http://jcp.org/en/jsr/detail?id=203) 
 </dependency>
 ```
 
+ToC
+---
+* [Supported Features](#supported)
+* [Not Supported Features](#not-supported)
+* [FAQ](#faq)
+* [Usage](#usage)
+* [Guidelines for Testable File Code](#guidelines-for-testable-file-code)
 
 Supported
 ---------
