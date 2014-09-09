@@ -982,39 +982,87 @@ public class MemoryFileSystemTest {
   public void copySymbolicLinkNoFollow() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
+    // /link -> /file
+    // copy /link to /copy with follow no symlinks
     Path file = fileSystem.getPath("/").resolve("file");
     Files.createFile(file);
 
-    Path link1 = file.resolveSibling("link1");
-    Path link2 = file.resolveSibling("link2");
+    Path link = file.resolveSibling("link");
+    Path copy = file.resolveSibling("copy");
 
-    Files.createSymbolicLink(link1, file);
-    Files.copy(link1, link2, NOFOLLOW_LINKS);
+    Files.createSymbolicLink(link, file);
+    Files.copy(link, copy, NOFOLLOW_LINKS);
 
-    assertThat(link2, exists());
-    assertThat(link2, isSymbolicLink());
+    assertThat(copy, exists());
+    assertThat(copy, isSymbolicLink());
 
-    assertEquals("/file", link2.toRealPath().toString());
+    assertEquals("/file", copy.toRealPath().toString());
   }
 
   @Test
-  @Ignore("broken")
   public void copySymbolicLinkFollow() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
+    // /link -> /file
+    // copy /link to /copy with follow symlinks
     Path file = fileSystem.getPath("/").resolve("file");
-    Path fileCopy = fileSystem.getPath("/").resolve("copy");
+    Path copy = fileSystem.getPath("/").resolve("copy");
     Files.createFile(file);
 
     Path link = file.resolveSibling("link");
 
     Files.createSymbolicLink(link, file);
-    Files.copy(link, fileCopy);
+    Files.copy(link, copy);
 
-    assertThat(fileCopy, exists());
-    assertThat(fileCopy, not(isSymbolicLink()));
+    assertThat(copy, exists());
+    assertThat(copy, not(isSymbolicLink()));
   }
 
+  @Test
+  public void copySymbolicLinkReplace() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    // /target -> /file1
+    // copy /file2 to /target with replace existing
+    Path file1 = fileSystem.getPath("/").resolve("file1");
+    Path file2 = fileSystem.getPath("/").resolve("file2");
+    Files.createFile(file1);
+    Files.createFile(file2);
+
+    Path target = file1.resolveSibling("target");
+
+    Files.createSymbolicLink(target, file1);
+
+    Files.copy(file2, target, REPLACE_EXISTING);
+
+    assertThat(target, exists());
+    assertThat(target, isSymbolicLink());
+
+    assertEquals("/file2", target.toRealPath().toString());
+  }
+
+  @Test
+  public void copySymbolicLinkReplaceNoFollow() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    // /link -> /file1
+    // /target -> /file1
+    // copy /link to /target with replace existing and no follow
+    Path link = fileSystem.getPath("/").resolve("link");
+    Path file1 = link.resolveSibling("file1");
+    Files.createFile(file1);
+    Files.createSymbolicLink(link, file1);
+
+    Path target = fileSystem.getPath("/").resolve("target");
+    Files.createSymbolicLink(target, link.resolveSibling("file2"));
+
+    Files.copy(link, target, REPLACE_EXISTING, NOFOLLOW_LINKS);
+
+    assertThat(target, exists(NOFOLLOW_LINKS));
+    assertThat(target, isSymbolicLink());
+
+    assertEquals("/file1", target.toRealPath().toString());
+  }
 
   @Test(expected = FileSystemException.class)
   public void dontDeleteOpenFile() throws IOException {

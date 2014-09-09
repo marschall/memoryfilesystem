@@ -2,7 +2,6 @@ package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.AutoReleaseLock.autoRelease;
 import static java.nio.file.AccessMode.WRITE;
-import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
 
@@ -63,7 +62,9 @@ class MemoryFileSystem extends FileSystem {
 
   private static final Set<String> UNSUPPORTED_INITIAL_ATTRIBUES;
 
-  private static final LinkOption[] NO_LINK_OPTIONS = new LinkOption[]{NOFOLLOW_LINKS};
+  private static final Set<OpenOption> NO_OPEN_OPTIONS = Collections.emptySet();
+
+  private static final FileAttribute<?>[] NO_FILE_ATTRIBUTES = new FileAttribute<?>[0];
 
   private final String key;
 
@@ -339,12 +340,12 @@ class MemoryFileSystem extends FileSystem {
           if (storedEntry instanceof MemoryFile) {
             return (MemoryFile) storedEntry;
           } else if (storedEntry instanceof MemorySymbolicLink && followSymLinks) {
-            AbstractPath target = ((MemorySymbolicLink) storedEntry).getTarget();
+            AbstractPath linkTarget = ((MemorySymbolicLink) storedEntry).getTarget();
             // TODO requires reentrant lock, should build return value object
-            if (target.isAbsolute()) {
-              return MemoryFileSystem.this.getFile(target, options, attrs);
+            if (linkTarget.isAbsolute()) {
+              return MemoryFileSystem.this.getFile(linkTarget, options, attrs);
             } else {
-              return MemoryFileSystem.this.getFile((AbstractPath) parent.resolve(target), options, attrs);
+              return MemoryFileSystem.this.getFile((AbstractPath) parent.resolve(linkTarget), options, attrs);
             }
           } else {
             throw new FileSystemException(absolutePath.toString(), null, "file is a directory");
@@ -891,6 +892,14 @@ class MemoryFileSystem extends FileSystem {
       this.copyAttribues = copyAttribues;
     }
 
+    boolean isSourceFollowSymLinks() {
+      if (this.inverted) {
+        return this.secondFollowSymLinks;
+      } else {
+        return this.firstFollowSymLinks;
+      }
+    }
+
     MemoryDirectory getSourceParent(MemoryDirectory firstDirectory, MemoryDirectory secondDirectory) {
       if (!this.inverted) {
         return firstDirectory;
@@ -906,8 +915,6 @@ class MemoryFileSystem extends FileSystem {
         return firstDirectory;
       }
     }
-
-
 
   }
 
@@ -1183,6 +1190,7 @@ class MemoryFileSystem extends FileSystem {
       sourceParent.checkAccess(WRITE);
     }
 
+
     if (targetEntry != null) {
       if (!copyContext.replaceExisting) {
         throw new FileAlreadyExistsException(targetContext.path.toString());
@@ -1194,6 +1202,18 @@ class MemoryFileSystem extends FileSystem {
           targetDirectory.checkEmpty(targetContext.path);
         }
       }
+
+      if (targetEntry instanceof MemorySymbolicLink && !copyContext.operation.isMove()) {
+        MemorySymbolicLink link = (MemorySymbolicLink) targetEntry;
+        link.setTarget(copyContext.source.path);
+        if (copyContext.copyAttribues) {
+          MemoryEntry toCopy = getCopySource(copyContext, sourceEntry);
+          targetEntry.initializeAttributes(toCopy);
+        }
+        return;
+      }
+
+      // TODO target should become symlink
       targetParent.removeEntry(targetElementName);
     }
 
@@ -1201,12 +1221,31 @@ class MemoryFileSystem extends FileSystem {
       sourceParent.removeEntry(sourceElementName);
       targetParent.addEntry(targetElementName, sourceEntry);
     } else {
-      MemoryEntry copy = targetContext.path.getMemoryFileSystem().copyEntry(targetContext.path, sourceEntry, targetElementName);
+      MemoryEntry toCopy = getCopySource(copyContext, sourceEntry);
+      MemoryEntry copy = targetContext.path.getMemoryFileSystem().copyEntry(targetContext.path, toCopy, targetElementName);
       if (copyContext.copyAttribues) {
-        copy.initializeAttributes(sourceEntry);
+        copy.initializeAttributes(toCopy);
       }
       targetParent.addEntry(targetElementName, copy);
     }
+  }
+
+  private static MemoryEntry getCopySource(CopyContext copyContext,
+          MemoryEntry sourceEntry) throws IOException {
+    MemoryEntry toCopy;
+    if (sourceEntry instanceof MemorySymbolicLink && copyContext.isSourceFollowSymLinks()) {
+      AbstractPath linkTarget = ((MemorySymbolicLink) sourceEntry).getTarget();
+      // TODO requires reentrant lock, should build return value object
+      MemoryFileSystem sourceFileSystem = copyContext.source.path.getFileSystem();
+      if (linkTarget.isAbsolute()) {
+        toCopy = sourceFileSystem.getFile(linkTarget, NO_OPEN_OPTIONS, NO_FILE_ATTRIBUTES);
+      } else {
+        toCopy = sourceFileSystem.getFile((AbstractPath) copyContext.source.parent.resolve(linkTarget), NO_OPEN_OPTIONS, NO_FILE_ATTRIBUTES);
+      }
+    } else {
+      toCopy = sourceEntry;
+    }
+    return toCopy;
   }
 
   @Override

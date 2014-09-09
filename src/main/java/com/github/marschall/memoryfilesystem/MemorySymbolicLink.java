@@ -8,7 +8,7 @@ import java.nio.file.attribute.FileTime;
 
 class MemorySymbolicLink extends MemoryEntry {
 
-  private final AbstractPath target;
+  private AbstractPath target;
 
   private final MemorySymbolicLinkAttributesView basicFileAttributeView;
 
@@ -25,6 +25,10 @@ class MemorySymbolicLink extends MemoryEntry {
 
   AbstractPath getTarget() {
     return this.target;
+  }
+
+  void setTarget(AbstractPath target) {
+    this.target = target;
   }
 
   @Override

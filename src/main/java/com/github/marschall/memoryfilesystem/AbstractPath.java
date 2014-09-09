@@ -6,7 +6,6 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.nio.file.ProviderMismatchException;
 import java.nio.file.WatchEvent.Kind;
@@ -58,7 +57,7 @@ abstract class AbstractPath implements Path {
 
 
   @Override
-  public FileSystem getFileSystem() {
+  public MemoryFileSystem getFileSystem() {
     return this.fileSystem;
   }
 
