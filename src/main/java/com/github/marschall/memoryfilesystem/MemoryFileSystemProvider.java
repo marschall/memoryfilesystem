@@ -24,9 +24,11 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.nio.file.spi.FileSystemProvider;
 import java.text.Collator;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,9 +47,6 @@ import java.util.concurrent.ThreadFactory;
  * should be used.</p>
  */
 public final class MemoryFileSystemProvider extends FileSystemProvider {
-
-  private static final FileAttribute<?>[] NO_FILE_ATTRIBUTES
-      = new FileAttribute<?>[0];
 
   static final String SCHEME = "memory";
 
@@ -129,9 +128,14 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     MemoryUserPrincipalLookupService userPrincipalLookupService = this.createUserPrincipalLookupService(parser, checker);
     PathParser pathParser = this.buildPathParser(parser);
     Set<PosixFilePermission> umask = parser.getUmask();
+
+    final Set<PosixFilePermission> perms
+        = EnumSet.allOf(PosixFilePermission.class);
+    perms.removeAll(umask);
+
     MemoryFileSystem fileSystem = new MemoryFileSystem(key, separator, pathParser, this, memoryStore,
             userPrincipalLookupService, checker, storeTransformer, lookUpTransformer, collator, additionalViews, umask);
-    fileSystem.setRootDirectories(this.buildRootsDirectories(parser, fileSystem, additionalViews));
+    fileSystem.setRootDirectories(this.buildRootsDirectories(parser,  fileSystem, additionalViews, umask));
     String defaultDirectory = parser.getDefaultDirectory();
     fileSystem.setCurrentWorkingDirectory(defaultDirectory);
     AbstractPath defaultPath = fileSystem.getDefaultPath();
@@ -171,10 +175,14 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     }
   }
 
-  private Map<Root, MemoryDirectory> buildRootsDirectories(EnvironmentParser parser, MemoryFileSystem fileSystem, Set<Class<? extends FileAttributeView>> additionalViews) throws IOException {
+  private Map<Root, MemoryDirectory> buildRootsDirectories(EnvironmentParser parser,
+      MemoryFileSystem fileSystem, Set<Class<? extends FileAttributeView>> additionalViews,
+      Set<PosixFilePermission> perms) throws IOException {
+    final FileAttribute<?>[] attributes
+      = new FileAttribute<?>[]{ PosixFilePermissions.asFileAttribute(perms) };
     if (parser.isSingleEmptyRoot()) {
       Root root = new EmptyRoot(fileSystem);
-      MemoryDirectory directory = new MemoryDirectory("", fileSystem.newEntryCreationContext(NO_FILE_ATTRIBUTES));
+      MemoryDirectory directory = new MemoryDirectory("", fileSystem.newEntryCreationContext(attributes));
       directory.initializeRoot();
       return Collections.singletonMap(root, directory);
     } else {
@@ -182,7 +190,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
       Map<Root, MemoryDirectory> paths = new LinkedHashMap<>(roots.size());
       for (String root : roots) {
         NamedRoot namedRoot = new NamedRoot(fileSystem, root);
-        MemoryDirectory rootDirectory = new MemoryDirectory(namedRoot.getKey(), fileSystem.newEntryCreationContext(NO_FILE_ATTRIBUTES));
+        MemoryDirectory rootDirectory = new MemoryDirectory(namedRoot.getKey(), fileSystem.newEntryCreationContext(attributes));
         rootDirectory.initializeRoot();
         paths.put(namedRoot, rootDirectory);
       }
