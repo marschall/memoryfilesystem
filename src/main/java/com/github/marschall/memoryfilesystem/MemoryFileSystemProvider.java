@@ -46,6 +46,9 @@ import java.util.concurrent.ThreadFactory;
  */
 public final class MemoryFileSystemProvider extends FileSystemProvider {
 
+  private static final FileAttribute<?>[] NO_FILE_ATTRIBUTES
+      = new FileAttribute<?>[0];
+
   static final String SCHEME = "memory";
 
   private final ConcurrentMap<String, MemoryFileSystem> fileSystems;
@@ -171,7 +174,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   private Map<Root, MemoryDirectory> buildRootsDirectories(EnvironmentParser parser, MemoryFileSystem fileSystem, Set<Class<? extends FileAttributeView>> additionalViews) throws IOException {
     if (parser.isSingleEmptyRoot()) {
       Root root = new EmptyRoot(fileSystem);
-      MemoryDirectory directory = new MemoryDirectory("", fileSystem.newEntryCreationContext());
+      MemoryDirectory directory = new MemoryDirectory("", fileSystem.newEntryCreationContext(NO_FILE_ATTRIBUTES));
       directory.initializeRoot();
       return Collections.singletonMap(root, directory);
     } else {
@@ -179,7 +182,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
       Map<Root, MemoryDirectory> paths = new LinkedHashMap<>(roots.size());
       for (String root : roots) {
         NamedRoot namedRoot = new NamedRoot(fileSystem, root);
-        MemoryDirectory rootDirectory = new MemoryDirectory(namedRoot.getKey(), fileSystem.newEntryCreationContext());
+        MemoryDirectory rootDirectory = new MemoryDirectory(namedRoot.getKey(), fileSystem.newEntryCreationContext(NO_FILE_ATTRIBUTES));
         rootDirectory.initializeRoot();
         paths.put(namedRoot, rootDirectory);
       }
@@ -364,7 +367,8 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   public <V extends FileAttributeView> V getFileAttributeView(Path path, Class<V> type, LinkOption... options) {
     AbstractPath abstractPath = this.castPath(path);
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
-    return memoryFileSystem.getLazyFileAttributeView(abstractPath, type, options);
+    return memoryFileSystem.getLazyFileAttributeView(abstractPath, type,
+        options);
   }
 
 

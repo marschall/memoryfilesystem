@@ -13,16 +13,16 @@ import com.github.marschall.memoryfilesystem.MemoryUserPrincipalLookupService.Me
 final class EntryCreationContext {
 
   final Set<Class<? extends FileAttributeView>> additionalViews;
-  final Set<PosixFilePermission> umask;
+  final Set<PosixFilePermission> perms;
   final UserPrincipal user;
   final GroupPrincipal group;
   final MemoryFileSystem fileSystem;
 
   EntryCreationContext(Set<Class<? extends FileAttributeView>> additionalViews,
-          Set<PosixFilePermission> umask, UserPrincipal user,
+          Set<PosixFilePermission> perms, UserPrincipal user,
           GroupPrincipal group, MemoryFileSystem fileSystem) {
     this.additionalViews = additionalViews;
-    this.umask = umask;
+    this.perms = perms;
     this.user = user;
     this.group = group;
     this.fileSystem = fileSystem;
