@@ -10,6 +10,7 @@ import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFilePermission;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -30,7 +31,8 @@ public final class MemoryFileSystemBuilder {
 
   private final Set<String> additionalFileAttributeViews;
 
-  private Set<PosixFilePermission> umask;
+  private Set<PosixFilePermission> umask
+    = EnumSet.noneOf(PosixFilePermission.class);
 
   private String separator;
 

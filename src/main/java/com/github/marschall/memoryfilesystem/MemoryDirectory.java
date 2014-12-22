@@ -43,11 +43,8 @@ class MemoryDirectory extends MemoryEntry {
     this.basicFileAttributeView = new MemoryDirectoryFileAttributesView();
   }
 
-  private static Set<PosixFilePermission> addExecute(Set<PosixFilePermission> umask) {
-    if (umask.isEmpty()) {
-      return EXECUTE;
-    }
-    Set<PosixFilePermission> copy = EnumSet.copyOf(umask);
+  private static Set<PosixFilePermission> addExecute(Set<PosixFilePermission> perms) {
+    Set<PosixFilePermission> copy = EnumSet.copyOf(perms);
     copy.addAll(EXECUTE);
     return copy;
   }

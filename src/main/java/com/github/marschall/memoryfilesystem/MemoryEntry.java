@@ -742,7 +742,7 @@ abstract class MemoryEntry {
         throw new NullPointerException("group");
       }
       this.group = context.group;
-      this.perms = toMask(context.umask);
+      this.perms = toMask(context.perms);
     }
 
 
