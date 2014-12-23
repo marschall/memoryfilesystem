@@ -41,7 +41,7 @@ import java.util.concurrent.ThreadFactory;
 
 /**
  * Creates memory file systems instance.
- * 
+ *
  * <p>This class should not be used directly. Instead
  * {@link java.nio.file.FileSystems#newFileSystem(URI, Map)}
  * should be used.</p>
@@ -129,9 +129,8 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     PathParser pathParser = this.buildPathParser(parser);
     Set<PosixFilePermission> umask = parser.getUmask();
 
-    final Set<PosixFilePermission> perms
-        = EnumSet.allOf(PosixFilePermission.class);
-    perms.removeAll(umask);
+    Set<PosixFilePermission> permissions = EnumSet.allOf(PosixFilePermission.class);
+    permissions.removeAll(umask);
 
     MemoryFileSystem fileSystem = new MemoryFileSystem(key, separator, pathParser, this, memoryStore,
             userPrincipalLookupService, checker, storeTransformer, lookUpTransformer, collator, additionalViews, umask);
@@ -176,10 +175,10 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   }
 
   private Map<Root, MemoryDirectory> buildRootsDirectories(EnvironmentParser parser,
-      MemoryFileSystem fileSystem, Set<Class<? extends FileAttributeView>> additionalViews,
-      Set<PosixFilePermission> perms) throws IOException {
+          MemoryFileSystem fileSystem, Set<Class<? extends FileAttributeView>> additionalViews,
+          Set<PosixFilePermission> perms) throws IOException {
     final FileAttribute<?>[] attributes
-      = new FileAttribute<?>[]{ PosixFilePermissions.asFileAttribute(perms) };
+    = new FileAttribute<?>[]{ PosixFilePermissions.asFileAttribute(perms) };
     if (parser.isSingleEmptyRoot()) {
       Root root = new EmptyRoot(fileSystem);
       MemoryDirectory directory = new MemoryDirectory("", fileSystem.newEntryCreationContext(attributes));
@@ -376,7 +375,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     AbstractPath abstractPath = this.castPath(path);
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
     return memoryFileSystem.getLazyFileAttributeView(abstractPath, type,
-        options);
+            options);
   }
 
 

@@ -734,7 +734,7 @@ abstract class MemoryEntry {
   static class MemoryPosixFileAttributeView extends MemoryFileOwnerAttributeView implements PosixFileAttributeView, AccessCheck {
 
     private GroupPrincipal group;
-    private int perms;
+    private int permissions;
 
     MemoryPosixFileAttributeView(MemoryEntry entry, EntryCreationContext context) {
       super(entry, context);
@@ -742,7 +742,7 @@ abstract class MemoryEntry {
         throw new NullPointerException("group");
       }
       this.group = context.group;
-      this.perms = toMask(context.perms);
+      this.permissions = toMask(context.permissions);
     }
 
 
@@ -755,7 +755,7 @@ abstract class MemoryEntry {
     void initializeFromSelf(FileAttributeView selfAttributes) {
       MemoryPosixFileAttributeView other = (MemoryPosixFileAttributeView) selfAttributes;
       this.group = other.group;
-      this.perms = other.perms;
+      this.permissions = other.permissions;
     }
 
     @Override
@@ -775,7 +775,7 @@ abstract class MemoryEntry {
       this.entry.checkAccess(AccessMode.READ);
       try (AutoRelease lock = this.entry.readLock()) {
         BasicFileAttributeView view = this.entry.getFileAttributeView(BasicFileAttributeView.class);
-        return new MemoryPosixFileAttributes(view.readAttributes(), this.getOwner(), this.group, toSet(this.perms));
+        return new MemoryPosixFileAttributes(view.readAttributes(), this.getOwner(), this.group, toSet(this.permissions));
       }
     }
 
@@ -786,7 +786,7 @@ abstract class MemoryEntry {
       }
       try (AutoRelease lock = this.entry.writeLock()) {
         this.entry.checkAccess(AccessMode.WRITE);
-        this.perms = toMask(perms);
+        this.permissions = toMask(perms);
       }
     }
 
@@ -804,7 +804,7 @@ abstract class MemoryEntry {
           permission = this.translateOthersMode(mode);
         }
       }
-      int flag = 1 << permission.ordinal() & this.perms;
+      int flag = 1 << permission.ordinal() & this.permissions;
       if (flag == 0) {
         // TODO pass in file
         throw new AccessDeniedException(null);

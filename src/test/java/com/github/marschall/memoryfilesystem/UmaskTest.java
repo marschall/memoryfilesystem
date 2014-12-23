@@ -1,11 +1,8 @@
 package com.github.marschall.memoryfilesystem;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
-import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
@@ -13,105 +10,69 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.Rule;
+import org.junit.Test;
 
-public final class UmaskTest
-{
-    private static final Set<PosixFilePermission> UMASK
-        = PosixFilePermissions.fromString("----w-rwx"); // ie, 027
+public final class UmaskTest {
 
-    private static FileSystem FILESYSTEM;
+  private static final Set<PosixFilePermission> UMASK = PosixFilePermissions.fromString("----w-rwx"); // ie, 027
 
-    @BeforeClass
-    public static void initfs()
-        throws IOException
-    {
-        FILESYSTEM = MemoryFileSystemBuilder.newLinux().setUmask(UMASK)
-            .build("UmaskTest");
-    }
+  @Rule
+  public final PosixFileSystemRule rule = new PosixFileSystemRule(UMASK);
 
-    @Test
-    public void creatingFileWithoutPermissionsTakesUmaskIntoAccount()
-        throws IOException
-    {
-        final Set<PosixFilePermission> expected
-            = PosixFilePermissions.fromString("rwxr-x---");
+  /**
+   * Tests creating a file without permissions respects umask.
+   *
+   * @throws IOException if the test fails
+   */
+  @Test
+  public void creatingFileWithoutPermissions() throws IOException {
+    Path path = this.rule.getFileSystem().getPath("/fileWithoutPerms");
+    Path created = Files.createFile(path);
+    Set<PosixFilePermission> actual = Files.getPosixFilePermissions(created);
+    assertEquals("rwxr-x---", PosixFilePermissions.toString(actual));
+  }
 
-        final Path path = FILESYSTEM.getPath("/fileWithoutPerms");
+  /**
+   * Tests creating a file with permissions respects umask.
+   *
+   * @throws IOException if the test fails
+   */
+  @Test
+  public void creatingFileWithPermissions() throws IOException {
+    Set<PosixFilePermission> permissions = PosixFilePermissions.fromString("rw-rw-rw-");
+    FileAttribute<?> attr = PosixFilePermissions.asFileAttribute(permissions);
+    Path file = this.rule.getFileSystem().getPath("/fileWithPerms");
+    Path created = Files.createFile(file, attr);
+    Set<PosixFilePermission> actual = Files.getPosixFilePermissions(created);
+    assertEquals("rw-r-----", PosixFilePermissions.toString(actual));
+  }
 
-        final Path created = Files.createFile(path);
+  /**
+   * Tests creating a directory without permissions respects umask.
+   *
+   * @throws IOException if the test fails
+   */
+  @Test
+  public void creatingDirectoryWithoutPermissions() throws IOException {
+    Path path = this.rule.getFileSystem().getPath("/dirWithoutPerms");
+    Path created = Files.createDirectory(path);
+    Set<PosixFilePermission> actual = Files.getPosixFilePermissions(created);
+    assertEquals("rwxr-x---", PosixFilePermissions.toString(actual));
+  }
 
-        final Set<PosixFilePermission> actual
-            = Files.getPosixFilePermissions(created);
-
-        assertEquals(expected, actual);
-    }
-
-
-    @Test
-    public void creatingFileWithPermissionsTakesUmaskIntoAccount()
-        throws IOException
-    {
-        final Set<PosixFilePermission> perms
-            = PosixFilePermissions.fromString("rw-rw-rw-");
-        final FileAttribute<?> attr
-            = PosixFilePermissions.asFileAttribute(perms);
-
-        final Path file = FILESYSTEM.getPath("/fileWithPerms");
-
-        final Path created = Files.createFile(file, attr);
-
-        final Set<PosixFilePermission> actual
-            = Files.getPosixFilePermissions(created);
-        final Set<PosixFilePermission> expected
-            = PosixFilePermissions.fromString("rw-r-----");
-
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    public void creatingDirectoryWithoutPermissionsTakesUmaskIntoAccount()
-        throws IOException
-    {
-        final Set<PosixFilePermission> expected
-            = PosixFilePermissions.fromString("rwxr-x---");
-
-        final Path path = FILESYSTEM.getPath("/dirWithoutPerms");
-
-        final Path created = Files.createDirectory(path);
-
-        final Set<PosixFilePermission> actual
-            = Files.getPosixFilePermissions(created);
-
-        assertEquals(expected, actual);
-    }
-
-
-    @Test
-    public void creatingDirectoryWithPermissionsTakesUmaskIntoAccount()
-        throws IOException
-    {
-        final Set<PosixFilePermission> perms
-            = PosixFilePermissions.fromString("rwxrwx-w-");
-        final FileAttribute<?> attr
-            = PosixFilePermissions.asFileAttribute(perms);
-
-        final Path file = FILESYSTEM.getPath("/dirWithPerms");
-
-        final Path created = Files.createDirectory(file, attr);
-
-        final Set<PosixFilePermission> actual
-            = Files.getPosixFilePermissions(created);
-        final Set<PosixFilePermission> expected
-            = PosixFilePermissions.fromString("rwxr-x---");
-
-        assertEquals(expected, actual);
-    }
-
-    @AfterClass
-    public static void closefs()
-        throws IOException
-    {
-        FILESYSTEM.close();
-    }
+  /**
+   * Tests creating a directory with permissions respects umask.
+   *
+   * @throws IOException if the test fails
+   */
+  @Test
+  public void creatingDirectoryWithPermissions() throws IOException {
+    Set<PosixFilePermission> permissions = PosixFilePermissions.fromString("rwxrwx-w-");
+    FileAttribute<?> attribute = PosixFilePermissions.asFileAttribute(permissions);
+    Path file = this.rule.getFileSystem().getPath("/dirWithPerms");
+    Path created = Files.createDirectory(file, attribute);
+    Set<PosixFilePermission> actual = Files.getPosixFilePermissions(created);
+    assertEquals("rwxr-x---", PosixFilePermissions.toString(actual));
+  }
 }

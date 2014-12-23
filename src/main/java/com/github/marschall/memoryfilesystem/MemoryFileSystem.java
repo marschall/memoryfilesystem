@@ -174,22 +174,19 @@ class MemoryFileSystem extends FileSystem {
     return this.umask;
   }
 
-  EntryCreationContext newEntryCreationContext(final FileAttribute<?>[] attrs)
-      throws IOException {
-    Set<PosixFilePermission> perms = EnumSet.allOf(PosixFilePermission.class);
+  EntryCreationContext newEntryCreationContext(FileAttribute<?>[] attributes) throws IOException {
+    Set<PosixFilePermission> permissions = EnumSet.allOf(PosixFilePermission.class);
 
-    for (final FileAttribute<?> attr: attrs) {
-      if (attr instanceof PosixFileAttributes) {
-        perms = ((PosixFileAttributes) attr).permissions();
+    for (FileAttribute<?> attribute: attributes) {
+      if (attribute instanceof PosixFileAttributes) {
+        permissions = ((PosixFileAttributes) attribute).permissions();
         break;
       }
     }
 
-    perms.removeAll(umask);
-
     UserPrincipal user = this.getCurrentUser();
     GroupPrincipal group = this.getGroupOf(user);
-    return new EntryCreationContext(this.additionalViews, perms, user, group, this);
+    return new EntryCreationContext(this.additionalViews, permissions, user, group, this);
   }
 
   private UserPrincipal getCurrentUser() {
@@ -310,7 +307,8 @@ class MemoryFileSystem extends FileSystem {
     }
   }
 
-  private MemoryFile getFile(final AbstractPath path, final Set<? extends OpenOption> options, final FileAttribute<?>... attrs) throws IOException {
+  private MemoryFile getFile(final AbstractPath path, final Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
+    final FileAttribute<?>[] newAttributes = this.applyUmask(attrs);
     final AbstractPath absolutePath = (AbstractPath) path.toAbsolutePath().normalize();
     if (absolutePath.isRoot()) {
       throw new FileSystemException(path.toString(), null, "is not a file");
@@ -328,17 +326,12 @@ class MemoryFileSystem extends FileSystem {
         String fileName = elementPath.getLastNameElement();
         String key = MemoryFileSystem.this.lookUpTransformer.transform(fileName);
 
-        /*
-         * TODO: kind of ugly to do it here, but...
-         */
-        final FileAttribute<?>[] newAttrs = applyUmask(attrs);
-        final EntryCreationContext creationContext
-            = newEntryCreationContext(newAttrs);
+        EntryCreationContext creationContext = MemoryFileSystem.this.newEntryCreationContext(newAttributes);
         if (isCreateNew) {
           String name = MemoryFileSystem.this.storeTransformer.transform(fileName);
           MemoryFile file = new MemoryFile(name, creationContext);
-          checkSupportedInitialAttributes(newAttrs);
-          AttributeAccessors.setAttributes(file, newAttrs);
+          checkSupportedInitialAttributes(newAttributes);
+          AttributeAccessors.setAttributes(file, newAttributes);
           directory.checkAccess(WRITE);
           // will throw an exception if already present
           directory.addEntry(key, file);
@@ -350,8 +343,8 @@ class MemoryFileSystem extends FileSystem {
             if (isCreate) {
               String name = MemoryFileSystem.this.storeTransformer.transform(fileName);
               MemoryFile file = new MemoryFile(name, creationContext);
-              checkSupportedInitialAttributes(newAttrs);
-              AttributeAccessors.setAttributes(file, newAttrs);
+              checkSupportedInitialAttributes(newAttributes);
+              AttributeAccessors.setAttributes(file, newAttributes);
               directory.checkAccess(WRITE);
               directory.addEntry(key, file);
               return file;
@@ -365,9 +358,9 @@ class MemoryFileSystem extends FileSystem {
             AbstractPath linkTarget = ((MemorySymbolicLink) storedEntry).getTarget();
             // TODO requires reentrant lock, should build return value object
             if (linkTarget.isAbsolute()) {
-              return MemoryFileSystem.this.getFile(linkTarget, options, newAttrs);
+              return MemoryFileSystem.this.getFile(linkTarget, options, newAttributes);
             } else {
-              return MemoryFileSystem.this.getFile((AbstractPath) parent.resolve(linkTarget), options, newAttrs);
+              return MemoryFileSystem.this.getFile((AbstractPath) parent.resolve(linkTarget), options, newAttributes);
             }
           } else {
             throw new FileSystemException(absolutePath.toString(), null, "file is a directory");
@@ -379,27 +372,47 @@ class MemoryFileSystem extends FileSystem {
 
   }
 
-  private FileAttribute<?>[] applyUmask(final FileAttribute<?>[] attrs)
-  {
-    final int length = attrs.length;
-    final FileAttribute<?>[] ret = new FileAttribute[length];
-    FileAttribute<?> attr;
-
-    for (int i = 0; i < length; i++) {
-      attr = attrs[i];
-      if (!"posix:permissions".equals(attr.name())) {
-        ret[i] = attr;
-        continue;
-      }
-      final Set<PosixFilePermission> perms
-          = (Set<PosixFilePermission>) (attr.value());
-      final Set<PosixFilePermission> newPerms
-          = EnumSet.copyOf(perms);
-      newPerms.removeAll(umask);
-      ret[i] = PosixFilePermissions.asFileAttribute(newPerms);
+  private FileAttribute<?>[] applyUmask(FileAttribute<?>[] attributes) {
+    if (this.umask.isEmpty()) {
+      return attributes;
     }
 
-    return ret;
+    int length = attributes.length;
+    boolean changed = false;
+    FileAttribute<?>[] copy = null;
+
+    for (int i = 0; i < length; i++) {
+      FileAttribute<?> attribute = attributes[i];
+      if (changed) {
+        copy[i] = attribute;
+        continue;
+      }
+      if ("posix:permissions".equals(attribute.name())) {
+        copy = new FileAttribute[length];
+        changed = true;
+        if (i > 0) {
+          System.arraycopy(attributes, 0, copy, 0, i - 1);
+        }
+        Set<PosixFilePermission> perms = (Set<PosixFilePermission>) attribute.value();
+        Set<PosixFilePermission> newPerms = EnumSet.copyOf(perms);
+        newPerms.removeAll(this.umask);
+        copy[i] = PosixFilePermissions.asFileAttribute(newPerms);
+        continue;
+      }
+    }
+
+    if (changed) {
+      return copy;
+    } else {
+      // umask is set so we can reasonably sure posix permissions are supported
+      // add permissions and set the to the umask
+      FileAttribute<?>[] withPermissions = new FileAttribute[length + 1];
+      System.arraycopy(attributes, 0, withPermissions, 0, length);
+      EnumSet<PosixFilePermission> permissions = EnumSet.allOf(PosixFilePermission.class);
+      permissions.removeAll(this.umask);
+      withPermissions[length] = PosixFilePermissions.asFileAttribute(permissions);
+      return withPermissions;
+    }
   }
 
   DirectoryStream<Path> newDirectoryStream(final AbstractPath abstractPath, final Filter<? super Path> filter) throws IOException {
@@ -420,12 +433,14 @@ class MemoryFileSystem extends FileSystem {
 
 
   void createDirectory(AbstractPath path, final FileAttribute<?>... attrs) throws IOException {
+
+    final FileAttribute<?>[] masked = this.applyUmask(attrs);
     this.createFile(path, new MemoryEntryCreator() {
 
       @Override
       public MemoryEntry create(String name) throws IOException {
-        MemoryDirectory directory = new MemoryDirectory(name, MemoryFileSystem.this.newEntryCreationContext(attrs));
-        AttributeAccessors.setAttributes(directory, attrs);
+        MemoryDirectory directory = new MemoryDirectory(name, MemoryFileSystem.this.newEntryCreationContext(masked));
+        AttributeAccessors.setAttributes(directory, masked);
         return directory;
       }
 
@@ -433,12 +448,14 @@ class MemoryFileSystem extends FileSystem {
   }
 
   void createSymbolicLink(AbstractPath link, final AbstractPath target, final FileAttribute<?>... attrs) throws IOException {
+
+    final FileAttribute<?>[] masked = this.applyUmask(attrs);
     this.createFile(link, new MemoryEntryCreator() {
 
       @Override
       public MemoryEntry create(String name) throws IOException {
-        MemorySymbolicLink symbolicLink = new MemorySymbolicLink(name, target, MemoryFileSystem.this.newEntryCreationContext(attrs));
-        AttributeAccessors.setAttributes(symbolicLink, attrs);
+        MemorySymbolicLink symbolicLink = new MemorySymbolicLink(name, target, MemoryFileSystem.this.newEntryCreationContext(masked));
+        AttributeAccessors.setAttributes(symbolicLink, masked);
         return symbolicLink;
       }
 

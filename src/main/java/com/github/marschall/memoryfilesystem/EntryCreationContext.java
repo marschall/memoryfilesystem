@@ -13,16 +13,16 @@ import com.github.marschall.memoryfilesystem.MemoryUserPrincipalLookupService.Me
 final class EntryCreationContext {
 
   final Set<Class<? extends FileAttributeView>> additionalViews;
-  final Set<PosixFilePermission> perms;
+  final Set<PosixFilePermission> permissions;
   final UserPrincipal user;
   final GroupPrincipal group;
   final MemoryFileSystem fileSystem;
 
   EntryCreationContext(Set<Class<? extends FileAttributeView>> additionalViews,
-          Set<PosixFilePermission> perms, UserPrincipal user,
+          Set<PosixFilePermission> permissions, UserPrincipal user,
           GroupPrincipal group, MemoryFileSystem fileSystem) {
     this.additionalViews = additionalViews;
-    this.perms = perms;
+    this.permissions = permissions;
     this.user = user;
     this.group = group;
     this.fileSystem = fileSystem;
@@ -33,8 +33,10 @@ final class EntryCreationContext {
   }
 
   static EntryCreationContext empty() {
-    return new EntryCreationContext(Collections.<Class<? extends FileAttributeView>>emptySet(),
-            Collections.<PosixFilePermission>emptySet(), new MemoryUser("dummy"), new MemoryGroup("dummy"), null);
+    // REVIEW can be fixed with Java 8 source
+    Set<Class<? extends FileAttributeView>> noViews = Collections.emptySet();
+    Set<PosixFilePermission> noPermissions = Collections.emptySet();
+    return new EntryCreationContext(noViews, noPermissions, new MemoryUser("dummy"), new MemoryGroup("dummy"), null);
   }
 
 }
