@@ -7,6 +7,7 @@ import static java.nio.file.StandardOpenOption.READ;
 import static java.nio.file.StandardOpenOption.WRITE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -19,7 +20,9 @@ import java.nio.channels.SeekableByteChannel;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributeView;
 import java.util.Arrays;
 import java.util.List;
 
@@ -95,6 +98,20 @@ public class FileSystemComptiblityTest {
       }
     } finally {
       Files.delete(path);
+    }
+  }
+
+  @Test
+  public void viewOnNotExistingFile() throws IOException {
+    Path currentDirectory = this.getFileSystem().getPath("");
+    Path notExisiting = currentDirectory.resolve("not-existing.txt");
+    BasicFileAttributeView view = Files.getFileAttributeView(notExisiting, BasicFileAttributeView.class);
+    assertNotNull(view);
+    try {
+      view.readAttributes();
+      fail("reading from a non-existing view should fail");
+    } catch (NoSuchFileException e) {
+      // should reach here
     }
   }
 
