@@ -23,12 +23,12 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileAttributeView;
+import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.nio.file.spi.FileSystemProvider;
 import java.text.Collator;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -128,9 +128,9 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     MemoryUserPrincipalLookupService userPrincipalLookupService = this.createUserPrincipalLookupService(parser, checker);
     PathParser pathParser = this.buildPathParser(parser);
     Set<PosixFilePermission> umask = parser.getUmask();
-
-    Set<PosixFilePermission> permissions = EnumSet.allOf(PosixFilePermission.class);
-    permissions.removeAll(umask);
+    if (!additionalViews.contains(PosixFileAttributeView.class)) {
+      umask = Collections.emptySet();
+    }
 
     MemoryFileSystem fileSystem = new MemoryFileSystem(key, separator, pathParser, this, memoryStore,
             userPrincipalLookupService, checker, storeTransformer, lookUpTransformer, collator, additionalViews, umask);

@@ -16,6 +16,9 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystemAlreadyExistsException;
 import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.util.Collections;
@@ -60,6 +63,15 @@ public class CustomMemoryFileSystemTest {
     }
   }
 
+  @Test
+  public void regressionIssue46() throws IOException {
+    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
+      Path path = fileSystem.getPath("existing.zip");
+      Files.createFile(path);
+      FileTime time = FileTime.fromMillis(System.currentTimeMillis());
+      Files.setAttribute(path, "basic:lastModifiedTime", time);
+    }
+  }
 
   @Test
   public void close() throws IOException {

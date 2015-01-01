@@ -2491,6 +2491,14 @@ public class MemoryFileSystemTest {
   }
 
   @Test
+  public void regressionIssue46() throws IOException {
+    Path path = this.rule.getFileSystem().getPath("existing.zip");
+    Files.createFile(path);
+    FileTime time = FileTime.fromMillis(System.currentTimeMillis());
+    Files.setAttribute(path, "basic:lastModifiedTime", time);
+  }
+
+  @Test
   public void moveReplaceExisitingNoAttributes() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path a = fileSystem.getPath("/1/a");
