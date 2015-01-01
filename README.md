@@ -50,6 +50,7 @@ Supported
 * switching the current group
 * DOS access checks
 * POSIX access checks
+* [umask](http://en.wikipedia.org/wiki/Umask)
 
 Not Supported
 -------------
