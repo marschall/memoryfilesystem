@@ -307,7 +307,7 @@ class MemoryFileSystem extends FileSystem {
     }
   }
 
-  private MemoryFile getFile(final AbstractPath path, final Set<? extends OpenOption> options, FileAttribute<?>[] attrs, final boolean followSymLinks, final Set<MemorySymbolicLink> encounteredSymlinks) throws IOException {
+  private GetFileResult getFile(final AbstractPath path, final Set<? extends OpenOption> options, FileAttribute<?>[] attrs, final boolean followSymLinks, final Set<MemorySymbolicLink> encounteredSymlinks) throws IOException {
 
     final FileAttribute<?>[] newAttributes = this.applyUmask(attrs); // TODO lazy
     final AbstractPath absolutePath = (AbstractPath) path.toAbsolutePath().normalize();
@@ -319,10 +319,10 @@ class MemoryFileSystem extends FileSystem {
 
 
     final AbstractPath parent = (AbstractPath) absolutePath.getParent();
-    return this.withWriteLockOnLastDo(rootDirectory, parent, followSymLinks, encounteredSymlinks, new MemoryDirectoryBlock<MemoryFile>() {
+    return this.withWriteLockOnLastDo(rootDirectory, parent, followSymLinks, encounteredSymlinks, new MemoryDirectoryBlock<GetFileResult>() {
 
       @Override
-      public MemoryFile value(MemoryDirectory directory) throws IOException {
+      public GetFileResult value(MemoryDirectory directory) throws IOException {
         boolean isCreateNew = options.contains(CREATE_NEW);
         String fileName = elementPath.getLastNameElement();
         String key = MemoryFileSystem.this.lookUpTransformer.transform(fileName);
@@ -336,7 +336,7 @@ class MemoryFileSystem extends FileSystem {
           directory.checkAccess(WRITE);
           // will throw an exception if already present
           directory.addEntry(key, file);
-          return file;
+          return new GetFileResult(file);
         } else {
           MemoryEntry storedEntry = directory.getEntry(key);
           if (storedEntry == null) {
@@ -348,24 +348,23 @@ class MemoryFileSystem extends FileSystem {
               AttributeAccessors.setAttributes(file, newAttributes);
               directory.checkAccess(WRITE);
               directory.addEntry(key, file);
-              return file;
+              return new GetFileResult(file);
             } else {
               throw new NoSuchFileException(path.toString());
             }
           }
           if (storedEntry instanceof MemoryFile) {
-            return (MemoryFile) storedEntry;
+            return new GetFileResult((MemoryFile) storedEntry);
           } else if (storedEntry instanceof MemorySymbolicLink && followSymLinks) {
             MemorySymbolicLink link = (MemorySymbolicLink) storedEntry;
             if (!encounteredSymlinks.add(link)) {
               throw new FileSystemLoopException(path.toString());
             }
             AbstractPath linkTarget = link.getTarget();
-            // TODO requires reentrant lock, should build return value object
             if (linkTarget.isAbsolute()) {
-              return MemoryFileSystem.this.getFile(linkTarget, options, newAttributes, followSymLinks, encounteredSymlinks);
+              return new GetFileResult(linkTarget);
             } else {
-              return MemoryFileSystem.this.getFile((AbstractPath) parent.resolve(linkTarget), options, newAttributes, followSymLinks, encounteredSymlinks);
+              return new GetFileResult((AbstractPath) parent.resolve(linkTarget));
             }
           } else {
             throw new FileSystemException(absolutePath.toString(), null, "file is a directory");
@@ -374,6 +373,21 @@ class MemoryFileSystem extends FileSystem {
         }
       }
     });
+  }
+
+  static final class GetFileResult {
+    final MemoryFile file;
+    final AbstractPath linkTarget;
+
+    GetFileResult(MemoryFile file) {
+      this.file = file;
+      this.linkTarget = null;
+    }
+
+    GetFileResult(AbstractPath linkTarget) {
+      this.file = null;
+      this.linkTarget = linkTarget;
+    }
 
 
   }
@@ -388,7 +402,11 @@ class MemoryFileSystem extends FileSystem {
     } else {
       encounteredSymlinks = Collections.emptySet();
     }
-    return this.getFile(path, options, attrs, followSymLinks, encounteredSymlinks);
+    GetFileResult result = this.getFile(path, options, attrs, followSymLinks, encounteredSymlinks);
+    while (result.file == null) {
+      result = this.getFile(result.linkTarget, options, attrs, followSymLinks, encounteredSymlinks);
+    }
+    return result.file;
   }
 
   private FileAttribute<?>[] applyUmask(FileAttribute<?>[] attributes) {
