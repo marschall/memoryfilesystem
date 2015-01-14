@@ -83,7 +83,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.regex.PatternSyntaxException;
 
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -959,7 +958,6 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  @Ignore("broken")
   public void readSymlinkLoop() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 

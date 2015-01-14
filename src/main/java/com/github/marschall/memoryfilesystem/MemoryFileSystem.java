@@ -307,8 +307,9 @@ class MemoryFileSystem extends FileSystem {
     }
   }
 
-  private MemoryFile getFile(final AbstractPath path, final Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
-    final FileAttribute<?>[] newAttributes = this.applyUmask(attrs);
+  private MemoryFile getFile(final AbstractPath path, final Set<? extends OpenOption> options, FileAttribute<?>[] attrs, final boolean followSymLinks, final Set<MemorySymbolicLink> encounteredSymlinks) throws IOException {
+
+    final FileAttribute<?>[] newAttributes = this.applyUmask(attrs); // TODO lazy
     final AbstractPath absolutePath = (AbstractPath) path.toAbsolutePath().normalize();
     if (absolutePath.isRoot()) {
       throw new FileSystemException(path.toString(), null, "is not a file");
@@ -316,9 +317,9 @@ class MemoryFileSystem extends FileSystem {
     final ElementPath elementPath = (ElementPath) absolutePath;
     MemoryDirectory rootDirectory = this.getRootDirectory(absolutePath);
 
-    final boolean followSymLinks = Options.isFollowSymLinks(options);
+
     final AbstractPath parent = (AbstractPath) absolutePath.getParent();
-    return this.withWriteLockOnLastDo(rootDirectory, parent, followSymLinks, new MemoryDirectoryBlock<MemoryFile>() {
+    return this.withWriteLockOnLastDo(rootDirectory, parent, followSymLinks, encounteredSymlinks, new MemoryDirectoryBlock<MemoryFile>() {
 
       @Override
       public MemoryFile value(MemoryDirectory directory) throws IOException {
@@ -355,12 +356,16 @@ class MemoryFileSystem extends FileSystem {
           if (storedEntry instanceof MemoryFile) {
             return (MemoryFile) storedEntry;
           } else if (storedEntry instanceof MemorySymbolicLink && followSymLinks) {
-            AbstractPath linkTarget = ((MemorySymbolicLink) storedEntry).getTarget();
+            MemorySymbolicLink link = (MemorySymbolicLink) storedEntry;
+            if (!encounteredSymlinks.add(link)) {
+              throw new FileSystemLoopException(path.toString());
+            }
+            AbstractPath linkTarget = link.getTarget();
             // TODO requires reentrant lock, should build return value object
             if (linkTarget.isAbsolute()) {
-              return MemoryFileSystem.this.getFile(linkTarget, options, newAttributes);
+              return MemoryFileSystem.this.getFile(linkTarget, options, newAttributes, followSymLinks, encounteredSymlinks);
             } else {
-              return MemoryFileSystem.this.getFile((AbstractPath) parent.resolve(linkTarget), options, newAttributes);
+              return MemoryFileSystem.this.getFile((AbstractPath) parent.resolve(linkTarget), options, newAttributes, followSymLinks, encounteredSymlinks);
             }
           } else {
             throw new FileSystemException(absolutePath.toString(), null, "file is a directory");
@@ -370,6 +375,20 @@ class MemoryFileSystem extends FileSystem {
       }
     });
 
+
+  }
+
+  private MemoryFile getFile(final AbstractPath path, final Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
+    boolean followSymLinks = Options.isFollowSymLinks(options);
+    Set<MemorySymbolicLink> encounteredSymlinks;
+    if (followSymLinks) {
+      // we don't expect to encounter many symlinks so we initialize to a lower than the default value of 16
+      // TODO optimized set
+      encounteredSymlinks = new HashSet<>(4);
+    } else {
+      encounteredSymlinks = Collections.emptySet();
+    }
+    return this.getFile(path, options, attrs, followSymLinks, encounteredSymlinks);
   }
 
   private FileAttribute<?>[] applyUmask(FileAttribute<?>[] attributes) {
@@ -662,6 +681,10 @@ class MemoryFileSystem extends FileSystem {
     } else {
       encounteredSymlinks = Collections.emptySet();
     }
+    return this.withWriteLockOnLastDo(root, path, followSymLinks, encounteredSymlinks, callback);
+  }
+
+  private <R> R withWriteLockOnLastDo(MemoryDirectory root, final AbstractPath path, boolean followSymLinks, Set<MemorySymbolicLink> encounteredSymlinks, final MemoryDirectoryBlock<R> callback) throws IOException {
     return this.withLockDo(root, path, encounteredSymlinks, followSymLinks, LockType.WRITE, new MemoryEntryBlock<R>() {
 
       @Override
@@ -672,7 +695,6 @@ class MemoryFileSystem extends FileSystem {
         return callback.value((MemoryDirectory) entry);
       }
     });
-
   }
 
   private <R> R withReadLockDo(MemoryDirectory root, AbstractPath path, boolean followSymLinks, MemoryEntryBlock<? extends R> callback) throws IOException {
