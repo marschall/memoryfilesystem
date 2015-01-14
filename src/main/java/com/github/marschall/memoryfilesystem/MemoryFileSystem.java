@@ -655,7 +655,7 @@ class MemoryFileSystem extends FileSystem {
   }
 
 
-  private <R> R withWriteLockOnLastDo(MemoryDirectory root, final AbstractPath path,  boolean followSymLinks, final MemoryDirectoryBlock<R> callback) throws IOException {
+  private <R> R withWriteLockOnLastDo(MemoryDirectory root, final AbstractPath path, boolean followSymLinks, final MemoryDirectoryBlock<R> callback) throws IOException {
     Set<MemorySymbolicLink> encounteredSymlinks;
     if (followSymLinks) {
       encounteredSymlinks = new HashSet<>(4);
@@ -697,15 +697,16 @@ class MemoryFileSystem extends FileSystem {
 
       ElementPath elementPath = (ElementPath) path;
       List<String> nameElements = elementPath.getNameElements();
-      List<AutoRelease> locks = new ArrayList<>(nameElements.size() + 1);
+      int nameElementsSize = nameElements.size();
+      List<AutoRelease> locks = new ArrayList<>(nameElementsSize + 1);
       try {
         locks.add(root.readLock());
         MemoryDirectory parent = root;
-        for (int i = 0; i < nameElements.size(); ++i) {
+        for (int i = 0; i < nameElementsSize; ++i) {
           String fileName = nameElements.get(i);
           String key = this.lookUpTransformer.transform(fileName);
           MemoryEntry current = parent.getEntryOrException(key, path);
-          boolean isLast = i == nameElements.size() - 1;
+          boolean isLast = i == nameElementsSize - 1;
           if (isLast && lockType == LockType.WRITE) {
             locks.add(current.writeLock());
           } else {
