@@ -718,6 +718,7 @@ class MemoryFileSystem extends FileSystem {
               throw new FileSystemLoopException(path.toString());
             }
             symLinkTarget = link.getTarget();
+            break;
           }
 
           if (isLast) {

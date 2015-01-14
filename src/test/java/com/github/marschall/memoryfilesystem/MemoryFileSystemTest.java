@@ -2516,6 +2516,21 @@ public class MemoryFileSystemTest {
     assertThat(b, hasContents("aaa"));
   }
 
+  /**
+   * Regression test for <a href="https://github.com/marschall/memoryfilesystem/issues/47">Issue 47</a>.
+   */
+  @Test
+  public void symLinkDirectory() throws IOException {
+    Path parent = this.rule.getFileSystem().getPath("/linkParent");
+    Files.createDirectories(parent);
+    Path target = this.rule.getFileSystem().getPath("/target");
+    Files.createDirectories(target);
+    Path link = parent.resolve("link");
+    Files.createSymbolicLink(link, target);
+
+    Files.write(link.resolve("kid"), "hallo".getBytes(US_ASCII));
+  }
+
   private void createAndSetContents(Path path, String contents) throws IOException {
     Path parent = path.toAbsolutePath().getParent();
     if (!parent.equals(parent.getRoot())) {
