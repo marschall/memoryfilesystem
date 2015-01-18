@@ -1,5 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
+import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isAbsolute;
+import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isRelative;
 import static com.github.marschall.memoryfilesystem.IsHiddenMatcher.isHidden;
 import static java.nio.file.AccessMode.EXECUTE;
 import static java.nio.file.AccessMode.READ;
@@ -37,6 +39,7 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -48,9 +51,6 @@ public class WindowsMemoryFileSystemTest {
   @Test
   public void setAttributes() throws IOException, ParseException {
     FileSystem fileSystem = this.rule.getFileSystem();
-
-    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-    FileTime lastModifiedTime = FileTime.fromMillis(format.parse("2012-11-07T20:30:22").getTime());
 
     FileAttribute<?> hiddenAttribute = new StubFileAttribute<>("dos:hidden", true);
 
@@ -312,6 +312,17 @@ public class WindowsMemoryFileSystemTest {
       // should reach here
       assertEquals("file", directory.toAbsolutePath().toString(), e.getFile());
     }
+  }
+
+  @Test
+  @Ignore
+  public void relativePaths() {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path relative = fileSystem.getPath("C:folder\file.txt");
+    Path absolute = fileSystem.getPath("C:\folder\file.txt");
+
+    assertThat(relative, isRelative());
+    assertThat(absolute, isAbsolute());
   }
 
 }
