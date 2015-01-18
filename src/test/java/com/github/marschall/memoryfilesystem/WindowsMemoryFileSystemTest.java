@@ -16,13 +16,16 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.channels.ByteChannel;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.FileSystem;
+import java.nio.file.FileSystemException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.DosFileAttributeView;
 import java.nio.file.attribute.DosFileAttributes;
@@ -277,6 +280,38 @@ public class WindowsMemoryFileSystemTest {
     Path d = fileSystem.getPath("D:\\");
     assertThat(c, lessThan(d));
     assertThat(d, greaterThan(c));
+  }
+
+
+
+  // https://bugs.openjdk.java.net/browse/JDK-8066915
+  @Test
+  public void jdk8066915() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path directory = fileSystem.getPath("directory");
+    directory = Files.createDirectory(directory);
+
+    try (ByteChannel channel = Files.newByteChannel(directory)) {
+      fail("should not be able to create channel on directory");
+    } catch (FileSystemException e) {
+      // should reach here
+      assertEquals("file", directory.toAbsolutePath().toString(), e.getFile());
+    }
+
+    try (ByteChannel channel = Files.newByteChannel(directory, StandardOpenOption.READ)) {
+      fail("should not be able to create channel on directory");
+
+    } catch (FileSystemException e) {
+      // should reach here
+      assertEquals("file", directory.toAbsolutePath().toString(), e.getFile());
+    }
+
+    try (ByteChannel channel = Files.newByteChannel(directory, StandardOpenOption.WRITE)) {
+      fail("should not be able to create channel on directory");
+    } catch (FileSystemException e) {
+      // should reach here
+      assertEquals("file", directory.toAbsolutePath().toString(), e.getFile());
+    }
   }
 
 }

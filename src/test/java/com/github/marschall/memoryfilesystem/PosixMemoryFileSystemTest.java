@@ -1,14 +1,19 @@
 package com.github.marschall.memoryfilesystem;
 
+import static java.nio.file.StandardOpenOption.READ;
+import static java.nio.file.StandardOpenOption.WRITE;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.nio.channels.ByteChannel;
 import java.nio.file.FileSystem;
+import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -79,6 +84,36 @@ public class PosixMemoryFileSystemTest {
     PosixFileAttributeView targetPosixFileAttributeView = Files.getFileAttributeView(target, PosixFileAttributeView.class);
     PosixFileAttributes targetPosixAttributes = targetPosixFileAttributeView.readAttributes();
     assertNotEquals(permissions, targetPosixAttributes.permissions());
+  }
+
+  // https://bugs.openjdk.java.net/browse/JDK-8066915
+  @Test
+  public void jdk8066915() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path directory = fileSystem.getPath("directory");
+    directory = Files.createDirectory(directory);
+
+    try (ByteChannel channel = Files.newByteChannel(directory)) {
+      fail("should not be able to create channel on directory");
+    } catch (FileSystemException e) {
+      // should reach here
+      assertEquals("file", directory.toAbsolutePath().toString(), e.getFile());
+    }
+
+    try (ByteChannel channel = Files.newByteChannel(directory, READ)) {
+      fail("should not be able to create channel on directory");
+
+    } catch (FileSystemException e) {
+      // should reach here
+      assertEquals("file", directory.toAbsolutePath().toString(), e.getFile());
+    }
+
+    try (ByteChannel channel = Files.newByteChannel(directory, WRITE)) {
+      fail("should not be able to create channel on directory");
+    } catch (FileSystemException e) {
+      // should reach here
+      assertEquals("file", directory.toAbsolutePath().toString(), e.getFile());
+    }
   }
 
 }
