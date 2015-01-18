@@ -83,6 +83,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.regex.PatternSyntaxException;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -1723,6 +1724,34 @@ public class MemoryFileSystemTest {
     Path path = fileSystem.getPath("");
     assertThat(path, isRelative());
     assertNull(path.getRoot());
+  }
+
+  // https://bugs.openjdk.java.net/browse/JDK-8043208
+  @Test
+  public void jdk8043208() {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path path = fileSystem.getPath("").normalize();
+    assertThat(path, isRelative());
+    assertNull(path.getRoot());
+  }
+
+  // https://bugs.openjdk.java.net/browse/JDK-8066943
+  @Test(expected = IllegalArgumentException.class)
+  @Ignore
+  public void jdk8066943() {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path path = fileSystem.getPath("..").relativize(fileSystem.getPath("x"));
+    assertThat(path, isRelative());
+    assertEquals("../x", path.toString());
+  }
+
+  @Test
+  public void normalizeEmptyPaths() {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path p1 = fileSystem.getPath(".");
+    Path p2 = fileSystem.getPath("./s");
+    assertTrue(p2.startsWith(p1));
+    assertFalse(p2.normalize().startsWith(p1.normalize()));
   }
 
   @Test
