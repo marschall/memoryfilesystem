@@ -31,10 +31,18 @@ public class RegexPathMatcherTest {
   }
 
   @Test
-  public void matches() {
+  public void matchesUpperCase() {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path path = fileSystem.getPath(this.p);
-    PathMatcher matcher = fileSystem.getPathMatcher(RegexPathMatcher.name() + ":" + this.pattern);
+    PathMatcher matcher = fileSystem.getPathMatcher(RegexPathMatcher.name().toUpperCase() + ":" + this.pattern);
+    assertEquals(this.expected, matcher.matches(path));
+  }
+
+  @Test
+  public void matchesLowerCase() {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path path = fileSystem.getPath(this.p);
+    PathMatcher matcher = fileSystem.getPathMatcher(RegexPathMatcher.name().toLowerCase() + ":" + this.pattern);
     assertEquals(this.expected, matcher.matches(path));
   }
 
