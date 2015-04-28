@@ -362,6 +362,22 @@ public class MemoryFileSystemTest {
   }
 
   @Test
+  public void regressionIssue48() throws IOException {
+    Path path = this.rule.getFileSystem().getPath("file");
+    try (OutputStream stream = Files.newOutputStream(path)) {
+      for (int i = 0; i <= 255; i++) {
+        stream.write(i);
+      }
+    }
+    try (InputStream stream = Files.newInputStream(path)) {
+      for (int i = 0; i <= 255; i++) {
+        assertEquals(i, stream.read());
+      }
+      assertEquals(-1, stream.read());
+    }
+  }
+
+  @Test
   public void blockChannelRead() throws IOException {
     // https://github.com/marschall/memoryfilesystem/issues/33
     Path path = this.rule.getFileSystem().getPath("one").toAbsolutePath();

@@ -128,7 +128,7 @@ final class BlockInputStream extends InputStream {
     if (read == -1) {
       return read;
     } else {
-      return data[0];
+      return data[0] & 0xff;
     }
 
   }
