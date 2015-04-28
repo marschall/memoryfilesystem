@@ -118,7 +118,7 @@ Yes, [google/jimfs](https://github.com/google/jimfs) and [openCage/memoryfs](htt
 [ShrinkWrap NIO.2](http://exitcondition.alrubinger.com/2012/08/17/shrinkwrap-nio2/) seems to be mainly targeted at interacting with a ShrinkWrap archive instead of simulating a file system.
 
 ### What JDK profile does it require?
-It should work on compact1. Below is the jdeps output. We only Full JRE package we depend on is javax.annotation and that is only for documentation purposes (@PreDestroy). If that annotation is not present everything should still work.
+It should work on compact1. Below is the jdeps output. The only Full JRE package we depend on is javax.annotation and that is only for documentation purposes (@PreDestroy). If that annotation is not present everything should still work.
 
 ```
    com.github.marschall.memoryfilesystem (classes)
