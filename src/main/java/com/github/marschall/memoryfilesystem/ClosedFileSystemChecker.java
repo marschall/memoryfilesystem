@@ -5,7 +5,7 @@ import java.nio.file.ClosedFileSystemException;
 final class ClosedFileSystemChecker extends ClosedChecker {
 
   void check() {
-    if (!this.open) {
+    if (!this.open.get()) {
       throw new ClosedFileSystemException();
     }
   }

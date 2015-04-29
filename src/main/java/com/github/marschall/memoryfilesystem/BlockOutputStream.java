@@ -32,9 +32,11 @@ abstract class BlockOutputStream extends OutputStream {
 
   @Override
   public void close() throws IOException {
-    this.checker.close();
-    this.memoryContents.modified();
-    this.memoryContents.closedStream(this.path, this.deleteOnClose);
+    if (this.checker.close()) {
+      this.checker.close();
+      this.memoryContents.modified();
+      this.memoryContents.closedStream(this.path, this.deleteOnClose);
+    }
   }
 
 }

@@ -2542,6 +2542,55 @@ public class MemoryFileSystemTest {
   }
 
   @Test
+  public void inputStreamDoubleClose() throws IOException {
+    // regression test for
+    // https://github.com/marschall/memoryfilesystem/issues/49
+    Path path = this.rule.getFileSystem().getPath("double-close.txt");
+
+    Files.write(path, new byte[]{1, 2, 3});
+    try (InputStream stream = Files.newInputStream(path)) {
+      // intentionally double close
+      stream.close();
+    }
+
+    try (InputStream stream = Files.newInputStream(path)) {
+      // make sure we get no exception
+    }
+  }
+
+  @Test
+  public void outputStreamDoubleClose() throws IOException {
+    // regression test for
+    // https://github.com/marschall/memoryfilesystem/issues/49
+    Path path = this.rule.getFileSystem().getPath("double-close.txt");
+
+    try (OutputStream stream = Files.newOutputStream(path, CREATE_NEW)) {
+      // intentionally double close
+      stream.close();
+    }
+
+    try (OutputStream stream = Files.newOutputStream(path, WRITE)) {
+      // make sure we get no exception
+    }
+  }
+
+  @Test
+  public void byteChannelDoubleClose() throws IOException {
+    // regression test for
+    // https://github.com/marschall/memoryfilesystem/issues/49
+    Path path = this.rule.getFileSystem().getPath("double-close.txt");
+
+    try (SeekableByteChannel channel = Files.newByteChannel(path, CREATE_NEW)) {
+      // intentionally double close
+      channel.close();
+    }
+
+    try (SeekableByteChannel channel = Files.newByteChannel(path)) {
+      // make sure we get no exception
+    }
+  }
+
+  @Test
   public void moveReplaceExisitingNoAttributes() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path a = fileSystem.getPath("/1/a");

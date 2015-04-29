@@ -1,19 +1,21 @@
 package com.github.marschall.memoryfilesystem;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 class ClosedChecker {
 
-  volatile boolean open;
+  final AtomicBoolean open;
 
   ClosedChecker() {
-    this.open = true;
+    this.open = new AtomicBoolean(true);
   }
 
   boolean isOpen() {
-    return this.open;
+    return this.open.get();
   }
 
-  void close() {
-    this.open = false;
+  boolean close() {
+    return this.open.getAndSet(false);
   }
 
 }

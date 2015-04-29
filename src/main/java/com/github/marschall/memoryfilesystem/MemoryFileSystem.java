@@ -1069,10 +1069,13 @@ class MemoryFileSystem extends FileSystem {
 
 
   @Override
-  @PreDestroy // closing twice is explicitly allowed by the contract
+  @PreDestroy
   public void close() throws IOException {
-    this.checker.close();
-    this.provider.close(this);
+    if (this.checker.close()) {
+      // closing twice is explicitly allowed by the contract
+      this.checker.close();
+      this.provider.close(this);
+    }
   }
 
 
