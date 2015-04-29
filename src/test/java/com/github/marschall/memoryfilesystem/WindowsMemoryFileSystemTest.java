@@ -314,6 +314,16 @@ public class WindowsMemoryFileSystemTest {
     }
   }
 
+  // https://bugs.openjdk.java.net/browse/JDK-8072495
+  @Test
+  public void jdk8072495() {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path x = fileSystem.getPath("x");
+    Path empty = fileSystem.getPath("");
+    Path actual = empty.relativize(x);
+    assertEquals(x, actual);
+  }
+
   @Test
   @Ignore
   public void relativePaths() {
