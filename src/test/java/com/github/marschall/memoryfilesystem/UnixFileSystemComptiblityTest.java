@@ -14,9 +14,11 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -41,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -502,6 +505,7 @@ public class UnixFileSystemComptiblityTest {
      * Verifies that Linux does no Unicode normalization and that we can have
      * both a NFC and NFD file.
      */
+    assumeTrue(Charset.defaultCharset() == Charset.forName("UTF-8"));
     FileSystem fileSystem = this.getFileSystem();
     String aUmlaut = "\u00C4";
     Path nfcPath = fileSystem.getPath(aUmlaut);
@@ -539,6 +543,7 @@ public class UnixFileSystemComptiblityTest {
 
   @Test
   public void unixPaths() throws IOException {
+    assumeTrue(Charset.defaultCharset() == Charset.forName("UTF-8"));
     FileSystem fileSystem = this.getFileSystem();
     String aUmlaut = "\u00C4";
     String normalized = Normalizer.normalize(aUmlaut, Form.NFD);
