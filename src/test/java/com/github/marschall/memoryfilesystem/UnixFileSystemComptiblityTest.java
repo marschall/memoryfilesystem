@@ -2,6 +2,7 @@ package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.FileContentsMatcher.hasContents;
 import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
@@ -43,7 +44,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -505,7 +505,8 @@ public class UnixFileSystemComptiblityTest {
      * Verifies that Linux does no Unicode normalization and that we can have
      * both a NFC and NFD file.
      */
-    assumeTrue(Charset.defaultCharset() == Charset.forName("UTF-8"));
+    // https://github.com/marschall/memoryfilesystem/pull/51
+    assumeTrue(Charset.defaultCharset().equals(UTF_8));
     FileSystem fileSystem = this.getFileSystem();
     String aUmlaut = "\u00C4";
     Path nfcPath = fileSystem.getPath(aUmlaut);
@@ -543,7 +544,9 @@ public class UnixFileSystemComptiblityTest {
 
   @Test
   public void unixPaths() throws IOException {
-    assumeTrue(Charset.defaultCharset() == Charset.forName("UTF-8"));
+
+    // https://github.com/marschall/memoryfilesystem/pull/51
+    assumeTrue(Charset.defaultCharset().equals(UTF_8));
     FileSystem fileSystem = this.getFileSystem();
     String aUmlaut = "\u00C4";
     String normalized = Normalizer.normalize(aUmlaut, Form.NFD);
