@@ -16,16 +16,20 @@ import java.util.List;
 public class WatchServiceDemo {
 
   public static void main(String[] args) throws IOException, InterruptedException {
-    Path dir = Paths.get("/Users/marschall/tmp/watch/file.txt");
+    //    Path dir = Paths.get("/Users/marschall/tmp/watch/file.txt"); -> not a directory java.nio.file.NotDirectoryException
+    Path dir = Paths.get("/Users/marschall/tmp/watch/");
 
     FileSystem fileSystem = dir.getFileSystem();
     try (WatchService service = fileSystem.newWatchService()) {
       WatchKey key = dir.register(service, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
 
       while (true) {
-        WatchKey taken = service.take();
+        //        WatchKey taken = service.take();
+        WatchKey taken = key;
+        key.cancel();
         List<WatchEvent<?>> events = taken.pollEvents();
 
+        System.out.println("polled");
         for (WatchEvent<?> event : events) {
           if (event.kind() == ENTRY_CREATE) {
             System.out.println("Created: " + event.context().toString());
@@ -38,6 +42,16 @@ public class WatchServiceDemo {
           }
         }
         taken.reset();
+        final Thread waiter = Thread.currentThread();
+        Thread interruptor = new Thread(new Runnable() {
+
+          @Override
+          public void run() {
+            waiter.interrupt();
+          }
+        }, "interruptor");
+        interruptor.start();
+        //        taken.cancel();
       }
     }
 

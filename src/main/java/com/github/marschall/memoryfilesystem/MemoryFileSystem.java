@@ -508,7 +508,8 @@ class MemoryFileSystem extends FileSystem {
     final ElementPath elementPath = (ElementPath) absolutePath;
     MemoryDirectory rootDirectory = this.getRootDirectory(elementPath);
 
-    this.withWriteLockOnLastDo(rootDirectory, (AbstractPath) elementPath.getParent(), true, new MemoryDirectoryBlock<Void>() {
+    AbstractPath parent = (AbstractPath) elementPath.getParent();
+    this.withWriteLockOnLastDo(rootDirectory, parent, true, new MemoryDirectoryBlock<Void>() {
 
       @Override
       public Void value(MemoryDirectory directory) throws IOException {
@@ -521,6 +522,54 @@ class MemoryFileSystem extends FileSystem {
       }
     });
 
+    this.fileCreated(parent, path);
+  }
+
+  private void fileCreated(AbstractPath parent, AbstractPath path) {
+    if (this.watchKeys.isEmpty()) {
+      return;
+    }
+
+    List<MemoryWatchKey> keys = this.watchKeys.get(parent);
+    if (keys != null) {
+      for (MemoryWatchKey key : keys) {
+        key.fileCreated(path);
+      }
+    }
+  }
+
+  private void fileModified(AbstractPath parent, AbstractPath path) {
+    if (this.watchKeys.isEmpty()) {
+      return;
+    }
+
+    List<MemoryWatchKey> keys = this.watchKeys.get(parent);
+    if (keys != null) {
+      for (MemoryWatchKey key : keys) {
+        key.fileModified(path);
+      }
+    }
+  }
+
+  private void fileDeleted(AbstractPath parent, AbstractPath path) {
+    if (this.watchKeys.isEmpty()) {
+      return;
+    }
+
+    // Remove all registrations on the deleted file
+    List<MemoryWatchKey> keysOnDeleted = this.watchKeys.remove(path);
+    if (keysOnDeleted != null) {
+      for (MemoryWatchKey key : keysOnDeleted) {
+        key.cancel();
+      }
+    }
+
+    List<MemoryWatchKey> keys = this.watchKeys.get(parent);
+    if (keys != null) {
+      for (MemoryWatchKey key : keys) {
+        key.fileDeleted(path);
+      }
+    }
   }
 
   AbstractPath toRealPath(AbstractPath abstractPath, LinkOption... options) throws IOException  {
@@ -1032,7 +1081,8 @@ class MemoryFileSystem extends FileSystem {
       final ElementPath elementPath = (ElementPath) absolutePath;
       MemoryDirectory rootDirectory = this.getRootDirectory(elementPath);
 
-      this.withWriteLockOnLastDo(rootDirectory, (AbstractPath) elementPath.getParent(), true, new MemoryDirectoryBlock<Void>() {
+      AbstractPath parent = (AbstractPath) elementPath.getParent();
+      this.withWriteLockOnLastDo(rootDirectory, parent, true, new MemoryDirectoryBlock<Void>() {
 
         @Override
         public Void value(MemoryDirectory directory) throws IOException {
@@ -1057,6 +1107,7 @@ class MemoryFileSystem extends FileSystem {
           return null;
         }
       });
+      this.fileDeleted(parent, abstractPath);
     }
   }
 
@@ -1170,9 +1221,12 @@ class MemoryFileSystem extends FileSystem {
   }
 
 
-  void register(MemoryWatchKey watchKey) {
+  void register(MemoryWatchKey watchKey) throws IOException {
     this.checker.check();
     AbsolutePath absolutePath = (AbsolutePath) watchKey.watchable().toAbsolutePath();
+    if (this.readAttributes(absolutePath, BasicFileAttributes.class).isDirectory()) {
+      throw new NotDirectoryException(absolutePath.toString());
+    }
     List<MemoryWatchKey> keys = this.watchKeys.get(watchKey);
     if (keys == null) {
       keys = new CopyOnWriteArrayList<>();
