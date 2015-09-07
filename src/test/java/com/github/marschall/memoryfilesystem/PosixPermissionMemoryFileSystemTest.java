@@ -13,6 +13,8 @@ import static java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -25,6 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.attribute.GroupPrincipal;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.Arrays;
@@ -88,6 +91,30 @@ public class PosixPermissionMemoryFileSystemTest {
     this.checkPermission(READ, OTHERS_READ, PosixPermissionFileSystemRule.OTHER);
     this.checkPermission(WRITE, OTHERS_WRITE, PosixPermissionFileSystemRule.OTHER);
     this.checkPermission(EXECUTE, OTHERS_EXECUTE, PosixPermissionFileSystemRule.OTHER);
+  }
+
+
+
+  /**
+   * Only the file owner can chmod
+   *
+   * @see <a href="https://github.com/marschall/memoryfilesystem/issues/50">Issue 50</a>
+   * @throws IOException if the test fails
+   */
+  @Test
+  public void issue50() throws IOException {
+    Path path = this.rule.getFileSystem().getPath("readable-at-first");
+    Files.createFile(path,  PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("r--r--r--")));
+
+    assertTrue(Files.isReadable(path));
+    assertFalse(Files.isWritable(path));
+    assertFalse(Files.isExecutable(path));
+
+    Files.setPosixFilePermissions(path, PosixFilePermissions.fromString("rw-r--r--")); // FAIL.
+
+    assertTrue(Files.isReadable(path)); // ok
+    assertTrue(Files.isWritable(path)); // (should be) ok
+    assertFalse(Files.isExecutable(path)); // ok
   }
 
 

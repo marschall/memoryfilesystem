@@ -785,7 +785,7 @@ abstract class MemoryEntry {
         throw new IllegalArgumentException("permissions must not be null");
       }
       try (AutoRelease lock = this.entry.writeLock()) {
-        this.entry.checkAccess(AccessMode.WRITE);
+        this.assertOwner();
         this.permissions = toMask(perms);
       }
     }
@@ -807,6 +807,13 @@ abstract class MemoryEntry {
       int flag = 1 << permission.ordinal() & this.permissions;
       if (flag == 0) {
         // TODO pass in file
+        throw new AccessDeniedException(null);
+      }
+    }
+
+    void assertOwner() throws AccessDeniedException {
+      UserPrincipal user = this.entry.getCurrentUser();
+      if (!this.getOwner().equals(user)) {
         throw new AccessDeniedException(null);
       }
     }
