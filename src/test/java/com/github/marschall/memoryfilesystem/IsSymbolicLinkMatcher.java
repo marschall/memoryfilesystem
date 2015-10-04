@@ -4,13 +4,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.hamcrest.Description;
-import org.hamcrest.Factory;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 
 final class IsSymbolicLinkMatcher extends TypeSafeMatcher<Path> {
 
-  @Factory
   static Matcher<Path> isSymbolicLink() {
     return new IsSymbolicLinkMatcher();
   }

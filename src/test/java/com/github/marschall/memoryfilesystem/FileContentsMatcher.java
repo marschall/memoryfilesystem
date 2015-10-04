@@ -10,7 +10,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.hamcrest.Description;
-import org.hamcrest.Factory;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 
@@ -22,7 +21,6 @@ public class FileContentsMatcher extends TypeSafeMatcher<Path> {
     this.contents = contents;
   }
 
-  @Factory
   static Matcher<Path> hasContents(String contents) {
     return new FileContentsMatcher(contents);
   }

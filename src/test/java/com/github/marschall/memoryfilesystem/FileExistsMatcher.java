@@ -5,7 +5,6 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 
 import org.hamcrest.Description;
-import org.hamcrest.Factory;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 
@@ -19,12 +18,10 @@ final class FileExistsMatcher extends TypeSafeMatcher<Path> {
     this.options = options;
   }
 
-  @Factory
   static Matcher<Path> exists() {
     return new FileExistsMatcher(NO_OPTIONS);
   }
 
-  @Factory
   static Matcher<Path> exists(LinkOption... options) {
     return new FileExistsMatcher(options);
   }
