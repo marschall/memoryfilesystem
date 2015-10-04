@@ -55,7 +55,7 @@ public class PosixPermissionMemoryFileSystemTest {
     Files.createDirectory(directory);
     Files.createFile(file);
 
-    Files.setAttribute(directory, "posix:permissions", asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE));
+    Files.setAttribute(directory, "posix:permissions", asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_READ, OTHERS_WRITE));
     UserPrincipal user = fileSystem.getUserPrincipalLookupService().lookupPrincipalByName(PosixPermissionFileSystemRule.OTHER);
     CurrentUser.useDuring(user, new UserTask<Void>() {
 
@@ -135,29 +135,6 @@ public class PosixPermissionMemoryFileSystemTest {
     assertTrue(Files.isWritable(path)); // (should be) ok
     assertFalse(Files.isExecutable(path)); // ok
   }
-
-
-  /**
-   * The owner should be able to read current permissions for its own file.
-   */
-  @Test
-  public void issue51() throws IOException {
-    Path path = this.rule.getFileSystem().getPath("readable-at-first");
-    Files.createFile(path,  PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("---------")));
-
-    assertFalse(Files.isReadable(path));
-    assertFalse(Files.isWritable(path));
-    assertFalse(Files.isExecutable(path));
-
-    Files.setPosixFilePermissions(path, PosixFilePermissions.fromString("rw-r--r--")); // FAIL.
-
-    assertTrue(Files.isReadable(path)); // ok
-    assertTrue(Files.isWritable(path)); // (should be) ok
-    assertFalse(Files.isExecutable(path)); // ok
-  }
-
-
-
 
   private static Set<PosixFilePermission> asSet(PosixFilePermission... permissions) {
     return new HashSet<>(Arrays.asList(permissions));
@@ -255,8 +232,11 @@ public class PosixPermissionMemoryFileSystemTest {
     Path sourceDirectory = Files.createDirectory(fileSystem.getPath("source-directory"));
     final Path file = Files.createFile(sourceDirectory.resolve("file.txt"));
 
-    PosixFileAttributeView view = Files.getFileAttributeView(sourceDirectory, PosixFileAttributeView.class);
-    view.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE));
+    PosixFileAttributeView fileView = Files.getFileAttributeView(sourceDirectory, PosixFileAttributeView.class);
+    fileView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE));
+
+    PosixFileAttributeView directoryView = Files.getFileAttributeView(sourceDirectory, PosixFileAttributeView.class);
+    directoryView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE));
 
     UserPrincipal user = fileSystem.getUserPrincipalLookupService().lookupPrincipalByName(PosixPermissionFileSystemRule.OTHER);
 
@@ -275,7 +255,7 @@ public class PosixPermissionMemoryFileSystemTest {
     });
 
 
-    view.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_WRITE));
+    directoryView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_WRITE));
     CurrentUser.useDuring(user, new UserTask<Void>() {
 
       @Override

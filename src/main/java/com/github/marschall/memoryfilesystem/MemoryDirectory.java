@@ -1,6 +1,5 @@
 package com.github.marschall.memoryfilesystem;
 
-import static java.nio.file.AccessMode.READ;
 import static java.nio.file.attribute.PosixFilePermission.GROUP_EXECUTE;
 import static java.nio.file.attribute.PosixFilePermission.OTHERS_EXECUTE;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE;
@@ -52,7 +51,7 @@ class MemoryDirectory extends MemoryEntry {
   DirectoryStream<Path> newDirectoryStream(Path basePath, Filter<? super Path> filter) throws AccessDeniedException {
     // REVIEW simply copying is not super scalable
     // REVIEW eager filtering might be nice
-    this.checkAccess(READ);
+    this.checkAccess(AccessMode.EXECUTE);
     List<String> elements = new ArrayList<>(this.entries.keySet());
     return new MemoryDirectoryStream(basePath, filter, elements);
   }
