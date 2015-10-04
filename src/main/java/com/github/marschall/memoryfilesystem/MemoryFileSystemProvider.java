@@ -181,7 +181,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     = new FileAttribute<?>[]{ PosixFilePermissions.asFileAttribute(perms) };
     if (parser.isSingleEmptyRoot()) {
       Root root = new EmptyRoot(fileSystem);
-      MemoryDirectory directory = new MemoryDirectory("", fileSystem.newEntryCreationContext(attributes));
+      MemoryDirectory directory = new MemoryDirectory("", fileSystem.newEntryCreationContext(root, attributes));
       directory.initializeRoot();
       return Collections.singletonMap(root, directory);
     } else {
@@ -189,7 +189,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
       Map<Root, MemoryDirectory> paths = new LinkedHashMap<>(roots.size());
       for (String root : roots) {
         NamedRoot namedRoot = new NamedRoot(fileSystem, root);
-        MemoryDirectory rootDirectory = new MemoryDirectory(namedRoot.getKey(), fileSystem.newEntryCreationContext(attributes));
+        MemoryDirectory rootDirectory = new MemoryDirectory(namedRoot.getKey(), fileSystem.newEntryCreationContext(namedRoot, attributes));
         rootDirectory.initializeRoot();
         paths.put(namedRoot, rootDirectory);
       }

@@ -14,6 +14,7 @@ import java.nio.ByteBuffer;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.AccessMode;
 import java.nio.file.FileSystemException;
+import java.nio.file.Path;
 import java.nio.file.attribute.AclEntry;
 import java.nio.file.attribute.AclEntryPermission;
 import java.nio.file.attribute.AclEntryType;
@@ -101,7 +102,7 @@ abstract class MemoryEntry {
     if (viewClass == PosixFileAttributeView.class) {
       return new MemoryPosixFileAttributeView(this, context);
     } else if (viewClass == DosFileAttributeView.class) {
-      return new MemoryDosFileAttributeView(this);
+      return new MemoryDosFileAttributeView(this, context);
     } else if (viewClass == UserDefinedFileAttributeView.class) {
       return new MemoryUserDefinedFileAttributeView(this);
     } else if (viewClass == AclFileAttributeView.class) {
@@ -387,10 +388,12 @@ abstract class MemoryEntry {
   static class MemoryAclFileAttributeView extends MemoryFileOwnerAttributeView implements AclFileAttributeView, AccessCheck {
 
     private List<AclEntry> acl;
+    private final Path path;
 
     MemoryAclFileAttributeView(MemoryEntry entry, EntryCreationContext context) {
       super(entry, context);
       this.acl = Collections.emptyList();
+      this.path = context.path;
     }
 
     @Override
@@ -434,8 +437,7 @@ abstract class MemoryEntry {
               return;
             }
             if (type == DENY) {
-              // TODO pass in file
-              throw new AccessDeniedException(null);
+              throw new AccessDeniedException(this.path.toString());
             }
           }
         }
@@ -476,9 +478,11 @@ abstract class MemoryEntry {
     private boolean hidden;
     private boolean system;
     private boolean archive;
+    private final Path path;
 
-    MemoryDosFileAttributeView(MemoryEntry entry) {
+    MemoryDosFileAttributeView(MemoryEntry entry, EntryCreationContext context) {
       super(entry);
+      this.path = context.path;
     }
 
     @Override
@@ -553,8 +557,7 @@ abstract class MemoryEntry {
           break;
         case WRITE:
           if (this.readOnly) {
-            // TODO pass in file
-            throw new AccessDeniedException(null);
+            throw new AccessDeniedException(this.path.toString());
           }
           break;
         case EXECUTE:
@@ -734,6 +737,7 @@ abstract class MemoryEntry {
 
     private GroupPrincipal group;
     private int permissions;
+    private final Path path;
 
     MemoryPosixFileAttributeView(MemoryEntry entry, EntryCreationContext context) {
       super(entry, context);
@@ -742,6 +746,7 @@ abstract class MemoryEntry {
       }
       this.group = context.group;
       this.permissions = toMask(context.permissions);
+      this.path = context.path;
     }
 
 
@@ -805,15 +810,14 @@ abstract class MemoryEntry {
       }
       int flag = 1 << permission.ordinal() & this.permissions;
       if (flag == 0) {
-        // TODO pass in file
-        throw new AccessDeniedException(null);
+        throw new AccessDeniedException(this.path.toString());
       }
     }
 
     void assertOwner() throws AccessDeniedException {
       UserPrincipal user = this.entry.getCurrentUser();
       if (!this.getOwner().equals(user)) {
-        throw new AccessDeniedException(null);
+        throw new AccessDeniedException(this.path.toString());
       }
     }
 
