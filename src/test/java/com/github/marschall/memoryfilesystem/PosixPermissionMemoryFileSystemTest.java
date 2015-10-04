@@ -118,6 +118,28 @@ public class PosixPermissionMemoryFileSystemTest {
   }
 
 
+  /**
+   * The owner should be able to read current permissions for its own file.
+   */
+  @Test
+  public void issue51() throws IOException {
+    Path path = this.rule.getFileSystem().getPath("readable-at-first");
+    Files.createFile(path,  PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("---------")));
+
+    assertFalse(Files.isReadable(path));
+    assertFalse(Files.isWritable(path));
+    assertFalse(Files.isExecutable(path));
+
+    Files.setPosixFilePermissions(path, PosixFilePermissions.fromString("rw-r--r--")); // FAIL.
+
+    assertTrue(Files.isReadable(path)); // ok
+    assertTrue(Files.isWritable(path)); // (should be) ok
+    assertFalse(Files.isExecutable(path)); // ok
+  }
+
+
+
+
   private static Set<PosixFilePermission> asSet(PosixFilePermission... permissions) {
     return new HashSet<>(Arrays.asList(permissions));
   }

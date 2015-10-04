@@ -230,7 +230,6 @@ abstract class MemoryEntry {
 
   <A extends FileAttributeView> A getFileAttributeView(Class<A> type) throws AccessDeniedException {
     try (AutoRelease lock = this.readLock()) {
-      this.checkAccess(AccessMode.READ);
       if (type == BasicFileAttributeView.class) {
         return (A) this.getBasicFileAttributeView();
       } else {
