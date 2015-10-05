@@ -66,6 +66,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
+import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -2621,6 +2622,18 @@ public class MemoryFileSystemTest {
     Files.createSymbolicLink(link, target);
 
     Files.write(link.resolve("kid"), "hallo".getBytes(US_ASCII));
+  }
+
+
+
+  /**
+   * Regression test for <a href="https://github.com/marschall/memoryfilesystem/issues/55">Issue 55</a>.
+   */
+  @Test
+  public void unsupportedViews() throws IOException {
+    Path root = this.rule.getFileSystem().getPath("/");
+    PosixFileAttributeView unsupportedView = Files.getFileAttributeView(root, PosixFileAttributeView.class);
+    assertNull(unsupportedView);
   }
 
   private void createAndSetContents(Path path, String contents) throws IOException {

@@ -29,6 +29,7 @@ import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.WatchService;
+import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.DosFileAttributes;
 import java.nio.file.attribute.FileAttribute;
@@ -619,7 +620,11 @@ class MemoryFileSystem extends FileSystem {
     });
   }
 
-  <V extends FileAttributeView> V getLazyFileAttributeView(AbstractPath path, final Class<V> type, LinkOption... options) {
+  <V extends FileAttributeView> V getLazyFileAttributeView(AbstractPath path, Class<V> type, LinkOption... options) {
+    if (type != BasicFileAttributeView.class && !this.additionalViews.contains(type)) {
+      // unsupported view, specification requires null
+      return null;
+    }
     InvocationHandler handler = new LazyFileAttributeView<>(path, type, options);
     Object proxy = Proxy.newProxyInstance(MemoryFileSystem.class.getClassLoader(), new Class<?>[]{type}, handler);
     return type.cast(proxy);

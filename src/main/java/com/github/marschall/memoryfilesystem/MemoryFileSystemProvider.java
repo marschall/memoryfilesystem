@@ -374,8 +374,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   public <V extends FileAttributeView> V getFileAttributeView(Path path, Class<V> type, LinkOption... options) {
     AbstractPath abstractPath = this.castPath(path);
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
-    return memoryFileSystem.getLazyFileAttributeView(abstractPath, type,
-            options);
+    return memoryFileSystem.getLazyFileAttributeView(abstractPath, type, options);
   }
 
 
