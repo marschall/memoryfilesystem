@@ -52,7 +52,10 @@ class MemoryDirectory extends MemoryEntry {
     // REVIEW simply copying is not super scalable
     // REVIEW eager filtering might be nice
     this.checkAccess(AccessMode.EXECUTE);
-    List<String> elements = new ArrayList<>(this.entries.keySet());
+    List<String> elements = new ArrayList<>(this.entries.size());
+    for (MemoryEntry entry : this.entries.values()) {
+      elements.add(entry.getOriginalName());
+    }
     return new MemoryDirectoryStream(basePath, filter, elements);
   }
 

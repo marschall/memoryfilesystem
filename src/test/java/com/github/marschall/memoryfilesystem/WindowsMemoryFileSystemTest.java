@@ -1,5 +1,6 @@
 package com.github.marschall.memoryfilesystem;
 
+import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isAbsolute;
 import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isRelative;
 import static com.github.marschall.memoryfilesystem.IsHiddenMatcher.isHidden;
@@ -20,6 +21,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.channels.ByteChannel;
 import java.nio.file.AccessDeniedException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystemException;
 import java.nio.file.FileSystems;
@@ -322,6 +324,24 @@ public class WindowsMemoryFileSystemTest {
     Path empty = fileSystem.getPath("");
     Path actual = empty.relativize(x);
     assertEquals(x, actual);
+  }
+
+  @Test
+  public void preserveCase() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path originalPath = fileSystem.getPath("C:\\File0.txt");
+    Files.createFile(originalPath);
+    assertThat(fileSystem.getPath("C:\\file0.txt"), exists());
+    boolean found = false;
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(originalPath.getParent())) {
+      for (Path each : stream) {
+        if ("File0.txt".equals(each.getFileName().toString())) {
+          found = true;
+          break;
+        }
+      }
+    }
+    assertTrue(found);
   }
 
   @Test
