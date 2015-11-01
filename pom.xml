@@ -10,7 +10,7 @@
   <inceptionYear>2011</inceptionYear>
   
   <prerequisites>
-    <maven>3.0.3</maven>
+    <maven>3.0.5</maven>
   </prerequisites>
 
   <url>https://github.com/marschall/memoryfilesystem</url>
@@ -117,7 +117,7 @@
       <dependency>
         <groupId>cglib</groupId>
         <artifactId>cglib-nodep</artifactId>
-        <version>3.1</version>
+        <version>3.2.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -215,6 +215,21 @@
               </configuration>
             </execution>
           </executions>
+      </plugin>
+      <plugin>
+        <groupId>com.github.ferstl</groupId>
+        <artifactId>jitwatch-jarscan-maven-plugin</artifactId>
+        <configuration>
+          <analyzeDependencies>false</analyzeDependencies>
+        </configuration>
+        <executions>
+          <execution>
+            <id>crate-jarscan-report</id>
+            <goals>
+              <goal>scan</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
@@ -334,6 +349,11 @@
           <artifactId>maven-site-plugin</artifactId>
           <version>3.4</version>
         </plugin>
+        <plugin>
+          <groupId>com.github.ferstl</groupId>
+          <artifactId>jitwatch-jarscan-maven-plugin</artifactId>
+          <version>1.0.0</version>
+        </plugin>
         <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself. -->
         <plugin>
           <groupId>org.eclipse.m2e</groupId>
@@ -413,7 +433,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <java.version>1.7</java.version>
-    <spring.version>4.2.1.RELEASE</spring.version>
+    <spring.version>4.2.2.RELEASE</spring.version>
   </properties>
 
 </project>
