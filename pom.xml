@@ -178,16 +178,9 @@
             <target>${java.version}</target>
           </configuration>
           <executions>
-            <!-- Disable the "default-compile" execution (used in the compile phase) -->
-            <execution>
-              <id>default-compile</id>
-              <phase>none</phase>
-
-            </execution>
-
             <!-- Compile all code except module-info.java with the configured source level -->
             <execution>
-              <id>compile-code</id>
+              <id>default-compile</id>
               <phase>compile</phase>
               <goals>
                 <goal>compile</goal>
