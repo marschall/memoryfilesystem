@@ -4,7 +4,7 @@
   <groupId>com.github.marschall</groupId>
   <artifactId>memoryfilesystem</artifactId>
   <version>0.7.3-SNAPSHOT</version>
-  <packaging>jar</packaging>
+  <packaging>bundle</packaging>
   <name>Memory File System</name>
   <description>An in memory implementation of a JSR-203 file system.</description>
   <inceptionYear>2011</inceptionYear>
@@ -136,22 +136,6 @@
   </distributionManagement>
 
   <build>
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-        <filtering>true</filtering>
-        <includes>
-          <include>META-INF/MANIFEST.MF</include>
-        </includes>
-      </resource>
-      <resource>
-        <directory>src/main/resources</directory>
-        <filtering>false</filtering>
-        <excludes>
-          <exclude>META-INF/MANIFEST.MF</exclude>
-        </excludes>
-      </resource>
-    </resources>
     <plugins>
       <plugin>
         <groupId>com.github.marschall</groupId>
@@ -164,50 +148,11 @@
         </configuration>
       </plugin>
       <plugin>
-        <artifactId>maven-jar-plugin</artifactId>
-        <configuration>
-          <archive>
-            <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-          </archive>
-        </configuration>
-      </plugin>
-      <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
           <configuration>
             <source>${java.version}</source>
             <target>${java.version}</target>
           </configuration>
-          <executions>
-            <!-- Compile all code except module-info.java with the configured source level -->
-            <execution>
-              <id>default-compile</id>
-              <phase>compile</phase>
-              <goals>
-                <goal>compile</goal>
-              </goals>
-              <configuration>
-                <excludes>
-                  <exclude>module-info.java</exclude>
-                </excludes>
-              </configuration>
-            </execution>
-
-            <!-- Compile module-info.java with source level 1.9 -->
-            <execution>
-              <id>compile-module-info-java</id>
-              <phase>compile</phase>
-              <goals>
-                <goal>compile</goal>
-              </goals>
-              <configuration>
-                <source>1.9</source>
-                <target>1.9</target>
-                <includes>
-                  <include>module-info.java</include>
-                </includes>
-              </configuration>
-            </execution>
-          </executions>
       </plugin>
       <plugin>
         <groupId>com.github.ferstl</groupId>
@@ -265,6 +210,32 @@
         </executions>
       </plugin>
       <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <extensions>true</extensions>
+        <configuration>
+          <remoteOBR>false</remoteOBR>
+          <archive>
+            <index>true</index>
+          </archive>
+          <instructions>
+            <Export-Package>com.github.marschall.memoryfilesystem;version="${project.version}"</Export-Package>
+            <Import-Package>
+              javax.annotation;resolution:=optional
+            </Import-Package>
+            <Bundle-SymbolicName>${project.groupId}.${project.artifactId};singleton:=true</Bundle-SymbolicName>
+            <Bundle-RequiredExecutionEnvironment>JavaSE-1.7</Bundle-RequiredExecutionEnvironment>
+            <!-- otherwise Equinox won't run the activator -->
+            <Bundle-ActivationPolicy>lazy</Bundle-ActivationPolicy>
+            <!-- <Include-Resource>/META-INF/jandex.idx=${project.build.outputDirectory}/META-INF/jandex.idx</Include-Resource> -->
+            <Include-Resource>
+              {maven-resources},
+              /META-INF/jandex.idx=${project.build.outputDirectory}/META-INF/jandex.idx
+            </Include-Resource>
+          </instructions>
+        </configuration>
+      </plugin>
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-release-plugin</artifactId>
         <configuration>
@@ -292,10 +263,6 @@
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.3</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-jar-plugin</artifactId>
-          <version>2.6</version>
         </plugin>
         <plugin>
           <artifactId>maven-resources-plugin</artifactId>
@@ -377,29 +344,6 @@
   </build>
   
   <profiles>
-    <profile>
-      <id>travis</id>
-      <activation>
-        <property>
-          <name>env.TRAVIS</name>
-          <value>true</value>
-        </property>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-compiler-plugin</artifactId>
-              <executions>
-                <!-- Travis does not yet support Java 1.9 -->
-                <execution>
-                  <id>compile-module-info-java</id>
-                  <phase>none</phase>
-                </execution>
-              </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
     <profile>
       <id>deploy-to-sonatype-oss</id>
       <build>
