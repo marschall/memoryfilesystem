@@ -29,6 +29,9 @@ abstract class AbstractPath implements Path {
   }
 
   static AbstractPath createAboslute(MemoryFileSystem fileSystem, Root root, List<String> nameElements) {
+    if (root == null) {
+      throw new IllegalArgumentException("root must not be null");
+    }
     if (nameElements.isEmpty()) {
       return root;
     } else {

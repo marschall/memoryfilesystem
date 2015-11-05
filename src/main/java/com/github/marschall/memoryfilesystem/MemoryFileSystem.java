@@ -587,7 +587,7 @@ class MemoryFileSystem extends FileSystem {
       if (symLinkTarget == null) {
         return AbsolutePath.createAboslute(this, (Root) path.getRoot(), realPath);
       } else {
-        return this.toRealPath(root, (AbstractPath) symLinkTarget, encounteredLinks, followSymLinks);
+        return this.toRealPath(root, (AbstractPath) symLinkTarget.toAbsolutePath(), encounteredLinks, followSymLinks);
       }
 
     } else {
