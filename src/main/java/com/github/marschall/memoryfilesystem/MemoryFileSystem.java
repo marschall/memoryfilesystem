@@ -545,16 +545,16 @@ class MemoryFileSystem extends FileSystem {
     if (path.isRoot()) {
       return (AbstractPath) path.getRoot();
     } else if (path instanceof ElementPath) {
-      Path symLinkTarget = null;
 
       ElementPath elementPath = (ElementPath) path;
       List<String> nameElements = elementPath.getNameElements();
-      List<String> realPath = new ArrayList<>(nameElements.size());
-      List<AutoRelease> locks = new ArrayList<>(nameElements.size() + 1);
+      int pathElementCount = nameElements.size();
+      List<String> realPath = new ArrayList<>(pathElementCount);
+      List<AutoRelease> locks = new ArrayList<>(pathElementCount + 1);
       try {
         locks.add(root.readLock());
         MemoryDirectory parent = root;
-        for (int i = 0; i < nameElements.size(); ++i) {
+        for (int i = 0; i < pathElementCount; ++i) {
           String fileName = nameElements.get(i);
           String key = this.lookUpTransformer.transform(fileName);
           MemoryEntry current = parent.getEntryOrException(key, path);
@@ -566,14 +566,18 @@ class MemoryFileSystem extends FileSystem {
             if (!encounteredLinks.add(link)) {
               throw new FileSystemLoopException(path.toString());
             }
-            symLinkTarget = link.getTarget();
+            Path symLinkTarget = link.getTarget().toAbsolutePath();
+            Path newLookUpPath = symLinkTarget;
+            for (int j = i + 1; j < pathElementCount; ++j) {
+              newLookUpPath = newLookUpPath.resolve(nameElements.get(j));
+            }
+            return this.toRealPath(root, (AbstractPath) newLookUpPath, encounteredLinks, followSymLinks);
           }
 
-          if (i == nameElements.size() - 1) {
-            continue;
-          } else if (current instanceof MemoryDirectory) {
+          if (current instanceof MemoryDirectory) {
             parent = (MemoryDirectory) current;
-          } else {
+          } else if (i < (pathElementCount - 1)) {
+            // all except last must be a directory
             throw new NotDirectoryException(path.toString());
           }
 
@@ -584,11 +588,7 @@ class MemoryFileSystem extends FileSystem {
           lock.close();
         }
       }
-      if (symLinkTarget == null) {
-        return AbsolutePath.createAboslute(this, (Root) path.getRoot(), realPath);
-      } else {
-        return this.toRealPath(root, (AbstractPath) symLinkTarget.toAbsolutePath(), encounteredLinks, followSymLinks);
-      }
+      return AbsolutePath.createAboslute(this, (Root) path.getRoot(), realPath);
 
     } else {
       throw new IllegalArgumentException("unknown path type" + path);

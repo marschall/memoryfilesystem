@@ -13,63 +13,110 @@ import org.junit.Rule;
 import org.junit.Test;
 
 /**
- * Regression test for <a href="https://github.com/marschall/memoryfilesystem/issues/60">Issue 60</a>.
+ * Regression test for <a href="https://github.com/marschall/memoryfilesystem/issues/60">Issue 60</a>
+ * and <a href="https://github.com/marschall/memoryfilesystem/issues/61">Issue 61</a>.
  */
 public class ToRealPathTest {
 
   @Rule
   public final FileSystemRule rule = new FileSystemRule();
 
-  private Path targetPath;
+  private Path existingDirectoryPath;
+  private Path existingFilePath;
 
   @Before
   public void before() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     // lets prepare the filesystem content...
+    // structure should looks like:
+    /*
 
-    this.targetPath = fileSystem.getPath("target");
-    Files.createDirectory(this.targetPath);
+    /existingDirectory/existingFile
+    /linkDirectory -> /existingDirectory
+    /linkFile -> /existingDirectory/existingFile
 
-    // now create a link from /src -> /target
-    Path srcPath = fileSystem.getPath("src");
-    Files.createSymbolicLink(srcPath, this.targetPath);
+     */
 
-    // lets check a bit here
-    assertEquals("/target", this.targetPath.toAbsolutePath().toString());
-    assertEquals("/src", srcPath.toAbsolutePath().toString());
+    this.existingDirectoryPath = fileSystem.getPath("existingDirectory");
+    Files.createDirectory(this.existingDirectoryPath);
+    this.existingFilePath = this.existingDirectoryPath.resolve("existingFile");
+    Files.createFile(this.existingFilePath);
 
-    Path srcPath2 = fileSystem.getPath("src");
-    assertTrue(Files.isSymbolicLink(srcPath2));
-    assertTrue(Files.isDirectory(srcPath2));
-    assertEquals(srcPath, srcPath2);
 
-    // so far so good
+    // create a directory symbolic link from /linkDirectory -> /existingDirectory
+    Path linkDirectoryPath = fileSystem.getPath("linkDirectory");
+    Files.createSymbolicLink(linkDirectoryPath, this.existingDirectoryPath);
+
+    // check attributes of this directory link
+    assertEquals("/existingDirectory", this.existingDirectoryPath.toAbsolutePath().toString());
+    assertEquals("/linkDirectory", linkDirectoryPath.toAbsolutePath().toString());
+
+    Path linkDirectoryPath2 = fileSystem.getPath("linkDirectory");
+    assertTrue(Files.isSymbolicLink(linkDirectoryPath2));
+    assertTrue(Files.isDirectory(linkDirectoryPath2));
+    assertEquals(linkDirectoryPath, linkDirectoryPath2);
+
+    // create a symbolic file link
+    Path linkFilePath = fileSystem.getPath("linkFile");
+    Files.createSymbolicLink(linkFilePath, this.existingFilePath);
   }
 
 
   @Test
-  public void realPathEquals() throws IOException {
-    Path realPath = this.rule.getFileSystem().getPath("src").toRealPath();
-    assertEquals(this.targetPath.toAbsolutePath(), realPath);
+  public void realPathDirectoryEquals() throws IOException {
+    Path linkDirectoryRealPath = this.rule.getFileSystem().getPath("linkDirectory").toRealPath();
+    assertEquals(this.existingDirectoryPath.toAbsolutePath(), linkDirectoryRealPath);
+    assertEquals(this.existingDirectoryPath.toRealPath(), linkDirectoryRealPath);
   }
 
   @Test
-  public void realPathDirectory() throws IOException {
-    Path realPath = this.rule.getFileSystem().getPath("src").toRealPath();
-    assertTrue(Files.isDirectory(realPath));
+  public void realPathFileEquals() throws IOException {
+    Path linkFileRealPath = this.rule.getFileSystem().getPath("linkFile").toRealPath();
+    assertEquals(this.existingFilePath.toRealPath(), linkFileRealPath);
+
+    linkFileRealPath = this.rule.getFileSystem().getPath("linkDirectory").resolve("existingFile").toRealPath();
+    assertEquals(this.existingFilePath.toRealPath(), linkFileRealPath);
   }
 
   @Test
-  public void realPathSymlink() throws IOException {
-    Path realPath = this.rule.getFileSystem().getPath("src").toRealPath();
-    assertFalse(Files.isSymbolicLink(realPath));
+  public void realPathIsDirectory() throws IOException {
+    Path linkDirectoryRealPath = this.rule.getFileSystem().getPath("linkDirectory").toRealPath();
+    assertTrue(Files.isDirectory(linkDirectoryRealPath));
   }
 
   @Test
-  public void realPathToString() throws IOException {
-    Path realPath = this.rule.getFileSystem().getPath("src").toRealPath();
-    assertEquals("/target", realPath.toString());
+  public void realPathIsFile() throws IOException {
+    Path linkFileRealPath = this.rule.getFileSystem().getPath("linkFile").toRealPath();
+    assertFalse(Files.isDirectory(linkFileRealPath));
+    assertTrue(Files.isRegularFile(linkFileRealPath));
+  }
+
+  @Test
+  public void realPathIsSymlink() throws IOException {
+    Path linkDirectoryRealPath = this.rule.getFileSystem().getPath("linkDirectory").toRealPath();
+    assertFalse(Files.isSymbolicLink(linkDirectoryRealPath));
+
+    Path linkFileRealPath = this.rule.getFileSystem().getPath("linkFile").toRealPath();
+    assertFalse(Files.isSymbolicLink(linkFileRealPath));
+
+    linkFileRealPath = this.rule.getFileSystem().getPath("linkDirectory").resolve("existingFile").toRealPath();
+    assertFalse(Files.isSymbolicLink(linkFileRealPath));
+  }
+
+  @Test
+  public void realPathDirectoryToString() throws IOException {
+    Path linkDirectoryRealPath = this.rule.getFileSystem().getPath("linkDirectory").toRealPath();
+    assertEquals("/existingDirectory", linkDirectoryRealPath.toString());
+  }
+
+  @Test
+  public void realPathFileToString() throws IOException {
+    Path linkFileRealPath = this.rule.getFileSystem().getPath("linkFile").toRealPath();
+    assertEquals("/existingDirectory/existingFile", linkFileRealPath.toString());
+
+    linkFileRealPath = this.rule.getFileSystem().getPath("linkDirectory").resolve("existingFile").toRealPath();
+    assertEquals("/existingDirectory/existingFile", linkFileRealPath.toString());
   }
 
 }
