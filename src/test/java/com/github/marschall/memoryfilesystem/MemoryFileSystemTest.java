@@ -2161,6 +2161,75 @@ public class MemoryFileSystemTest {
   }
 
   @Test
+  public void moveToDifferentParent() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    // move /a/c to /b/c
+
+    Path a = fileSystem.getPath("/a");
+    Files.createDirectory(a);
+    Path b = fileSystem.getPath("/b");
+    Files.createDirectory(b);
+    Path ac = fileSystem.getPath("/a/c");
+    Files.createFile(ac);
+    Path bc = fileSystem.getPath("/b/c");
+
+    assertThat(a, exists());
+    assertThat(b, exists());
+    assertThat(ac, exists());
+    assertThat(bc, not(exists()));
+
+    Files.move(ac, bc);
+    assertThat(ac, not(exists()));
+    assertThat(bc, exists());
+
+    List<Path> aKids = new ArrayList<>(1);
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(a)) {
+      for (Path path : stream) {
+        aKids.add(path);
+      }
+    }
+    assertThat(aKids, empty());
+
+    List<Path> bKids = new ArrayList<>(1);
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(b)) {
+      for (Path path : stream) {
+        bKids.add(path);
+      }
+    }
+    assertEquals(bKids, Collections.singletonList(bc));
+  }
+
+  @Test
+  public void renameFile() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    // move /a/c to /b/c
+
+    Path a = fileSystem.getPath("/a");
+    Files.createDirectory(a);
+    Path ab = fileSystem.getPath("/a/b");
+    Files.createFile(ab);
+    Path ac = fileSystem.getPath("/a/c");
+
+    assertThat(a, exists());
+    assertThat(ab, exists());
+    assertThat(ac, not(exists()));
+
+    Files.move(ab, ac);
+    assertThat(ab, not(exists()));
+    assertThat(ac, exists());
+
+    List<Path> aKids = new ArrayList<>(1);
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(a)) {
+      for (Path path : stream) {
+        aKids.add(path);
+      }
+    }
+    assertEquals(Collections.singletonList(ac), aKids);
+  }
+
+  @Test
   public void moveSameFile() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 

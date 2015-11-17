@@ -1329,21 +1329,18 @@ class MemoryFileSystem extends FileSystem {
       targetParent.removeEntry(targetElementName);
     }
 
+    MemoryEntry toCopy = getCopySource(copyContext, sourceEntry);
+    MemoryEntry copy = targetContext.path.getMemoryFileSystem().copyEntry(targetContext.path, toCopy, targetElementName);
+    if (copyContext.operation.isMove() || copyContext.copyAttribues) {
+      copy.initializeAttributes(toCopy);
+    }
     if (copyContext.operation.isMove()) {
       sourceParent.removeEntry(sourceElementName);
-      targetParent.addEntry(targetElementName, sourceEntry);
-    } else {
-      MemoryEntry toCopy = getCopySource(copyContext, sourceEntry);
-      MemoryEntry copy = targetContext.path.getMemoryFileSystem().copyEntry(targetContext.path, toCopy, targetElementName);
-      if (copyContext.copyAttribues) {
-        copy.initializeAttributes(toCopy);
-      }
-      targetParent.addEntry(targetElementName, copy);
     }
+    targetParent.addEntry(targetElementName, copy);
   }
 
-  private static MemoryEntry getCopySource(CopyContext copyContext,
-          MemoryEntry sourceEntry) throws IOException {
+  private static MemoryEntry getCopySource(CopyContext copyContext, MemoryEntry sourceEntry) throws IOException {
     MemoryEntry toCopy;
     if (sourceEntry instanceof MemorySymbolicLink && copyContext.isSourceFollowSymLinks()) {
       AbstractPath linkTarget = ((MemorySymbolicLink) sourceEntry).getTarget();
