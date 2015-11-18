@@ -57,6 +57,7 @@ import java.nio.file.FileSystemException;
 import java.nio.file.FileSystemLoopException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.NotLinkException;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
@@ -1192,6 +1193,34 @@ public class MemoryFileSystemTest {
       ByteBuffer dst = ByteBuffer.wrap(new byte[5]);
       channel.position(42L);
       assertEquals(-1, channel.read(dst));
+    }
+  }
+
+  @Test
+  public void isSameFile() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path memoryPath = fileSystem.getPath("/");
+    Path defaultPath = Paths.get("/foo/bar");
+
+    //    assertTrue(Files.isSameFile(defaultPath, defaultPath));
+    assertTrue(Files.isSameFile(memoryPath, memoryPath));
+    assertFalse(Files.isSameFile(memoryPath, defaultPath));
+    assertFalse(Files.isSameFile(defaultPath, memoryPath));
+  }
+
+
+
+  @Test
+  public void isSameFileNotExisting() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path path = fileSystem.getPath("/foo/bar");
+
+    assertThat(path, not(exists()));
+    try {
+      Files.isSameFile(path, path);
+      fail("file does not exist");
+    } catch (NoSuchFileException e) {
+      // should reach here
     }
   }
 
