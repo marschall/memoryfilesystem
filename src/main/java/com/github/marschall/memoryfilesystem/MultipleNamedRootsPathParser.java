@@ -3,6 +3,7 @@ package com.github.marschall.memoryfilesystem;
 import static java.lang.Math.min;
 
 import java.nio.file.InvalidPathException;
+import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,25 @@ final class MultipleNamedRootsPathParser extends PathParser {
     } else {
       this.check(elements);
       return AbstractPath.createRelative(memoryFileSystem, elements);
+    }
+  }
+
+  @Override
+  PathMatcher parseGlob(String pattern) {
+    if (this.startWithSeparator(pattern)) {
+      // TODO build string
+      throw new InvalidPathException(pattern, "path must not start with separator", 1);
+    }
+
+    // REVIEW implement #count() to correctly set initial size
+    List<String> elements = new ArrayList<>();
+    this.parseInto(pattern, elements);
+
+    if (this.isAbsolute(elements)) {
+      elements = elements.subList(1, elements.size());
+      return new GlobPathMatcher(true, convertToMatches(elements));
+    } else {
+      return new GlobPathMatcher(false, convertToMatches(elements));
     }
   }
 

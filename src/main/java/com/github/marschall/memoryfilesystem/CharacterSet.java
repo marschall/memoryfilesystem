@@ -4,4 +4,6 @@ interface CharacterSet {
 
   boolean containsAny(String s);
 
+  boolean contains(char c);
+
 }

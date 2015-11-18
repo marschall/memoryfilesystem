@@ -28,6 +28,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributeView;
@@ -342,6 +343,24 @@ public class WindowsMemoryFileSystemTest {
       }
     }
     assertTrue(found);
+  }
+
+
+
+  @Test
+  public void testPathMatherGlob() throws Exception {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path path = fileSystem.getPath("");
+
+    PathMatcher matcher = fileSystem.getPathMatcher("glob:*.{java,class}");
+    assertTrue(matcher.matches(fileSystem.getPath("Test.java")));
+    assertTrue(matcher.matches(fileSystem.getPath("Test.class")));
+    assertFalse(matcher.matches(fileSystem.getPath("Test.cpp")));
+
+    matcher = fileSystem.getPathMatcher("glob:*");
+    assertTrue(matcher.matches(fileSystem.getPath("Test.java")));
+    assertTrue(matcher.matches(fileSystem.getPath("Test.class")));
+    assertTrue(matcher.matches(fileSystem.getPath("Test.cpp")));
   }
 
   @Test

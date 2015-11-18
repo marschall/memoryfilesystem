@@ -18,4 +18,14 @@ class ArrayCharacterSet implements CharacterSet {
     return false;
   }
 
+  @Override
+  public boolean contains(char c) {
+    for (int i = 0; i < this.characters.length; ++i) {
+      if (this.characters[i] == 0) {
+        return true;
+      }
+    }
+    return false;
+  }
+
 }

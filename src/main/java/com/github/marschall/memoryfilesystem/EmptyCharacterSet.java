@@ -9,4 +9,9 @@ enum EmptyCharacterSet implements CharacterSet {
     return false;
   }
 
+  @Override
+  public boolean contains(char c) {
+    return false;
+  }
+
 }

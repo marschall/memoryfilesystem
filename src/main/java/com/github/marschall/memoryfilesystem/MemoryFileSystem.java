@@ -1145,8 +1145,7 @@ class MemoryFileSystem extends FileSystem {
     String syntax = syntaxAndPattern.substring(0, colonIndex);
     String pattern = syntaxAndPattern.substring(colonIndex + 1);
     if (syntax.equalsIgnoreCase(GlobPathMatcher.name())) {
-      Path patternPath = this.getPath(pattern);
-      return new GlobPathMatcher(patternPath);
+      return this.pathParser.parseGlob(pattern);
     }
     if (syntax.equalsIgnoreCase(RegexPathMatcher.name())) {
       Pattern regex = Pattern.compile(pattern);

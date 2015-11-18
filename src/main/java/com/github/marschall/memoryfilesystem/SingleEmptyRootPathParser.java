@@ -1,8 +1,11 @@
 package com.github.marschall.memoryfilesystem;
 
+import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import com.github.marschall.memoryfilesystem.GlobPathMatcher.GlobMatch;
 
 final class SingleEmptyRootPathParser extends PathParser {
 
@@ -26,6 +29,18 @@ final class SingleEmptyRootPathParser extends PathParser {
       return AbstractPath.createAboslute(memoryFileSystem, root, elements);
     } else {
       return AbstractPath.createRelative(memoryFileSystem, elements);
+    }
+  }
+
+  @Override
+  PathMatcher parseGlob(String pattern) {
+    List<String> elements = new ArrayList<>(count(pattern));
+    this.parseInto(pattern, elements);
+    List<GlobMatch> matches = convertToMatches(elements);
+    if (this.startWithSeparator(pattern)) {
+      return new GlobPathMatcher(true, matches);
+    } else {
+      return new GlobPathMatcher(false, matches);
     }
   }
 
