@@ -1080,6 +1080,23 @@ public class MemoryFileSystemTest {
     assertEquals("/file1", target.toRealPath().toString());
   }
 
+  @Test
+  public void copyToSymLinkReplace() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path a = fileSystem.getPath("a");
+    Path b = fileSystem.getPath("b");
+
+    Files.createFile(a);
+    // b -> a
+    Files.createSymbolicLink(b, a);
+    assertThat(b, isSymbolicLink());
+
+    Files.copy(a, b, REPLACE_EXISTING);
+
+    assertThat(b, not(isSymbolicLink()));
+    assertFalse(Files.isSameFile(a, b));
+  }
+
   @Test(expected = FileSystemException.class)
   public void dontDeleteOpenFile() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
