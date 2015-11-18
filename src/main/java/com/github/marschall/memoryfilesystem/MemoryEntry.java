@@ -45,7 +45,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 abstract class MemoryEntry {
 
-  private final String originalName;
+  // can be changed by a move/rename
+  // not protected by a lock because we need it in #toString
+  private volatile String originalName;
 
   // protected by read and write locks
   private long lastModifiedTime;
@@ -1014,6 +1016,10 @@ abstract class MemoryEntry {
       mask |= 1 << permission.ordinal();
     }
     return mask;
+  }
+
+  void setOriginalName(String newOriginalName) {
+    this.originalName = newOriginalName;
   }
 
 }

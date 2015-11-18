@@ -2678,6 +2678,35 @@ public class MemoryFileSystemTest {
     assertThat(b, hasContents("aaa"));
   }
 
+  @Test
+  public void moveNonEmptyFolder() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path src = fileSystem.getPath("/src");
+    Path target = fileSystem.getPath("/target");
+
+    Files.createDirectory(src);
+    Files.createFile(src.resolve("file"));
+
+    Files.move(src, target);
+    assertThat(src.resolve("file"), not(exists()));
+    assertThat(target.resolve("file"), exists());
+  }
+
+  @Test
+  public void moveSymlink() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path target = fileSystem.getPath("/target");
+    Files.createDirectory(target);
+    Path from = fileSystem.getPath("/from");
+    Files.createSymbolicLink(from, target);
+    Path to = fileSystem.getPath("/to");
+
+    Files.move(from, to);
+    assertThat(to, isSymbolicLink());
+    assertEquals(target, to.toRealPath());
+  }
+
   /**
    * Regression test for <a href="https://github.com/marschall/memoryfilesystem/issues/47">Issue 47</a>.
    */
