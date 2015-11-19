@@ -1314,7 +1314,7 @@ class MemoryFileSystem extends FileSystem {
         }
       }
 
-      if (targetEntry instanceof MemorySymbolicLink && !copyContext.operation.isMove()) {
+      if (targetEntry instanceof MemorySymbolicLink && !copyContext.operation.isMove() && !copyContext.replaceExisting) {
         MemorySymbolicLink link = (MemorySymbolicLink) targetEntry;
         link.setTarget(copyContext.source.path);
         if (copyContext.copyAttribues) {
