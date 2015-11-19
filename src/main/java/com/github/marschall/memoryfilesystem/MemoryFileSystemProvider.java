@@ -333,13 +333,26 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   @Override
   public boolean isSameFile(Path path, Path path2) throws IOException {
-    if (path.equals(path2)) {
-      return true;
+    FileSystemProvider provider = provider(path);
+    if (provider != this) {
+      return Files.isSameFile(path2, path);
     }
+    FileSystemProvider provider2 = provider(path2);
+    if (provider2 != this) {
+      return false;
+    }
+
+    if (path.getFileSystem() != path2.getFileSystem()) {
+      return false;
+    }
+
     // isn't atomic but that's fine I guess
     return path.toRealPath().equals(path2.toRealPath());
   }
 
+  private static FileSystemProvider provider(Path path) {
+    return path.getFileSystem().provider();
+  }
 
   @Override
   public boolean isHidden(Path path) throws IOException {
