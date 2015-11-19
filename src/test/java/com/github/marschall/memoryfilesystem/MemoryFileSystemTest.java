@@ -1208,16 +1208,18 @@ public class MemoryFileSystemTest {
     assertFalse(Files.isSameFile(defaultPath, memoryPath));
   }
 
-
-
   @Test
   public void isSameFileNotExisting() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path path = fileSystem.getPath("/foo/bar");
 
     assertThat(path, not(exists()));
+    Files.isSameFile(path, path);
+
+    Path path2 = fileSystem.getPath("/foo/bar/zork");
+    assertThat(path2, not(exists()));
     try {
-      Files.isSameFile(path, path);
+      Files.isSameFile(path, path2);
       fail("file does not exist");
     } catch (NoSuchFileException e) {
       // should reach here

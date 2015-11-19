@@ -346,6 +346,10 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
       return false;
     }
 
+    if (path.equals(path2)) {
+      return true;
+    }
+
     // isn't atomic but that's fine I guess
     return path.toRealPath().equals(path2.toRealPath());
   }
