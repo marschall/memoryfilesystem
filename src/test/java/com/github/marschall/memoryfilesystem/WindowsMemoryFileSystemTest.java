@@ -39,7 +39,10 @@ import java.nio.file.attribute.FileTime;
 import java.nio.file.spi.FileSystemProvider;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Ignore;
@@ -61,6 +64,20 @@ public class WindowsMemoryFileSystemTest {
     Files.createFile(hiddenPath, hiddenAttribute);
     DosFileAttributeView dosAttributeView = Files.getFileAttributeView(hiddenPath, DosFileAttributeView.class);
     assertTrue(dosAttributeView.readAttributes().isHidden());
+  }
+
+  @Test
+  public void dosAttributeNames() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path path = fileSystem.getPath("C:\\file.txt");
+
+    Files.createFile(path);
+
+    Map<String, Object> attributes = Files.readAttributes(path, "dos:*");
+    List<String> expectedAttributeNames = Arrays.asList("readonly", "hidden", "system", "archive", // dos
+            // basic
+            "lastModifiedTime", "lastAccessTime", "creationTime", "size", "isRegularFile", "isDirectory", "isSymbolicLink", "isOther", "fileKey");
+    assertEquals(new HashSet<>(expectedAttributeNames), attributes.keySet());
   }
 
   @Test

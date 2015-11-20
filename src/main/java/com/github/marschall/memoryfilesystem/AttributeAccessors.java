@@ -54,7 +54,7 @@ final class AttributeAccessors {
 
   private static Map<String, AttributeAccessor> buildDosAttributesMap() {
     Map<String, AttributeAccessor> map = new HashMap<>(DOS_ATTRIBUTE_COUNT + BASIC_ATTRIBUTE_COUNT);
-    map.put("readOnly", new IsReadOnlyAccessor());
+    map.put("readonly", new IsReadOnlyAccessor());
     map.put("hidden", new IsHiddenAccessor());
     map.put("archive", new IsArchiveAccessor());
     map.put("system", new IsSymbolicLinkAccessor());
