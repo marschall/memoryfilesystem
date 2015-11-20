@@ -80,6 +80,16 @@ public class WindowsMemoryFileSystemTest {
   }
 
   @Test
+  public void pathToWhiteSpace() throws IOException, URISyntaxException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path path = fileSystem.getPath("C:\\z z");
+
+    URI uri = path.toUri();
+    Path back = Paths.get(uri);
+    assertEquals(path, back);
+  }
+
+  @Test
   public void dosAttributeNames() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path path = fileSystem.getPath("C:\\file.txt");
