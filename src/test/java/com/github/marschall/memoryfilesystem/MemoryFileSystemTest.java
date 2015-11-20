@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
@@ -2763,6 +2764,17 @@ public class MemoryFileSystemTest {
     Path root = this.rule.getFileSystem().getPath("/");
     PosixFileAttributeView unsupportedView = Files.getFileAttributeView(root, PosixFileAttributeView.class);
     assertNull(unsupportedView);
+  }
+
+  @Test
+  public void toUriDifferentFileSystem() throws URISyntaxException {
+    URI uri = new URI("file:///etc/passwd");
+    try {
+      Paths.get(uri);
+      fail("URI " + uri + " should be invalid");
+    } catch (IllegalArgumentException e) {
+      // should reach here
+    }
   }
 
   private void createAndSetContents(Path path, String contents) throws IOException {

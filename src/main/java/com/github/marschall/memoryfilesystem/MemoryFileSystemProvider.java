@@ -198,6 +198,10 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   }
 
   private String getFileSystemKey(URI uri) {
+    String scheme = uri.getScheme();
+    if (!this.getScheme().equals(scheme)) {
+      throw new IllegalArgumentException("Requested unsupported scheme " + scheme + "only scheme: " + this.getScheme() + " is supported");
+    }
     String schemeSpecificPart = uri.getSchemeSpecificPart();
     int colonIndex = schemeSpecificPart.indexOf("://");
     if (colonIndex == -1) {
