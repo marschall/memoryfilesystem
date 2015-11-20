@@ -111,15 +111,22 @@ final class AbsolutePath extends NonEmptyPath {
   @Override
   public URI toUri() {
     String fileSystemKey = this.getMemoryFileSystem().getKey();
+    boolean isNamed = this.root.isNamed();
     List<String> nameElements = this.getNameElements();
     int sizeEsitmate =
             fileSystemKey.length()
             + 3 // "://".length
+            + (isNamed ? 3 :0) // c:/
             + nameElements.size() // n * '/'
             + totalLength(nameElements);
     StringBuilder schemeSpecificPart = new StringBuilder(sizeEsitmate);
     schemeSpecificPart.append(fileSystemKey);
     schemeSpecificPart.append("://");
+    if (isNamed) {
+      schemeSpecificPart.append('/');
+      schemeSpecificPart.append(this.root.getKey());
+      schemeSpecificPart.append(':');
+    }
     for (String element : nameElements) {
       schemeSpecificPart.append('/');
       schemeSpecificPart.append(element);

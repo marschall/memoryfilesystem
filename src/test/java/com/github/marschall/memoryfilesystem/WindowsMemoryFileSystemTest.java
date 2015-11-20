@@ -74,7 +74,7 @@ public class WindowsMemoryFileSystemTest {
     Path path = fileSystem.getPath("C:\\file.txt");
 
     URI uri = path.toUri();
-    assertEquals(uri, new URI("memory:WindowsFileSystemRule:///C:/file.txt"));
+    assertEquals(uri.toString(), new URI("memory:WindowsFileSystemRule:///C:/file.txt").toString());
     Path back = Paths.get(uri);
     assertEquals(path, back);
   }

@@ -1,6 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
+import static com.github.marschall.memoryfilesystem.IsSameFileMatcher.isSameFile;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -234,8 +235,8 @@ public class WindowsFileSystemComptiblityTest {
       assertEquals(2, nfdFile.toRealPath().getFileName().toString().length());
 
       assertThat(nfcPath, not(equalTo(nfdPath)));
-      assertFalse(Files.isSameFile(nfcPath, nfdPath));
-      assertFalse(Files.isSameFile(nfdPath, nfcPath));
+      assertThat(nfcPath, not(isSameFile(nfdPath)));
+      assertThat(nfdPath, not(isSameFile(nfcPath)));
     } finally {
       if (nfcFile != null) {
         Files.delete(nfcFile);

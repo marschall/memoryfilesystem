@@ -1,12 +1,12 @@
 package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
+import static com.github.marschall.memoryfilesystem.IsSameFileMatcher.isSameFile;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -82,8 +82,8 @@ public class MacOsMemoryFileSystemTest {
 
       assertThat(aPath, exists());
       assertThat(nPath, exists());
-      assertTrue(Files.isSameFile(aPath, nPath));
-      assertTrue(Files.isSameFile(nPath, aPath));
+      assertThat(aPath, isSameFile(nPath));
+      assertThat(nPath, isSameFile(aPath));
       assertThat(aPath, equalTo(nPath));
     } finally {
       if (createdFile != null) {
@@ -103,7 +103,7 @@ public class MacOsMemoryFileSystemTest {
       createdFile = Files.createFile(aLower);
       assertThat(aLower, exists());
       assertThat(aUpper, exists());
-      assertTrue(Files.isSameFile(aLower, aUpper));
+      assertThat(aLower, isSameFile(aUpper));
     } finally {
       if (createdFile != null) {
         Files.delete(createdFile);
