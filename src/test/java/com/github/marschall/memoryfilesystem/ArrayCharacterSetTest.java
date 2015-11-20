@@ -16,6 +16,17 @@ public class ArrayCharacterSetTest {
   }
 
   @Test
+  public void containsChar() {
+    assertTrue(this.characterSet.contains('a'));
+    assertTrue(this.characterSet.contains('b'));
+  }
+
+  @Test
+  public void containsCharNot() {
+    assertFalse(this.characterSet.contains('c'));
+  }
+
+  @Test
   public void contains() {
     assertTrue(this.characterSet.containsAny("acc"));
     assertTrue(this.characterSet.containsAny("cac"));
