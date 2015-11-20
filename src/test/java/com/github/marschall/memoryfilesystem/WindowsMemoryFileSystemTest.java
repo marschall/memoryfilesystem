@@ -19,6 +19,7 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.channels.ByteChannel;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.DirectoryStream;
@@ -29,6 +30,7 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributeView;
@@ -64,6 +66,17 @@ public class WindowsMemoryFileSystemTest {
     Files.createFile(hiddenPath, hiddenAttribute);
     DosFileAttributeView dosAttributeView = Files.getFileAttributeView(hiddenPath, DosFileAttributeView.class);
     assertTrue(dosAttributeView.readAttributes().isHidden());
+  }
+
+  @Test
+  public void pathToUri() throws IOException, URISyntaxException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path path = fileSystem.getPath("C:\\file.txt");
+
+    URI uri = path.toUri();
+    assertEquals(uri, new URI("memory:WindowsFileSystemRule:///C:/file.txt"));
+    Path back = Paths.get(uri);
+    assertEquals(path, back);
   }
 
   @Test
