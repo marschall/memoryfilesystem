@@ -2159,7 +2159,7 @@ public class MemoryFileSystemTest {
   public void toUriDifferentFileSystem() throws URISyntaxException {
     URI uri = new URI("file:///etc/passwd");
     try {
-      Paths.get(uri);
+      this.rule.getFileSystem().provider().getPath(uri);
       fail("URI " + uri + " should be invalid");
     } catch (IllegalArgumentException e) {
       // should reach here

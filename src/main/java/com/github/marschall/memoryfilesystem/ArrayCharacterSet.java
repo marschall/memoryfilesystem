@@ -20,8 +20,8 @@ class ArrayCharacterSet implements CharacterSet {
 
   @Override
   public boolean contains(char c) {
-    for (int i = 0; i < this.characters.length; ++i) {
-      if (this.characters[i] == 0) {
+    for (char each : this.characters) {
+      if (each == c) {
         return true;
       }
     }
