@@ -2155,9 +2155,22 @@ public class MemoryFileSystemTest {
     assertNull(unsupportedView);
   }
 
+
+
   @Test
-  public void toUriDifferentFileSystem() throws URISyntaxException {
-    URI uri = new URI("file:///etc/passwd");
+  public void fromUriSingleSlash() throws IOException, URISyntaxException {
+    Path root = this.rule.getFileSystem().getPath("/root");
+    Files.createFile(root);
+    Path singleSlash = Paths.get(URI.create("memory:name:/root"));
+    Path doubleSlash = Paths.get(URI.create("memory:name:///root"));
+
+    assertThat(singleSlash, isSameFile(root));
+    assertThat(doubleSlash, isSameFile(root));
+  }
+
+  @Test
+  public void toUriDifferentFileSystem() {
+    URI uri = URI.create("file:///etc/passwd");
     try {
       this.rule.getFileSystem().provider().getPath(uri);
       fail("URI " + uri + " should be invalid");

@@ -69,12 +69,22 @@ public class WindowsMemoryFileSystemTest {
   }
 
   @Test
-  public void pathToUri() throws IOException, URISyntaxException {
+  public void pathToUri() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path path = fileSystem.getPath("C:\\file.txt");
 
     URI uri = path.toUri();
-    assertEquals(uri.toString(), new URI("memory:WindowsFileSystemRule:///C:/file.txt").toString());
+    assertEquals(uri, URI.create("memory:WindowsFileSystemRule:///C:/file.txt"));
+    Path back = Paths.get(uri);
+    assertEquals(path, back);
+  }
+
+  @Test
+  public void uriSingleSlash() throws IOException, URISyntaxException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path path = fileSystem.getPath("C:\\file.txt");
+
+    URI uri = URI.create("memory:WindowsFileSystemRule:/C:/file.txt");
     Path back = Paths.get(uri);
     assertEquals(path, back);
   }
@@ -390,7 +400,6 @@ public class WindowsMemoryFileSystemTest {
   @Test
   public void testPathMatherGlob() throws Exception {
     FileSystem fileSystem = this.rule.getFileSystem();
-    Path path = fileSystem.getPath("");
 
     PathMatcher matcher = fileSystem.getPathMatcher("glob:*.{java,class}");
     assertTrue(matcher.matches(fileSystem.getPath("Test.java")));

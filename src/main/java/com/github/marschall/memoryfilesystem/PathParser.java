@@ -15,6 +15,8 @@ import com.github.marschall.memoryfilesystem.GlobPathMatcher.GlobMatch;
 
 abstract class PathParser {
 
+  static final String[] EMPTY = new String[0];
+
   final char separator;
   private final CharacterSet forbiddenCharacters;
 
@@ -47,6 +49,8 @@ abstract class PathParser {
   }
 
   abstract AbstractPath parse(Map<String, Root> roots, String first, String... more);
+
+  abstract AbstractPath parseUri(Map<String, Root> rootByKey, String uri);
 
   boolean startWithSeparator(String first, String... more) {
     if (!first.isEmpty()) {

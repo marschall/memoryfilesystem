@@ -1125,7 +1125,6 @@ class MemoryFileSystem extends FileSystem {
     return this.supportedFileAttributeViews;
   }
 
-
   @Override
   public AbstractPath getPath(String first, String... more) {
     this.checker.check();
@@ -1133,6 +1132,11 @@ class MemoryFileSystem extends FileSystem {
     return this.pathParser.parse(this.rootByKey, first, more);
   }
 
+  AbstractPath getPathFromUri(String uri) {
+    this.checker.check();
+    // TODO check for maximum length
+    return this.pathParser.parseUri(this.rootByKey, uri);
+  }
 
   @Override
   public PathMatcher getPathMatcher(String syntaxAndPattern) {

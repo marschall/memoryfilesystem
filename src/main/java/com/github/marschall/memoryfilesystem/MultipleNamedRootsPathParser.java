@@ -18,6 +18,15 @@ final class MultipleNamedRootsPathParser extends PathParser {
     this.pathTransformer = pathTransformer;
   }
 
+  @Override
+  AbstractPath parseUri(Map<String, Root> rootByKey, String uri) {
+    for (int i = 0; i < uri.length(); ++i) {
+      if (uri.charAt(i) != '/') {
+        return this.parse(rootByKey, uri.substring(i), EMPTY);
+      }
+    }
+    throw new InvalidPathException(uri, "not a valid path: ");
+  }
 
   @Override
   public AbstractPath parse(Map<String, Root> roots, String first, String... more) {

@@ -14,6 +14,11 @@ final class SingleEmptyRootPathParser extends PathParser {
   }
 
   @Override
+  AbstractPath parseUri(Map<String, Root> rootByKey, String uri) {
+    return this.parse(rootByKey, uri, EMPTY);
+  }
+
+  @Override
   public AbstractPath parse(Map<String, Root> roots, String first, String... more) {
     List<String> elements = new ArrayList<>(count(first, more));
     this.parseInto(first, elements);

@@ -203,7 +203,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
       throw new IllegalArgumentException("Requested unsupported scheme " + scheme + "only scheme: " + this.getScheme() + " is supported");
     }
     String schemeSpecificPart = uri.getSchemeSpecificPart();
-    int colonIndex = schemeSpecificPart.indexOf("://");
+    int colonIndex = schemeSpecificPart.indexOf(":/");
     if (colonIndex == -1) {
       return schemeSpecificPart;
     } else {
@@ -214,11 +214,11 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   private String getFileSystemPath(URI uri) {
     //REVIEW check for getPath() first()?
     String schemeSpecificPart = uri.getSchemeSpecificPart();
-    int colonIndex = schemeSpecificPart.indexOf("://");
+    int colonIndex = schemeSpecificPart.indexOf(":/");
     if (colonIndex == -1) {
       return uri.getPath();
     } else {
-      return schemeSpecificPart.substring(colonIndex + "://".length());
+      return schemeSpecificPart.substring(colonIndex + ":/".length());
     }
   }
 
@@ -230,7 +230,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     if (fileSystem == null) {
       throw new FileSystemNotFoundException("memory file system \"" + key + "\" not found");
     }
-    return fileSystem.getPath(this.getFileSystemPath(uri));
+    return fileSystem.getPathFromUri(this.getFileSystemPath(uri));
   }
 
 
