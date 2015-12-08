@@ -75,8 +75,13 @@ abstract class MemoryEntry {
     } else {
       this.additionalViews = new HashMap<>(context.additionalViews.size());
       for (Class<? extends FileAttributeView> viewClass : context.additionalViews) {
-        InitializingFileAttributeView view = this.instantiate(viewClass, context);
-        this.additionalViews.put(view.name(), view);
+        if (viewClass != FileOwnerAttributeView.class) {
+          InitializingFileAttributeView view = this.instantiate(viewClass, context);
+          this.additionalViews.put(view.name(), view);
+          if (FileOwnerAttributeView.class.isAssignableFrom(viewClass)) {
+            this.additionalViews.put(FileAttributeViews.OWNER, view);
+          }
+        }
       }
     }
   }

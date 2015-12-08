@@ -6,6 +6,7 @@ import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 
 import java.nio.file.attribute.FileAttributeView;
+import java.nio.file.attribute.FileOwnerAttributeView;
 import java.nio.file.attribute.PosixFilePermission;
 import java.text.Collator;
 import java.util.Collections;
@@ -128,17 +129,27 @@ class EnvironmentParser {
           Object viewName = values.iterator().next();
           if (viewName instanceof String) {
             Class<? extends FileAttributeView> viewClass = FileAttributeViews.mapAttributeViewName((String) viewName);
-            return Collections.<Class<? extends FileAttributeView>>singleton(viewClass);
+            if (isOwnerSubclass(viewClass)) {
+              Set<Class<? extends FileAttributeView>> views = new HashSet<>(values.size() + 1);
+              views.add(viewClass);
+              views.add(FileOwnerAttributeView.class);
+              return views;
+            } else {
+              return Collections.<Class<? extends FileAttributeView>>singleton(viewClass);
+            }
           } else {
             throw new IllegalArgumentException(property + " values must be a "
                     + String.class + " but was " + viewName);
           }
         } else {
-          Set<Class<? extends FileAttributeView>> views = new HashSet<>(values.size());
+          Set<Class<? extends FileAttributeView>> views = new HashSet<>(values.size() + 1);
           for (Object viewName : values) {
             if (viewName instanceof String) {
               Class<? extends FileAttributeView> viewClass = FileAttributeViews.mapAttributeViewName((String) viewName);
               views.add(viewClass);
+              if (isOwnerSubclass(viewClass)) {
+                views.add(FileOwnerAttributeView.class);
+              }
             } else {
               throw new IllegalArgumentException(property + " values must be a "
                       + String.class + " but was " + viewName);
@@ -153,6 +164,10 @@ class EnvironmentParser {
     } else {
       return Collections.emptySet();
     }
+  }
+
+  private static boolean isOwnerSubclass(Class<? extends FileAttributeView> viewClass) {
+    return viewClass != FileOwnerAttributeView.class && FileOwnerAttributeView.class.isAssignableFrom(viewClass);
   }
 
   Set<PosixFilePermission> getUmask() {

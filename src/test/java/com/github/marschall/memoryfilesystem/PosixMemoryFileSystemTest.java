@@ -20,7 +20,11 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.UserPrincipal;
+import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,6 +47,21 @@ public class PosixMemoryFileSystemTest {
     assertNotNull("permissions", sourcePosixAttributes.permissions());
     assertNotNull("owner", sourcePosixAttributes.owner());
     assertNotNull("group", sourcePosixAttributes.group());
+  }
+
+  @Test
+  public void getOwner() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    UserPrincipal owner = Files.getOwner(fileSystem.getPath("/"));
+    assertNotNull(owner);
+  }
+
+  @Test
+  public void supportedFileAttributeViews() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Set<String> actual = fileSystem.supportedFileAttributeViews();
+    Set<String> expected = new HashSet<>(Arrays.asList("basic", "owner", "posix"));
+    assertEquals(expected, actual);
   }
 
   @Test
