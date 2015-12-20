@@ -161,7 +161,9 @@ class MemoryFileSystem extends FileSystem {
         if (FileOwnerAttributeView.class.isAssignableFrom(viewClass)) {
           views.add(FileAttributeViews.OWNER);
         }
-        views.add(FileAttributeViews.mapAttributeView(viewClass));
+        if (viewClass != FileOwnerAttributeView.class) {
+          views.add(FileAttributeViews.mapAttributeView(viewClass));
+        }
       }
       return Collections.unmodifiableSet(views);
     }
