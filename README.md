@@ -224,6 +224,8 @@ You can of course also write a [Java Configuration](http://static.springsource.o
 
 By setting the "type" attribute to "windows", "linux" or "macos" you can control the semantics of the created file system.
 
+For more information check out the [Javadoc](http://www.javadoc.io/doc/com.github.marschall/memoryfilesystem).
+
 Guidelines for Testable File Code
 ================================
 
