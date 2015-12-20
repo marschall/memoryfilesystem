@@ -21,7 +21,10 @@ public final class CurrentGroup {
    * @param group the group to use
    * @param task during this task the given group will be used, will be called
    *  immediately by the current thread
+   * @param <V> the type of the return value
    * @return what the task returned
+   * @throws IOException if any of the code in the task throws an
+   *  {@link IOException}
    */
   public static <V> V useDuring(GroupPrincipal group, GroupTask<V> task) throws IOException {
     GroupPrincipal previous = GROUP.get();

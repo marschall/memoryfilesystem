@@ -263,7 +263,7 @@ public final class MemoryFileSystemBuilder {
    *  {@link FileSystemAlreadyExistsException} will be thrown
    * @return the file system
    * @throws IOException if the file system can't be created
-   * @see {@link FileSystems#newFileSystem(URI, Map, ClassLoader)}
+   * @see FileSystems#newFileSystem(URI, Map, ClassLoader)
    */
   public FileSystem build(String name) throws IOException {
     Map<String, ?> env = this.buildEnvironment();

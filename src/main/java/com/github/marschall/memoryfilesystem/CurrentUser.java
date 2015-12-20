@@ -20,7 +20,10 @@ public final class CurrentUser {
    * @param user the user to use
    * @param task during this task the given user will be used, will be called
    *  immediately by the current thread
+   * @param <V> the type of the return value
    * @return what the task returned
+   * @throws IOException if any of the code in the task throws an
+   *  {@link IOException}
    */
   public static <V> V useDuring(UserPrincipal user, UserTask<V> task) throws IOException {
     UserPrincipal previous = USER.get();
