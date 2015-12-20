@@ -3,7 +3,9 @@ package com.github.marschall.memoryfilesystem;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.FileSystem;
+import java.nio.file.FileSystemAlreadyExistsException;
 import java.nio.file.FileSystems;
+import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.DosFileAttributeView;
 import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.attribute.PosixFileAttributeView;
@@ -19,6 +21,13 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * <a href="https://en.wikipedia.org/wiki/Builder_pattern">Builder</a>
+ * for conveniently creating create memory file system instances.
+ *
+ * <p>The builder takes care of creating the environment and selecting
+ * the correct class loader to pass to {@link FileSystems#newFileSystem(URI, Map, ClassLoader)}.</p>
+ */
 public final class MemoryFileSystemBuilder {
 
   private final List<String> roots;
@@ -155,21 +164,31 @@ public final class MemoryFileSystemBuilder {
     return this;
   }
 
+  /**
+   * Creates a builder for a very basic file system.
+   *
+   * <p>The file system does not support permissions and only supports
+   * {@link BasicFileAttributeView}. It is UNIX-like in the sense that
+   * is uses {@literal "/"} as a separator, has a single root and is
+   * case sensitive and case preserving.<p>
+   *
+   * @return the builder
+   */
   public static MemoryFileSystemBuilder newEmpty() {
     return new MemoryFileSystemBuilder();
   }
 
   public static MemoryFileSystemBuilder newLinux() {
     return new MemoryFileSystemBuilder()
-    .addRoot(MemoryFileSystemProperties.UNIX_ROOT)
-    .setSeprator(MemoryFileSystemProperties.UNIX_SEPARATOR)
-    .addUser(getSystemUserName())
-    .addGroup(getSystemUserName())
-    .addFileAttributeView(PosixFileAttributeView.class)
-    .setCurrentWorkingDirectory("/home/" + getSystemUserName())
-    .setStoreTransformer(StringTransformers.IDENTIY)
-    .setCaseSensitive(true)
-    .addForbiddenCharacter((char) 0);
+            .addRoot(MemoryFileSystemProperties.UNIX_ROOT)
+            .setSeprator(MemoryFileSystemProperties.UNIX_SEPARATOR)
+            .addUser(getSystemUserName())
+            .addGroup(getSystemUserName())
+            .addFileAttributeView(PosixFileAttributeView.class)
+            .setCurrentWorkingDirectory("/home/" + getSystemUserName())
+            .setStoreTransformer(StringTransformers.IDENTIY)
+            .setCaseSensitive(true)
+            .addForbiddenCharacter((char) 0);
   }
 
   public static MemoryFileSystemBuilder newMacOs() {
@@ -206,37 +225,46 @@ public final class MemoryFileSystemBuilder {
 
   public static MemoryFileSystemBuilder newWindows() {
     return new MemoryFileSystemBuilder()
-    .addRoot("C:\\")
-    .setSeprator(MemoryFileSystemProperties.WINDOWS_SEPARATOR)
-    .addUser(getSystemUserName())
-    .addGroup(getSystemUserName())
-    .addFileAttributeView(DosFileAttributeView.class)
-    .setCurrentWorkingDirectory("C:\\Users\\" + getSystemUserName())
-    .setStoreTransformer(StringTransformers.IDENTIY)
-    .setCaseSensitive(false)
-    // TODO forbid
-    // CON, PRN, AUX, CLOCK$, NULL
-    // COM1, COM2, COM3, COM4, COM5, COM6, COM7, COM8, COM9
-    // LPT1, LPT2, LPT3, LPT4, LPT5, LPT6, LPT7, LPT8, and LPT9
-    // TODO forbid
-    // $Mft, $MftMirr, $LogFile, $Volume, $AttrDef, $Bitmap, $Boot, $BadClus, $Secure,
-    // $Upcase, $Extend, $Quota, $ObjId and $Reparse
-    // TODO check for 0x00
-    .addForbiddenCharacter('\\')
-    .addForbiddenCharacter('/')
-    .addForbiddenCharacter(':')
-    .addForbiddenCharacter('*')
-    .addForbiddenCharacter('?')
-    .addForbiddenCharacter('"')
-    .addForbiddenCharacter('<')
-    .addForbiddenCharacter('>')
-    .addForbiddenCharacter('|');
+            .addRoot("C:\\")
+            .setSeprator(MemoryFileSystemProperties.WINDOWS_SEPARATOR)
+            .addUser(getSystemUserName())
+            .addGroup(getSystemUserName())
+            .addFileAttributeView(DosFileAttributeView.class)
+            .setCurrentWorkingDirectory("C:\\Users\\" + getSystemUserName())
+            .setStoreTransformer(StringTransformers.IDENTIY)
+            .setCaseSensitive(false)
+            // TODO forbid
+            // CON, PRN, AUX, CLOCK$, NULL
+            // COM1, COM2, COM3, COM4, COM5, COM6, COM7, COM8, COM9
+            // LPT1, LPT2, LPT3, LPT4, LPT5, LPT6, LPT7, LPT8, and LPT9
+            // TODO forbid
+            // $Mft, $MftMirr, $LogFile, $Volume, $AttrDef, $Bitmap, $Boot, $BadClus, $Secure,
+            // $Upcase, $Extend, $Quota, $ObjId and $Reparse
+            // TODO check for 0x00
+            .addForbiddenCharacter('\\')
+            .addForbiddenCharacter('/')
+            .addForbiddenCharacter(':')
+            .addForbiddenCharacter('*')
+            .addForbiddenCharacter('?')
+            .addForbiddenCharacter('"')
+            .addForbiddenCharacter('<')
+            .addForbiddenCharacter('>')
+            .addForbiddenCharacter('|');
   }
 
   static String getSystemUserName() {
     return System.getProperty("user.name");
   }
 
+  /**
+   * Creates the new file system instance.
+   *
+   * @param name the name, must be unique otherwise a
+   *  {@link FileSystemAlreadyExistsException} will be thrown
+   * @return the file system
+   * @throws IOException if the file system can't be created
+   * @see {@link FileSystems#newFileSystem(URI, Map, ClassLoader)}
+   */
   public FileSystem build(String name) throws IOException {
     Map<String, ?> env = this.buildEnvironment();
     URI uri = URI.create("memory:".concat(name));
@@ -244,6 +272,11 @@ public final class MemoryFileSystemBuilder {
     return FileSystems.newFileSystem(uri, env, classLoader);
   }
 
+  /**
+   * Builds an environment to pass to {@link FileSystems#newFileSystem(URI, Map)}.
+   *
+   * @return the environment
+   */
   public Map<String, ?> buildEnvironment() {
     Map<String, Object> env = new HashMap<>();
     if (!this.roots.isEmpty()) {
