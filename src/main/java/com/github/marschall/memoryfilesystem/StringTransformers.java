@@ -4,12 +4,26 @@ import java.text.Normalizer;
 import java.text.Normalizer.Form;
 import java.util.Locale;
 
+/**
+ * Constant definitions for the standard {@link StringTransformer StringTransformers}.
+ */
 public final class StringTransformers {
 
+  /**
+   * Keeps a string as is.
+   */
   public static final StringTransformer IDENTIY = new IdentityTransformer();
 
+  /**
+   * Normalizes a string using
+   * <a href="https://en.wikipedia.org/wiki/Unicode_equivalence#Normal_forms">NFD</a>
+   */
   public static final StringTransformer NFD = new NFD();
 
+  /**
+   * Normalizes a string using
+   * <a href="https://en.wikipedia.org/wiki/Unicode_equivalence#Normal_forms">NFC</a>
+   */
   public static final StringTransformer NFC = new NFC();
 
   public StringTransformer caseInsensitive() {

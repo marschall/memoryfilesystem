@@ -40,11 +40,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 /**
- * Creates memory file systems instance.
+ * Creates memory file systems instances.
  *
  * <p>This class should not be used directly. Instead
  * {@link java.nio.file.FileSystems#newFileSystem(URI, Map)}
- * should be used.</p>
+ * should be used to create instances.</p>
  */
 public final class MemoryFileSystemProvider extends FileSystemProvider {
 

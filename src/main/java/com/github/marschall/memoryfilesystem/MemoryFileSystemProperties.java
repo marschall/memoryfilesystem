@@ -6,6 +6,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Constant definitions for configuration parameters for creating memory file systems.
+ *
+ * <p>Whenever possible using {@link MemoryFileSystemBuilder} is recommended.</p>
+ */
 public class MemoryFileSystemProperties {
 
   static final String UNIX_SEPARATOR = "/";
