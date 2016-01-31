@@ -502,6 +502,35 @@ class MemoryFileSystem extends FileSystem {
     });
   }
 
+  void createLink(final AbstractPath link, AbstractPath existing) throws IOException {
+    final MemoryInode inode = this.getInode(existing);
+    if (inode == null) {
+      throw new FileSystemException(link.toString(), existing.toString(), "hard links are only supported for regular files");
+    }
+    this.createFile(link, new MemoryEntryCreator() {
+
+      @Override
+      public MemoryFile create(String name) throws IOException {
+        return new MemoryFile(name, MemoryFileSystem.this.newEntryCreationContext(link, NO_FILE_ATTRIBUTES), inode);
+      }
+
+    });
+  }
+
+  private MemoryInode getInode(AbstractPath existing) throws IOException {
+    return this.accessFileReading(existing, true, new MemoryEntryBlock<MemoryInode>() {
+
+      @Override
+      public MemoryInode value(MemoryEntry entry) throws IOException {
+        if (entry instanceof MemoryFile) {
+          MemoryFile file = (MemoryFile) entry;
+          return file.getInode();
+        }
+        return null;
+      }
+    });
+  }
+
   private void createFile(final AbstractPath path, final MemoryEntryCreator creator) throws IOException {
     this.checker.check();
     AbstractPath absolutePath = (AbstractPath) path.toAbsolutePath().normalize();

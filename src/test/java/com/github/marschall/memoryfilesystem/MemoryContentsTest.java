@@ -167,12 +167,12 @@ public class MemoryContentsTest {
 
     src.rewind();
     src.put((byte) 1);
-    for (int i = 0; i < MemoryFile.BLOCK_SIZE; i++) {
+    for (int i = 0; i < MemoryInode.BLOCK_SIZE; i++) {
       src.rewind();
       channel.write(src);
     }
 
-    long expectedSize = (long) MemoryFile.BLOCK_SIZE + SAMPLE_DATA.length;
+    long expectedSize = (long) MemoryInode.BLOCK_SIZE + SAMPLE_DATA.length;
     assertEquals(expectedSize, channel.size());
 
     // truncating a bigger value should make no difference

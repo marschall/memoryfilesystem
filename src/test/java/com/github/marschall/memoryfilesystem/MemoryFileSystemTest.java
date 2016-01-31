@@ -3,6 +3,7 @@ package com.github.marschall.memoryfilesystem;
 import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_ENV;
 import static com.github.marschall.memoryfilesystem.FileContentsMatcher.hasContents;
 import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
+import static com.github.marschall.memoryfilesystem.FileUtility.setContents;
 import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isAbsolute;
 import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isRelative;
 import static com.github.marschall.memoryfilesystem.IsSameFileMatcher.isSameFile;
@@ -101,7 +102,7 @@ public class MemoryFileSystemTest {
 
     Path path = fileSystem.getPath("file.txt");
     Files.createFile(path);
-    this.setContents(path, "0123456789");
+    setContents(path, "0123456789");
 
     try (FileChannel channel = FileChannel.open(path, WRITE)) {
       FileLock firstLock = channel.tryLock();
@@ -129,7 +130,7 @@ public class MemoryFileSystemTest {
 
     Path path = fileSystem.getPath("file.txt");
     Files.createFile(path);
-    this.setContents(path, "0123456789");
+    setContents(path, "0123456789");
 
     try (FileChannel firstChannel = FileChannel.open(path, WRITE)) {
 
@@ -186,7 +187,7 @@ public class MemoryFileSystemTest {
 
     Path path = fileSystem.getPath("file.txt");
     Files.createFile(path);
-    this.setContents(path, "z");
+    setContents(path, "z");
 
     byte[] data = new byte[]{'a', 'b', 'c', 'd'};
 
@@ -217,7 +218,7 @@ public class MemoryFileSystemTest {
 
     Path path = fileSystem.getPath("file.txt");
     Files.createFile(path);
-    this.setContents(path, "abcd");
+    setContents(path, "abcd");
 
     byte[] data = new byte[2];
 
@@ -235,7 +236,7 @@ public class MemoryFileSystemTest {
 
     Path path = fileSystem.getPath("file.txt");
     Files.createFile(path);
-    this.setContents(path, "abcd");
+    setContents(path, "abcd");
 
     byte[] a = new byte[1];
     byte[] b = new byte[1];
@@ -260,7 +261,7 @@ public class MemoryFileSystemTest {
 
     Path path = fileSystem.getPath("file.txt");
     Files.createFile(path);
-    this.setContents(path, "abcdef");
+    setContents(path, "abcdef");
 
     byte[] a = new byte[1];
     byte[] b = new byte[1];
@@ -303,7 +304,7 @@ public class MemoryFileSystemTest {
     Path path = fileSystem.getPath("file.txt");
 
     Files.createFile(path);
-    this.setContents(path, "z");
+    setContents(path, "z");
 
     ByteBuffer a = ByteBuffer.wrap(new byte[]{'a'});
     ByteBuffer b = ByteBuffer.wrap(new byte[]{'b'});
@@ -323,7 +324,7 @@ public class MemoryFileSystemTest {
 
     Path path = fileSystem.getPath("async.txt");
     Files.createFile(path);
-    this.setContents(path, "abc");
+    setContents(path, "abc");
 
     try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, WRITE)) {
       assertEquals(3L, channel.size());
@@ -340,7 +341,7 @@ public class MemoryFileSystemTest {
 
     Path path = fileSystem.getPath("async.txt");
     Files.createFile(path);
-    this.setContents(path, "abc");
+    setContents(path, "abc");
 
     try (FileChannel channel = FileChannel.open(path, WRITE)) {
       assertEquals(3L, channel.size());
@@ -395,7 +396,7 @@ public class MemoryFileSystemTest {
 
     Path path = fileSystem.getPath("async.txt");
     Files.createFile(path);
-    this.setContents(path, "z");
+    setContents(path, "z");
 
     try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, WRITE)) {
       assertTrue("open", channel.isOpen());
@@ -414,7 +415,7 @@ public class MemoryFileSystemTest {
 
     Path path = fileSystem.getPath("async.txt");
     Files.createFile(path);
-    this.setContents(path, "z");
+    setContents(path, "z");
 
     try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, WRITE)) {
       Object attachment = new Object();
@@ -442,7 +443,7 @@ public class MemoryFileSystemTest {
 
     Path path = fileSystem.getPath("async.txt");
     Files.createFile(path);
-    this.setContents(path, "abcd");
+    setContents(path, "abcd");
 
     try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, READ)) {
       Object attachment = new Object();
@@ -472,7 +473,7 @@ public class MemoryFileSystemTest {
 
     Path path = fileSystem.getPath("async.txt");
     Files.createFile(path);
-    this.setContents(path, "z");
+    setContents(path, "z");
 
     try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, READ)) {
       Object attachment = new Object();
@@ -501,7 +502,7 @@ public class MemoryFileSystemTest {
 
     Path path = fileSystem.getPath("async.txt");
     Files.createFile(path);
-    this.setContents(path, "z");
+    setContents(path, "z");
 
     try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, WRITE)) {
       ByteBuffer buffer = ByteBuffer.wrap(new byte[]{'a', 'b'});
@@ -521,7 +522,7 @@ public class MemoryFileSystemTest {
 
     Path path = fileSystem.getPath("async.txt");
     Files.createFile(path);
-    this.setContents(path, "abcd");
+    setContents(path, "abcd");
 
     try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, READ)) {
       byte[] data = new byte[2];
@@ -543,7 +544,7 @@ public class MemoryFileSystemTest {
 
     Path path = fileSystem.getPath("async.txt");
     Files.createFile(path);
-    this.setContents(path, "z");
+    setContents(path, "z");
 
     try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, READ)) {
       ByteBuffer buffer = ByteBuffer.wrap(new byte[]{'a', 'b'});
@@ -2197,12 +2198,6 @@ public class MemoryFileSystemTest {
       fail("URI " + uri + " should be invalid");
     } catch (IllegalArgumentException e) {
       // should reach here
-    }
-  }
-
-  private void setContents(Path path, String contents) throws IOException {
-    try (SeekableByteChannel channel = Files.newByteChannel(path, WRITE, TRUNCATE_EXISTING)) {
-      channel.write(ByteBuffer.wrap(contents.getBytes(US_ASCII)));
     }
   }
 

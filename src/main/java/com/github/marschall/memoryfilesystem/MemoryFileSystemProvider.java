@@ -298,6 +298,17 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   }
 
   @Override
+  public void createLink(Path link, Path existing) throws IOException {
+    AbstractPath linkPath = this.castPath(link);
+    AbstractPath targetPath = this.castPath(existing);
+    MemoryFileSystem memoryFileSystem = linkPath.getMemoryFileSystem();
+    if (memoryFileSystem != targetPath.getMemoryFileSystem()) {
+      throw new IllegalArgumentException("link and target must be on same file system");
+    }
+    memoryFileSystem.createLink(linkPath, targetPath);
+  }
+
+  @Override
   public Path readSymbolicLink(Path link) throws IOException {
     AbstractPath linkPath = this.castPath(link);
     return linkPath.getMemoryFileSystem().readSymbolicLink(linkPath);

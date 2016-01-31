@@ -27,7 +27,7 @@ public class FileContentsMatcher extends TypeSafeMatcher<Path> {
 
   @Override
   public void describeTo(Description description) {
-    description.appendText("has contents");
+    description.appendText("has contents ");
     description.appendValue(this.contents);
   }
 

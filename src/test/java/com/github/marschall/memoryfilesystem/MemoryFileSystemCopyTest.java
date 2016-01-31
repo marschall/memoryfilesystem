@@ -2,6 +2,7 @@ package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.FileContentsMatcher.hasContents;
 import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
+import static com.github.marschall.memoryfilesystem.FileUtility.setContents;
 import static com.github.marschall.memoryfilesystem.IsSameFileMatcher.isSameFile;
 import static com.github.marschall.memoryfilesystem.IsSymbolicLinkMatcher.isSymbolicLink;
 import static java.nio.charset.StandardCharsets.US_ASCII;
@@ -9,7 +10,6 @@ import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
-import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
@@ -313,7 +313,7 @@ public class MemoryFileSystemCopyTest {
     assertThat(a, hasContents("aaa"));
     assertThat(b, hasContents("aaa"));
 
-    this.setContents(a, "a1");
+    setContents(a, "a1");
 
     assertThat(a, hasContents("a1"));
     assertThat(b, hasContents("aaa"));
@@ -337,7 +337,7 @@ public class MemoryFileSystemCopyTest {
       assertThat(a, hasContents("aaa"));
       assertThat(b, hasContents("aaa"));
 
-      this.setContents(a, "a1");
+      setContents(a, "a1");
 
       assertThat(a, hasContents("a1"));
       assertThat(b, hasContents("aaa"));
@@ -362,7 +362,7 @@ public class MemoryFileSystemCopyTest {
     assertThat(a, hasContents("aaa"));
     assertThat(b, hasContents("aaa"));
 
-    this.setContents(a, "a1");
+    setContents(a, "a1");
 
     assertThat(a, hasContents("a1"));
     assertThat(b, hasContents("aaa"));
@@ -662,12 +662,6 @@ public class MemoryFileSystemCopyTest {
       Files.createDirectories(parent);
     }
     try (SeekableByteChannel channel = Files.newByteChannel(path, WRITE, CREATE_NEW)) {
-      channel.write(ByteBuffer.wrap(contents.getBytes(US_ASCII)));
-    }
-  }
-
-  private void setContents(Path path, String contents) throws IOException {
-    try (SeekableByteChannel channel = Files.newByteChannel(path, WRITE, TRUNCATE_EXISTING)) {
       channel.write(ByteBuffer.wrap(contents.getBytes(US_ASCII)));
     }
   }

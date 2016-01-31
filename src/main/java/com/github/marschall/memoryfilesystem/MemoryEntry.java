@@ -128,7 +128,6 @@ abstract class MemoryEntry {
     return System.currentTimeMillis();
   }
 
-
   AutoRelease readLock() {
     return autoRelease(this.lock.readLock());
   }
