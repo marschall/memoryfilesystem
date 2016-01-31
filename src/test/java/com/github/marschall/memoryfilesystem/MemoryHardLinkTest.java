@@ -144,8 +144,8 @@ public class MemoryHardLinkTest {
     view.setTimes(mTime, aTime, cTime);
 
     BasicFileAttributes attributes = Files.getFileAttributeView(link, BasicFileAttributeView.class).readAttributes();
-    assertEquals(cTime, attributes.lastAccessTime());
-    assertEquals(cTime, attributes.lastModifiedTime());
+    assertEquals(mTime, attributes.lastModifiedTime());
+    assertEquals(aTime, attributes.lastAccessTime());
     assertEquals(cTime, attributes.creationTime());
   }
 
