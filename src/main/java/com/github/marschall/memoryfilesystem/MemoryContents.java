@@ -8,7 +8,6 @@ import java.nio.file.Path;
 
 interface MemoryContents {
 
-
   long size();
 
   long read(ByteBuffer dst, long position, long maximum) throws IOException;

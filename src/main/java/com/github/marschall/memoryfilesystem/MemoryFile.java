@@ -23,6 +23,7 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
+import java.util.Arrays;
 import java.util.Set;
 
 class MemoryFile extends MemoryEntry implements MemoryContents {
@@ -208,11 +209,14 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
   OutputStream newOutputStream(Set<? extends OpenOption> options, Path path) throws IOException {
     boolean deleteOnClose = options.contains(DELETE_ON_CLOSE);
     boolean append = options.contains(APPEND);
+    boolean truncate = options.contains(TRUNCATE_EXISTING);
+    if (append && truncate) {
+      throw new IllegalArgumentException("invalid combination of options: " + Arrays.asList(APPEND, TRUNCATE_EXISTING));
+    }
     boolean sync = options.contains(SYNC);
     if (append) {
       return this.newAppendingOutputStream(deleteOnClose, path);
     } else {
-      boolean truncate = options.contains(TRUNCATE_EXISTING);
       if (truncate) {
         this.truncate(0L);
       }
@@ -228,11 +232,15 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
     boolean readable = options.contains(READ) || (!writable && !append);
     boolean deleteOnClose = options.contains(DELETE_ON_CLOSE);
     boolean sync = options.contains(SYNC);
+    boolean truncate = options.contains(TRUNCATE_EXISTING);
+    if (writable && append && truncate) {
+      throw new IllegalArgumentException("invalid combination of options: " + Arrays.asList(WRITE, APPEND, TRUNCATE_EXISTING));
+    }
+
     if (append) {
       return this.newAppendingChannel(readable, deleteOnClose, path);
     } else {
       if (writable) {
-        boolean truncate = options.contains(TRUNCATE_EXISTING);
         if (truncate) {
           this.truncate(0L);
         }

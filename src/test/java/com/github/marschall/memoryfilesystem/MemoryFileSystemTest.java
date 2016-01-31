@@ -2155,6 +2155,27 @@ public class MemoryFileSystemTest {
     assertNull(unsupportedView);
   }
 
+  @Test
+  public void channelWriteTruncateExisting() throws IOException {
+    Path file = this.rule.getFileSystem().getPath("/file.txt");
+    Files.createFile(file);
+    try (SeekableByteChannel channel = Files.newByteChannel(file, WRITE, APPEND, TRUNCATE_EXISTING)) {
+      fail("APPEND and TRUNCATE_EXISTING and should not work");
+    } catch (IllegalArgumentException e) {
+      // should reach here
+    }
+  }
+
+  @Test
+  public void outputStreamWriteTruncateExisting() throws IOException {
+    Path file = this.rule.getFileSystem().getPath("/file.txt");
+    Files.createFile(file);
+    try (OutputStream outputStream = Files.newOutputStream(file, APPEND, TRUNCATE_EXISTING)) {
+      fail("APPEND and TRUNCATE_EXISTING and should not work");
+    } catch (IllegalArgumentException e) {
+      // should reach here
+    }
+  }
 
 
   @Test
