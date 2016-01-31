@@ -479,7 +479,8 @@ class MemoryFileSystem extends FileSystem {
 
       @Override
       public MemoryEntry create(String name) throws IOException {
-        MemoryDirectory directory = new MemoryDirectory(name, MemoryFileSystem.this.newEntryCreationContext(path, masked));
+        EntryCreationContext context = MemoryFileSystem.this.newEntryCreationContext(path, masked);
+        MemoryDirectory directory = new MemoryDirectory(name, context);
         AttributeAccessors.setAttributes(directory, masked);
         return directory;
       }
@@ -494,7 +495,8 @@ class MemoryFileSystem extends FileSystem {
 
       @Override
       public MemoryEntry create(String name) throws IOException {
-        MemorySymbolicLink symbolicLink = new MemorySymbolicLink(name, target, MemoryFileSystem.this.newEntryCreationContext(link, masked));
+        EntryCreationContext context = MemoryFileSystem.this.newEntryCreationContext(link, masked);
+        MemorySymbolicLink symbolicLink = new MemorySymbolicLink(name, target, context);
         AttributeAccessors.setAttributes(symbolicLink, masked);
         return symbolicLink;
       }
@@ -503,28 +505,42 @@ class MemoryFileSystem extends FileSystem {
   }
 
   void createLink(final AbstractPath link, AbstractPath existing) throws IOException {
-    final MemoryInode inode = this.getInode(existing);
-    if (inode == null) {
+    final MemoryFile existingFile = this.getFile(existing);
+    if (existingFile == null) {
       throw new FileSystemException(link.toString(), existing.toString(), "hard links are only supported for regular files");
     }
     this.createFile(link, new MemoryEntryCreator() {
 
       @Override
       public MemoryFile create(String name) throws IOException {
-        return new MemoryFile(name, MemoryFileSystem.this.newEntryCreationContext(link, NO_FILE_ATTRIBUTES), inode);
+        EntryCreationContext context = MemoryFileSystem.this.newEntryCreationContext(link, NO_FILE_ATTRIBUTES);
+        return existingFile.createLink(name, context);
       }
 
     });
   }
 
-  private MemoryInode getInode(AbstractPath existing) throws IOException {
-    return this.accessFileReading(existing, true, new MemoryEntryBlock<MemoryInode>() {
+  boolean isSameFile(AbstractPath path, AbstractPath path2) throws IOException {
+    final MemoryFile file = this.getFile(path);
+    if (file == null) {
+      return false;
+    }
+
+    final MemoryFile file2 = this.getFile(path2);
+    if (file2 == null) {
+      return false;
+    }
+
+    return file.hasSameInodeAs(file2);
+  }
+
+  private MemoryFile getFile(AbstractPath existing) throws IOException {
+    return this.accessFileReading(existing, true, new MemoryEntryBlock<MemoryFile>() {
 
       @Override
-      public MemoryInode value(MemoryEntry entry) throws IOException {
+      public MemoryFile value(MemoryEntry entry) throws IOException {
         if (entry instanceof MemoryFile) {
-          MemoryFile file = (MemoryFile) entry;
-          return file.getInode();
+          return (MemoryFile) entry;
         }
         return null;
       }
@@ -1257,21 +1273,26 @@ class MemoryFileSystem extends FileSystem {
     if (sourceEntry instanceof MemoryFile) {
       MemoryFile sourceFile = (MemoryFile) sourceEntry;
       try (AutoRelease lock = sourceFile.readLock()) {
-        return new MemoryFile(targetElementName, this.newEntryCreationContext(absoluteTargetPath, NO_FILE_ATTRIBUTES), sourceFile);
-      }
-    } else if (sourceEntry instanceof MemoryDirectory) {
-      MemoryDirectory sourceDirectory = (MemoryDirectory) sourceEntry;
-      try (AutoRelease lock = sourceDirectory.readLock()) {
-        sourceDirectory.checkEmpty(absoluteTargetPath);
-        return new MemoryDirectory(targetElementName, MemoryFileSystem.this.newEntryCreationContext(absoluteTargetPath, NO_FILE_ATTRIBUTES));
-      }
-    } else if (sourceEntry instanceof MemorySymbolicLink) {
-      MemorySymbolicLink sourceLink = (MemorySymbolicLink) sourceEntry;
-      try (AutoRelease lock = sourceLink.readLock()) {
-        return new MemorySymbolicLink(targetElementName, sourceLink.getTarget(), MemoryFileSystem.this.newEntryCreationContext(absoluteTargetPath, NO_FILE_ATTRIBUTES));
+        EntryCreationContext context = this.newEntryCreationContext(absoluteTargetPath, NO_FILE_ATTRIBUTES);
+        return new MemoryFile(targetElementName, context, sourceFile);
       }
     } else {
-      throw new AssertionError("unknown entry type:" + sourceEntry);
+      if (sourceEntry instanceof MemoryDirectory) {
+        MemoryDirectory sourceDirectory = (MemoryDirectory) sourceEntry;
+        try (AutoRelease lock = sourceDirectory.readLock()) {
+          sourceDirectory.checkEmpty(absoluteTargetPath);
+          EntryCreationContext context = MemoryFileSystem.this.newEntryCreationContext(absoluteTargetPath, NO_FILE_ATTRIBUTES);
+          return new MemoryDirectory(targetElementName, context);
+        }
+      } else if (sourceEntry instanceof MemorySymbolicLink) {
+        MemorySymbolicLink sourceLink = (MemorySymbolicLink) sourceEntry;
+        try (AutoRelease lock = sourceLink.readLock()) {
+          EntryCreationContext context = MemoryFileSystem.this.newEntryCreationContext(absoluteTargetPath, NO_FILE_ATTRIBUTES);
+          return new MemorySymbolicLink(targetElementName, sourceLink.getTarget(), context);
+        }
+      } else {
+        throw new AssertionError("unknown entry type:" + sourceEntry);
+      }
     }
   }
 

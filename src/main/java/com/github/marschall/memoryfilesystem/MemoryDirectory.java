@@ -14,8 +14,6 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributeView;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -28,8 +26,6 @@ class MemoryDirectory extends MemoryEntry {
 
   private final Map<String, MemoryEntry> entries;
 
-  private final MemoryDirectoryFileAttributesView basicFileAttributeView;
-
   private static final Set<PosixFilePermission> EXECUTE = EnumSet.of(OWNER_EXECUTE, GROUP_EXECUTE, OTHERS_EXECUTE);
 
   MemoryDirectory(String originalName) {
@@ -39,7 +35,11 @@ class MemoryDirectory extends MemoryEntry {
   MemoryDirectory(String originalName, EntryCreationContext context) {
     super(originalName, context);
     this.entries = new HashMap<>();
-    this.basicFileAttributeView = new MemoryDirectoryFileAttributesView();
+  }
+
+  @Override
+  MemoryEntryAttributes newMemoryEntryAttributes(EntryCreationContext context) {
+    return new MemoryDirectoryAttributes(context);
   }
 
   private static Set<PosixFilePermission> addExecute(Set<PosixFilePermission> perms) {
@@ -57,16 +57,6 @@ class MemoryDirectory extends MemoryEntry {
       elements.add(entry.getOriginalName());
     }
     return new MemoryDirectoryStream(basePath, filter, elements);
-  }
-
-  @Override
-  BasicFileAttributeView getBasicFileAttributeView() {
-    return this.basicFileAttributeView;
-  }
-
-  @Override
-  InitializingFileAttributeView getInitializingFileAttributeView() {
-    return this.basicFileAttributeView;
   }
 
   MemoryEntry getEntry(String name) {
@@ -121,51 +111,20 @@ class MemoryDirectory extends MemoryEntry {
     this.modified();
   }
 
-  class MemoryDirectoryFileAttributesView extends MemoryEntryFileAttributesView {
+  static final class MemoryDirectoryAttributes extends MemoryEntryAttributes {
 
-    @Override
-    public BasicFileAttributes readAttributes() throws IOException {
-      MemoryDirectory.this.checkAccess(AccessMode.READ);
-      try (AutoRelease lock = MemoryDirectory.this.readLock()) {
-        FileTime creationTime = MemoryDirectory.this.creationTime();
-        FileTime lastModifiedTime = MemoryDirectory.this.lastModifiedTime();
-        FileTime lastAccessTime = MemoryDirectory.this.lastAccessTime();
-        return new MemoryDirectoryFileAttributes(MemoryDirectory.this, lastModifiedTime, lastAccessTime, creationTime);
-      }
-    }
-
-  }
-
-  static final class MemoryDirectoryFileAttributes extends MemoryEntryFileAttributes {
-
-    MemoryDirectoryFileAttributes(Object fileKey, FileTime lastModifiedTime, FileTime lastAccessTime, FileTime creationTime) {
-      super(fileKey, lastModifiedTime, lastAccessTime, creationTime);
+    MemoryDirectoryAttributes(EntryCreationContext context) {
+      super(context);
     }
 
     @Override
-    public boolean isRegularFile() {
-      return false;
+    BasicFileAttributeView newBasicFileAttributeView() {
+      return new MemoryDirectoryFileAttributesView();
     }
 
     @Override
-    public boolean isDirectory() {
-      return true;
-    }
-
-    @Override
-    public boolean isSymbolicLink() {
-      return false;
-    }
-
-    @Override
-    public boolean isOther() {
-      return false;
-    }
-
-    @Override
-    public long size() {
-      // REVIEW make configurable
-      return -1L;
+    long size() {
+      return -1;
     }
 
   }

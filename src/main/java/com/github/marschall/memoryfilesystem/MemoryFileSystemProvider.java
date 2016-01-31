@@ -177,11 +177,11 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   private Map<Root, MemoryDirectory> buildRootsDirectories(EnvironmentParser parser,
           MemoryFileSystem fileSystem, Set<Class<? extends FileAttributeView>> additionalViews,
           Set<PosixFilePermission> perms) throws IOException {
-    final FileAttribute<?>[] attributes
-    = new FileAttribute<?>[]{ PosixFilePermissions.asFileAttribute(perms) };
+    final FileAttribute<?>[] attributes = new FileAttribute<?>[]{ PosixFilePermissions.asFileAttribute(perms) };
     if (parser.isSingleEmptyRoot()) {
       Root root = new EmptyRoot(fileSystem);
-      MemoryDirectory directory = new MemoryDirectory("", fileSystem.newEntryCreationContext(root, attributes));
+      EntryCreationContext context = fileSystem.newEntryCreationContext(root, attributes);
+      MemoryDirectory directory = new MemoryDirectory("", context);
       directory.initializeRoot();
       return Collections.singletonMap(root, directory);
     } else {
@@ -366,7 +366,16 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     }
 
     // isn't atomic but that's fine I guess
-    return path.toRealPath().equals(path2.toRealPath());
+    if (path.toRealPath().equals(path2.toRealPath())) {
+      return true;
+    }
+
+
+    AbstractPath abstractPath = this.castPath(path);
+    AbstractPath abstractPath2 = this.castPath(path2);
+    MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
+    // have to check for hard links
+    return memoryFileSystem.isSameFile(abstractPath, abstractPath2);
   }
 
   private static FileSystemProvider provider(Path path) {

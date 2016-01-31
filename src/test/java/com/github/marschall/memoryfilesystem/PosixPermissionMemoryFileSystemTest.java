@@ -142,16 +142,16 @@ public class PosixPermissionMemoryFileSystemTest {
 
   @Test
   public void toSet() {
-    assertEquals(asSet(OWNER_READ), MemoryEntry.toSet(0b1));
-    assertEquals(asSet(OTHERS_EXECUTE), MemoryEntry.toSet(0b100000000));
-    assertEquals(asSet(OWNER_READ, OTHERS_EXECUTE), MemoryEntry.toSet(0b100000001));
+    assertEquals(asSet(OWNER_READ), MemoryEntryAttributes.toSet(0b1));
+    assertEquals(asSet(OTHERS_EXECUTE), MemoryEntryAttributes.toSet(0b100000000));
+    assertEquals(asSet(OWNER_READ, OTHERS_EXECUTE), MemoryEntryAttributes.toSet(0b100000001));
   }
 
   @Test
   public void toMask() {
-    assertEquals(0b1, MemoryEntry.toMask(asSet(OWNER_READ)));
-    assertEquals(0b100000000, MemoryEntry.toMask(asSet(OTHERS_EXECUTE)));
-    assertEquals(0b100000001, MemoryEntry.toMask(asSet(OWNER_READ, OTHERS_EXECUTE)));
+    assertEquals(0b1, MemoryEntryAttributes.toMask(asSet(OWNER_READ)));
+    assertEquals(0b100000000, MemoryEntryAttributes.toMask(asSet(OTHERS_EXECUTE)));
+    assertEquals(0b100000001, MemoryEntryAttributes.toMask(asSet(OWNER_READ, OTHERS_EXECUTE)));
   }
 
 

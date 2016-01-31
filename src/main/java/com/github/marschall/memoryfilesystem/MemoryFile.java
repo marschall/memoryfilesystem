@@ -13,14 +13,11 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.nio.file.AccessMode;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributeView;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileTime;
 import java.util.Arrays;
 import java.util.Set;
 
@@ -39,15 +36,12 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
    */
   private final MemoryInode inode;
 
-  private final MemoryFileAttributesView basicFileAttributeView;
-
   MemoryFile(String originalName, EntryCreationContext context) {
     this(originalName, context, 0);
   }
 
   MemoryFile(String originalName, EntryCreationContext context, int initialBlocks) {
     super(originalName, context);
-    this.basicFileAttributeView = new MemoryFileAttributesView();
     this.openCount = 0;
     this.inode = new MemoryInode(initialBlocks);
   }
@@ -57,7 +51,6 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
    */
   MemoryFile(String originalName, EntryCreationContext context, MemoryFile other) {
     super(originalName, context);
-    this.basicFileAttributeView = new MemoryFileAttributesView();
     this.openCount = 0;
     this.inode = new MemoryInode(other.inode);
   }
@@ -65,21 +58,19 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
   /**
    * Hard link constructor.
    */
-  MemoryFile(String originalName, EntryCreationContext context, MemoryInode inode) {
-    super(originalName, context);
-    this.basicFileAttributeView = new MemoryFileAttributesView();
+  private MemoryFile(String originalName, EntryCreationContext context, MemoryInode inode, MemoryFile other) {
+    super(originalName, context, other);
     this.openCount = 0;
-    this.inode = new MemoryInode(inode);
+    this.inode = inode;
+  }
+
+  MemoryFile createLink(String originalName, EntryCreationContext context) {
+    return new MemoryFile(originalName, context, this.inode, this);
   }
 
   @Override
-  BasicFileAttributeView getBasicFileAttributeView() {
-    return this.basicFileAttributeView;
-  }
-
-  @Override
-  InitializingFileAttributeView getInitializingFileAttributeView() {
-    return this.basicFileAttributeView;
+  MemoryEntryAttributes newMemoryEntryAttributes(EntryCreationContext context) {
+    return new MemoryFileAttributes(context);
   }
 
   @Override
@@ -92,58 +83,6 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
   public void modified() {
     // here to increase the scope to public
     super.modified();
-  }
-
-
-  class MemoryFileAttributesView extends MemoryEntryFileAttributesView {
-
-    @Override
-    public BasicFileAttributes readAttributes() throws IOException {
-      MemoryFile.this.checkAccess(AccessMode.READ);
-      try (AutoRelease lock = MemoryFile.this.readLock()) {
-        FileTime lastModifiedTime = MemoryFile.this.lastModifiedTime();
-        FileTime lastAccessTime = MemoryFile.this.lastAccessTime();
-        FileTime creationTime = MemoryFile.this.creationTime();
-        return new MemoryFileAttributes(MemoryFile.this, lastModifiedTime, lastAccessTime, creationTime, MemoryFile.this.size());
-      }
-    }
-
-  }
-
-  static final class MemoryFileAttributes extends MemoryEntryFileAttributes {
-
-    private final long size;
-
-    MemoryFileAttributes(Object fileKey, FileTime lastModifiedTime, FileTime lastAccessTime, FileTime creationTime, long size) {
-      super(fileKey, lastModifiedTime, lastAccessTime, creationTime);
-      this.size = size;
-    }
-
-    @Override
-    public boolean isRegularFile() {
-      return true;
-    }
-
-    @Override
-    public boolean isDirectory() {
-      return false;
-    }
-
-    @Override
-    public boolean isSymbolicLink() {
-      return false;
-    }
-
-    @Override
-    public boolean isOther() {
-      return false;
-    }
-
-    @Override
-    public long size() {
-      return this.size;
-    }
-
   }
 
   @Override
@@ -360,8 +299,26 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
     return "file(" + this.getOriginalName() + ')';
   }
 
-  MemoryInode getInode() {
-    return this.inode;
+  final class MemoryFileAttributes extends MemoryEntryAttributes {
+
+    MemoryFileAttributes(EntryCreationContext context) {
+      super(context);
+    }
+
+    @Override
+    BasicFileAttributeView newBasicFileAttributeView() {
+      return new MemoryFileAttributesView();
+    }
+
+    @Override
+    long size() {
+      return MemoryFile.this.size();
+    }
+
+  }
+
+  boolean hasSameInodeAs(MemoryFile other) {
+    return this.inode == other.inode;
   }
 
 }
