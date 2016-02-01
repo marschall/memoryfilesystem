@@ -64,6 +64,17 @@ public final class MemoryFileSystemBuilder {
     this.forbiddenCharacters = new HashSet<>();
   }
 
+  /**
+   * Add a file system root.
+   *
+   * <p>This method is intended to be used in Windows mode to add a drive
+   * letter eg.:</p>
+   *
+   * <pre><code>builder.addRoot("D:\\")</code></pre>
+   *
+   * @param root the file system root
+   * @return the current builder object
+   */
   public MemoryFileSystemBuilder addRoot(String root) {
     this.roots.add(root);
     return this;
@@ -79,9 +90,30 @@ public final class MemoryFileSystemBuilder {
     return this;
   }
 
+  /**
+   * Adds a user and a group to the file systems
+   * {@link java.nio.file.attribute.UserPrincipalLookupService}.
+   *
+   * @param userName the name of the user to add
+   * @return the current builder object
+   */
   public MemoryFileSystemBuilder addUser(String userName) {
     this.users.add(userName);
     this.addGroup(userName);
+    return this;
+  }
+
+
+  /**
+   * Adds a user and a group to the file systems
+   * {@link java.nio.file.attribute.UserPrincipalLookupService}.
+   *
+   * @param userName the name of the user to add
+   * @return the current builder object
+   */
+
+  public MemoryFileSystemBuilder addGroup(String groupName) {
+    this.groups.add(groupName);
     return this;
   }
 
@@ -93,11 +125,6 @@ public final class MemoryFileSystemBuilder {
    */
   public MemoryFileSystemBuilder setUmask(Set<PosixFilePermission> umask) {
     this.umask = umask;
-    return this;
-  }
-
-  public MemoryFileSystemBuilder addGroup(String groupName) {
-    this.groups.add(groupName);
     return this;
   }
 

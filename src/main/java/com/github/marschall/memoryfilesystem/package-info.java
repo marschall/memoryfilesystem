@@ -4,7 +4,7 @@
  *
  * <p>All public classes in this package except
  * {@link com.github.marschall.memoryfilesystem.MemoryFileSystemProvider}
- * used by client code.</p>
+ * can be used by client code.</p>
  *
  * <p>Using {@link com.github.marschall.memoryfilesystem.MemoryFileSystemBuilder}
  * is the recommended way to create instances. For example like this:</p>

@@ -52,6 +52,11 @@ public final class Directories {
    * <p>This method makes a best effort to copy attributes across
    * different file system providers.</p>
    *
+   * <h2>Known Issues:</h2>
+   * <ul>
+   *  <li>hard links will not be handled correctly</li>
+   * </ul>
+   *
    * @see Files#copy(Path, Path, CopyOption...)
    *
    * @param source the path to the file to copy
