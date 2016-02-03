@@ -30,6 +30,7 @@ final class MemoryInode {
   private static final int ARRAY_HEADER = 8 + 8 + 4;
 
   static final int BLOCK_SIZE = 4096 - ARRAY_HEADER; //make sure it fits into a 4k memory region
+  static final int NUMBER_OF_BLOCKS = BLOCK_SIZE;
 
   // lazily allocated, most files probably won't need this
   private LockSet lockSet;
@@ -37,7 +38,7 @@ final class MemoryInode {
   /**
    * To store the contents efficiently we store the first {@value #BLOCK_SIZE}
    * bytes in a {@value #BLOCK_SIZE} direct {@code byte[]}. The next
-   * {@value #BLOCK_SIZE} * {@value #BLOCK_SIZE} bytes go into a indirect
+   * {@value #NUMBER_OF_BLOCKS} * {@value #BLOCK_SIZE} bytes go into a indirect
    * {@code byte[][]} that is lazily allocated.
    */
   private byte[] directBlock;
@@ -350,14 +351,14 @@ final class MemoryInode {
 
     // lazily allocate indirect blocks
     if (this.indirectBlocks == null) {
-      this.indirectBlocks = new byte[BLOCK_SIZE][];
+      this.indirectBlocks = new byte[NUMBER_OF_BLOCKS][];
     }
 
     int blocksRequired = (int) ((capacity - 1L)/ BLOCK_SIZE); // consider already present direct block, don't add + 1
 
-    if (blocksRequired > BLOCK_SIZE) {
+    if (blocksRequired > NUMBER_OF_BLOCKS) {
       // FIXME implement double indirect addressing
-      throw new AssertionError("files bigger than 16GB not yet supported");
+      throw new AssertionError("files bigger than 16MB not yet supported");
     }
 
     if (blocksRequired > this.indirectBlocksAllocated) {

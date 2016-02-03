@@ -17,7 +17,7 @@ public class MemoryInodeTest {
 
   @Test
   public void indirectBlock() {
-    byte[][] array = new byte[MemoryInode.BLOCK_SIZE][];
+    byte[][] array = new byte[MemoryInode.NUMBER_OF_BLOCKS][];
     assertThat(VMSupport.sizeOf(array), lessThanOrEqualTo(16384));
   }
 
