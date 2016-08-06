@@ -1,5 +1,5 @@
-# Use docker-based build environment (instead of openvz)
-sudo: false
+# seems to be required for jdk9
+sudo: required
 
 # required for oraclejdk9
 dist: trusty
