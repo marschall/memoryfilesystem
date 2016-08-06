@@ -6,6 +6,10 @@ dist: trusty
 # required for oraclejdk9
 group: edge
 
+# disable -XX:MaxPermSize=192m
+env:
+- MAVEN_OPTS=-Xmx128m
+
 language: java
 jdk:
   - openjdk7
