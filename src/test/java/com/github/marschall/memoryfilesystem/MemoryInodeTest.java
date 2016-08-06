@@ -5,20 +5,20 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
-import org.openjdk.jol.util.VMSupport;
+import org.openjdk.jol.vm.VM;
 
 public class MemoryInodeTest {
 
   @Test
   public void directBlock() {
     byte[] array = new byte[MemoryInode.BLOCK_SIZE];
-    assertEquals(4096, VMSupport.sizeOf(array));
+    assertEquals(4096, VM.current().sizeOf(array));
   }
 
   @Test
   public void indirectBlock() {
     byte[][] array = new byte[MemoryInode.NUMBER_OF_BLOCKS][];
-    assertThat(VMSupport.sizeOf(array), lessThanOrEqualTo(16384));
+    assertThat(VM.current().sizeOf(array), lessThanOrEqualTo(16384L));
   }
 
 }
