@@ -2,6 +2,7 @@ package com.github.marschall.memoryfilesystem;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -10,7 +11,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.easymock.EasyMock;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -61,7 +61,7 @@ public class MemoryContentsBoundaryTest {
 
   @Test
   public void boundaryWrapping() throws IOException {
-    Path path = EasyMock.createNiceMock(Path.class);
+    Path path = mock(Path.class);
     SeekableByteChannel channel = this.contents.newChannel(true, true, false, path);
     byte[] initial = new byte[this.initialOffset];
     channel.write(ByteBuffer.wrap(initial));
