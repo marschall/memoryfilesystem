@@ -105,10 +105,10 @@ public final class MemoryFileSystemBuilder {
 
 
   /**
-   * Adds a user and a group to the file systems
+   * Adds a group to the file systems
    * {@link java.nio.file.attribute.UserPrincipalLookupService}.
    *
-   * @param userName the name of the user to add
+   * @param groupName the name of the group to add
    * @return the current builder object
    */
 
