@@ -5,7 +5,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -72,7 +71,7 @@ public class MemoryContentsTest {
     src.put(data);
     src.rewind();
 
-    Path path = mock(Path.class);
+    Path path = new MockPath();
     SeekableByteChannel channel = this.contents.newChannel(true, true, false, path);
     assertEquals(0, channel.size());
     assertEquals(0, channel.position());
@@ -95,7 +94,7 @@ public class MemoryContentsTest {
 
   @Test
   public void positition() throws IOException {
-    Path path = mock(Path.class);
+    Path path = new MockPath();
     SeekableByteChannel channel = this.contents.newChannel(true, true, false, path);
 
     assertEquals(0L, channel.position());
@@ -120,7 +119,7 @@ public class MemoryContentsTest {
 
   @Test
   public void readOnly() throws IOException {
-    Path path = mock(Path.class);
+    Path path = new MockPath();
     SeekableByteChannel channel = this.contents.newChannel(true, true, false, path);
 
     ByteBuffer src = this.writeTestData(channel);
@@ -137,7 +136,7 @@ public class MemoryContentsTest {
 
   @Test
   public void writeOnly() throws IOException {
-    Path path = mock(Path.class);
+    Path path = new MockPath();
     SeekableByteChannel channel = this.contents.newChannel(false, true, false, path);
 
     ByteBuffer src = this.writeTestData(channel);
@@ -155,7 +154,7 @@ public class MemoryContentsTest {
 
   @Test
   public void truncate() throws IOException {
-    Path path = mock(Path.class);
+    Path path = new MockPath();
     SeekableByteChannel channel = this.contents.newChannel(true, true, false, path);
     ByteBuffer src = this.allocate(1);
     for (byte data : SAMPLE_DATA) {
@@ -198,7 +197,7 @@ public class MemoryContentsTest {
 
   @Test
   public void appendNonTruncatable() throws IOException {
-    Path path = mock(Path.class);
+    Path path = new MockPath();
     SeekableByteChannel channel = this.contents.newAppendingChannel(true, false, path);
 
     ByteBuffer src = this.writeTestData(channel);
@@ -214,7 +213,7 @@ public class MemoryContentsTest {
 
   @Test
   public void appendReadable() throws IOException {
-    Path path = mock(Path.class);
+    Path path = new MockPath();
     SeekableByteChannel channel = this.contents.newAppendingChannel(true, false, path);
     assertEquals(0L, channel.position());
 
@@ -246,7 +245,7 @@ public class MemoryContentsTest {
 
   @Test
   public void appendNotReadable() throws IOException {
-    Path path = mock(Path.class);
+    Path path = new MockPath();
     SeekableByteChannel channel = this.contents.newAppendingChannel(false, false, path);
 
     ByteBuffer testData = this.writeTestData(channel);
