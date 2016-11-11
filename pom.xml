@@ -56,12 +56,6 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <version>2.2.15</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-junit</artifactId>
       <version>2.0.0.0</version>
@@ -136,13 +130,6 @@
           <dotOutputDirectory>${project.reporting.outputDirectory}/jdeps</dotOutputDirectory>
            -->
         </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-          <configuration>
-            <source>${java.version}</source>
-            <target>${java.version}</target>
-          </configuration>
       </plugin>
       <plugin>
         <groupId>com.github.ferstl</groupId>
@@ -252,7 +239,12 @@
         </plugin>
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
+          <!-- <version>3.5.1</version> -->
           <version>3.6.0</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-toolchains-plugin</artifactId>
+          <version>1.1</version>
         </plugin>
         <plugin>
           <artifactId>maven-resources-plugin</artifactId>
@@ -350,6 +342,117 @@
                 </goals>
               </execution>
             </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>not-travis</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <!-- http://svn.apache.org/repos/asf/maven/plugins/trunk/maven-compiler-plugin/src/site/apt/examples/module-info.apt.vm -->
+      <build>
+        <plugins>
+            <!-- 
+             -->
+          <plugin>
+            <artifactId>maven-toolchains-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>toolchain</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <toolchains>
+                <jdk>
+                  <!-- <version>1.7</version> -->
+                  <version>9</version>
+                </jdk>
+              </toolchains>
+            </configuration>
+          </plugin>
+          <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <executions>
+              <!-- Compile all code except module-info.java with the configured source level -->
+              <execution>
+                <id>default-compile</id>
+                <!-- 
+                <phase>compile</phase>
+                <goals>
+                  <goal>compile</goal>
+                </goals>
+                 -->
+                <configuration>
+                <!-- 
+                  <source>${java.version}</source>
+                  <target>${java.version}</target>
+                   -->
+                  <release>7</release>
+                  
+                  <excludes>
+                    <exclude>module-info.java</exclude>
+                  </excludes>
+                </configuration>
+              </execution>
+              <!-- Compile module-info.java with JDK 9 source level 9 -->
+              <execution>
+                <id>compile-module-info-java</id>
+                <!-- 
+                <phase>compile</phase>
+                 -->
+                <goals>
+                  <goal>compile</goal>
+                </goals>
+                <configuration>
+                <!-- 
+                  <jdkToolchain>
+                    <version>9</version>
+                  </jdkToolchain>
+                  <source>9</source>
+                  <target>9</target>
+                   -->
+                  <release>9</release>
+                  <includes>
+                    <include>module-info.java</include>
+                  </includes>
+                </configuration>
+              </execution>
+              <execution>
+                <id>default-testCompile</id>
+                <configuration>
+                  <release>9</release>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <!-- https://github.com/travis-ci/travis-ci/issues/4178 -->
+      <!-- https://github.com/travis-ci/travis-ci/issues/5520 -->
+      <id>travis</id>
+      <activation>
+        <property>
+          <name>env.TRAVIS</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <!--
+              can't use toolchains
+              https://github.com/travis-ci/travis-ci/issues/2727
+            -->
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <source>${java.version}</source>
+              <target>${java.version}</target>
+            </configuration>
           </plugin>
         </plugins>
       </build>
