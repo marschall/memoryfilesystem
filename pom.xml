@@ -449,6 +449,8 @@
               https://github.com/travis-ci/travis-ci/issues/2727
             -->
             <artifactId>maven-compiler-plugin</artifactId>
+            <!-- 3.6.0 always adds module path -->
+            <version>3.5.1</version>
             <configuration>
               <source>${java.version}</source>
               <target>${java.version}</target>
