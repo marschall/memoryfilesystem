@@ -6,7 +6,7 @@ An in memory implementation of a [JSR-203](http://jcp.org/en/jsr/detail?id=203) 
 <dependency>
     <groupId>com.github.marschall</groupId>
     <artifactId>memoryfilesystem</artifactId>
-    <version>0.8.0</version>
+    <version>0.9.0</version>
 </dependency>
 ```
 
