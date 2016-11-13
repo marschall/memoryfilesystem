@@ -153,6 +153,7 @@
         <configuration>
           <analyzeDependencies>false</analyzeDependencies>
         </configuration>
+        <!-- 
         <executions>
           <execution>
             <id>crate-jarscan-report</id>
@@ -161,6 +162,7 @@
             </goals>
           </execution>
         </executions>
+         -->
       </plugin>
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
