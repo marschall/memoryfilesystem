@@ -143,7 +143,7 @@ It should work on compact1. Below is the jdeps output. The only Full JRE package
 
 ### Does it support JDK 9?
 
-Yes, starting from 0.9.0 the JAR is a modular JAR with the name `com.github.marschall.memoryfilesystem`. The only module required besides `java.base` is `java.annotations.common`, strictly speaking this is [optional](http://openjdk.java.net/projects/jigsaw/spec/issues/#CompileTimeDependences) but that feature doesn't seem to be implemented yet.
+Yes, starting from version 0.9.0 the JAR is a modular JAR with the name `com.github.marschall.memoryfilesystem`. The only module required besides `java.base` is `java.annotations.common`, strictly speaking this is [optional](http://openjdk.java.net/projects/jigsaw/spec/issues/#CompileTimeDependences) but that feature doesn't seem to be implemented yet.
 
 
 Usage
