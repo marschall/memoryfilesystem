@@ -233,7 +233,6 @@
         </plugin>
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
-          <!-- <version>3.5.1</version> -->
           <version>3.6.0</version>
         </plugin>
         <plugin>
@@ -352,8 +351,6 @@
       <!-- http://svn.apache.org/repos/asf/maven/plugins/trunk/maven-compiler-plugin/src/site/apt/examples/module-info.apt.vm -->
       <build>
         <plugins>
-            <!-- 
-             -->
           <plugin>
             <artifactId>maven-toolchains-plugin</artifactId>
             <executions>
@@ -366,7 +363,6 @@
             <configuration>
               <toolchains>
                 <jdk>
-                  <!-- <version>1.7</version> -->
                   <version>9</version>
                 </jdk>
               </toolchains>
@@ -378,19 +374,8 @@
               <!-- Compile all code except module-info.java with the configured source level -->
               <execution>
                 <id>default-compile</id>
-                <!-- 
-                <phase>compile</phase>
-                <goals>
-                  <goal>compile</goal>
-                </goals>
-                 -->
                 <configuration>
-                <!-- 
-                  <source>${java.version}</source>
-                  <target>${java.version}</target>
-                   -->
                   <release>7</release>
-                  
                   <excludes>
                     <exclude>module-info.java</exclude>
                   </excludes>
@@ -399,20 +384,10 @@
               <!-- Compile module-info.java with JDK 9 source level 9 -->
               <execution>
                 <id>compile-module-info-java</id>
-                <!-- 
-                <phase>compile</phase>
-                 -->
                 <goals>
                   <goal>compile</goal>
                 </goals>
                 <configuration>
-                <!-- 
-                  <jdkToolchain>
-                    <version>9</version>
-                  </jdkToolchain>
-                  <source>9</source>
-                  <target>9</target>
-                   -->
                   <release>9</release>
                   <includes>
                     <include>module-info.java</include>
