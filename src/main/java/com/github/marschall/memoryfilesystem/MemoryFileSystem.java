@@ -1122,7 +1122,9 @@ class MemoryFileSystem extends FileSystem {
 
   @Override
   @PreDestroy
-  public void close() throws IOException {
+  public void close() {
+    // avoid throws IOException
+    // https://github.com/marschall/memoryfilesystem/issues/76
     if (this.checker.close()) {
       // closing twice is explicitly allowed by the contract
       this.checker.close();
