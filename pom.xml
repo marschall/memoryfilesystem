@@ -166,10 +166,47 @@
       </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-          <configuration>
-            <source>${java.version}</source>
-            <target>${java.version}</target>
-          </configuration>
+        <executions>
+          <execution>
+            <id>default-compile</id>
+            <configuration>
+              <!-- compile everything to ensure module-info contains right entries -->
+              <!-- required when JAVA_HOME is JDK 8 or below -->
+              <jdkToolchain>
+                <version>9</version>
+              </jdkToolchain>
+              <release>9</release>
+            </configuration>
+          </execution>
+          <execution>
+            <id>base-compile</id>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <!-- recompile everything for target VM except the module-info.java -->
+            <configuration>
+              <excludes>
+                <exclude>module-info.java</exclude>
+              </excludes>
+              <source>${java.version}</source>
+              <target>${java.version}</target>
+              <!-- 
+              <jdkToolchain>
+                <version>9</version>
+              </jdkToolchain>
+              <release>7</release>
+            -->
+            </configuration>
+          </execution>
+        </executions>
+        <!-- defaults for compile and testCompile -->
+        <configuration>
+          <!-- jdkToolchain required when JAVA_HOME is JDK 9 or above -->
+          <jdkToolchain>
+            <version>9</version>
+          </jdkToolchain>
+          <release>7</release>
+        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
@@ -206,6 +243,20 @@
             <goals>
               <goal>jandex</goal>
             </goals>
+            <configuration>
+              <fileSets>
+                <fileSet>
+                  <directory>${project.build.outputDirectory}</directory>
+                  <includes>
+                    <include>**/*.class</include>
+                  </includes>
+                  <excludes>
+                    <exclude>**/module-info.class</exclude>
+                  </excludes>
+                  <useDefaultExcludes>true</useDefaultExcludes>
+                </fileSet>
+              </fileSets>
+            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -242,8 +293,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
-          <!-- <version>3.6.0</version>  -->
-          <version>3.5.1</version>
+          <version>3.6.1</version>
         </plugin>
         <plugin>
           <artifactId>maven-toolchains-plugin</artifactId>
@@ -349,6 +399,34 @@
                 </goals>
               </execution>
             </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <!-- https://github.com/travis-ci/travis-ci/issues/4178 -->
+      <!-- https://github.com/travis-ci/travis-ci/issues/5520 -->
+      <id>travis</id>
+      <activation>
+        <property>
+          <name>env.TRAVIS</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <!--
+              can't use toolchains
+              https://github.com/travis-ci/travis-ci/issues/2727
+            -->
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <source>${java.version}</source>
+              <target>${java.version}</target>
+              <excludes>
+                <exclude>module-info.java</exclude>
+              </excludes>
+            </configuration>
           </plugin>
         </plugins>
       </build>
