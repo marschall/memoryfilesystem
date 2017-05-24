@@ -165,50 +165,6 @@
          -->
       </plugin>
       <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>default-compile</id>
-            <configuration>
-              <!-- compile everything to ensure module-info contains right entries -->
-              <!-- required when JAVA_HOME is JDK 8 or below -->
-              <jdkToolchain>
-                <version>9</version>
-              </jdkToolchain>
-              <release>9</release>
-            </configuration>
-          </execution>
-          <execution>
-            <id>base-compile</id>
-            <goals>
-              <goal>compile</goal>
-            </goals>
-            <!-- recompile everything for target VM except the module-info.java -->
-            <configuration>
-              <excludes>
-                <exclude>module-info.java</exclude>
-              </excludes>
-              <source>${java.version}</source>
-              <target>${java.version}</target>
-              <!-- 
-              <jdkToolchain>
-                <version>9</version>
-              </jdkToolchain>
-              <release>7</release>
-            -->
-            </configuration>
-          </execution>
-        </executions>
-        <!-- defaults for compile and testCompile -->
-        <configuration>
-          <!-- jdkToolchain required when JAVA_HOME is JDK 9 or above -->
-          <jdkToolchain>
-            <version>9</version>
-          </jdkToolchain>
-          <release>7</release>
-        </configuration>
-      </plugin>
-      <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
         <configuration>
           <links>
@@ -400,6 +356,60 @@
               </execution>
             </executions>
           </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>jdk9</id>
+      <activation>
+        <jdk>9</jdk>
+      </activation>
+      <build>
+        <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>default-compile</id>
+            <configuration>
+              <!-- compile everything to ensure module-info contains right entries -->
+              <!-- required when JAVA_HOME is JDK 8 or below -->
+              <jdkToolchain>
+                <version>9</version>
+              </jdkToolchain>
+              <release>9</release>
+            </configuration>
+          </execution>
+          <execution>
+            <id>base-compile</id>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <!-- recompile everything for target VM except the module-info.java -->
+            <configuration>
+              <excludes>
+                <exclude>module-info.java</exclude>
+              </excludes>
+              <!-- 
+              <source>${java.version}</source>
+              <target>${java.version}</target>
+            -->
+              <jdkToolchain>
+                <version>9</version>
+              </jdkToolchain>
+              <release>7</release>
+            </configuration>
+          </execution>
+        </executions>
+        <!-- defaults for compile and testCompile -->
+        <configuration>
+          <!-- jdkToolchain required when JAVA_HOME is JDK 9 or above -->
+          <jdkToolchain>
+            <version>9</version>
+          </jdkToolchain>
+          <release>7</release>
+        </configuration>
+      </plugin>
         </plugins>
       </build>
     </profile>
