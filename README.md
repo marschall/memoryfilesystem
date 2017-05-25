@@ -6,7 +6,7 @@ An in memory implementation of a [JSR-203](http://jcp.org/en/jsr/detail?id=203) 
 <dependency>
     <groupId>com.github.marschall</groupId>
     <artifactId>memoryfilesystem</artifactId>
-    <version>0.9.1</version>
+    <version>0.9.2</version>
 </dependency>
 ```
 
@@ -93,6 +93,9 @@ No
 
 ### Does it have any dependencies?
 No
+
+### Does it support JDK 9?
+Yes, starting from version 0.9.2 the JAR is a [modular](https://github.com/marschall/memoryfilesystem/blob/master/src/main/java/module-info.java) JAR with the name `com.github.marschall.memoryfilesystem`. The only module required besides `java.base` is `java.xml.ws.annotation` which is [optional](http://openjdk.java.net/projects/jigsaw/spec/issues/#CompileTimeDependences).
 
 ### Does it work with Spring?
 Yes, there is a POJO factory bean. It has been tested with Spring 3.2.4 but since it doesn't have any dependencies on Spring it should work with every ⩾ 2.x version. You can of course also use Java configuration or any other IoC container.
