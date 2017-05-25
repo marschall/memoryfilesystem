@@ -8,10 +8,6 @@
   <name>Memory File System</name>
   <description>An in memory implementation of a JSR-203 file system.</description>
   <inceptionYear>2011</inceptionYear>
-  
-  <prerequisites>
-    <maven>3.0.5</maven>
-  </prerequisites>
 
   <url>https://github.com/marschall/memoryfilesystem</url>
 
@@ -89,19 +85,19 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>jcl-over-slf4j</artifactId>
-      <version>1.7.21</version>
+      <version>1.7.25</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.1.7</version>
+      <version>1.2.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.openjdk.jol</groupId>
       <artifactId>jol-core</artifactId>
-      <version>0.6</version>
+      <version>0.8</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -257,7 +253,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-resources-plugin</artifactId>
-          <version>3.0.1</version>
+          <version>3.0.2</version>
         </plugin>
         <plugin>
           <groupId>org.jboss.jandex</groupId>
@@ -270,7 +266,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-jar-plugin</artifactId>
-          <version>3.0.1</version>
+          <version>3.0.2</version>
         </plugin>
         <plugin>
           <artifactId>maven-gpg-plugin</artifactId>
@@ -286,7 +282,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.19.1</version>
+          <version>2.20</version>
         </plugin>
         <plugin>
           <artifactId>maven-clean-plugin</artifactId>
@@ -302,7 +298,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-site-plugin</artifactId>
-          <version>3.5.1</version>
+          <version>3.6</version>
         </plugin>
         <plugin>
           <groupId>com.github.ferstl</groupId>
@@ -390,10 +386,6 @@
               <excludes>
                 <exclude>module-info.java</exclude>
               </excludes>
-              <!-- 
-              <source>${java.version}</source>
-              <target>${java.version}</target>
-            -->
               <jdkToolchain>
                 <version>9</version>
               </jdkToolchain>
@@ -447,7 +439,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <java.version>1.7</java.version>
-    <spring.version>4.3.3.RELEASE</spring.version>
+    <spring.version>4.3.8.RELEASE</spring.version>
   </properties>
 
 </project>
