@@ -1230,7 +1230,7 @@ class MemoryFileSystem extends FileSystem {
   void register(MemoryWatchKey watchKey) {
     this.checker.check();
     AbsolutePath absolutePath = (AbsolutePath) watchKey.watchable().toAbsolutePath();
-    List<MemoryWatchKey> keys = this.watchKeys.get(watchKey);
+    List<MemoryWatchKey> keys = this.watchKeys.get(absolutePath);
     if (keys == null) {
       keys = new CopyOnWriteArrayList<>();
       List<MemoryWatchKey> previous = this.watchKeys.putIfAbsent(absolutePath, keys);
@@ -1251,13 +1251,12 @@ class MemoryFileSystem extends FileSystem {
   }
 
   boolean isHidden(AbstractPath abstractPath) throws IOException {
-    // Posix seems to check only the file name
-    // TODO write test
     return this.accessFileReading(abstractPath, false, new MemoryEntryBlock<Boolean>(){
 
       @Override
       public Boolean value(MemoryEntry entry) throws IOException {
         Set<String> supportedFileAttributeViews = MemoryFileSystem.this.supportedFileAttributeViews();
+        // Posix seems to check only the file name
         if (supportedFileAttributeViews.contains(FileAttributeViews.POSIX)) {
           String originalName = entry.getOriginalName();
           return !originalName.isEmpty() && originalName.charAt(0) == '.';
