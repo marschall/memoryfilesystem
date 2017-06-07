@@ -1,13 +1,13 @@
-sudo: required
-dist: trusty
-group: edge
+# Use docker-based build environment (instead of openvz)
+sudo: false
+
 language: java
 jdk:
+  - openjdk7
   - oraclejdk7
   - oraclejdk8
-  - oraclejdk9
 
 cache:
-  directories:
-    - '$HOME/.m2/repository'
+directories:
+- '$HOME/.m2/repository'
 install: /bin/true
