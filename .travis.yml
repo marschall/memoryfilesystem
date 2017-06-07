@@ -1,11 +1,13 @@
-# Use docker-based build environment (instead of openvz)
-sudo: false
-
-language: java
+sudo: required
+dist: trusty
+group: edge
 jdk:
-  - openjdk7
   - oraclejdk7
   - oraclejdk8
+  - oraclejdk9
+matrix:
+  allow_failures:
+    - jdk: oraclejdk9
 
 cache:
 directories:
