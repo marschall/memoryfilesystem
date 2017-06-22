@@ -22,7 +22,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 @Ignore("not portable")
-public class FileSystemComptiblity {
+public class FileSystemCompatibility {
 
   @Test
   public void forbidden() throws IOException {

@@ -52,7 +52,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
-public class UnixFileSystemComptiblityTest {
+public class UnixFileSystemCompatibilityTest {
 
   @Rule
   public final PosixFileSystemRule rule = new PosixFileSystemRule();
@@ -61,7 +61,7 @@ public class UnixFileSystemComptiblityTest {
 
   private final boolean useDefault;
 
-  public UnixFileSystemComptiblityTest(boolean useDefault) {
+  public UnixFileSystemCompatibilityTest(boolean useDefault) {
     this.useDefault = useDefault;
   }
 
@@ -77,7 +77,7 @@ public class UnixFileSystemComptiblityTest {
   }
 
 
-  @Parameters(name = "navite: {0}")
+  @Parameters(name = "native: {0}")
   public static List<Object[]> fileSystems() throws IOException {
     FileSystem defaultFileSystem = FileSystems.getDefault();
     boolean isPosix = defaultFileSystem.supportedFileAttributeViews().contains("posix");
@@ -419,7 +419,7 @@ public class UnixFileSystemComptiblityTest {
 
 
   @Test
-  public void aboluteGetParent() {
+  public void absoluteGetParent() {
     FileSystem fileSystem = this.getFileSystem();
 
     Path usrBin = fileSystem.getPath("/usr/bin");
