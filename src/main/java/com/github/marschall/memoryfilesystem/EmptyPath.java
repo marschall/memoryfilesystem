@@ -42,12 +42,20 @@ final class EmptyPath extends ElementPath {
 
   @Override
   public Path getName(int index) {
-    throw new IllegalArgumentException("empty path does not support #getName(int)");
+    if (index == 0) {
+      return this;
+    } else {
+      throw new IllegalArgumentException("invalid index: " + index);
+    }
   }
 
   @Override
   public Path subpath(int beginIndex, int endIndex) {
-    throw new IllegalArgumentException("can't create a subpath on an empty path");
+    if (beginIndex == 0 && endIndex == 1) {
+      return this;
+    } else {
+      throw new IllegalArgumentException("invalid beginIndex, endIndex: " + beginIndex + ", " + endIndex);
+    }
   }
 
   @Override

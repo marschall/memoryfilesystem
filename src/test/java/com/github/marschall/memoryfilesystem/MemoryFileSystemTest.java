@@ -1169,10 +1169,12 @@ public class MemoryFileSystemTest {
     assertTrue(matcher instanceof RegexPathMatcher);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void emptySubPath() {
     FileSystem fileSystem = this.rule.getFileSystem();
-    assertEquals(fileSystem.getPath(""), fileSystem.getPath("").subpath(0, 0));
+    Path empty = fileSystem.getPath("");
+    assertEquals(1, empty.getNameCount());
+    assertEquals(empty, empty.subpath(0, 1));
   }
 
   @Test
@@ -1638,11 +1640,12 @@ public class MemoryFileSystemTest {
     usrBin.getName(2);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void emptyGetName() {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path empty = fileSystem.getPath("");
-    empty.getName(0);
+    assertEquals(1, empty.getNameCount());
+    assertEquals(empty, empty.getName(0));
   }
 
   @Test
