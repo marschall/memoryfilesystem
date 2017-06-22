@@ -36,7 +36,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
-public class WindowsFileSystemComptiblityTest {
+public class WindowsFileSystemCompatibilityTest {
 
   @Rule
   public final WindowsFileSystemRule rule = new WindowsFileSystemRule();
@@ -45,7 +45,7 @@ public class WindowsFileSystemComptiblityTest {
 
   private final boolean useDefault;
 
-  public WindowsFileSystemComptiblityTest(boolean useDefault) {
+  public WindowsFileSystemCompatibilityTest(boolean useDefault) {
     this.useDefault = useDefault;
   }
 
@@ -61,7 +61,7 @@ public class WindowsFileSystemComptiblityTest {
   }
 
 
-  @Parameters(name = "navite: {0}")
+  @Parameters(name = "native: {0}")
   public static List<Object[]> fileSystems() throws IOException {
     FileSystem defaultFileSystem = FileSystems.getDefault();
     Set<String> supportedFileAttributeViews = defaultFileSystem.supportedFileAttributeViews();

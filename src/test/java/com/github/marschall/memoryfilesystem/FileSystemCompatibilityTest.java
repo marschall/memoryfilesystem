@@ -33,7 +33,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
-public class FileSystemComptiblityTest {
+public class FileSystemCompatibilityTest {
 
   @Rule
   public final FileSystemRule rule = new FileSystemRule();
@@ -42,11 +42,11 @@ public class FileSystemComptiblityTest {
 
   private FileSystem fileSystem;
 
-  public FileSystemComptiblityTest(boolean useDefault) {
+  public FileSystemCompatibilityTest(boolean useDefault) {
     this.useDefault = useDefault;
   }
 
-  @Parameters(name = "navite: {0}")
+  @Parameters(name = "native: {0}")
   public static List<Object[]> fileSystems() throws IOException {
     return Arrays.asList(new Object[]{true}, new Object[]{false});
   }
