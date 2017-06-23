@@ -143,6 +143,8 @@ public class FileSystemCompatibilityTest {
     assertThat(path, isRelative());
     assertNull(path.getRoot());
     assertEquals(path, path.getFileName());
+    assertEquals(path, path.getName(0));
+    assertEquals(path, path.subpath(0, 1));
     assertEquals(1, path.getNameCount());
   }
 
