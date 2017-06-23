@@ -18,6 +18,16 @@
     <tag>HEAD</tag>
   </scm>
 
+  <ciManagement>
+    <system>Travis</system>
+    <url>https://travis-ci.org/marschall/memoryfilesystem</url>
+  </ciManagement>
+
+  <issueManagement>
+    <url>https://github.com/marschall/memoryfilesystem/issues</url>
+    <system>GitHub Isues</system>
+  </issueManagement>
+
   <developers>
     <developer>
       <id>marschall</id>
