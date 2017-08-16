@@ -7,15 +7,23 @@ import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 final class MemoryDirectoryStream implements DirectoryStream<Path>, Iterator<Path> {
 
   //TODO ClosedDirectoryStreamException
 
+  static final AtomicIntegerFieldUpdater<MemoryDirectoryStream> ITERATOR_CALLED_UPDATER =
+          AtomicIntegerFieldUpdater.newUpdater(MemoryDirectoryStream.class, "iteratorCalled");
+
+  private static final int CALLED = 1;
+  private static final int NOT_CALLED = 0;
+
+  @SuppressWarnings("unused") // ITERATOR_CALLED_UPDATER
+  private volatile int iteratorCalled;
+
   private final Path basePath;
   private final Iterator<String> iterator;
-  private final AtomicBoolean iteratorCalled = new AtomicBoolean(false);
   private Path next;
   private final Filter<? super Path> filter;
 
@@ -23,6 +31,7 @@ final class MemoryDirectoryStream implements DirectoryStream<Path>, Iterator<Pat
     this.basePath = basePath;
     this.filter = filter;
     this.iterator = elements.iterator();
+    ITERATOR_CALLED_UPDATER.set(this, NOT_CALLED);
   }
 
   @Override
@@ -32,7 +41,7 @@ final class MemoryDirectoryStream implements DirectoryStream<Path>, Iterator<Pat
 
   @Override
   public Iterator<Path> iterator() {
-    boolean success = this.iteratorCalled.compareAndSet(false, true);
+    boolean success = ITERATOR_CALLED_UPDATER.compareAndSet(this, NOT_CALLED, CALLED);
     if (!success) {
       throw new IllegalStateException("#iterator() already called");
     }

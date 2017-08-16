@@ -55,7 +55,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Pattern;
@@ -672,7 +672,7 @@ class MemoryFileSystem extends FileSystem {
       // unsupported view, specification requires null
       return null;
     }
-    InvocationHandler handler = new LazyFileAttributeView<>(path, type, options);
+    InvocationHandler handler = new LazyFileAttributeView(path, type, options);
     Object proxy = Proxy.newProxyInstance(MemoryFileSystem.class.getClassLoader(), new Class<?>[]{type}, handler);
     return type.cast(proxy);
   }
@@ -1422,18 +1422,22 @@ class MemoryFileSystem extends FileSystem {
     return MemoryFileSystem.class.getSimpleName() + '[' + this.key + ']';
   }
 
-  class LazyFileAttributeView<V extends FileAttributeView> implements InvocationHandler {
+  static class LazyFileAttributeView implements InvocationHandler {
+
+    static final AtomicReferenceFieldUpdater<LazyFileAttributeView, FileAttributeView> ATTRIBUTE_VIEW_UPDATER =
+            AtomicReferenceFieldUpdater.newUpdater(LazyFileAttributeView.class, FileAttributeView.class, "attributeView");
 
     private final AbstractPath path;
     private final LinkOption[] options;
-    private final Class<V> type;
-    private final AtomicReference<V> attributeView;
+    private final Class<? extends FileAttributeView> type;
 
-    LazyFileAttributeView(AbstractPath path, Class<V> type, LinkOption... options) {
+    @SuppressWarnings("unused") // ATTRIBUTE_VIEW_UPDATER
+    private volatile FileAttributeView attributeView;
+
+    LazyFileAttributeView(AbstractPath path, Class<? extends FileAttributeView> type, LinkOption... options) {
       this.path = path;
       this.options = options;
       this.type = type;
-      this.attributeView = new AtomicReference<>();
     }
 
     @Override
@@ -1469,17 +1473,17 @@ class MemoryFileSystem extends FileSystem {
       }
     }
 
-    private V getView() throws IOException {
-      V v = this.attributeView.get();
-      if (v != null) {
-        return v;
+    private FileAttributeView getView() throws IOException {
+      FileAttributeView view = ATTRIBUTE_VIEW_UPDATER.get(this);
+      if (view != null) {
+        return view;
       } else {
-        V newValue = MemoryFileSystem.this.getFileAttributeView(this.path, this.type, this.options);
-        boolean successful = this.attributeView.compareAndSet(null, newValue);
+        FileAttributeView newValue = this.path.getMemoryFileSystem().getFileAttributeView(this.path, this.type, this.options);
+        boolean successful = ATTRIBUTE_VIEW_UPDATER.compareAndSet(this, null, newValue);
         if (successful) {
           return newValue;
         } else {
-          return this.attributeView.get();
+          return ATTRIBUTE_VIEW_UPDATER.get(this);
         }
       }
     }

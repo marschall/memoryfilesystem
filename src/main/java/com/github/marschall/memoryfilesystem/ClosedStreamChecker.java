@@ -7,7 +7,7 @@ import java.nio.file.Path;
 final class ClosedStreamChecker extends ClosedChecker {
 
   void check(Path path) throws IOException {
-    if (!this.open.get()) {
+    if (!this.isOpen()) {
       throw new FileSystemException(path.toString(), null, "stream is closed");
     }
   }

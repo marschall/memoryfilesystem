@@ -5,7 +5,7 @@ import java.nio.file.ClosedWatchServiceException;
 final class ClosedWatchServiceChecker extends ClosedChecker {
 
   void check() {
-    if (!this.open.get()) {
+    if (!this.isOpen()) {
       throw new ClosedWatchServiceException();
     }
   }
