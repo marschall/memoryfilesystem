@@ -4,6 +4,7 @@ import static java.lang.Math.min;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -76,8 +77,8 @@ final class BlockInputStream extends InputStream {
     if (available > Integer.MAX_VALUE) {
       return Integer.MAX_VALUE;
     } else if (available > 1L) {
-      // introduce a subtle but in code that assumes #available() returns
-      // everything untile the end
+      // introduce a subtle bug in code that assumes #available() returns
+      // everything until the end
       return (int) (available -1);
     } else {
       return (int) available;
@@ -132,6 +133,15 @@ final class BlockInputStream extends InputStream {
       return data[0] & 0xff;
     }
 
+  }
+
+  // Java 9 method, has to compile under Java 1.6 so no @Override
+  public long transferTo​(OutputStream out) throws IOException {
+    this.checker.check(this.path);
+    long positionBefore = this.position.get();
+    long written = this.memoryContents.transferTo(out, positionBefore);
+    this.position.set(this.memoryContents.size());
+    return written;
   }
 
 }

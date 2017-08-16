@@ -1,6 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -19,6 +20,8 @@ interface MemoryContents {
   long transferFrom(ReadableByteChannel src, long position, long count) throws IOException;
 
   long transferTo(WritableByteChannel target, long position, long count) throws IOException;
+
+  long transferTo(OutputStream target, long position) throws IOException;
 
   long write(ByteBuffer src, long position, long maximum);
 

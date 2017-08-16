@@ -245,6 +245,11 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
   }
 
   @Override
+  public long transferTo(OutputStream target, long position) throws IOException {
+    return this.inode.transferTo(target, position);
+  }
+
+  @Override
   public long write(ByteBuffer src, long position, long maximum) {
     return this.inode.write(src, position, maximum);
   }

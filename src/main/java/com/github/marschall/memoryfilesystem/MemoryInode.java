@@ -5,6 +5,7 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -115,7 +116,7 @@ final class MemoryInode {
       int startIndexInBlock = (int) (position - (currentBlock * (long) BLOCK_SIZE));
       long read = 0L;
       while (read < toRead) {
-        int lengthInBlock = (int) min((long) BLOCK_SIZE - startIndexInBlock, toRead - read);
+        int lengthInBlock = (int) min(BLOCK_SIZE - startIndexInBlock, toRead - read);
 
         byte[] block = this.getBlock(currentBlock);
         dst.put(block, startIndexInBlock, lengthInBlock);
@@ -142,7 +143,7 @@ final class MemoryInode {
       int startIndexInBlock = (int) (position - (currentBlock * (long) BLOCK_SIZE));
       int read = 0;
       while (read < toRead) {
-        int lengthInBlock = (int) min((long) BLOCK_SIZE - startIndexInBlock, (long) toRead - (long) read);
+        int lengthInBlock = min(BLOCK_SIZE - startIndexInBlock, toRead - read);
 
         byte[] block = this.getBlock(currentBlock);
         System.arraycopy(block, startIndexInBlock, dst, off + read, lengthInBlock);
@@ -164,7 +165,7 @@ final class MemoryInode {
       int currentBlock = (int) (position / BLOCK_SIZE);
       int startIndexInBlock = (int) (position - (currentBlock * (long) BLOCK_SIZE));
       while (transferred < toTransfer) {
-        int lengthInBlock = (int) min((long) BLOCK_SIZE - startIndexInBlock, toTransfer - transferred);
+        int lengthInBlock = (int) min(BLOCK_SIZE - startIndexInBlock, toTransfer - transferred);
 
         byte[] block = this.getBlock(currentBlock);
         // We can either allocate a new ByteBuffer for every iteration or keep
@@ -192,7 +193,7 @@ final class MemoryInode {
       int currentBlock = (int) (position / BLOCK_SIZE);
       int startIndexInBlock = (int) (position - (currentBlock * (long) BLOCK_SIZE));
       while (transferred < toTransfer) {
-        int lengthInBlock = (int) min((long) BLOCK_SIZE - startIndexInBlock, toTransfer - transferred);
+        int lengthInBlock = (int) min(BLOCK_SIZE - startIndexInBlock, toTransfer - transferred);
 
         byte[] block = this.getBlock(currentBlock);
         // We can either allocate a new ByteBuffer for every iteration or keep
@@ -201,6 +202,31 @@ final class MemoryInode {
         // of the backing array allocating a ByteBuffer is probably cheaper.
         ByteBuffer buffer = ByteBuffer.wrap(block, startIndexInBlock, lengthInBlock);
         writeFully(buffer, target, lengthInBlock);
+        transferred += lengthInBlock;
+
+        startIndexInBlock = 0;
+        currentBlock += 1;
+      }
+
+      return transferred;
+    }
+  }
+
+
+
+  long transferTo(OutputStream target, long position) throws IOException {
+    try (AutoRelease lock = this.readLock()) {
+      long transferred = 0L;
+      long toTransfer = this.size - position;
+
+      int currentBlock = (int) (position / BLOCK_SIZE);
+      int startIndexInBlock = (int) (position - (currentBlock * (long) BLOCK_SIZE));
+      while (transferred < toTransfer) {
+        int lengthInBlock = (int) min(BLOCK_SIZE - startIndexInBlock, toTransfer - transferred);
+
+        byte[] block = this.getBlock(currentBlock);
+
+        target.write(block, startIndexInBlock, lengthInBlock);
         transferred += lengthInBlock;
 
         startIndexInBlock = 0;
@@ -249,7 +275,7 @@ final class MemoryInode {
       int startIndexInBlock = (int) (position - (currentBlock * (long) BLOCK_SIZE));
       int written = 0;
       while (written < toWrite) {
-        int lengthInBlock = (int) min((long) BLOCK_SIZE - startIndexInBlock, (long) toWrite - (long) written);
+        int lengthInBlock = min(BLOCK_SIZE - startIndexInBlock, toWrite - written);
 
         byte[] block = this.getBlock(currentBlock);
         System.arraycopy(src, off + written, block, startIndexInBlock, lengthInBlock);
