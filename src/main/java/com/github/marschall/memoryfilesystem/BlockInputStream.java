@@ -135,7 +135,7 @@ final class BlockInputStream extends InputStream {
 
   }
 
-  // Java 9 method, has to compile under Java 1.6 so no @Override
+  // Java 9 method, has to compile under Java 1.7 so no @Override
   public long transferTo​(OutputStream out) throws IOException {
     this.checker.check(this.path);
     long positionBefore = this.position.get();
