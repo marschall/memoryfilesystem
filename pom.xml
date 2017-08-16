@@ -205,6 +205,7 @@
             <goals>
               <goal>jandex</goal>
             </goals>
+            <!-- at the moment jandex can't handle module-info.class -->
             <configuration>
               <fileSets>
                 <fileSet>
