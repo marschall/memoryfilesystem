@@ -153,6 +153,26 @@ public class MemoryDirectoryStreamTest {
   }
 
   @Test
+  public void alreadyClosed() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Files.createFile(fileSystem.getPath("a.java"));
+
+    try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(fileSystem.getPath("/"))) {
+
+      directoryStream.close();
+
+      try {
+        directoryStream.iterator();
+        fail("already closed");
+      } catch (IllegalStateException e) {
+        // should reach here
+      }
+    }
+
+  }
+
+  @Test
   public void close() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 

@@ -14,14 +14,15 @@ final class MemoryDirectoryStream implements DirectoryStream<Path> {
 
   //TODO ClosedDirectoryStreamException
 
-  static final AtomicIntegerFieldUpdater<MemoryDirectoryStream> ITERATOR_CALLED_UPDATER =
-          AtomicIntegerFieldUpdater.newUpdater(MemoryDirectoryStream.class, "iteratorCalled");
+  static final AtomicIntegerFieldUpdater<MemoryDirectoryStream> STATE_UPDATER =
+          AtomicIntegerFieldUpdater.newUpdater(MemoryDirectoryStream.class, "state");
 
-  private static final int CALLED = 1;
-  private static final int NOT_CALLED = 0;
+  private static final int CLOSED = 2;
+  private static final int OPEN_ITERATOR_CALLED = 1;
+  private static final int OPEN_ITERATOR_NOT_CALLED = 0;
 
   @SuppressWarnings("unused") // ITERATOR_CALLED_UPDATER
-  private volatile int iteratorCalled;
+  private volatile int state;
 
   private final MemoryDirectoryIterator iterator;
 
@@ -30,19 +31,27 @@ final class MemoryDirectoryStream implements DirectoryStream<Path> {
     Objects.requireNonNull(filter, "filter");
     Objects.requireNonNull(elements, "elements");
     this.iterator = new MemoryDirectoryIterator(basePath, filter, elements);
-    ITERATOR_CALLED_UPDATER.set(this, NOT_CALLED);
+    STATE_UPDATER.set(this, OPEN_ITERATOR_NOT_CALLED);
   }
 
   @Override
   public void close() throws IOException {
+    STATE_UPDATER.set(this, CLOSED);
     this.iterator.close();
   }
 
   @Override
   public Iterator<Path> iterator() {
-    boolean success = ITERATOR_CALLED_UPDATER.compareAndSet(this, NOT_CALLED, CALLED);
-    if (!success) {
-      throw new IllegalStateException("#iterator() already called");
+    boolean success = false;
+    while (!success) {
+      int current = STATE_UPDATER.get(this);
+      if (current == OPEN_ITERATOR_CALLED) {
+        throw new IllegalStateException("#iterator() already called");
+      }
+      if (current == CLOSED) {
+        throw new IllegalStateException("already closed");
+      }
+      success = STATE_UPDATER.compareAndSet(this, OPEN_ITERATOR_NOT_CALLED, OPEN_ITERATOR_CALLED);
     }
     this.iterator.setNext();
     return this.iterator;
