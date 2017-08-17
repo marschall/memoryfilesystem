@@ -19,7 +19,6 @@ import static java.nio.file.StandardOpenOption.WRITE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.lessThan;
@@ -47,7 +46,6 @@ import java.nio.channels.FileLock;
 import java.nio.channels.NonWritableChannelException;
 import java.nio.channels.OverlappingFileLockException;
 import java.nio.channels.SeekableByteChannel;
-import java.nio.file.DirectoryStream;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileStore;
 import java.nio.file.FileSystem;
@@ -68,15 +66,12 @@ import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -704,100 +699,6 @@ public class MemoryFileSystemTest {
         channel.write(src);
       }
     }
-  }
-
-  @Test
-  public void directoryStreamAbsolute() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
-
-    Files.createFile(fileSystem.getPath("a.java"));
-    Files.createFile(fileSystem.getPath("a.cpp"));
-    Files.createFile(fileSystem.getPath("a.hpp"));
-    Files.createFile(fileSystem.getPath("a.c"));
-    Files.createFile(fileSystem.getPath("a.h"));
-
-    Files.createDirectory(fileSystem.getPath("d1"));
-    Files.createDirectory(fileSystem.getPath("d2"));
-
-    try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(fileSystem.getPath("/"))) {
-      assertThat(directoryStream, everyItem(isAbsolute()));
-    }
-
-    try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(fileSystem.getPath("/"))) {
-      List<Path> actual = asList(directoryStream.iterator());
-      List<Path> expected = Arrays.asList(
-              fileSystem.getPath("/a.java"),
-              fileSystem.getPath("/a.cpp"),
-              fileSystem.getPath("/a.hpp"),
-              fileSystem.getPath("/a.c"),
-              fileSystem.getPath("/a.h"),
-              fileSystem.getPath("/d1"),
-              fileSystem.getPath("/d2"));
-
-      assertEquals(expected.size(), actual.size());
-
-      Set<Path> actualSet = new HashSet<>(actual);
-      assertEquals(actualSet.size(), actual.size());
-      Set<Path> expectedSet = new HashSet<>(expected);
-
-      assertEquals(expectedSet, actualSet);
-    }
-
-    try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(fileSystem.getPath("/"), "*.{java,cpp}")) {
-      List<Path> actual = asList(directoryStream.iterator());
-      List<Path> expected = Arrays.asList(
-              fileSystem.getPath("/a.java"),
-              fileSystem.getPath("/a.cpp"));
-
-      assertEquals(expected.size(), actual.size());
-
-      Set<Path> actualSet = new HashSet<>(actual);
-      assertEquals(actualSet.size(), actual.size());
-      Set<Path> expectedSet = new HashSet<>(expected);
-
-      assertEquals(expectedSet, actualSet);
-    }
-  }
-
-  @Test
-  public void directoryStreamRelative() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
-
-    Path parent = Files.createDirectory(fileSystem.getPath("src"));
-    assertThat(parent, isRelative());
-
-    Files.createFile(parent.resolve("a.java"));
-    Files.createDirectory(parent.resolve("d1"));
-
-    try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(parent)) {
-      List<String> actual = new ArrayList<>(2);
-      for (Path each : directoryStream) {
-        assertThat(each, isRelative());
-        actual.add(each.toString());
-      }
-      List<String> expected = Arrays.asList("src/a.java", "src/d1");
-
-      assertEquals(expected.size(), actual.size());
-
-      Set<String> actualSet = new HashSet<>(actual);
-      assertEquals(actualSet.size(), actual.size());
-      Set<String> expectedSet = new HashSet<>(expected);
-
-      assertEquals(expectedSet, actualSet);
-    }
-
-  }
-
-  static <T> List<T> asList(Iterator<T> iterator) {
-    List<T> list = new ArrayList<>();
-    while (iterator.hasNext()) {
-      list.add(iterator.next());
-    }
-    return list;
-  }
-
-  static <T> List<T> asList(Iterable<T> iterable) {
-    return asList(iterable.iterator());
   }
 
   @Test(expected = IllegalArgumentException.class)
