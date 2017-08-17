@@ -80,7 +80,7 @@ Quite likely.
 MIT
 
 ### Does it support concurrent access?
-Yes, but hasn't been subject much scrutiny so bugs are likely. 
+Yes, but hasn't been subject to much scrutiny so bugs are likely. 
 
 ### Does it work with the zipfs provider?
 Not with the one that ships with the JDK 7 because of [bug 8004789](http://bugs.sun.com/view_bug.do?bug_id=8004789). However there's a [repackaged version](https://github.com/marschall/zipfilesystem-standalone) that fixes this bug and is compatible. It should work fine in JDK 8.
