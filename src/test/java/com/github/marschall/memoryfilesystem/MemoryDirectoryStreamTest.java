@@ -84,6 +84,20 @@ public class MemoryDirectoryStreamTest {
   }
 
   @Test
+  public void absoluteGlobPattern() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Files.createDirectories(fileSystem.getPath("/root/child1"));
+    Files.createDirectories(fileSystem.getPath("/root/not-child"));
+
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(fileSystem.getPath("/root"), "/root/child*")) {
+      for (Path path : stream) {
+        assertEquals("child1", path.getFileName().toString());
+      }
+    }
+  }
+
+  @Test
   public void directoryStreamRelative() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 

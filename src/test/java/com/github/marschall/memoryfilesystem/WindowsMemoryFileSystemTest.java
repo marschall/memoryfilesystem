@@ -413,11 +413,25 @@ public class WindowsMemoryFileSystemTest {
   }
 
   @Test
+  public void absoluteGlobPattern() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Files.createDirectories(fileSystem.getPath("C:\\folder\\child1"));
+    Files.createDirectories(fileSystem.getPath("C:\\folder\\not-child"));
+
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(fileSystem.getPath("C:\\folder"), "C:\\folder\\child*")) {
+      for (Path path : stream) {
+        assertEquals("child1", path.getFileName().toString());
+      }
+    }
+  }
+
+  @Test
   @Ignore
   public void relativePaths() {
     FileSystem fileSystem = this.rule.getFileSystem();
-    Path relative = fileSystem.getPath("C:folder\file.txt");
-    Path absolute = fileSystem.getPath("C:\folder\file.txt");
+    Path relative = fileSystem.getPath("C:folder\\file.txt");
+    Path absolute = fileSystem.getPath("C:\\folder\\file.txt");
 
     assertThat(relative, isRelative());
     assertThat(absolute, isAbsolute());

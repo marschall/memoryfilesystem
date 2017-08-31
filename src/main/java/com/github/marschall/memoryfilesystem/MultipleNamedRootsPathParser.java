@@ -69,9 +69,9 @@ final class MultipleNamedRootsPathParser extends PathParser {
 
     if (this.isAbsolute(elements)) {
       elements = elements.subList(1, elements.size());
-      return new GlobPathMatcher(true, convertToMatches(elements));
+      return new GlobPathMatcher(true, convertToPatterns(elements));
     } else {
-      return new GlobPathMatcher(false, convertToMatches(elements));
+      return new GlobPathMatcher(false, convertToPatterns(elements));
     }
   }
 

@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import com.github.marschall.memoryfilesystem.GlobPathMatcher.GlobMatch;
+import com.github.marschall.memoryfilesystem.GlobPathMatcher.GlobPattern;
 
 abstract class PathParser {
 
@@ -71,17 +71,17 @@ abstract class PathParser {
 
   abstract PathMatcher parseGlob(String pattern);
 
-  static List<GlobMatch> convertToMatches(List<String> elements) {
-    List<GlobMatch> matches = new ArrayList<>(elements.size());
+  static List<GlobPattern> convertToPatterns(List<String> elements) {
+    List<GlobPattern> patterns = new ArrayList<>(elements.size());
     for (String element : elements) {
-      matches.add(convertToMatch(element));
+      patterns.add(convertToPattern(element));
     }
-    return matches;
+    return patterns;
   }
 
-  private static GlobMatch convertToMatch(String element) {
+  private static GlobPattern convertToPattern(String element) {
     if (element.equals("**")) {
-      return FlexibleMatch.INSTANCE;
+      return DirectoryCrossingPattern.INSTANCE;
     }
     Stream stream = new Stream(element);
     StringBuilder buffer = new StringBuilder();
@@ -89,7 +89,7 @@ abstract class PathParser {
     parseGeneric(stream, buffer, ExitHandler.EMPTY, element);
     // TODO Pattern#CANON_EQ ?
     Pattern pattern = Pattern.compile(buffer.toString(), CASE_INSENSITIVE | UNICODE_CASE);
-    return new PatternMatch(pattern);
+    return new RegexPattern(pattern);
   }
 
   private static char parseGeneric(Stream stream, StringBuilder buffer, ExitHandler exitHandler, String element) {
@@ -241,12 +241,12 @@ abstract class PathParser {
   }
 
 
-  enum FlexibleMatch implements GlobMatch {
+  enum DirectoryCrossingPattern implements GlobPattern {
 
     INSTANCE;
 
     @Override
-    public boolean isFlexible() {
+    public boolean isCrossingDirectoryDoundaries() {
       return true;
     }
 
@@ -262,16 +262,16 @@ abstract class PathParser {
 
   }
 
-  static final class PatternMatch implements GlobMatch {
+  static final class RegexPattern implements GlobPattern {
 
     private final Pattern pattern;
 
-    PatternMatch(Pattern pattern) {
+    RegexPattern(Pattern pattern) {
       this.pattern = pattern;
     }
 
     @Override
-    public boolean isFlexible() {
+    public boolean isCrossingDirectoryDoundaries() {
       return false;
     }
 
