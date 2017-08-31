@@ -150,7 +150,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     List<String> userNames = parser.getUserNames();
     List<String> groupNames = parser.getGroupNames();
     StringTransformer nameTransfomer = parser.getPrincipalNameTransfomer();
-    return new MemoryUserPrincipalLookupService(userNames, groupNames, nameTransfomer, checker);
+    return MemoryUserPrincipalLookupService.newInstance(userNames, groupNames, nameTransfomer, checker);
   }
 
 
