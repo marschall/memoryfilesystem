@@ -30,6 +30,7 @@ public class MemoryDirectoryStreamTest {
 
   @Rule
   public final FileSystemRule rule = new FileSystemRule();
+
   @Test
   public void directoryStreamAbsolute() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();

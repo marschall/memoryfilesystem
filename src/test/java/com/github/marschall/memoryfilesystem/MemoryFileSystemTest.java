@@ -122,8 +122,7 @@ public class MemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("file.txt");
-    Files.createFile(path);
-    setContents(path, "0123456789");
+    FileUtility.createAndSetContents(path, "0123456789");
 
     try (FileChannel firstChannel = FileChannel.open(path, WRITE)) {
 
@@ -179,8 +178,7 @@ public class MemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("file.txt");
-    Files.createFile(path);
-    setContents(path, "z");
+    FileUtility.createAndSetContents(path, "z");
 
     byte[] data = new byte[]{'a', 'b', 'c', 'd'};
 
@@ -210,8 +208,7 @@ public class MemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("file.txt");
-    Files.createFile(path);
-    setContents(path, "abcd");
+    FileUtility.createAndSetContents(path, "abcd");
 
     byte[] data = new byte[2];
 
@@ -253,8 +250,7 @@ public class MemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("file.txt");
-    Files.createFile(path);
-    setContents(path, "abcdef");
+    FileUtility.createAndSetContents(path, "abcdef");
 
     byte[] a = new byte[1];
     byte[] b = new byte[1];
@@ -296,8 +292,7 @@ public class MemoryFileSystemTest {
 
     Path path = fileSystem.getPath("file.txt");
 
-    Files.createFile(path);
-    setContents(path, "z");
+    FileUtility.createAndSetContents(path, "z");
 
     ByteBuffer a = ByteBuffer.wrap(new byte[]{'a'});
     ByteBuffer b = ByteBuffer.wrap(new byte[]{'b'});
@@ -316,8 +311,7 @@ public class MemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
-    Files.createFile(path);
-    setContents(path, "abc");
+    FileUtility.createAndSetContents(path, "abc");
 
     try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, WRITE)) {
       assertEquals(3L, channel.size());
@@ -333,8 +327,7 @@ public class MemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
-    Files.createFile(path);
-    setContents(path, "abc");
+    FileUtility.createAndSetContents(path, "abc");
 
     try (FileChannel channel = FileChannel.open(path, WRITE)) {
       assertEquals(3L, channel.size());
@@ -388,8 +381,7 @@ public class MemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
-    Files.createFile(path);
-    setContents(path, "z");
+    FileUtility.createAndSetContents(path, "z");
 
     try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, WRITE)) {
       assertTrue("open", channel.isOpen());
@@ -407,8 +399,7 @@ public class MemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
-    Files.createFile(path);
-    setContents(path, "z");
+    FileUtility.createAndSetContents(path, "z");
 
     try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, WRITE)) {
       Object attachment = new Object();
@@ -435,8 +426,7 @@ public class MemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
-    Files.createFile(path);
-    setContents(path, "abcd");
+    FileUtility.createAndSetContents(path, "abcd");
 
     try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, READ)) {
       Object attachment = new Object();
@@ -465,8 +455,7 @@ public class MemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
-    Files.createFile(path);
-    setContents(path, "z");
+    FileUtility.createAndSetContents(path, "z");
 
     try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, READ)) {
       Object attachment = new Object();
@@ -494,8 +483,7 @@ public class MemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
-    Files.createFile(path);
-    setContents(path, "z");
+    FileUtility.createAndSetContents(path, "z");
 
     try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, WRITE)) {
       ByteBuffer buffer = ByteBuffer.wrap(new byte[]{'a', 'b'});
@@ -514,8 +502,7 @@ public class MemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
-    Files.createFile(path);
-    setContents(path, "abcd");
+    FileUtility.createAndSetContents(path, "abcd");
 
     try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, READ)) {
       byte[] data = new byte[2];
@@ -536,8 +523,7 @@ public class MemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
-    Files.createFile(path);
-    setContents(path, "z");
+    FileUtility.createAndSetContents(path, "z");
 
     try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, READ)) {
       ByteBuffer buffer = ByteBuffer.wrap(new byte[]{'a', 'b'});

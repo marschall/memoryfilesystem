@@ -2,7 +2,6 @@ package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.FileContentsMatcher.hasContents;
 import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
-import static com.github.marschall.memoryfilesystem.FileUtility.setContents;
 import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.anyOf;
@@ -27,8 +26,8 @@ public class DirectoriesTest {
       try (FileSystem targetFileSystem = MemoryFileSystemBuilder.newEmpty().build("target")) {
 
         Files.createDirectory(sourceFileSystem.getPath("sub"));
-        createFileWithContents(sourceFileSystem.getPath("aaa"), "bbb");
-        createFileWithContents(sourceFileSystem.getPath("sub/ccc"), "ddd");
+        FileUtility.createAndSetContents(sourceFileSystem.getPath("aaa"), "bbb");
+        FileUtility.createAndSetContents(sourceFileSystem.getPath("sub/ccc"), "ddd");
 
         Directories.copyRecursive(sourceFileSystem.getPath("/"), targetFileSystem.getPath("/"));
 
@@ -69,11 +68,6 @@ public class DirectoriesTest {
     ByteBuffer buffer = ByteBuffer.wrap(data);
     attributeView.read(name, buffer);
     return data;
-  }
-
-  private static void createFileWithContents(Path path, String contents) throws IOException {
-    Files.createFile(path);
-    setContents(path, contents);
   }
 
 }
