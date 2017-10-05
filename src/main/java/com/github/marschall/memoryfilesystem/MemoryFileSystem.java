@@ -473,7 +473,6 @@ class MemoryFileSystem extends FileSystem {
 
 
   void createDirectory(final AbstractPath path, final FileAttribute<?>... attrs) throws IOException {
-
     final FileAttribute<?>[] masked = this.applyUmask(attrs);
     this.createFile(path, new MemoryEntryCreator() {
 
@@ -551,7 +550,7 @@ class MemoryFileSystem extends FileSystem {
     this.checker.check();
     AbstractPath absolutePath = (AbstractPath) path.toAbsolutePath().normalize();
     if (absolutePath.isRoot()) {
-      throw new FileSystemException(path.toString(), null, "can not create root");
+      throw new FileAlreadyExistsException(path.toString(), null, "can not create root");
     }
     final ElementPath elementPath = (ElementPath) absolutePath;
     MemoryDirectory rootDirectory = this.getRootDirectory(elementPath);
