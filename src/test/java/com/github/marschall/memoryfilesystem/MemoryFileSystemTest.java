@@ -1825,6 +1825,14 @@ public class MemoryFileSystemTest {
   }
 
   @Test
+  public void createDirectoriesWithRoot() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path root = fileSystem.getPath("/");
+    assertThat(root, exists());
+    assertEquals(Files.createDirectories(root), root);
+  }
+
+  @Test
   public void getRootDirectories() {
     FileSystem fileSystem = this.rule.getFileSystem();
     Iterator<Path> directories = fileSystem.getRootDirectories().iterator();
