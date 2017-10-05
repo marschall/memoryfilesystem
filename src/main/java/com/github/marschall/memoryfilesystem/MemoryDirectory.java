@@ -85,14 +85,13 @@ class MemoryDirectory extends MemoryEntry {
   // caller have to check for write permissions
   // we can't do it here because that may break operations that involve
   // two directories
-  void addEntry(String name, MemoryEntry entry) throws IOException {
+  void addEntry(String name, MemoryEntry entry, Path originalPath) throws IOException {
     MemoryEntry previous = this.entries.put(name, entry);
     if (previous != null) {
       // avoid double look up in common case
       // fix if we broke it
       this.entries.put(name, previous);
-      // FIXME needs to be path
-      throw new FileAlreadyExistsException("entry " + name + " already exists");
+      throw new FileAlreadyExistsException(originalPath.toString());
     }
     this.modified();
   }

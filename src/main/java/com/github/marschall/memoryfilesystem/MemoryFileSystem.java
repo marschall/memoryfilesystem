@@ -338,7 +338,7 @@ class MemoryFileSystem extends FileSystem {
           AttributeAccessors.setAttributes(file, newAttributes);
           directory.checkAccess(WRITE);
           // will throw an exception if already present
-          directory.addEntry(key, file);
+          directory.addEntry(key, file, path);
           return new GetFileResult(file);
         } else {
           MemoryEntry storedEntry = directory.getEntry(key);
@@ -350,7 +350,7 @@ class MemoryFileSystem extends FileSystem {
               checkSupportedInitialAttributes(newAttributes);
               AttributeAccessors.setAttributes(file, newAttributes);
               directory.checkAccess(WRITE);
-              directory.addEntry(key, file);
+              directory.addEntry(key, file, path);
               return new GetFileResult(file);
             } else {
               throw new NoSuchFileException(path.toString());
@@ -563,7 +563,7 @@ class MemoryFileSystem extends FileSystem {
         MemoryEntry newEntry = creator.create(name);
         String key = MemoryFileSystem.this.lookUpTransformer.transform(newEntry.getOriginalName());
         directory.checkAccess(WRITE);
-        directory.addEntry(key, newEntry);
+        directory.addEntry(key, newEntry, path);
         return null;
       }
     });
@@ -1386,7 +1386,7 @@ class MemoryFileSystem extends FileSystem {
 
     if (copyContext.operation.isMove()) {
       sourceParent.removeEntry(sourceElementName);
-      targetParent.addEntry(targetElementName, sourceEntry);
+      targetParent.addEntry(targetElementName, sourceEntry, copyContext.target.path);
       String newOriginalName = targetContext.path.getMemoryFileSystem().storeTransformer.transform(targetContext.elementName);
       sourceEntry.setOriginalName(newOriginalName);
     } else {
@@ -1395,7 +1395,7 @@ class MemoryFileSystem extends FileSystem {
       if (copyContext.copyAttribues) {
         copy.initializeAttributes(toCopy);
       }
-      targetParent.addEntry(targetElementName, copy);
+      targetParent.addEntry(targetElementName, copy, copyContext.target.path);
     }
   }
 
