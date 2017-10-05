@@ -1,4 +1,4 @@
-Memory File System [![Build Status](https://travis-ci.org/marschall/memoryfilesystem.svg?branch=master)](https://travis-ci.org/marschall/memoryfilesystem) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.marschall/memoryfilesystem/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.marschall/memoryfilesystem)
+Memory File System [![Build Status](https://travis-ci.org/marschall/memoryfilesystem.svg?branch=master)](https://travis-ci.org/marschall/memoryfilesystem) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.marschall/memoryfilesystem/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.marschall/memoryfilesystem) [![Javadocs](https://www.javadoc.io/badge/com.github.marschall/memoryfilesystem.svg)](https://www.javadoc.io/doc/com.github.marschall/memoryfilesystem)
 ==================
 An in memory implementation of a [JSR-203](http://jcp.org/en/jsr/detail?id=203) (Java 7) file system for testing purposes.
 
