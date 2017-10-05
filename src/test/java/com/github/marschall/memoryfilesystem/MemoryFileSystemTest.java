@@ -1831,7 +1831,14 @@ public class MemoryFileSystemTest {
     } catch (FileAlreadyExistsException e) {
       assertEquals("/sub/path", e.getFile());
     }
+  }
 
+  @Test
+  public void createDirectoriesWithRoot() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path root = fileSystem.getPath("/");
+    assertThat(root, exists());
+    assertEquals(Files.createDirectories(root), root);
   }
 
   @Test
