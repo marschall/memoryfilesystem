@@ -86,22 +86,28 @@
       <scope>test</scope>
       <exclusions>
         <exclusion>
-          <artifactId>commons-logging</artifactId>
-          <groupId>commons-logging</groupId>
+          <artifactId>org.springframework</artifactId>
+          <groupId>spring-jcl</groupId>
         </exclusion>
       </exclusions>
     </dependency>
     <!-- make spring use logback (for tests only) -->
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>jcl-over-slf4j</artifactId>
-      <version>1.7.25</version>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>${log4j.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <version>1.2.3</version>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
+      <version>${log4j.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-jcl</artifactId>
+      <version>${log4j.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -458,7 +464,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <java.version>1.7</java.version>
-    <spring.version>4.3.10.RELEASE</spring.version>
+    <log4j.version>2.9.1</log4j.version>
+    <spring.version>5.0.0.RELEASE</spring.version>
   </properties>
 
 </project>
