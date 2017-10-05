@@ -1825,6 +1825,30 @@ public class MemoryFileSystemTest {
   }
 
   @Test
+  public void pathOfFileAlreadyExistsException() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path root = fileSystem.getPath("/");
+    try {
+      Files.createDirectory(root);
+      fail("root already exists");
+    } catch (FileAlreadyExistsException e) {
+      assertEquals("/", e.getFile());
+    }
+
+    Path subPath = fileSystem.getPath("/sub/path");
+    Files.createDirectories(subPath);
+
+    try {
+      Files.createDirectory(subPath);
+      fail("root already exists");
+    } catch (FileAlreadyExistsException e) {
+      assertEquals("/sub/path", e.getFile());
+    }
+
+  }
+
+  @Test
   public void getRootDirectories() {
     FileSystem fileSystem = this.rule.getFileSystem();
     Iterator<Path> directories = fileSystem.getRootDirectories().iterator();
