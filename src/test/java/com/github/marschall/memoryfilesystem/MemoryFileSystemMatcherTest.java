@@ -2,7 +2,10 @@ package com.github.marschall.memoryfilesystem;
 
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.nio.file.FileSystem;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.regex.PatternSyntaxException;
 
@@ -51,6 +54,20 @@ public class MemoryFileSystemMatcherTest {
     FileSystem fileSystem = this.rule.getFileSystem();
     PathMatcher matcher = fileSystem.getPathMatcher("regex:*\\.java");
     assertTrue(matcher instanceof RegexPathMatcher);
+  }
+
+  @Test
+  public void regression91() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path parent = fileSystem.getPath("/a/b");
+    Files.createDirectories(parent);
+
+    Path child = parent.resolve(".gitignore");
+    Files.createFile(child);
+
+    PathMatcher matcher = fileSystem.getPathMatcher("glob:**/.gitignore");
+    assertTrue(matcher.matches(child));
   }
 
 }

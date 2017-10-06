@@ -18,7 +18,7 @@ final class GlobPathMatcher implements PathMatcher {
 
   @Override
   public boolean matches(Path path) {
-    if (path.isAbsolute() != this.isAbsolute) {
+    if (this.isAbsolute && !path.isAbsolute()) {
       return false;
     }
     ElementPath elementPath = (ElementPath) path;
