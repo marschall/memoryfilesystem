@@ -226,7 +226,6 @@ public class UnixFileSystemCompatibilityTest {
 
   }
 
-
   @Test
   public void outputStreamTruncateByDefault() throws IOException {
     Path path = Paths.get("output");

@@ -22,6 +22,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.util.Arrays;
 import java.util.List;
@@ -209,6 +210,16 @@ public class FileSystemCompatibilityTest {
         }
       }
     }
+  }
+
+  @Test
+  public void regression93() throws IOException {
+    FileSystem fileSystem = this.getFileSystem();
+
+    Path child = fileSystem.getPath(".gitignore");
+
+    PathMatcher matcher = fileSystem.getPathMatcher("glob:**/.gitignore");
+    assertFalse(matcher.matches(child));
   }
 
 }

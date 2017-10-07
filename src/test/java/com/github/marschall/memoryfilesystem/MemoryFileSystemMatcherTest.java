@@ -57,7 +57,7 @@ public class MemoryFileSystemMatcherTest {
   }
 
   @Test
-  public void regression91() throws IOException {
+  public void regression92() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path parent = fileSystem.getPath("/a/b");

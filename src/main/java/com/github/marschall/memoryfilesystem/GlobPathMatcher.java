@@ -37,18 +37,14 @@ final class GlobPathMatcher implements PathMatcher {
 
     String element = elements.get(0);
     if (elements.size() == 1) {
-      for (int i = 0; i < patterns.size(); ++i) {
-        GlobPattern match = patterns.get(i);
-        if (!match.isCrossingDirectoryDoundaries()) {
-          if (!match.matches(element)) {
-            return false;
-          } else if (i == patterns.size() - 1) {
-            return true;
-          } else {
-            List<GlobPattern> remainingMatches = patterns.subList(i + 1, patterns.size());
-            return this.matches(Collections.<String>emptyList(), remainingMatches);
-          }
-        }
+      GlobPattern match = patterns.get(0);
+      if (!match.matches(element)) {
+        return false;
+      } else if (patterns.size() == 1) {
+        return true;
+      } else {
+        List<GlobPattern> remainingMatches = patterns.subList(1, patterns.size());
+        return this.matches(Collections.<String>emptyList(), remainingMatches);
       }
     }
 
