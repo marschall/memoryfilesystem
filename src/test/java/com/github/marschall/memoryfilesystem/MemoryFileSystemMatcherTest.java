@@ -1,5 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
+import static com.github.marschall.memoryfilesystem.PathMatchesMatcher.matches;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -67,7 +69,7 @@ public class MemoryFileSystemMatcherTest {
     Files.createFile(child);
 
     PathMatcher matcher = fileSystem.getPathMatcher("glob:**/.gitignore");
-    assertTrue(matcher.matches(child));
+    assertThat(matcher, matches(child));
   }
 
 }

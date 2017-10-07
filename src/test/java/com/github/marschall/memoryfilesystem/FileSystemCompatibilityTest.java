@@ -2,9 +2,11 @@ package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isAbsolute;
 import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isRelative;
+import static com.github.marschall.memoryfilesystem.PathMatchesMatcher.matches;
 import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.READ;
 import static java.nio.file.StandardOpenOption.WRITE;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -219,7 +221,7 @@ public class FileSystemCompatibilityTest {
     Path child = fileSystem.getPath(".gitignore");
 
     PathMatcher matcher = fileSystem.getPathMatcher("glob:**/.gitignore");
-    assertFalse(matcher.matches(child));
+    assertThat(matcher, not(matches(child)));
   }
 
 }
