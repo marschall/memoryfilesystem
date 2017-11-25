@@ -19,6 +19,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -76,15 +77,30 @@ public final class MemoryFileSystemBuilder {
    * @return the current builder object
    */
   public MemoryFileSystemBuilder addRoot(String root) {
+    Objects.requireNonNull(root);
     this.roots.add(root);
     return this;
   }
 
+  /**
+   * Sets the the name separator.
+   *
+   * @param separator the name separator, not {@code null}
+   * @return the current builder object
+   * @see java.nio.file.FileSystem#getSeparator()
+   */
   public MemoryFileSystemBuilder setSeprator(String separator) {
+    Objects.requireNonNull(separator);
     this.separator = separator;
     return this;
   }
 
+  /**
+   * Forbids a character to be used in a name.
+   *
+   * @param c the character to forbid
+   * @return the current builder object
+   */
   public MemoryFileSystemBuilder addForbiddenCharacter(char c) {
     this.forbiddenCharacters.add(c);
     return this;
@@ -111,7 +127,6 @@ public final class MemoryFileSystemBuilder {
    * @param groupName the name of the group to add
    * @return the current builder object
    */
-
   public MemoryFileSystemBuilder addGroup(String groupName) {
     this.groups.add(groupName);
     return this;
@@ -128,8 +143,16 @@ public final class MemoryFileSystemBuilder {
     return this;
   }
 
+  /**
+   * Adds support for an attribute view.
+   *
+   * @param fileAttributeViewName the name of the attribute view to add
+   * @return the current builder object
+   * @see java.nio.file.attribute.AttributeView#name()
+   */
   // can't add "owner" directly"
   public MemoryFileSystemBuilder addFileAttributeView(String fileAttributeViewName) {
+    Objects.requireNonNull(fileAttributeViewName);
     if (FileAttributeViews.isSupported(fileAttributeViewName)) {
       if (!FileAttributeViews.BASIC.equals(fileAttributeViewName)) {
         // ignore "basic", always supported
@@ -141,22 +164,50 @@ public final class MemoryFileSystemBuilder {
     return this;
   }
 
+  /**
+   * Adds support for an attribute view.
+   *
+   * @param fileAttributeView the attribute view class
+   * @return the current builder object
+   */
   // can't add FileOwnerAttributeView directly
   public MemoryFileSystemBuilder addFileAttributeView(Class<? extends FileAttributeView> fileAttributeView) {
     return this.addFileAttributeView(FileAttributeViews.mapAttributeView(fileAttributeView));
   }
 
+  /**
+   * Sets the current working directory used for resolving relative paths.
+   *
+   * @param currentWorkingDirectory path of the current working directory
+   * @return the current builder object
+   */
   public MemoryFileSystemBuilder setCurrentWorkingDirectory(String currentWorkingDirectory) {
+    Objects.requireNonNull(currentWorkingDirectory);
     this.currentWorkingDirectory = currentWorkingDirectory;
     return this;
   }
 
+  /**
+   * Sets the transformer that controls how a file name is stored.
+   *
+   * @param storeTransformer to apply to the file names before storing
+   * @return the current builder object
+   */
   public MemoryFileSystemBuilder setStoreTransformer(StringTransformer storeTransformer) {
+    Objects.requireNonNull(storeTransformer);
     this.storeTransformer = storeTransformer;
     return this;
   }
 
+  /**
+   * Sets the locale to be used for case insensitivity.
+   *
+   * @param locale for case insensitivity
+   * @return the current builder object
+   * @see #setCaseSensitive(boolean)
+   */
   public MemoryFileSystemBuilder setLocale(Locale locale) {
+    Objects.requireNonNull(locale);
     this.locale = locale;
     return this;
   }
@@ -169,6 +220,13 @@ public final class MemoryFileSystemBuilder {
     }
   }
 
+  /**
+   * Toggles case sensitivity.
+   *
+   * @param caseSensitive whether the file names should be case sensitive
+   * @return the current builder object
+   * @see #setLocale(Locale)
+   */
   public MemoryFileSystemBuilder setCaseSensitive(boolean caseSensitive) {
     if (caseSensitive) {
       this.lookUpTransformer = StringTransformers.IDENTIY;
@@ -181,12 +239,25 @@ public final class MemoryFileSystemBuilder {
     return this;
   }
 
+  /**
+   * Sets the transformer that controls how a file name is looked up.
+   *
+   * @param lookUpTransformer to apply to the file names for lookup
+   * @return the current builder object
+   */
   public MemoryFileSystemBuilder setLookUpTransformer(StringTransformer lookUpTransformer) {
     this.lookUpTransformer = lookUpTransformer;
     return this;
   }
 
+  /**
+   * Sets the collator used for name comparisons.
+   *
+   * @param collator the collator for name comparisons
+   * @return the current builder object
+   */
   public MemoryFileSystemBuilder setCollator(Collator collator) {
+    Objects.requireNonNull(collator);
     this.collator = collator;
     return this;
   }
@@ -205,6 +276,25 @@ public final class MemoryFileSystemBuilder {
     return new MemoryFileSystemBuilder();
   }
 
+  /**
+   * Creates a builder for a Linux-like file system.
+   *
+   * <p>The file system has the following properties:</p>
+   * <ul>
+   *  <li>the root is {@value MemoryFileSystemProperties#UNIX_ROOT}</li>
+   *  <li>the separator is {@value MemoryFileSystemProperties#UNIX_SEPARATOR}</li>
+   *  <li>the current user (value of the {@code "user.name"} system property)
+   *  is added as a user</li>
+   *  <li>the current user (value of the {@code "user.name"} system property)
+   *  is added as a group</li>
+   *  <li>{@link PosixFileAttributeView} is added as an attribute view</li>
+   *  <li>the current working directory is {@code "/home/${user.name}"}</li>
+   *  <li>the file system is case sensitive</li>
+   *  <li>{@code 0x00} is not allowed in file names</li>
+   * </ul>
+   *
+   * @return the builder
+   */
   public static MemoryFileSystemBuilder newLinux() {
     return new MemoryFileSystemBuilder()
             .addRoot(MemoryFileSystemProperties.UNIX_ROOT)
@@ -218,6 +308,26 @@ public final class MemoryFileSystemBuilder {
             .addForbiddenCharacter((char) 0);
   }
 
+  /**
+   * Creates a builder for a macOS-like file system.
+   *
+   * <p>The file system has the following properties:</p>
+   * <ul>
+   *  <li>the root is {@value MemoryFileSystemProperties#UNIX_ROOT}</li>
+   *  <li>the separator is {@value MemoryFileSystemProperties#UNIX_SEPARATOR}</li>
+   *  <li>the current user (value of the {@code "user.name"} system property)
+   *  is added as a user</li>
+   *  <li>the current user (value of the {@code "user.name"} system property)
+   *  is added as a group</li>
+   *  <li>{@link PosixFileAttributeView} is added as an attribute view</li>
+   *  <li>the current working directory is {@code "/Users/${user.name}"}</li>
+   *  <li>the file system is case insensitive and case case preserving</li>
+   *  <li>file names are normalized to NFC</li>
+   *  <li>{@code 0x00} is not allowed in file names</li>
+   * </ul>
+   *
+   * @return the builder
+   */
   public static MemoryFileSystemBuilder newMacOs() {
     // new JVMs use NFC instead of the native NFD
     MemoryFileSystemBuilder builder = new MemoryFileSystemBuilder();
@@ -234,6 +344,26 @@ public final class MemoryFileSystemBuilder {
             .addForbiddenCharacter((char) 0);
   }
 
+  /**
+   * Creates a builder for a macOS-like file system for old JVMs.
+   *
+   * <p>The file system has the following properties:</p>
+   * <ul>
+   *  <li>the root is {@value MemoryFileSystemProperties#UNIX_ROOT}</li>
+   *  <li>the separator is {@value MemoryFileSystemProperties#UNIX_SEPARATOR}</li>
+   *  <li>the current user (value of the {@code "user.name"} system property)
+   *  is added as a user</li>
+   *  <li>the current user (value of the {@code "user.name"} system property)
+   *  is added as a group</li>
+   *  <li>{@link PosixFileAttributeView} is added as an attribute view</li>
+   *  <li>the current working directory is {@code "/Users/${user.name}"}</li>
+   *  <li>the file system is case insensitive and case case preserving</li>
+   *  <li>file names are normalized to NFD</li>
+   *  <li>{@code 0x00} is not allowed in file names</li>
+   * </ul>
+   *
+   * @return the builder
+   */
   public static MemoryFileSystemBuilder newMacOsOldJvm() {
     // old JVMs used the native NFC
     MemoryFileSystemBuilder builder = new MemoryFileSystemBuilder();
@@ -249,7 +379,27 @@ public final class MemoryFileSystemBuilder {
             .setStoreTransformer(StringTransformers.NFD)
             .addForbiddenCharacter((char) 0);
   }
-
+  /**
+   * Creates a builder for a Windows-like file system.
+   *
+   * <p>The file system has the following properties:</p>
+   * <ul>
+   *  <li>the root is {@code "C:\\"}</li>
+   *  <li>the separator is {@value MemoryFileSystemProperties#WINDOWS_SEPARATOR}</li>
+   *  <li>the current user (value of the {@code "user.name"} system property)
+   *  is added as a user</li>
+   *  <li>the current user (value of the {@code "user.name"} system property)
+   *  is added as a group</li>
+   *  <li>{@link DosFileAttributeView} is added as an attribute view</li>
+   *  <li>the current working directory is {@code "C:\\Users\\${user.name}"}</li>
+   *  <li>the file system is case insensitive and case case preserving</li>
+   *  <li>{@code '\\'}, {@code '/'}, {@code ':'}, {@code '*'}, {@code '?'},
+   *  {@code '"'}, {@code '<'}, {@code '<'} and {@code '|'} and not allowed
+   *  in file names</li>
+   * </ul>
+   *
+   * @return the builder
+   */
   public static MemoryFileSystemBuilder newWindows() {
     return new MemoryFileSystemBuilder()
             .addRoot("C:\\")

@@ -180,7 +180,7 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <configuration>
           <links>
-            <link>http://docs.oracle.com/javase/7/docs/api/</link>
+            <link>https://docs.oracle.com/javase/7/docs/api/</link>
           </links>
         </configuration>
         <executions>
