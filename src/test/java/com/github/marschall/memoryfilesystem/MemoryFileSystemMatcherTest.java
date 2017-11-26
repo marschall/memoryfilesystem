@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.regex.PatternSyntaxException;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -38,6 +39,7 @@ public class MemoryFileSystemMatcherTest {
   }
 
   @Test
+  @Ignore
   public void getPathMatcherGlob() {
     FileSystem fileSystem = this.rule.getFileSystem();
     PathMatcher matcher = fileSystem.getPathMatcher("glob:*.java");
@@ -56,6 +58,15 @@ public class MemoryFileSystemMatcherTest {
     FileSystem fileSystem = this.rule.getFileSystem();
     PathMatcher matcher = fileSystem.getPathMatcher("regex:*\\.java");
     assertTrue(matcher instanceof RegexPathMatcher);
+  }
+
+  @Test
+  public void regression91() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    PathMatcher matcher = fileSystem.getPathMatcher("glob:{,**/}.gitignore");
+    assertThat(matcher, matches(fileSystem.getPath(".gitignore")));
+    assertThat(matcher, matches(fileSystem.getPath("src/.gitignore")));
   }
 
   @Test

@@ -16,16 +16,16 @@ import org.junit.runners.Parameterized.Parameters;
 
 
 @RunWith(Parameterized.class)
-public class GlobPathMatcherTest {
+public class GlobPathMatcherWindowsTest {
 
   @Rule
-  public final FileSystemRule rule = new FileSystemRule();
+  public final WindowsFileSystemRule rule = new WindowsFileSystemRule();
 
   private final String p;
   private final boolean expected;
   private final String pattern;
 
-  public GlobPathMatcherTest(String pattern, String path, boolean expected) {
+  public GlobPathMatcherWindowsTest(String pattern, String path, boolean expected) {
     this.p = path;
     this.expected = expected;
     this.pattern = pattern;
@@ -51,10 +51,10 @@ public class GlobPathMatcherTest {
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
       { "*.java", "GlobPathMatcherTest.java", true },
-      { "*.java", "GlobPathMatcherTest.JAVA", false },
-      { "*.JAVA", "GlobPathMatcherTest.java", false },
+      { "*.java", "GlobPathMatcherTest.JAVA", true },
+      { "*.JAVA", "GlobPathMatcherTest.java", true },
       { "*.j[a-z]va", "GlobPathMatcherTest.java", true },
-      { "*.j[A-Z]va", "GlobPathMatcherTest.java", false },
+      { "*.j[A-Z]va", "GlobPathMatcherTest.java", true },
       { "*.java", ".java", true },
       { "*.java", ".jav.java", true },
       { "*.java", ".jav.java", true },
@@ -82,22 +82,9 @@ public class GlobPathMatcherTest {
       { "*.{java,class}", ".clas", false },
       { "*.{java,class}", "class", false },
 
-      { "foo.?", "foo.", false },
-      { "foo.?", "foo.?.", false },
-      { "foo.?", "foo.?", true },
-      { "foo.?", "foo.f", true },
+      { "foo?", "foo", false },
 
-      { "/home/*/*", "/home/gus/data", true },
-      { "/home/*/*", "/home/gus/.data", true },
-      { "/home/*/*", "/home/gus/data/backup", false },
-      { "/home/*/*", "/home/gus", false },
-
-      { "/home/**", "/home/gus/data", true },
-      { "/home/**", "/home/gus", true },
-
-      { "/home/**/a/b/**/c", "/home/x/a/b/x/c", true },
-      { "/home/**/a/b/**/c", "/home/x/a/x/a/b/x/c", true },
-      { "/home/**/a/b/**/c", "/home/a/b/c", false }
+      { "C:\\\\*", "C:\\foo", true }
 
     });
   }

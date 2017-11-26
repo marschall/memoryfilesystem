@@ -1,5 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
+import java.util.regex.Pattern;
+
 /**
  * Functional interface for transforming a string.
  *
@@ -18,5 +20,13 @@ public interface StringTransformer {
    * @return the transformed string, not {@code null}
    */
   public String transform(String s);
+
+  /**
+   * Returns the regex flags used to achieve a compatible regex behavior.
+   *
+   * @return the regex flags
+   * @see Pattern#compile(String, int)
+   */
+  int getRegexFlags();
 
 }

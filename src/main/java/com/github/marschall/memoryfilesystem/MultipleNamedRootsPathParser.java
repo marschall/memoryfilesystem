@@ -96,10 +96,14 @@ final class MultipleNamedRootsPathParser extends PathParser {
       return false;
     }
     String first = elements.get(0);
-    if (first.length() != 2 || first.charAt(1) != ':') {
-      return false;
-    }
-    return true;
+    return first.length() == 2
+            && first.charAt(1) == ':';
+  }
+
+  @Override
+  boolean isAbsolute(String path) {
+    return path.length() >= 2
+            && path.charAt(1) == ':';
   }
 
 

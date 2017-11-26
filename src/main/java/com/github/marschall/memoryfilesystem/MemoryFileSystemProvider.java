@@ -242,7 +242,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   @Override
   public BlockChannel newFileChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
     this.checkSupported(options);
-    AbstractPath abstractPath = this.castPath(path);
+    AbstractPath abstractPath = castPath(path);
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
     return memoryFileSystem.newFileChannel(abstractPath, options, attrs);
   }
@@ -257,7 +257,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   @Override
   public InputStream newInputStream(Path path, OpenOption... options) throws IOException {
     this.checkSupported(options);
-    AbstractPath abstractPath = this.castPath(path);
+    AbstractPath abstractPath = castPath(path);
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
     return memoryFileSystem.newInputStream(abstractPath, options);
   }
@@ -265,7 +265,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   @Override
   public OutputStream newOutputStream(Path path, OpenOption... options) throws IOException {
     this.checkSupported(options);
-    AbstractPath abstractPath = this.castPath(path);
+    AbstractPath abstractPath = castPath(path);
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
     return memoryFileSystem.newOutputStream(abstractPath, options);
   }
@@ -273,7 +273,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   @Override
   public DirectoryStream<Path> newDirectoryStream(Path dir, Filter<? super Path> filter) throws IOException {
-    AbstractPath abstractPath = this.castPath(dir);
+    AbstractPath abstractPath = castPath(dir);
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
     return memoryFileSystem.newDirectoryStream(abstractPath, filter);
   }
@@ -281,15 +281,15 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   @Override
   public void createDirectory(Path dir, FileAttribute<?>... attrs) throws IOException {
-    AbstractPath abstractPath = this.castPath(dir);
+    AbstractPath abstractPath = castPath(dir);
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
     memoryFileSystem.createDirectory(abstractPath, attrs);
   }
 
   @Override
   public void createSymbolicLink(Path link, Path target, FileAttribute<?>... attrs) throws IOException {
-    AbstractPath linkPath = this.castPath(link);
-    AbstractPath targetPath = this.castPath(target);
+    AbstractPath linkPath = castPath(link);
+    AbstractPath targetPath = castPath(target);
     MemoryFileSystem memoryFileSystem = linkPath.getMemoryFileSystem();
     if (memoryFileSystem != targetPath.getMemoryFileSystem()) {
       throw new IllegalArgumentException("link and target must be on same file system");
@@ -299,8 +299,8 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   @Override
   public void createLink(Path link, Path existing) throws IOException {
-    AbstractPath linkPath = this.castPath(link);
-    AbstractPath targetPath = this.castPath(existing);
+    AbstractPath linkPath = castPath(link);
+    AbstractPath targetPath = castPath(existing);
     MemoryFileSystem memoryFileSystem = linkPath.getMemoryFileSystem();
     if (memoryFileSystem != targetPath.getMemoryFileSystem()) {
       throw new IllegalArgumentException("link and target must be on same file system");
@@ -310,13 +310,13 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   @Override
   public Path readSymbolicLink(Path link) throws IOException {
-    AbstractPath linkPath = this.castPath(link);
+    AbstractPath linkPath = castPath(link);
     return linkPath.getMemoryFileSystem().readSymbolicLink(linkPath);
   }
 
   @Override
   public void delete(Path path) throws IOException {
-    AbstractPath abstractPath = this.castPath(path);
+    AbstractPath abstractPath = castPath(path);
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
     memoryFileSystem.delete(abstractPath);
   }
@@ -333,8 +333,8 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   private void copyOrMove(Path source, Path target, TwoPathOperation operation, CopyOption... options) throws IOException {
     this.checkSupported(options);
-    AbstractPath sourcePath = this.castPath(source);
-    AbstractPath targetPath = this.castPath(target);
+    AbstractPath sourcePath = castPath(source);
+    AbstractPath targetPath = castPath(target);
     MemoryFileSystem sourceFileSystem = sourcePath.getMemoryFileSystem();
     MemoryFileSystem targetFileSystem = targetPath.getMemoryFileSystem();
     if (sourceFileSystem == targetFileSystem) {
@@ -371,8 +371,8 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     }
 
 
-    AbstractPath abstractPath = this.castPath(path);
-    AbstractPath abstractPath2 = this.castPath(path2);
+    AbstractPath abstractPath = castPath(path);
+    AbstractPath abstractPath2 = castPath(path2);
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
     // have to check for hard links
     return memoryFileSystem.isSameFile(abstractPath, abstractPath2);
@@ -384,19 +384,20 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   @Override
   public boolean isHidden(Path path) throws IOException {
-    AbstractPath abstractPath = this.castPath(path);
+    AbstractPath abstractPath = castPath(path);
     return abstractPath.getMemoryFileSystem().isHidden(abstractPath);
   }
 
 
   @Override
   public FileStore getFileStore(Path path) throws IOException {
-    return this.castPath(path).getMemoryFileSystem().getFileStore();
+    return castPath(path).getMemoryFileSystem().getFileStore();
   }
 
-  private AbstractPath castPath(Path path) {
+  static AbstractPath castPath(Path path) {
     if (!(path instanceof AbstractPath)) {
-      throw new ProviderMismatchException("expected a path of provider " + SCHEME + " but got " + path.getFileSystem().provider().getScheme());
+      throw new ProviderMismatchException("expected a path of provider " + SCHEME
+              + " but got " + path.getFileSystem().provider().getScheme());
     }
     return (AbstractPath) path;
   }
@@ -405,7 +406,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   @Override
   public void checkAccess(Path path, AccessMode... modes) throws IOException {
     this.checkSupported(modes);
-    AbstractPath abstractPath = this.castPath(path);
+    AbstractPath abstractPath = castPath(path);
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
     memoryFileSystem.checkAccess(abstractPath, modes);
   }
@@ -413,7 +414,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   @Override
   public <V extends FileAttributeView> V getFileAttributeView(Path path, Class<V> type, LinkOption... options) {
-    AbstractPath abstractPath = this.castPath(path);
+    AbstractPath abstractPath = castPath(path);
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
     return memoryFileSystem.getLazyFileAttributeView(abstractPath, type, options);
   }
@@ -421,7 +422,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   @Override
   public <A extends BasicFileAttributes> A readAttributes(Path path, Class<A> type, LinkOption... options) throws IOException {
-    AbstractPath abstractPath = this.castPath(path);
+    AbstractPath abstractPath = castPath(path);
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
     return memoryFileSystem.readAttributes(abstractPath, type, options);
   }
@@ -429,7 +430,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   @Override
   public Map<String, Object> readAttributes(Path path, String attributes, LinkOption... options) throws IOException {
-    AbstractPath abstractPath = this.castPath(path);
+    AbstractPath abstractPath = castPath(path);
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
     return memoryFileSystem.readAttributes(abstractPath, attributes, options);
   }
@@ -437,7 +438,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   @Override
   public void setAttribute(Path path, String attribute, Object value, LinkOption... options) throws IOException {
-    AbstractPath abstractPath = this.castPath(path);
+    AbstractPath abstractPath = castPath(path);
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
     memoryFileSystem.setAttribute(abstractPath, attribute, value, options);
   }

@@ -58,7 +58,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.regex.Pattern;
 
 import javax.annotation.PreDestroy;
 
@@ -1197,11 +1196,10 @@ class MemoryFileSystem extends FileSystem {
     String syntax = syntaxAndPattern.substring(0, colonIndex);
     String pattern = syntaxAndPattern.substring(colonIndex + 1);
     if (syntax.equalsIgnoreCase(GlobPathMatcher.name())) {
-      return this.pathParser.parseGlob(pattern);
+      return this.pathParser.transpileGlob(pattern, this.lookUpTransformer.getRegexFlags());
     }
     if (syntax.equalsIgnoreCase(RegexPathMatcher.name())) {
-      Pattern regex = Pattern.compile(pattern);
-      return new RegexPathMatcher(regex);
+      return this.pathParser.compileRegex(pattern, this.lookUpTransformer.getRegexFlags());
     }
 
     throw new UnsupportedOperationException("unsupported syntax \"" + syntax + "\"");

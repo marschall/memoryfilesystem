@@ -4,6 +4,7 @@ import java.text.Normalizer;
 import java.text.Normalizer.Form;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 /**
  * Constant definitions for the standard {@link StringTransformer StringTransformers}.
@@ -78,6 +79,11 @@ public final class StringTransformers {
       return Normalizer.normalize(s, Form.NFD);
     }
 
+    @Override
+    public int getRegexFlags() {
+      return Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.CANON_EQ;
+    }
+
   }
 
   static final class NFC implements StringTransformer {
@@ -85,6 +91,11 @@ public final class StringTransformers {
     @Override
     public String transform(String s) {
       return Normalizer.normalize(s, Form.NFC);
+    }
+
+    @Override
+    public int getRegexFlags() {
+      return Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.CANON_EQ;
     }
 
   }
@@ -102,6 +113,11 @@ public final class StringTransformers {
       return Normalizer.normalize(s, Form.NFD).toUpperCase(this.locale);
     }
 
+    @Override
+    public int getRegexFlags() {
+      return Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.CANON_EQ;
+    }
+
   }
 
   static final class CaseInsenstiveMacOSJvm implements StringTransformer {
@@ -115,6 +131,11 @@ public final class StringTransformers {
     @Override
     public String transform(String s) {
       return Normalizer.normalize(s, Form.NFC).toUpperCase(this.locale);
+    }
+
+    @Override
+    public int getRegexFlags() {
+      return Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.CANON_EQ;
     }
 
   }
@@ -132,6 +153,11 @@ public final class StringTransformers {
       return s.toUpperCase(this.locale);
     }
 
+    @Override
+    public int getRegexFlags() {
+      return Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
+    }
+
   }
 
   static final class IdentityTransformer implements StringTransformer {
@@ -139,6 +165,11 @@ public final class StringTransformers {
     @Override
     public String transform(String s) {
       return s;
+    }
+
+    @Override
+    public int getRegexFlags() {
+      return 0;
     }
 
   }

@@ -49,6 +49,11 @@ final class SingleEmptyRootPathParser extends PathParser {
     }
   }
 
+  @Override
+  boolean isAbsolute(String path) {
+    return this.startWithSeparator(path);
+  }
+
   static int count(String first, String... more) {
     int count = count(first);
     if (more != null && more.length > 0) {

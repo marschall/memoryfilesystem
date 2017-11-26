@@ -71,6 +71,92 @@ abstract class PathParser {
 
   abstract PathMatcher parseGlob(String pattern);
 
+  abstract boolean isAbsolute(String path);
+
+
+
+  PathMatcher compileRegex(String regex, int regexFlags) {
+    Pattern pattern = Pattern.compile(regex, regexFlags);
+    if (this.isAbsolute(regex)) {
+      return new RegexAbsolutePathMatcher(pattern);
+    } else {
+      return new RegexRelativePathMatcher(pattern);
+    }
+  }
+
+  PathMatcher transpileGlob(String glob, int regexFlags) {
+    StringBuilder regex = new StringBuilder();
+    regex.append('^');
+
+    this.transpileGlobInto(new Stream(glob), regex);
+
+    regex.append('$');
+    Pattern pattern = Pattern.compile(regex.toString(), regexFlags);
+    if (this.isAbsolute(glob)) {
+      return new RegexAbsolutePathMatcher(pattern);
+    } else {
+      return new RegexRelativePathMatcher(pattern);
+    }
+  }
+
+  private void transpileGlobInto(Stream glob, StringBuilder regex) {
+    while (glob.hasNext()) {
+      char next = glob.next();
+      switch (next) {
+        case '*':
+          if (glob.hasNext() && glob.peek() == '*') {
+            // **
+            regex.append(".*");
+            glob.next();
+          } else {
+            // *
+            regex.append("[^");
+            appendSafe(this.separator, regex);
+            regex.append("]*");
+          }
+          break;
+        case '?':
+          regex.append("[^");
+          appendSafe(this.separator, regex);
+          regex.append("]");
+          break;
+          // [] translates directly
+          //        case '[':
+          //          break;
+          //        case ']':
+          //          break;
+        case '{':
+          regex.append('(');
+          String[] subPatterns = glob.upTo('}').split(",");
+          for (int i = 0; i < subPatterns.length; i++) {
+            String subPattern = subPatterns[i];
+            if (i > 0) {
+              regex.append('|');
+            }
+            // TODO should probably disallow nested {
+            regex.append('(');
+            this.transpileGlobInto(new Stream(subPattern), regex);
+            regex.append(')');
+          }
+          regex.append(')');
+
+          break;
+          //        case '}':
+          //          parseGroup(stream, buffer, element);
+          //          break;
+        case '\\':
+          if (!glob.hasNext()) {
+            throw new PatternSyntaxException("\\must be followed by content", glob.getContents(), glob.getContents().length() - 1);
+          }
+          regex.append('\\').append(glob.next());
+          break;
+        default:
+          appendSafe(next, regex);
+          break;
+      }
+    }
+  }
+
   static List<GlobPattern> convertToPatterns(List<String> elements) {
     List<GlobPattern> patterns = new ArrayList<>(elements.size());
     for (String element : elements) {
@@ -126,7 +212,7 @@ abstract class PathParser {
   }
 
   private static void appendSafe(char c, StringBuilder buffer) {
-    if (c == '^' || c == '$' || c == '.' ) {
+    if (c == '^' || c == '$' || c == '.'  || c == '\\') {
       buffer.append('\\');
     }
     buffer.append(c);
@@ -236,6 +322,32 @@ abstract class PathParser {
       char value = this.contents.charAt(this.position);
       this.position += 1;
       return value;
+    }
+
+    char peek() {
+      return this.contents.charAt(this.position);
+    }
+
+    String upTo(char delimiter) {
+      int start = this.position;
+      int index = this.contents.indexOf(delimiter, start);
+
+      while (index != -1 && this.contents.charAt(index - 1) == '\\') {
+        start = index + 1;
+        index = this.contents.indexOf(delimiter, start);
+      }
+
+      if (index == -1) {
+        return null;
+      } else {
+        String substring = this.contents.substring(this.position, index);
+        this.position = index + 1;
+        return substring;
+      }
+    }
+
+    String getContents() {
+      return this.contents;
     }
 
   }

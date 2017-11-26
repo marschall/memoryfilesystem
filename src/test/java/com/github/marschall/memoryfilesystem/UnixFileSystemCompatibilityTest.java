@@ -21,11 +21,13 @@ import static org.junit.Assume.assumeTrue;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributeView;
@@ -557,6 +559,27 @@ public class UnixFileSystemCompatibilityTest {
     assertEquals(1, aPath.getName(0).toString().length());
     // verify a NFC path is not equal to a NFD path
     assertThat(aPath, not(equalTo(nPath)));
+  }
+
+  @Test
+  public void caseSsensitivePatterns() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path child1 = fileSystem.getPath("child1");
+    Files.createFile(child1);
+
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(fileSystem.getPath(""))) {
+      PathMatcher regexMatcher = fileSystem.getPathMatcher("regex:CHILD.*");
+      PathMatcher globMatcher = fileSystem.getPathMatcher("glob:CHILD*");
+      for (Path path : stream) {
+        assertFalse(regexMatcher.matches(path));
+        assertFalse(globMatcher.matches(path));
+      }
+    } finally {
+      if (this.useDefault) {
+        Files.delete(child1);
+      }
+    }
   }
 
 }
