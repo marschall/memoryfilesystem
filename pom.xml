@@ -457,7 +457,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <java.version>1.7</java.version>
     <log4j.version>2.9.1</log4j.version>
-    <spring.version>4.3.11.RELEASE</spring.version>
+    <spring.version>4.3.12.RELEASE</spring.version>
   </properties>
 
 </project>
