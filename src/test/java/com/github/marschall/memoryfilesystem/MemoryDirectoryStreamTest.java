@@ -30,6 +30,7 @@ public class MemoryDirectoryStreamTest {
 
   @Rule
   public final FileSystemRule rule = new FileSystemRule();
+
   @Test
   public void directoryStreamAbsolute() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
@@ -80,6 +81,20 @@ public class MemoryDirectoryStreamTest {
       Set<Path> expectedSet = new HashSet<>(expected);
 
       assertEquals(expectedSet, actualSet);
+    }
+  }
+
+  @Test
+  public void absoluteGlobPattern() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Files.createDirectories(fileSystem.getPath("/root/child1"));
+    Files.createDirectories(fileSystem.getPath("/root/not-child"));
+
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(fileSystem.getPath("/root"), "/root/child*")) {
+      for (Path path : stream) {
+        assertEquals("child1", path.getFileName().toString());
+      }
     }
   }
 

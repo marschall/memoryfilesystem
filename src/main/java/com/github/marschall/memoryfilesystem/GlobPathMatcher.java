@@ -9,26 +9,26 @@ final class GlobPathMatcher implements PathMatcher {
 
   private final boolean isAbsolute;
 
-  private final List<GlobMatch> matches;
+  private final List<GlobPattern> patterns;
 
-  GlobPathMatcher(boolean isAbsolute, List<GlobMatch> matches) {
+  GlobPathMatcher(boolean isAbsolute, List<GlobPattern> matches) {
     this.isAbsolute = isAbsolute;
-    this.matches = matches;
+    this.patterns = matches;
   }
 
   @Override
   public boolean matches(Path path) {
-    if (path.isAbsolute() != this.isAbsolute) {
+    if (this.isAbsolute && !path.isAbsolute()) {
       return false;
     }
     ElementPath elementPath = (ElementPath) path;
-    return this.matches(elementPath.getNameElements(), this.matches);
+    return this.matches(elementPath.getNameElements(), this.patterns);
   }
 
-  private boolean matches(List<String> elements, List<GlobMatch> matches) {
+  private boolean matches(List<String> elements, List<GlobPattern> patterns) {
     if (elements.isEmpty()) {
-      for (GlobMatch match : matches) {
-        if (!match.isFlexible()) {
+      for (GlobPattern pattern : patterns) {
+        if (!pattern.isCrossingDirectoryDoundaries()) {
           return false;
         }
       }
@@ -37,36 +37,32 @@ final class GlobPathMatcher implements PathMatcher {
 
     String element = elements.get(0);
     if (elements.size() == 1) {
-      for (int i = 0; i < matches.size(); ++i) {
-        GlobMatch match = matches.get(i);
-        if (!match.isFlexible()) {
-          if (!match.matches(element)) {
-            return false;
-          } else if (i == matches.size() - 1) {
-            return true;
-          } else {
-            List<GlobMatch> remainingMatches = matches.subList(i + 1, matches.size());
-            return this.matches(Collections.<String>emptyList(), remainingMatches);
-          }
-        }
+      GlobPattern match = patterns.get(0);
+      if (!match.matches(element)) {
+        return false;
+      } else if (patterns.size() == 1) {
+        return true;
+      } else {
+        List<GlobPattern> remainingMatches = patterns.subList(1, patterns.size());
+        return this.matches(Collections.<String>emptyList(), remainingMatches);
       }
     }
 
-    if (matches.isEmpty()) {
+    if (patterns.isEmpty()) {
       return false;
     }
 
-    GlobMatch firstMatch = matches.get(0);
-    if (!firstMatch.isFlexible()) {
-      if (firstMatch.matches(element) && matches.size() > 1) {
-        return this.matches(elements.subList(1, elements.size()), matches.subList(1, matches.size()));
+    GlobPattern firstMatch = patterns.get(0);
+    if (!firstMatch.isCrossingDirectoryDoundaries()) {
+      if (firstMatch.matches(element) && patterns.size() > 1) {
+        return this.matches(elements.subList(1, elements.size()), patterns.subList(1, patterns.size()));
       } else {
         return false;
       }
     } else {
       List<String> remainingElements = elements.subList(1, elements.size());
-      return this.matches(remainingElements, matches)
-              || this.matches(remainingElements, matches.subList(1, matches.size()));
+      return this.matches(remainingElements, patterns)
+              || this.matches(remainingElements, patterns.subList(1, patterns.size()));
     }
 
   }
@@ -75,9 +71,9 @@ final class GlobPathMatcher implements PathMatcher {
     return "glob";
   }
 
-  interface GlobMatch {
+  interface GlobPattern {
 
-    boolean isFlexible();
+    boolean isCrossingDirectoryDoundaries();
 
     boolean matches(String element);
 

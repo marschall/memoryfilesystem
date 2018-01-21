@@ -4,6 +4,7 @@ import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isAbsolute;
 import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isRelative;
 import static com.github.marschall.memoryfilesystem.IsHiddenMatcher.isHidden;
+import static com.github.marschall.memoryfilesystem.PathMatchesMatcher.matches;
 import static java.nio.file.AccessMode.EXECUTE;
 import static java.nio.file.AccessMode.READ;
 import static java.nio.file.AccessMode.WRITE;
@@ -402,22 +403,36 @@ public class WindowsMemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     PathMatcher matcher = fileSystem.getPathMatcher("glob:*.{java,class}");
-    assertTrue(matcher.matches(fileSystem.getPath("Test.java")));
-    assertTrue(matcher.matches(fileSystem.getPath("Test.class")));
-    assertFalse(matcher.matches(fileSystem.getPath("Test.cpp")));
+    assertThat(matcher, matches(fileSystem.getPath("Test.java")));
+    assertThat(matcher, matches(fileSystem.getPath("Test.class")));
+    assertThat(matcher, not(matches(fileSystem.getPath("Test.cpp"))));
 
     matcher = fileSystem.getPathMatcher("glob:*");
-    assertTrue(matcher.matches(fileSystem.getPath("Test.java")));
-    assertTrue(matcher.matches(fileSystem.getPath("Test.class")));
-    assertTrue(matcher.matches(fileSystem.getPath("Test.cpp")));
+    assertThat(matcher, matches(fileSystem.getPath("Test.java")));
+    assertThat(matcher, matches(fileSystem.getPath("Test.class")));
+    assertThat(matcher, matches(fileSystem.getPath("Test.cpp")));
+  }
+
+  @Test
+  public void absoluteGlobPattern() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Files.createDirectories(fileSystem.getPath("C:\\folder\\child1"));
+    Files.createDirectories(fileSystem.getPath("C:\\folder\\not-child"));
+
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(fileSystem.getPath("C:\\folder"), "C:\\folder\\child*")) {
+      for (Path path : stream) {
+        assertEquals("child1", path.getFileName().toString());
+      }
+    }
   }
 
   @Test
   @Ignore
   public void relativePaths() {
     FileSystem fileSystem = this.rule.getFileSystem();
-    Path relative = fileSystem.getPath("C:folder\file.txt");
-    Path absolute = fileSystem.getPath("C:\folder\file.txt");
+    Path relative = fileSystem.getPath("C:folder\\file.txt");
+    Path absolute = fileSystem.getPath("C:\\folder\\file.txt");
 
     assertThat(relative, isRelative());
     assertThat(absolute, isAbsolute());

@@ -1,4 +1,4 @@
-Memory File System [![Build Status](https://travis-ci.org/marschall/memoryfilesystem.svg?branch=master)](https://travis-ci.org/marschall/memoryfilesystem) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.marschall/memoryfilesystem/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.marschall/memoryfilesystem)
+Memory File System [![Build Status](https://travis-ci.org/marschall/memoryfilesystem.svg?branch=master)](https://travis-ci.org/marschall/memoryfilesystem) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.marschall/memoryfilesystem/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.marschall/memoryfilesystem) [![Javadocs](https://www.javadoc.io/badge/com.github.marschall/memoryfilesystem.svg)](https://www.javadoc.io/doc/com.github.marschall/memoryfilesystem)
 ==================
 An in memory implementation of a [JSR-203](http://jcp.org/en/jsr/detail?id=203) (Java 7) file system for testing purposes.
 
@@ -6,7 +6,7 @@ An in memory implementation of a [JSR-203](http://jcp.org/en/jsr/detail?id=203) 
 <dependency>
     <groupId>com.github.marschall</groupId>
     <artifactId>memoryfilesystem</artifactId>
-    <version>0.9.3</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
@@ -80,7 +80,7 @@ Quite likely.
 MIT
 
 ### Does it support concurrent access?
-Yes, but hasn't been subject much scrutiny so bugs are likely. 
+Yes, but hasn't been subject to much scrutiny so bugs are likely. 
 
 ### Does it work with the zipfs provider?
 Not with the one that ships with the JDK 7 because of [bug 8004789](http://bugs.sun.com/view_bug.do?bug_id=8004789). However there's a [repackaged version](https://github.com/marschall/zipfilesystem-standalone) that fixes this bug and is compatible. It should work fine in JDK 8.

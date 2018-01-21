@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.marschall</groupId>
   <artifactId>memoryfilesystem</artifactId>
-  <version>0.9.4-SNAPSHOT</version>
+  <version>1.1.1-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>Memory File System</name>
   <description>An in memory implementation of a JSR-203 file system.</description>
@@ -93,21 +93,27 @@
     </dependency>
     <!-- make spring use logback (for tests only) -->
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>jcl-over-slf4j</artifactId>
-      <version>1.7.25</version>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>${log4j.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <version>1.2.3</version>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
+      <version>${log4j.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-jcl</artifactId>
+      <version>${log4j.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.openjdk.jol</groupId>
       <artifactId>jol-core</artifactId>
-      <version>0.8</version>
+      <version>0.9</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -174,7 +180,7 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <configuration>
           <links>
-            <link>http://docs.oracle.com/javase/7/docs/api/</link>
+            <link>https://docs.oracle.com/javase/7/docs/api/</link>
           </links>
         </configuration>
         <executions>
@@ -252,19 +258,11 @@
         </plugin>
         <plugin>
           <artifactId>maven-javadoc-plugin</artifactId>
-          <version>2.10.4</version>
-          <dependencies>
-            <!-- jigsaw hack -->
-            <dependency>
-              <groupId>commons-lang</groupId>
-              <artifactId>commons-lang</artifactId>
-              <version>2.6</version>
-            </dependency>
-          </dependencies>
+          <version>3.0.0-M1</version>
         </plugin>
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.6.2</version>
+          <version>3.7.0</version>
         </plugin>
         <plugin>
           <artifactId>maven-toolchains-plugin</artifactId>
@@ -458,7 +456,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <java.version>1.7</java.version>
-    <spring.version>4.3.10.RELEASE</spring.version>
+    <log4j.version>2.9.1</log4j.version>
+    <spring.version>4.3.12.RELEASE</spring.version>
   </properties>
 
 </project>

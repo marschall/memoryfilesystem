@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.github.marschall.memoryfilesystem.GlobPathMatcher.GlobMatch;
+import com.github.marschall.memoryfilesystem.GlobPathMatcher.GlobPattern;
 
 final class SingleEmptyRootPathParser extends PathParser {
 
@@ -41,12 +41,17 @@ final class SingleEmptyRootPathParser extends PathParser {
   PathMatcher parseGlob(String pattern) {
     List<String> elements = new ArrayList<>(count(pattern));
     this.parseInto(pattern, elements);
-    List<GlobMatch> matches = convertToMatches(elements);
+    List<GlobPattern> matches = convertToPatterns(elements);
     if (this.startWithSeparator(pattern)) {
       return new GlobPathMatcher(true, matches);
     } else {
       return new GlobPathMatcher(false, matches);
     }
+  }
+
+  @Override
+  boolean isAbsolute(String path) {
+    return this.startWithSeparator(path);
   }
 
   static int count(String first, String... more) {

@@ -5,6 +5,7 @@ import java.nio.file.attribute.GroupPrincipal;
 import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.nio.file.attribute.UserPrincipalNotFoundException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,27 +17,58 @@ final class MemoryUserPrincipalLookupService extends UserPrincipalLookupService 
   private final StringTransformer stringTransformer;
   private final ClosedFileSystemChecker checker;
 
-  private UserPrincipal defaultUser;
+  private final UserPrincipal defaultUser;
 
-  MemoryUserPrincipalLookupService(List<String> userNames, List<String> groupNames,
+  private MemoryUserPrincipalLookupService(Map<String, UserPrincipal> users,
+          Map<String, GroupPrincipal> groups, UserPrincipal defaultUser,
           StringTransformer stringTransformer, ClosedFileSystemChecker checker) {
     this.checker = checker;
-    this.users = new HashMap<>(userNames.size());
-    this.groups = new HashMap<>(groupNames.size());
-    for (String userName : userNames) {
+    this.users = users;
+    this.groups = groups;
+    this.defaultUser = defaultUser;
+    this.stringTransformer = stringTransformer;
+  }
+
+  static MemoryUserPrincipalLookupService newInstance(List<String> userNames, List<String> groupNames,
+          StringTransformer stringTransformer, ClosedFileSystemChecker checker) {
+
+    Map<String, UserPrincipal> users;
+    Map<String, GroupPrincipal> groups;
+
+    UserPrincipal defaultUser = null;
+
+    if (userNames.size() == 1) {
+      String userName = userNames.get(0);
       UserPrincipal user = new MemoryUser(userName);
-      if (this.defaultUser == null) {
-        this.defaultUser = user;
-      }
+      defaultUser = user;
       String key = stringTransformer.transform(userName);
-      this.users.put(key, user);
+      users = Collections.singletonMap(key, user);
+    } else {
+      users = new HashMap<>(userNames.size());
+      for (String userName : userNames) {
+        UserPrincipal user = new MemoryUser(userName);
+        if (defaultUser == null) {
+          defaultUser = user;
+        }
+        String key = stringTransformer.transform(userName);
+        users.put(key, user);
+      }
     }
-    for (String groupName : groupNames) {
+
+    if (groupNames.size() == 1) {
+      String groupName = groupNames.get(0);
       GroupPrincipal group = new MemoryGroup(groupName);
       String key = stringTransformer.transform(groupName);
-      this.groups.put(key, group);
+      groups = Collections.singletonMap(key, group);
+    } else {
+      groups = new HashMap<>(groupNames.size());
+      for (String groupName : groupNames) {
+        GroupPrincipal group = new MemoryGroup(groupName);
+        String key = stringTransformer.transform(groupName);
+        groups.put(key, group);
+      }
     }
-    this.stringTransformer = stringTransformer;
+    return new MemoryUserPrincipalLookupService(users, groups, defaultUser, stringTransformer, checker);
   }
 
   UserPrincipal getDefaultUser() {

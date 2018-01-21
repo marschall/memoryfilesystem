@@ -58,7 +58,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.regex.Pattern;
 
 import javax.annotation.PreDestroy;
 
@@ -338,7 +337,7 @@ class MemoryFileSystem extends FileSystem {
           AttributeAccessors.setAttributes(file, newAttributes);
           directory.checkAccess(WRITE);
           // will throw an exception if already present
-          directory.addEntry(key, file);
+          directory.addEntry(key, file, path);
           return new GetFileResult(file);
         } else {
           MemoryEntry storedEntry = directory.getEntry(key);
@@ -350,7 +349,7 @@ class MemoryFileSystem extends FileSystem {
               checkSupportedInitialAttributes(newAttributes);
               AttributeAccessors.setAttributes(file, newAttributes);
               directory.checkAccess(WRITE);
-              directory.addEntry(key, file);
+              directory.addEntry(key, file, path);
               return new GetFileResult(file);
             } else {
               throw new NoSuchFileException(path.toString());
@@ -473,7 +472,6 @@ class MemoryFileSystem extends FileSystem {
 
 
   void createDirectory(final AbstractPath path, final FileAttribute<?>... attrs) throws IOException {
-
     final FileAttribute<?>[] masked = this.applyUmask(attrs);
     this.createFile(path, new MemoryEntryCreator() {
 
@@ -551,7 +549,7 @@ class MemoryFileSystem extends FileSystem {
     this.checker.check();
     AbstractPath absolutePath = (AbstractPath) path.toAbsolutePath().normalize();
     if (absolutePath.isRoot()) {
-      throw new FileSystemException(path.toString(), null, "can not create root");
+      throw new FileAlreadyExistsException(path.toString(), null, "can not create root");
     }
     final ElementPath elementPath = (ElementPath) absolutePath;
     MemoryDirectory rootDirectory = this.getRootDirectory(elementPath);
@@ -564,7 +562,7 @@ class MemoryFileSystem extends FileSystem {
         MemoryEntry newEntry = creator.create(name);
         String key = MemoryFileSystem.this.lookUpTransformer.transform(newEntry.getOriginalName());
         directory.checkAccess(WRITE);
-        directory.addEntry(key, newEntry);
+        directory.addEntry(key, newEntry, path);
         return null;
       }
     });
@@ -1198,11 +1196,10 @@ class MemoryFileSystem extends FileSystem {
     String syntax = syntaxAndPattern.substring(0, colonIndex);
     String pattern = syntaxAndPattern.substring(colonIndex + 1);
     if (syntax.equalsIgnoreCase(GlobPathMatcher.name())) {
-      return this.pathParser.parseGlob(pattern);
+      return this.pathParser.transpileGlob(pattern, this.lookUpTransformer.getRegexFlags());
     }
     if (syntax.equalsIgnoreCase(RegexPathMatcher.name())) {
-      Pattern regex = Pattern.compile(pattern);
-      return new RegexPathMatcher(regex);
+      return this.pathParser.compileRegex(pattern, this.lookUpTransformer.getRegexFlags());
     }
 
     throw new UnsupportedOperationException("unsupported syntax \"" + syntax + "\"");
@@ -1387,7 +1384,7 @@ class MemoryFileSystem extends FileSystem {
 
     if (copyContext.operation.isMove()) {
       sourceParent.removeEntry(sourceElementName);
-      targetParent.addEntry(targetElementName, sourceEntry);
+      targetParent.addEntry(targetElementName, sourceEntry, copyContext.target.path);
       String newOriginalName = targetContext.path.getMemoryFileSystem().storeTransformer.transform(targetContext.elementName);
       sourceEntry.setOriginalName(newOriginalName);
     } else {
@@ -1396,7 +1393,7 @@ class MemoryFileSystem extends FileSystem {
       if (copyContext.copyAttribues) {
         copy.initializeAttributes(toCopy);
       }
-      targetParent.addEntry(targetElementName, copy);
+      targetParent.addEntry(targetElementName, copy, copyContext.target.path);
     }
   }
 

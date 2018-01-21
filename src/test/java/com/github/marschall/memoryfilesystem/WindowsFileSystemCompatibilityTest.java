@@ -13,10 +13,12 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.DosFileAttributes;
 import java.text.Normalizer;
@@ -243,6 +245,32 @@ public class WindowsFileSystemCompatibilityTest {
       }
       if (nfdFile != null) {
         Files.delete(nfdFile);
+      }
+    }
+  }
+
+  @Test
+  public void caseInsensitivePatterns() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path child1 = fileSystem.getPath("child1");
+    Files.createFile(child1);
+
+    try {
+      boolean found = false;
+      try (DirectoryStream<Path> stream = Files.newDirectoryStream(fileSystem.getPath(""))) {
+        PathMatcher regexMatcher = fileSystem.getPathMatcher("regex:CHILD.*");
+        PathMatcher globMatcher = fileSystem.getPathMatcher("glob:CHILD*");
+        for (Path path : stream) {
+          assertTrue(regexMatcher.matches(path));
+          assertTrue(globMatcher.matches(path));
+          found = true;
+        }
+      }
+      assertTrue(found);
+    } finally {
+      if (this.useDefault) {
+        Files.delete(child1);
       }
     }
   }

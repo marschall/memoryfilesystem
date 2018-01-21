@@ -3,6 +3,8 @@ package com.github.marschall.memoryfilesystem;
 import java.text.Normalizer;
 import java.text.Normalizer.Form;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.regex.Pattern;
 
 /**
  * Constant definitions for the standard {@link StringTransformer StringTransformers}.
@@ -26,18 +28,44 @@ public final class StringTransformers {
    */
   public static final StringTransformer NFC = new NFC();
 
+  /**
+   * Creates a case insensitive transformer for the current locale.
+   *
+   * @return the transformer
+   */
   public StringTransformer caseInsensitive() {
     return caseInsensitive(Locale.getDefault());
   }
 
+  /**
+   * Creates a case insensitive transformer for the given locale.
+   *
+   * @param locale the locale
+   * @return the transformer
+   */
   public  static StringTransformer caseInsensitive(Locale locale) {
+    Objects.requireNonNull(locale);
     return new CaseInsenstive(locale);
   }
 
+  /**
+   * Creates a case insensitive transformer for native macOS (NFD) for
+   * the given locale.
+   *
+   * @param locale the locale
+   * @return the transformer
+   */
   public  static StringTransformer caseInsensitiveMacOSNative(Locale locale) {
     return new CaseInsenstiveMacOSNative(locale);
   }
 
+  /**
+   * Creates a case insensitive transformer for macOS as presented by the
+   * JVM (NFC) for the given locale.
+   *
+   * @param locale the locale
+   * @return the transformer
+   */
   public  static StringTransformer caseInsensitiveMacOSJvm(Locale locale) {
     return new CaseInsenstiveMacOSJvm(locale);
   }
@@ -51,6 +79,11 @@ public final class StringTransformers {
       return Normalizer.normalize(s, Form.NFD);
     }
 
+    @Override
+    public int getRegexFlags() {
+      return Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.CANON_EQ;
+    }
+
   }
 
   static final class NFC implements StringTransformer {
@@ -58,6 +91,11 @@ public final class StringTransformers {
     @Override
     public String transform(String s) {
       return Normalizer.normalize(s, Form.NFC);
+    }
+
+    @Override
+    public int getRegexFlags() {
+      return Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.CANON_EQ;
     }
 
   }
@@ -75,6 +113,11 @@ public final class StringTransformers {
       return Normalizer.normalize(s, Form.NFD).toUpperCase(this.locale);
     }
 
+    @Override
+    public int getRegexFlags() {
+      return Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.CANON_EQ;
+    }
+
   }
 
   static final class CaseInsenstiveMacOSJvm implements StringTransformer {
@@ -88,6 +131,11 @@ public final class StringTransformers {
     @Override
     public String transform(String s) {
       return Normalizer.normalize(s, Form.NFC).toUpperCase(this.locale);
+    }
+
+    @Override
+    public int getRegexFlags() {
+      return Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.CANON_EQ;
     }
 
   }
@@ -105,6 +153,11 @@ public final class StringTransformers {
       return s.toUpperCase(this.locale);
     }
 
+    @Override
+    public int getRegexFlags() {
+      return Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
+    }
+
   }
 
   static final class IdentityTransformer implements StringTransformer {
@@ -112,6 +165,11 @@ public final class StringTransformers {
     @Override
     public String transform(String s) {
       return s;
+    }
+
+    @Override
+    public int getRegexFlags() {
+      return 0;
     }
 
   }

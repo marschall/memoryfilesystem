@@ -2,9 +2,11 @@ package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isAbsolute;
 import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isRelative;
+import static com.github.marschall.memoryfilesystem.PathMatchesMatcher.matches;
 import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.READ;
 import static java.nio.file.StandardOpenOption.WRITE;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -22,6 +24,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.util.Arrays;
 import java.util.List;
@@ -209,6 +212,16 @@ public class FileSystemCompatibilityTest {
         }
       }
     }
+  }
+
+  @Test
+  public void regression93() throws IOException {
+    FileSystem fileSystem = this.getFileSystem();
+
+    Path child = fileSystem.getPath(".gitignore");
+
+    PathMatcher matcher = fileSystem.getPathMatcher("glob:**/.gitignore");
+    assertThat(matcher, not(matches(child)));
   }
 
 }

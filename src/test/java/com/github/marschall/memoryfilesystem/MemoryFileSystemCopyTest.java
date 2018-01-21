@@ -5,12 +5,9 @@ import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static com.github.marschall.memoryfilesystem.FileUtility.setContents;
 import static com.github.marschall.memoryfilesystem.IsSameFileMatcher.isSameFile;
 import static com.github.marschall.memoryfilesystem.IsSymbolicLinkMatcher.isSymbolicLink;
-import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static java.nio.file.StandardOpenOption.CREATE_NEW;
-import static java.nio.file.StandardOpenOption.WRITE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.not;
@@ -19,8 +16,6 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.SeekableByteChannel;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileAlreadyExistsException;
@@ -139,7 +134,7 @@ public class MemoryFileSystemCopyTest {
     Path a = fileSystem.getPath("a");
     Path b = fileSystem.getPath("./b/../a");
 
-    this.createAndSetContents(a, "aaa");
+    FileUtility.createAndSetContents(a, "aaa");
     assertThat(a, exists());
     assertThat(b, exists());
     assertThat(a, isSameFile(b));
@@ -302,7 +297,7 @@ public class MemoryFileSystemCopyTest {
     Path b = fileSystem.getPath("/2/b");
     Files.createDirectories(b.toAbsolutePath().getParent());
 
-    this.createAndSetContents(a, "aaa");
+    FileUtility.createAndSetContents(a, "aaa");
     assertThat(a, exists());
     assertThat(b, not(exists()));
 
@@ -326,7 +321,7 @@ public class MemoryFileSystemCopyTest {
       Path a = source.getPath("a");
       Path b = target.getPath("b");
 
-      this.createAndSetContents(a, "aaa");
+      FileUtility.createAndSetContents(a, "aaa");
       assertThat(a, exists());
       assertThat(b, not(exists()));
 
@@ -350,8 +345,8 @@ public class MemoryFileSystemCopyTest {
     Path a = fileSystem.getPath("/1/a");
     Path b = fileSystem.getPath("/2/b");
 
-    this.createAndSetContents(a, "aaa");
-    this.createAndSetContents(b, "bbb");
+    FileUtility.createAndSetContents(a, "aaa");
+    FileUtility.createAndSetContents(b, "bbb");
     assertThat(a, exists());
     assertThat(b, exists());
 
@@ -379,7 +374,8 @@ public class MemoryFileSystemCopyTest {
     Path dir = Files.createDirectory(this.rule.getFileSystem().getPath("/dir"));
     Path sub = dir.resolve("sub");
     Files.move(dir, sub);
-  }  @Test
+  }
+
   public void moveRoot() throws IOException {
     Path root = this.rule.getFileSystem().getPath("/");
     Path path = this.rule.getFileSystem().getPath("/a");
@@ -495,7 +491,7 @@ public class MemoryFileSystemCopyTest {
     Path a = fileSystem.getPath("a");
     Path b = fileSystem.getPath("./b/../a");
 
-    this.createAndSetContents(a, "aaa");
+    FileUtility.createAndSetContents(a, "aaa");
     assertThat(a, exists());
     assertThat(b, exists());
 
@@ -505,7 +501,9 @@ public class MemoryFileSystemCopyTest {
 
     assertThat(a, hasContents("aaa"));
     assertThat(b, hasContents("aaa"));
-  }  @Test
+  }
+
+  @Test
   public void moveAlreadyExistsNotEmpty() throws IOException, ParseException {
     // moving a folder to an already existing one that is not empty should throw DirectoryNotEmptyException
     FileSystem fileSystem = this.rule.getFileSystem();
@@ -573,7 +571,6 @@ public class MemoryFileSystemCopyTest {
     assertEquals(sourceTime, Files.getLastModifiedTime(target));
   }
 
-
   @Test
   public void moveDifferentFileSystem() throws IOException {
     FileSystem source = this.rule.getFileSystem();
@@ -581,7 +578,7 @@ public class MemoryFileSystemCopyTest {
       Path a = source.getPath("a");
       Path b = target.getPath("b");
 
-      this.createAndSetContents(a, "aaa");
+      FileUtility.createAndSetContents(a, "aaa");
       assertThat(a, exists());
       assertThat(b, not(exists()));
 
@@ -600,7 +597,7 @@ public class MemoryFileSystemCopyTest {
     Path b = fileSystem.getPath("/2/b");
     Files.createDirectories(b.toAbsolutePath().getParent());
 
-    this.createAndSetContents(a, "aaa");
+    FileUtility.createAndSetContents(a, "aaa");
     assertThat(a, exists());
     assertThat(b, not(exists()));
 
@@ -609,14 +606,16 @@ public class MemoryFileSystemCopyTest {
     assertThat(b, exists());
 
     assertThat(b, hasContents("aaa"));
-  }  @Test
+  }
+
+  @Test
   public void moveReplaceExisitingNoAttributes() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path a = fileSystem.getPath("/1/a");
     Path b = fileSystem.getPath("/2/b");
 
-    this.createAndSetContents(a, "aaa");
-    this.createAndSetContents(b, "bbb");
+    FileUtility.createAndSetContents(a, "aaa");
+    FileUtility.createAndSetContents(b, "bbb");
     assertThat(a, exists());
     assertThat(b, exists());
 
@@ -654,16 +653,6 @@ public class MemoryFileSystemCopyTest {
     Files.move(from, to);
     assertThat(to, isSymbolicLink());
     assertEquals(target, to.toRealPath());
-  }
-
-  private void createAndSetContents(Path path, String contents) throws IOException {
-    Path parent = path.toAbsolutePath().getParent();
-    if (!parent.equals(parent.getRoot())) {
-      Files.createDirectories(parent);
-    }
-    try (SeekableByteChannel channel = Files.newByteChannel(path, WRITE, CREATE_NEW)) {
-      channel.write(ByteBuffer.wrap(contents.getBytes(US_ASCII)));
-    }
   }
 
 }

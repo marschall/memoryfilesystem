@@ -56,7 +56,6 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.NotLinkException;
 import java.nio.file.Path;
-import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.nio.file.ProviderMismatchException;
 import java.nio.file.attribute.BasicFileAttributeView;
@@ -75,7 +74,6 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.regex.PatternSyntaxException;
 
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -124,8 +122,7 @@ public class MemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("file.txt");
-    Files.createFile(path);
-    setContents(path, "0123456789");
+    FileUtility.createAndSetContents(path, "0123456789");
 
     try (FileChannel firstChannel = FileChannel.open(path, WRITE)) {
 
@@ -181,8 +178,7 @@ public class MemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("file.txt");
-    Files.createFile(path);
-    setContents(path, "z");
+    FileUtility.createAndSetContents(path, "z");
 
     byte[] data = new byte[]{'a', 'b', 'c', 'd'};
 
@@ -212,8 +208,7 @@ public class MemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("file.txt");
-    Files.createFile(path);
-    setContents(path, "abcd");
+    FileUtility.createAndSetContents(path, "abcd");
 
     byte[] data = new byte[2];
 
@@ -255,8 +250,7 @@ public class MemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("file.txt");
-    Files.createFile(path);
-    setContents(path, "abcdef");
+    FileUtility.createAndSetContents(path, "abcdef");
 
     byte[] a = new byte[1];
     byte[] b = new byte[1];
@@ -298,8 +292,7 @@ public class MemoryFileSystemTest {
 
     Path path = fileSystem.getPath("file.txt");
 
-    Files.createFile(path);
-    setContents(path, "z");
+    FileUtility.createAndSetContents(path, "z");
 
     ByteBuffer a = ByteBuffer.wrap(new byte[]{'a'});
     ByteBuffer b = ByteBuffer.wrap(new byte[]{'b'});
@@ -318,8 +311,7 @@ public class MemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
-    Files.createFile(path);
-    setContents(path, "abc");
+    FileUtility.createAndSetContents(path, "abc");
 
     try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, WRITE)) {
       assertEquals(3L, channel.size());
@@ -335,8 +327,7 @@ public class MemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
-    Files.createFile(path);
-    setContents(path, "abc");
+    FileUtility.createAndSetContents(path, "abc");
 
     try (FileChannel channel = FileChannel.open(path, WRITE)) {
       assertEquals(3L, channel.size());
@@ -390,8 +381,7 @@ public class MemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
-    Files.createFile(path);
-    setContents(path, "z");
+    FileUtility.createAndSetContents(path, "z");
 
     try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, WRITE)) {
       assertTrue("open", channel.isOpen());
@@ -409,8 +399,7 @@ public class MemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
-    Files.createFile(path);
-    setContents(path, "z");
+    FileUtility.createAndSetContents(path, "z");
 
     try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, WRITE)) {
       Object attachment = new Object();
@@ -437,8 +426,7 @@ public class MemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
-    Files.createFile(path);
-    setContents(path, "abcd");
+    FileUtility.createAndSetContents(path, "abcd");
 
     try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, READ)) {
       Object attachment = new Object();
@@ -467,8 +455,7 @@ public class MemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
-    Files.createFile(path);
-    setContents(path, "z");
+    FileUtility.createAndSetContents(path, "z");
 
     try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, READ)) {
       Object attachment = new Object();
@@ -496,8 +483,7 @@ public class MemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
-    Files.createFile(path);
-    setContents(path, "z");
+    FileUtility.createAndSetContents(path, "z");
 
     try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, WRITE)) {
       ByteBuffer buffer = ByteBuffer.wrap(new byte[]{'a', 'b'});
@@ -516,8 +502,7 @@ public class MemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
-    Files.createFile(path);
-    setContents(path, "abcd");
+    FileUtility.createAndSetContents(path, "abcd");
 
     try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, READ)) {
       byte[] data = new byte[2];
@@ -538,8 +523,7 @@ public class MemoryFileSystemTest {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
-    Files.createFile(path);
-    setContents(path, "z");
+    FileUtility.createAndSetContents(path, "z");
 
     try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, READ)) {
       ByteBuffer buffer = ByteBuffer.wrap(new byte[]{'a', 'b'});
@@ -1029,45 +1013,6 @@ public class MemoryFileSystemTest {
     Path path = fileSystem.getPath("/");
     Map<String, Object> attributes = Files.readAttributes(path, "isDirectory");
     assertEquals(Collections.singletonMap("isDirectory", true), attributes);
-  }
-
-  @Test(expected = UnsupportedOperationException.class)
-  public void getPathMatcherUnknown() {
-    FileSystem fileSystem = this.rule.getFileSystem();
-    fileSystem.getPathMatcher("syntax:patten");
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void getPathMatcherInvalid1() {
-    FileSystem fileSystem = this.rule.getFileSystem();
-    fileSystem.getPathMatcher("invalid");
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void getPathMatcherInvalid2() {
-    FileSystem fileSystem = this.rule.getFileSystem();
-    fileSystem.getPathMatcher("invalid:");
-  }
-
-  @Test
-  public void getPathMatcherGlob() {
-    FileSystem fileSystem = this.rule.getFileSystem();
-    PathMatcher matcher = fileSystem.getPathMatcher("glob:*.java");
-    assertTrue(matcher instanceof GlobPathMatcher);
-  }
-
-  @Test
-  public void getPathMatcherRegex() {
-    FileSystem fileSystem = this.rule.getFileSystem();
-    PathMatcher matcher = fileSystem.getPathMatcher("regex:.*\\.java");
-    assertTrue(matcher instanceof RegexPathMatcher);
-  }
-
-  @Test(expected = PatternSyntaxException.class)
-  public void getPathMatcherRegexInvalid() {
-    FileSystem fileSystem = this.rule.getFileSystem();
-    PathMatcher matcher = fileSystem.getPathMatcher("regex:*\\.java");
-    assertTrue(matcher instanceof RegexPathMatcher);
   }
 
   @Test
@@ -1863,6 +1808,37 @@ public class MemoryFileSystemTest {
     Files.createDirectory(home);
     assertThat(home, exists());
     Files.createDirectory(home);
+  }
+
+  @Test
+  public void pathOfFileAlreadyExistsException() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+
+    Path root = fileSystem.getPath("/");
+    try {
+      Files.createDirectory(root);
+      fail("root already exists");
+    } catch (FileAlreadyExistsException e) {
+      assertEquals("/", e.getFile());
+    }
+
+    Path subPath = fileSystem.getPath("/sub/path");
+    Files.createDirectories(subPath);
+
+    try {
+      Files.createDirectory(subPath);
+      fail("root already exists");
+    } catch (FileAlreadyExistsException e) {
+      assertEquals("/sub/path", e.getFile());
+    }
+  }
+
+  @Test
+  public void createDirectoriesWithRoot() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path root = fileSystem.getPath("/");
+    assertThat(root, exists());
+    assertEquals(Files.createDirectories(root), root);
   }
 
   @Test
