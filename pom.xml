@@ -10,6 +10,10 @@
   <inceptionYear>2011</inceptionYear>
 
   <url>https://github.com/marschall/memoryfilesystem</url>
+  
+  <prerequisites>
+    <maven>3.0.3</maven>
+  </prerequisites>
 
   <scm>
     <connection>scm:git:https://github.com/marschall/memoryfilesystem.git</connection>
@@ -49,6 +53,13 @@
   </licenses>
 
   <dependencies>
+    <!-- for java.annotation -->
+    <dependency>
+      <groupId>javax.annotation</groupId>
+      <artifactId>javax.annotation-api</artifactId>
+      <version>1.3.1</version>
+      <optional>true</optional>
+    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -254,11 +265,11 @@
         <plugin>
           <groupId>com.github.marschall</groupId>
           <artifactId>jdeps-maven-plugin</artifactId>
-          <version>0.4.0</version>
+          <version>0.4.2</version>
         </plugin>
         <plugin>
           <artifactId>maven-javadoc-plugin</artifactId>
-          <version>3.0.0-M1</version>
+          <version>3.0.0</version>
         </plugin>
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
@@ -456,8 +467,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <java.version>1.7</java.version>
-    <log4j.version>2.9.1</log4j.version>
-    <spring.version>4.3.12.RELEASE</spring.version>
+    <log4j.version>2.10.0</log4j.version>
+    <spring.version>4.3.14.RELEASE</spring.version>
   </properties>
 
 </project>

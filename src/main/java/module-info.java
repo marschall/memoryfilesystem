@@ -1,6 +1,6 @@
 module com.github.marschall.memoryfilesystem {
 
-  requires static java.xml.ws.annotation;
+  requires static java.annotation;
 
   exports com.github.marschall.memoryfilesystem;
 
