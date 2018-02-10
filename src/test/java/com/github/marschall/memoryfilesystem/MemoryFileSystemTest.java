@@ -27,6 +27,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -2078,6 +2079,16 @@ public class MemoryFileSystemTest {
       fail("URI " + uri + " should be invalid");
     } catch (IllegalArgumentException e) {
       // should reach here
+    }
+  }
+
+  @Test
+  public void anonymousFileSystems() throws IOException {
+    try (FileSystem first = MemoryFileSystemBuilder.newEmpty().build()) {
+      try (FileSystem second = MemoryFileSystemBuilder.newEmpty().build()) {
+        assertNotSame(first, second);
+      }
+
     }
   }
 

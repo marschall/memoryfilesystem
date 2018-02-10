@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * <a href="https://en.wikipedia.org/wiki/Builder_pattern">Builder</a>
@@ -30,6 +31,16 @@ import java.util.Set;
  * the correct class loader to pass to {@link FileSystems#newFileSystem(URI, Map, ClassLoader)}.</p>
  */
 public final class MemoryFileSystemBuilder {
+
+  /**
+   * Prefix for generating file system names.
+   */
+  private static final String UNIQUE_NAME_PREFIX = "__g_";
+
+  /**
+   * Counter used for generating unique names.
+   */
+  private static final AtomicLong UNIQUE_COUNTER = new AtomicLong();
 
   private final List<String> roots;
 
@@ -447,6 +458,17 @@ public final class MemoryFileSystemBuilder {
     URI uri = URI.create("memory:".concat(name));
     ClassLoader classLoader = MemoryFileSystemBuilder.class.getClassLoader();
     return FileSystems.newFileSystem(uri, env, classLoader);
+  }
+
+  /**
+   * Creates the new file system instance.
+   *
+   * @return the file system
+   * @throws IOException if the file system can't be created
+   * @see FileSystems#newFileSystem(URI, Map, ClassLoader)
+   */
+  public FileSystem build() throws IOException {
+    return this.build(UNIQUE_NAME_PREFIX + UNIQUE_COUNTER.incrementAndGet());
   }
 
   /**
