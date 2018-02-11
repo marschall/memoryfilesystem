@@ -6,7 +6,7 @@ An in memory implementation of a [JSR-203](http://jcp.org/en/jsr/detail?id=203) 
 <dependency>
     <groupId>com.github.marschall</groupId>
     <artifactId>memoryfilesystem</artifactId>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
 </dependency>
 ```
 
@@ -127,7 +127,7 @@ Usage
 The easiest way to get started is to use the `MemoryFileSystemBuilder`
 
 ```java
-try (FileSystem fileSystem = MemoryFileSystemBuilder.newEmpty().build("test")) {
+try (FileSystem fileSystem = MemoryFileSystemBuilder.newEmpty().build()) {
   Path p = fileSystem.getPath("p");
   System.out.println(Files.exists(p));
 }
