@@ -75,4 +75,5 @@ public final class UmaskTest {
     Set<PosixFilePermission> actual = Files.getPosixFilePermissions(created);
     assertEquals("rwxr-x---", PosixFilePermissions.toString(actual));
   }
+
 }

@@ -144,10 +144,13 @@ public final class MemoryFileSystemBuilder {
   }
 
   /**
-   * Sets the permissions that will be applied to new files.
+   * Sets the umask. The umask is a set of permissions that will be
+   * removed from newly created files.
    *
-   * @param umask the permissions that will be applied to new files
-   * @return the receiver
+   * @param umask the permissions that will be removed from newly
+   *        created files
+   * @return the current builder object
+   * @see <a href="https://en.wikipedia.org/wiki/Umask">umsaks</a>.
    */
   public MemoryFileSystemBuilder setUmask(Set<PosixFilePermission> umask) {
     this.umask = umask;
