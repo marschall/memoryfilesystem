@@ -46,9 +46,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 abstract class MemoryEntryAttributes {
 
   // protected by read and write locks
-  private long lastModifiedTime;
-  private long lastAccessTime;
-  private long creationTime;
+  private FileTime lastModifiedTime;
+  private FileTime lastAccessTime;
+  private FileTime creationTime;
 
   private final Map<String, InitializingFileAttributeView> additionalViews;
 
@@ -61,7 +61,7 @@ abstract class MemoryEntryAttributes {
     this.basicFileAttributeView = this.newBasicFileAttributeView();
     this.fileSystem = context.fileSystem;
     this.lock = new ReentrantReadWriteLock();
-    long now = this.getNow();
+    FileTime now = this.getNow();
     this.lastAccessTime = now;
     this.lastModifiedTime = now;
     this.creationTime = now;
@@ -95,19 +95,25 @@ abstract class MemoryEntryAttributes {
   }
 
   FileTime lastModifiedTime() {
-    return FileTime.fromMillis(this.lastModifiedTime);
+    try (AutoRelease lock = this.readLock()) {
+      return this.lastModifiedTime;
+    }
   }
 
   FileTime lastAccessTime() {
-    return FileTime.fromMillis(this.lastAccessTime);
+    try (AutoRelease lock = this.readLock()) {
+      return this.lastAccessTime;
+    }
   }
 
   FileTime creationTime() {
-    return FileTime.fromMillis(this.creationTime);
+    try (AutoRelease lock = this.readLock()) {
+      return this.creationTime;
+    }
   }
 
-  long getNow() {
-    return System.currentTimeMillis();
+  FileTime getNow() {
+    return FileTime.fromMillis(System.currentTimeMillis());
   }
 
   private UserPrincipal getCurrentUser() {
@@ -158,7 +164,7 @@ abstract class MemoryEntryAttributes {
 
   void modified() {
     // No write lock because this was to be folded in an operation with a write lock
-    long now = this.getNow();
+    FileTime now = this.getNow();
     this.lastAccessTime = now;
     this.lastModifiedTime = now;
   }
@@ -172,13 +178,13 @@ abstract class MemoryEntryAttributes {
     try (AutoRelease lock = this.writeLock()) {
       this.checkAccess(AccessMode.WRITE);
       if (lastModifiedTime != null) {
-        this.lastModifiedTime = lastModifiedTime.toMillis();
+        this.lastModifiedTime = lastModifiedTime;
       }
       if (lastAccessTime != null) {
-        this.lastAccessTime = lastAccessTime.toMillis();
+        this.lastAccessTime = lastAccessTime;
       }
       if (createTime != null) {
-        this.creationTime = createTime.toMillis();
+        this.creationTime = createTime;
       }
     }
   }
