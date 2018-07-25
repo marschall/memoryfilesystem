@@ -1,5 +1,6 @@
 package com.github.marschall.memoryfilesystem;
 
+import static com.github.marschall.memoryfilesystem.EmptyDirectory.emptyDirectory;
 import static com.github.marschall.memoryfilesystem.FileContentsMatcher.hasContents;
 import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static com.github.marschall.memoryfilesystem.FileUtility.setContents;
@@ -373,6 +374,8 @@ public class MemoryFileSystemCopyTest {
     Files.createFile(sourceDir.resolve("a_file")); // Key to triggering
 
     Files.copy(sourceDir, targetDir, COPY_ATTRIBUTES, REPLACE_EXISTING);
+    assertThat(targetDir, exists());
+    assertThat(targetDir, emptyDirectory());
   }
 
   @Test
