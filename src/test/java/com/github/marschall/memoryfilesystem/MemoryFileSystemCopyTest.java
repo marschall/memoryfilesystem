@@ -364,6 +364,18 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
+  public void issue102() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Path baseDir = Files.createDirectory(fileSystem.getPath("/anywhere"));
+    Path sourceDir = Files.createDirectory(baseDir.resolve("somewhere"));
+    Path targetDir = baseDir.resolve("nowhere"); // *Not* created
+
+    Files.createFile(sourceDir.resolve("a_file")); // Key to triggering
+
+    Files.copy(sourceDir, targetDir, COPY_ATTRIBUTES, REPLACE_EXISTING);
+  }
+
+  @Test
   public void moveRootIntoItself() throws IOException {
     Path root = this.rule.getFileSystem().getPath("/");
     Files.move(root, root);

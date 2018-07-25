@@ -1278,7 +1278,6 @@ class MemoryFileSystem extends FileSystem {
       if (sourceEntry instanceof MemoryDirectory) {
         MemoryDirectory sourceDirectory = (MemoryDirectory) sourceEntry;
         try (AutoRelease lock = sourceDirectory.readLock()) {
-          sourceDirectory.checkEmpty(absoluteTargetPath);
           EntryCreationContext context = MemoryFileSystem.this.newEntryCreationContext(absoluteTargetPath, NO_FILE_ATTRIBUTES);
           return new MemoryDirectory(targetElementName, context);
         }
