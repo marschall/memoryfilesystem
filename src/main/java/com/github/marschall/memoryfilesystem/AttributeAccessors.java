@@ -330,7 +330,7 @@ final class AttributeAccessors {
       attribute = viewAndAttribute;
     } else {
       view = viewAndAttribute.substring(0, colonIndex);
-      attribute = viewAndAttribute.substring(colonIndex + 1, viewAndAttribute.length());
+      attribute = viewAndAttribute.substring(colonIndex + 1);
     }
 
     Map<String, AttributeAccessor> viewMap = ACCESSORS.get(view);
@@ -396,7 +396,7 @@ final class AttributeAccessors {
       attribute = viewAndAttribute;
     } else {
       view = viewAndAttribute.substring(0, colonIndex);
-      attribute = viewAndAttribute.substring(colonIndex + 1, viewAndAttribute.length());
+      attribute = viewAndAttribute.substring(colonIndex + 1);
     }
 
     Map<String, AttributeAccessor> viewMap = ACCESSORS.get(view);
