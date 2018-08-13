@@ -1,6 +1,5 @@
 package com.github.marschall.memoryfilesystem;
 
-import java.io.IOException;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -90,7 +89,7 @@ abstract class Root extends AbstractPath {
 
   @Override
   Path resolve(ElementPath other) {
-    return AbstractPath.createAboslute(this.getMemoryFileSystem(), this, other.getNameElements());
+    return AbstractPath.createAbsolute(this.getMemoryFileSystem(), this, other.getNameElements());
   }
 
   @Override

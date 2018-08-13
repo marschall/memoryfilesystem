@@ -9,7 +9,7 @@ import org.junit.Test;
 public class StringTransformersTest {
 
   @Test
-  public void identiy() {
+  public void identity() {
     StringTransformer transformer = StringTransformers.IDENTIY;
     assertEquals("aA", transformer.transform("aA"));
   }

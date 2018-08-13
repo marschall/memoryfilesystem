@@ -7,11 +7,11 @@ import java.util.Set;
 
 final class Options {
 
-  static boolean isCopyAttribues(Object[] options) {
+  static boolean isCopyAttributes(Object[] options) {
     if (options == null || options.length == 0) {
       return false;
     }
-  
+
     for (Object option : options) {
       if (option == StandardCopyOption.COPY_ATTRIBUTES) {
         return true;
@@ -24,7 +24,7 @@ final class Options {
     if (options == null || options.isEmpty()) {
       return true;
     }
-  
+
     for (Object option : options) {
       if (option == LinkOption.NOFOLLOW_LINKS) {
         return false;
@@ -37,7 +37,7 @@ final class Options {
     if (options == null) {
       return true;
     }
-  
+
     for (Object option : options) {
       if (option == LinkOption.NOFOLLOW_LINKS) {
         return false;
@@ -50,7 +50,7 @@ final class Options {
     if (options == null) {
       return false;
     }
-  
+
     for (CopyOption option : options) {
       if (option == StandardCopyOption.REPLACE_EXISTING) {
         return true;

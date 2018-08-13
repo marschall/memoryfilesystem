@@ -28,7 +28,7 @@ abstract class AbstractPath implements Path {
     this.fileSystem = fileSystem;
   }
 
-  static AbstractPath createAboslute(MemoryFileSystem fileSystem, Root root, List<String> nameElements) {
+  static AbstractPath createAbsolute(MemoryFileSystem fileSystem, Root root, List<String> nameElements) {
     if (root == null) {
       throw new IllegalArgumentException("root must not be null");
     }
@@ -39,8 +39,8 @@ abstract class AbstractPath implements Path {
     }
   }
 
-  static AbstractPath createAboslute(MemoryFileSystem fileSystem, Root root, String nameElement) {
-    return createAboslute(fileSystem, root, Collections.singletonList(nameElement));
+  static AbstractPath createAbsolute(MemoryFileSystem fileSystem, Root root, String nameElement) {
+    return createAbsolute(fileSystem, root, Collections.singletonList(nameElement));
   }
 
   static AbstractPath createRelative(MemoryFileSystem fileSystem, List<String> nameElements) {
@@ -163,7 +163,7 @@ abstract class AbstractPath implements Path {
 
     MemoryFileSystemProvider otherProvider = (MemoryFileSystemProvider) other.getFileSystem().provider();
     if (otherProvider == null) {
-      // can't happen, just there to shut up compiler about unsed variable
+      // can't happen, just there to shut up compiler about unused variable
       throw new ClassCastException("no file system provider given");
     }
     AbstractPath otherPath = (AbstractPath) other;

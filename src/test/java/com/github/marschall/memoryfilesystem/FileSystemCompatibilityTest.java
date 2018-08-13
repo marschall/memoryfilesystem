@@ -96,7 +96,7 @@ public class FileSystemCompatibilityTest {
       try (SeekableByteChannel channel = Files.newByteChannel(path, WRITE)) {
         try {
           channel.truncate(-1L);
-          fail("negative trucation should not be allowed");
+          fail("negative truncation should not be allowed");
         } catch (IllegalArgumentException e) {
           // should reach here
         }
@@ -109,8 +109,8 @@ public class FileSystemCompatibilityTest {
   @Test
   public void viewOnNotExistingFile() throws IOException {
     Path currentDirectory = this.getFileSystem().getPath("");
-    Path notExisiting = currentDirectory.resolve("not-existing.txt");
-    BasicFileAttributeView view = Files.getFileAttributeView(notExisiting, BasicFileAttributeView.class);
+    Path notExisting = currentDirectory.resolve("not-existing.txt");
+    BasicFileAttributeView view = Files.getFileAttributeView(notExisting, BasicFileAttributeView.class);
     assertNotNull(view);
     try {
       view.readAttributes();

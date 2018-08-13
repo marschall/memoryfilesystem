@@ -49,7 +49,7 @@ final class MultipleNamedRootsPathParser extends PathParser {
       Root root = this.getRoot(memoryFileSystem, roots, elements);
       elements = elements.subList(1, elements.size());
       this.check(elements);
-      return AbstractPath.createAboslute(memoryFileSystem, root, elements);
+      return AbstractPath.createAbsolute(memoryFileSystem, root, elements);
     } else {
       this.check(elements);
       return AbstractPath.createRelative(memoryFileSystem, elements);

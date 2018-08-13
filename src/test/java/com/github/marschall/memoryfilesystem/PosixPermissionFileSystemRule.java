@@ -29,7 +29,7 @@ final class PosixPermissionFileSystemRule implements TestRule {
       public void evaluate() throws Throwable {
         PosixPermissionFileSystemRule.this.fileSystem = MemoryFileSystemBuilder.newEmpty()
                 .addRoot(MemoryFileSystemProperties.UNIX_ROOT)
-                .setSeprator(MemoryFileSystemProperties.UNIX_SEPARATOR)
+                .setSeparator(MemoryFileSystemProperties.UNIX_SEPARATOR)
                 .addUser(OWNER)
                 .addGroup(OWNER)
                 .addUser(GROUP)

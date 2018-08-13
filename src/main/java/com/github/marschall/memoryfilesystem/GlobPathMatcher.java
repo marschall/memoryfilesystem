@@ -28,7 +28,7 @@ final class GlobPathMatcher implements PathMatcher {
   private boolean matches(List<String> elements, List<GlobPattern> patterns) {
     if (elements.isEmpty()) {
       for (GlobPattern pattern : patterns) {
-        if (!pattern.isCrossingDirectoryDoundaries()) {
+        if (!pattern.isCrossingDirectoryBoundaries()) {
           return false;
         }
       }
@@ -53,7 +53,7 @@ final class GlobPathMatcher implements PathMatcher {
     }
 
     GlobPattern firstMatch = patterns.get(0);
-    if (!firstMatch.isCrossingDirectoryDoundaries()) {
+    if (!firstMatch.isCrossingDirectoryBoundaries()) {
       if (firstMatch.matches(element) && patterns.size() > 1) {
         return this.matches(elements.subList(1, elements.size()), patterns.subList(1, patterns.size()));
       } else {
@@ -73,7 +73,7 @@ final class GlobPathMatcher implements PathMatcher {
 
   interface GlobPattern {
 
-    boolean isCrossingDirectoryDoundaries();
+    boolean isCrossingDirectoryBoundaries();
 
     boolean matches(String element);
 

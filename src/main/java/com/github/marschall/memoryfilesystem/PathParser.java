@@ -358,7 +358,7 @@ abstract class PathParser {
     INSTANCE;
 
     @Override
-    public boolean isCrossingDirectoryDoundaries() {
+    public boolean isCrossingDirectoryBoundaries() {
       return true;
     }
 
@@ -383,7 +383,7 @@ abstract class PathParser {
     }
 
     @Override
-    public boolean isCrossingDirectoryDoundaries() {
+    public boolean isCrossingDirectoryBoundaries() {
       return false;
     }
 

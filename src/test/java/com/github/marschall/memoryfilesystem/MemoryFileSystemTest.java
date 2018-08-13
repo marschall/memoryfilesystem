@@ -1111,12 +1111,12 @@ public class MemoryFileSystemTest {
   @Test
   public void resolveAbsoluteOtherRelative() {
     FileSystem fileSystem = this.rule.getFileSystem();
-    Path realtive = fileSystem.getPath("a/b");
+    Path relative = fileSystem.getPath("a/b");
 
-    assertEquals(fileSystem.getPath("a/b"), fileSystem.getPath("").resolve(realtive));
-    assertEquals(fileSystem.getPath("/a/b"), fileSystem.getPath("/").resolve(realtive));
-    assertEquals(fileSystem.getPath("c/d/a/b"), fileSystem.getPath("c/d").resolve(realtive));
-    assertEquals(fileSystem.getPath("/c/d/a/b"), fileSystem.getPath("/c/d").resolve(realtive));
+    assertEquals(fileSystem.getPath("a/b"), fileSystem.getPath("").resolve(relative));
+    assertEquals(fileSystem.getPath("/a/b"), fileSystem.getPath("/").resolve(relative));
+    assertEquals(fileSystem.getPath("c/d/a/b"), fileSystem.getPath("c/d").resolve(relative));
+    assertEquals(fileSystem.getPath("/c/d/a/b"), fileSystem.getPath("/c/d").resolve(relative));
   }
 
 
@@ -1135,12 +1135,12 @@ public class MemoryFileSystemTest {
   @Test
   public void resolveAbsoluteOtherRelativeString() {
     FileSystem fileSystem = this.rule.getFileSystem();
-    String realtive = "a/b";
+    String relative = "a/b";
 
-    assertEquals(fileSystem.getPath("a/b"), fileSystem.getPath("").resolve(realtive));
-    assertEquals(fileSystem.getPath("/a/b"), fileSystem.getPath("/").resolve(realtive));
-    assertEquals(fileSystem.getPath("c/d/a/b"), fileSystem.getPath("c/d").resolve(realtive));
-    assertEquals(fileSystem.getPath("/c/d/a/b"), fileSystem.getPath("/c/d").resolve(realtive));
+    assertEquals(fileSystem.getPath("a/b"), fileSystem.getPath("").resolve(relative));
+    assertEquals(fileSystem.getPath("/a/b"), fileSystem.getPath("/").resolve(relative));
+    assertEquals(fileSystem.getPath("c/d/a/b"), fileSystem.getPath("c/d").resolve(relative));
+    assertEquals(fileSystem.getPath("/c/d/a/b"), fileSystem.getPath("/c/d").resolve(relative));
   }
 
   @Test
@@ -1752,13 +1752,13 @@ public class MemoryFileSystemTest {
       assertThat(empty1, lessThan(empty2));
       assertThat(empty2, greaterThan(empty1));
 
-      Path realtive1 = fileSystem1.getPath("a");
-      Path realtive2 = fileSystem2.getPath("a");
+      Path relative1 = fileSystem1.getPath("a");
+      Path relative2 = fileSystem2.getPath("a");
 
-      assertThat(realtive1, not(equalTo(realtive2)));
-      assertThat(realtive2, not(equalTo(realtive1)));
-      assertThat(realtive1, lessThan(realtive2));
-      assertThat(realtive2, greaterThan(realtive1));
+      assertThat(relative1, not(equalTo(relative2)));
+      assertThat(relative2, not(equalTo(relative1)));
+      assertThat(relative1, lessThan(relative2));
+      assertThat(relative2, greaterThan(relative1));
 
       Path absolute1 = fileSystem1.getPath("/a");
       Path absolute2 = fileSystem2.getPath("/a");

@@ -161,7 +161,7 @@ public class WindowsMemoryFileSystemTest {
   }
 
   @Test
-  public void windowsDiffrentFileSystems() throws IOException {
+  public void windowsDifferentFileSystems() throws IOException {
     URI uri1 = URI.create("memory:uri1");
     URI uri2 = URI.create("memory:uri2");
     Map<String, ?> env = MemoryFileSystemBuilder.newWindows().buildEnvironment();
