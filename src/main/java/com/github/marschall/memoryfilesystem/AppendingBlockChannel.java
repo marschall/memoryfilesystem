@@ -10,11 +10,8 @@ import java.nio.file.Path;
 
 final class AppendingBlockChannel extends BlockChannel {
 
-  private final long startPosition;
-
-  AppendingBlockChannel(MemoryContents memoryContents, boolean readable, long startPosition, boolean deleteOnClose, Path path) {
+  AppendingBlockChannel(MemoryContents memoryContents, boolean readable, boolean deleteOnClose, Path path) {
     super(memoryContents, readable, deleteOnClose, path);
-    this.startPosition = startPosition;
   }
 
   @Override

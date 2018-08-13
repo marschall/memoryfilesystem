@@ -170,7 +170,7 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
   BlockChannel newAppendingChannel(boolean readable, boolean deleteOnClose, Path path) throws IOException {
     try (AutoRelease lock = this.writeLock()) {
       this.incrementOpenCount(path);
-      return new AppendingBlockChannel(this, readable, this.size(), deleteOnClose, path);
+      return new AppendingBlockChannel(this, readable, deleteOnClose, path);
     }
   }
 
