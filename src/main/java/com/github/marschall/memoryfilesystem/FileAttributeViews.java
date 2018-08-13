@@ -36,7 +36,7 @@ final class FileAttributeViews {
   private static final Map<Class<? extends BasicFileAttributes>, String> ATTRIBUTES_TO_VIEW_MAP;
 
   static {
-    SUPPORTED_VIEWS = new HashSet<Class<? extends FileAttributeView>>(3);
+    SUPPORTED_VIEWS = new HashSet<>(3);
     SUPPORTED_VIEWS.add(DosFileAttributeView.class);
     SUPPORTED_VIEWS.add(PosixFileAttributeView.class);
     SUPPORTED_VIEWS.add(UserDefinedFileAttributeView.class);

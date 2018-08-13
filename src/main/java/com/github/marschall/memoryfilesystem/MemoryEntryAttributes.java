@@ -925,7 +925,7 @@ abstract class MemoryEntryAttributes {
           return Collections.emptyList();
         } else {
           Set<String> keys = this.getValues().keySet();
-          return new ArrayList<String>(keys);
+          return new ArrayList<>(keys);
         }
       }
     }
