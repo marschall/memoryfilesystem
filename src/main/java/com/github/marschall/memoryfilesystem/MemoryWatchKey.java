@@ -86,7 +86,7 @@ final class MemoryWatchKey implements WatchKey {
 
   enum State {
     READY,
-    SIGNALLED;
+    SIGNALLED
   }
 
 }

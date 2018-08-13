@@ -648,7 +648,7 @@ public class MemoryFileSystemTest {
 
     try (
             FileChannel fromChannel = FileChannel.open(from, READ);
-            FileChannel toChannel = FileChannel.open(to, WRITE, CREATE_NEW);) {
+            FileChannel toChannel = FileChannel.open(to, WRITE, CREATE_NEW)) {
       long trasferred = fromChannel.transferTo(0, expectedSize, toChannel);
       assertEquals(expectedSize, trasferred);
     }
@@ -668,7 +668,7 @@ public class MemoryFileSystemTest {
 
     try (
             FileChannel fromChannel = FileChannel.open(from, READ);
-            FileChannel toChannel = FileChannel.open(to, WRITE, CREATE_NEW);) {
+            FileChannel toChannel = FileChannel.open(to, WRITE, CREATE_NEW)) {
       long trasferred = toChannel.transferFrom(fromChannel, 0, expectedSize);
       assertEquals(expectedSize, trasferred);
     }

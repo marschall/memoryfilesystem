@@ -1507,7 +1507,7 @@ class MemoryFileSystem extends FileSystem {
 
   enum LockType {
     READ,
-    WRITE;
+    WRITE
   }
 
 }
