@@ -3,6 +3,7 @@ package com.github.marschall.memoryfilesystem;
 import static com.github.marschall.memoryfilesystem.FileContentsMatcher.hasContents;
 import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static com.github.marschall.memoryfilesystem.IsSameFileMatcher.isSameFile;
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -21,6 +22,7 @@ import static org.junit.Assume.assumeTrue;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -196,11 +198,11 @@ public class UnixFileSystemCompatibilityTest {
     try {
       Files.createFile(path);
       try (OutputStream output = Files.newOutputStream(path, StandardOpenOption.WRITE)) {
-        output.write("11111".getBytes("US-ASCII"));
+        output.write("11111".getBytes(US_ASCII));
         output.flush();
       }
       try (OutputStream output = Files.newOutputStream(path, StandardOpenOption.WRITE)) {
-        output.write("22".getBytes("US-ASCII"));
+        output.write("22".getBytes(US_ASCII));
       }
       assertThat(path, hasContents("22111"));
     } finally {
@@ -215,11 +217,11 @@ public class UnixFileSystemCompatibilityTest {
     try {
       Files.createFile(path);
       try (OutputStream output = Files.newOutputStream(path, StandardOpenOption.WRITE)) {
-        output.write("11111".getBytes("US-ASCII"));
+        output.write("11111".getBytes(US_ASCII));
         output.flush();
       }
       try (OutputStream output = Files.newOutputStream(path, StandardOpenOption.APPEND)) {
-        output.write("22".getBytes("US-ASCII"));
+        output.write("22".getBytes(US_ASCII));
       }
       assertThat(path, hasContents("1111122"));
     } finally {
@@ -234,11 +236,11 @@ public class UnixFileSystemCompatibilityTest {
     try {
       Files.createFile(path);
       try (OutputStream output = Files.newOutputStream(path)) {
-        output.write("11111".getBytes("US-ASCII"));
+        output.write("11111".getBytes(US_ASCII));
         output.flush();
       }
       try (OutputStream output = Files.newOutputStream(path)) {
-        output.write("22".getBytes("US-ASCII"));
+        output.write("22".getBytes(US_ASCII));
       }
       assertThat(path, hasContents("22"));
     } finally {
