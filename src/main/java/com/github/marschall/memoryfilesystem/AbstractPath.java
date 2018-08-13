@@ -197,7 +197,7 @@ abstract class AbstractPath implements Path {
     if (memoryWatcher.getMemoryFileSystem() != this.fileSystem) {
       throw new IllegalArgumentException("watcher has to be from the same file system");
     }
-    MemoryWatchKey watchKey = new MemoryWatchKey(this, memoryWatcher, this.asSet(events));
+    MemoryWatchKey watchKey = new MemoryWatchKey(this, this.asSet(events));
     this.fileSystem.register(watchKey);
     return watchKey;
   }

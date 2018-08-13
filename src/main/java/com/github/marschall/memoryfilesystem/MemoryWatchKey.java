@@ -17,18 +17,13 @@ final class MemoryWatchKey implements WatchKey {
 
   private final AbstractPath path;
   private final Lock lock;
-  private boolean isOverflow;
   private State state;
   private boolean valid;
   private final Set<Kind<?>> events;
-  private List<WatchEvent<?>> accumulatedEvents;
-  private Map<AbstractPath, Integer> accumulatedModificationEvents;
   private List<WatchEvent<?>> pendingEvents;
-  private final MemoryFileSystemWatchService watcher;
 
-  MemoryWatchKey(AbstractPath path, MemoryFileSystemWatchService watcher, Set<Kind<?>> events) {
+  MemoryWatchKey(AbstractPath path, Set<Kind<?>> events) {
     this.path = path;
-    this.watcher = watcher;
     this.events = events;
     this.state = READY;
     this.lock = new ReentrantLock();
