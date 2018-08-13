@@ -900,7 +900,7 @@ public class MemoryFileSystemTest {
     try (InputStream input = Files.newInputStream(path)) {
       byte[] data = new byte[5];
       int start = 1;
-      int read = 0;
+      int read;
       while ((read = input.read(data, start, 555)) != -1) {
         start += read;
       }
