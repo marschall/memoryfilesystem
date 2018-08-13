@@ -162,7 +162,7 @@ abstract class BlockChannel extends FileChannel {
   }
 
   @Override
-  public MappedByteBuffer map(MapMode mode, long position, long size) throws IOException {
+  public MappedByteBuffer map(MapMode mode, long position, long size) {
     throw new UnsupportedOperationException("memory file system does not support mmapped IO");
   }
 

@@ -175,7 +175,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void copyRoot() throws IOException {
+  public void copyRoot() {
     Path root = this.rule.getFileSystem().getPath("/");
     Path path = this.rule.getFileSystem().getPath("/a");
     try {
@@ -193,7 +193,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void copyAlreadyExists() throws IOException, ParseException {
+  public void copyAlreadyExists() throws IOException {
     // copying a folder to an already existing one should throw FileAlreadyExistsException
     FileSystem fileSystem = this.rule.getFileSystem();
     Path source = fileSystem.getPath("source");
@@ -213,7 +213,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void copyAlreadyExistsNotEmpty() throws IOException, ParseException {
+  public void copyAlreadyExistsNotEmpty() throws IOException {
     // copying a folder to an already existing one that is not empty should throw DirectoryNotEmptyException
     FileSystem fileSystem = this.rule.getFileSystem();
     Path source = fileSystem.getPath("source");
@@ -391,7 +391,7 @@ public class MemoryFileSystemCopyTest {
     Files.move(dir, sub);
   }
 
-  public void moveRoot() throws IOException {
+  public void moveRoot() {
     Path root = this.rule.getFileSystem().getPath("/");
     Path path = this.rule.getFileSystem().getPath("/a");
     try {
@@ -519,7 +519,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void moveAlreadyExistsNotEmpty() throws IOException, ParseException {
+  public void moveAlreadyExistsNotEmpty() throws IOException {
     // moving a folder to an already existing one that is not empty should throw DirectoryNotEmptyException
     FileSystem fileSystem = this.rule.getFileSystem();
     Path source = fileSystem.getPath("source");
@@ -541,7 +541,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void moveAlreadyExists() throws IOException, ParseException {
+  public void moveAlreadyExists() throws IOException {
     // moving a folder to an already existing one should throw FileAlreadyExistsException
     FileSystem fileSystem = this.rule.getFileSystem();
     Path source = fileSystem.getPath("source");

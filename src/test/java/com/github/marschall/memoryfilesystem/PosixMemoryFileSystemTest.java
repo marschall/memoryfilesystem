@@ -57,7 +57,7 @@ public class PosixMemoryFileSystemTest {
   }
 
   @Test
-  public void supportedFileAttributeViews() throws IOException {
+  public void supportedFileAttributeViews() {
     FileSystem fileSystem = this.rule.getFileSystem();
     Set<String> actual = fileSystem.supportedFileAttributeViews();
     Set<String> expected = new HashSet<>(Arrays.asList("basic", "owner", "posix"));

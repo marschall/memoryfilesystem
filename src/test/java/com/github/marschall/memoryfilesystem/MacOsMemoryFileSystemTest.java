@@ -57,7 +57,7 @@ public class MacOsMemoryFileSystemTest {
 
 
   @Parameters(name = "native: {0}")
-  public static List<Object[]> fileSystems() throws IOException {
+  public static List<Object[]> fileSystems() {
     String osName = (String) System.getProperties().get("os.name");
     boolean isMac = osName.startsWith("Mac");
     if (isMac) {
@@ -116,7 +116,7 @@ public class MacOsMemoryFileSystemTest {
 
 
   @Test
-  public void forbiddenCharacters() throws IOException {
+  public void forbiddenCharacters() {
     try {
       char c = 0;
       this.getFileSystem().getPath(c + ".txt");
@@ -143,7 +143,7 @@ public class MacOsMemoryFileSystemTest {
   }
 
   @Test
-  public void macOsPaths() throws IOException {
+  public void macOsPaths() {
     FileSystem fileSystem = this.getFileSystem();
     String aUmlaut = "\u00C4";
     String normalized = Normalizer.normalize(aUmlaut, Form.NFD);

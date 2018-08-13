@@ -536,7 +536,7 @@ class MemoryFileSystem extends FileSystem {
     return this.accessFileReading(existing, true, new MemoryEntryBlock<MemoryFile>() {
 
       @Override
-      public MemoryFile value(MemoryEntry entry) throws IOException {
+      public MemoryFile value(MemoryEntry entry) {
         if (entry instanceof MemoryFile) {
           return (MemoryFile) entry;
         }
@@ -1214,7 +1214,7 @@ class MemoryFileSystem extends FileSystem {
 
 
   @Override
-  public WatchService newWatchService() throws IOException {
+  public WatchService newWatchService() {
     this.checker.check();
     // TODO make configurable
     if (true) {

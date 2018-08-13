@@ -28,7 +28,7 @@ public class ToUriTest {
   }
 
   @Test
-  public void contract() throws IOException {
+  public void contract() {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path p = fileSystem.getPath(this.path);
     assertEquals(p.toAbsolutePath(), Paths.get(p.toUri()));

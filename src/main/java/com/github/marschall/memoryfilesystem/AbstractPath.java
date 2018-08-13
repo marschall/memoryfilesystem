@@ -180,7 +180,7 @@ abstract class AbstractPath implements Path {
   abstract int compareTo(AbstractPath other);
 
   @Override
-  public WatchKey register(WatchService watcher, Kind<?>[] events, Modifier... modifiers) throws IOException {
+  public WatchKey register(WatchService watcher, Kind<?>[] events, Modifier... modifiers) {
     // TODO report bug
     // TODO java.nio.file.NotDirectoryException
     if (true) {

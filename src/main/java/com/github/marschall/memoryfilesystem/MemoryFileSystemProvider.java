@@ -390,7 +390,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
 
   @Override
-  public FileStore getFileStore(Path path) throws IOException {
+  public FileStore getFileStore(Path path) {
     return castPath(path).getMemoryFileSystem().getFileStore();
   }
 

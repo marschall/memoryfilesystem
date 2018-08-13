@@ -104,7 +104,7 @@ class MemoryDirectory extends MemoryEntry {
   //caller have to check for write permissions
   // we can't do it here because that may break operations that involve
   // two directories
-  void removeEntry(String name) throws AccessDeniedException {
+  void removeEntry(String name) {
     // TODO check for result
     this.entries.remove(name);
     this.modified();

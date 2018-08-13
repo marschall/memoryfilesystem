@@ -308,7 +308,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void writeAsyncChannelTruncate() throws IOException, InterruptedException, ExecutionException {
+  public void writeAsyncChannelTruncate() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
@@ -324,7 +324,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void writeSyncChannelTruncate() throws IOException, InterruptedException, ExecutionException {
+  public void writeSyncChannelTruncate() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
@@ -378,7 +378,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void writeAsyncChannelBasicMethods() throws IOException, InterruptedException, ExecutionException {
+  public void writeAsyncChannelBasicMethods() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
@@ -396,7 +396,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void writeAsyncChannelWriteCompletionHandler() throws IOException, InterruptedException, ExecutionException {
+  public void writeAsyncChannelWriteCompletionHandler() throws IOException, InterruptedException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
@@ -423,7 +423,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void writeAsyncChannelReadCompletionHandler() throws IOException, InterruptedException, ExecutionException {
+  public void writeAsyncChannelReadCompletionHandler() throws IOException, InterruptedException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
@@ -452,7 +452,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void writeAsyncChannelWriteIoException() throws IOException, InterruptedException, ExecutionException {
+  public void writeAsyncChannelWriteIoException() throws IOException, InterruptedException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
@@ -520,7 +520,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void writeAsyncChannelWriteCompletionFutureFailed() throws IOException, InterruptedException, ExecutionException {
+  public void writeAsyncChannelWriteCompletionFutureFailed() throws IOException, InterruptedException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
@@ -979,7 +979,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void testIsSameFile() throws IOException {
+  public void testIsSameFile() {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path memoryPath = fileSystem.getPath("/");
     Path defaultPath = Paths.get("/foo/bar");
@@ -1858,7 +1858,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void normalizeEmptyPath() throws IOException {
+  public void normalizeEmptyPath() {
     // https://bugs.openjdk.java.net/browse/JDK-8037945
     Path path = this.rule.getFileSystem().getPath("");
     assertEquals(path, path.normalize());
@@ -2031,7 +2031,7 @@ public class MemoryFileSystemTest {
    * Regression test for <a href="https://github.com/marschall/memoryfilesystem/issues/55">Issue 55</a>.
    */
   @Test
-  public void unsupportedViews() throws IOException {
+  public void unsupportedViews() {
     Path root = this.rule.getFileSystem().getPath("/");
     PosixFileAttributeView unsupportedView = Files.getFileAttributeView(root, PosixFileAttributeView.class);
     assertNull(unsupportedView);
@@ -2061,7 +2061,7 @@ public class MemoryFileSystemTest {
 
 
   @Test
-  public void fromUriSingleSlash() throws IOException, URISyntaxException {
+  public void fromUriSingleSlash() throws IOException {
     Path root = this.rule.getFileSystem().getPath("/root");
     Files.createFile(root);
     Path singleSlash = Paths.get(URI.create("memory:name:/root"));
