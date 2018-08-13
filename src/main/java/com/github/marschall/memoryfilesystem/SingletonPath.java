@@ -66,14 +66,14 @@ final class SingletonPath extends ElementPath {
 
   @Override
   public boolean startsWith(String other) {
-    Path path = this.getMemoryFileSystem().getPath(other);
-    return this.isEqualPath((AbstractPath) path);
+    AbstractPath path = this.getMemoryFileSystem().getPath(other);
+    return this.isEqualPath(path);
   }
 
   @Override
   public boolean endsWith(String other) {
-    Path path = this.getMemoryFileSystem().getPath(other);
-    return this.isEqualPath((AbstractPath) path);
+    AbstractPath path = this.getMemoryFileSystem().getPath(other);
+    return this.isEqualPath(path);
   }
 
   @Override

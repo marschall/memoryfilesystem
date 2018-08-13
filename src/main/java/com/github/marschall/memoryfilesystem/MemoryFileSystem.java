@@ -783,7 +783,7 @@ class MemoryFileSystem extends FileSystem {
       }
     } else if (path instanceof ElementPath) {
       R result = null;
-      Path symLinkTarget = null;
+      AbstractPath symLinkTarget = null;
 
       ElementPath elementPath = (ElementPath) path;
       List<String> nameElements = elementPath.getNameElements();
@@ -830,7 +830,7 @@ class MemoryFileSystem extends FileSystem {
       if (symLinkTarget == null) {
         return result;
       } else {
-        return this.withLockDo(root, (AbstractPath) symLinkTarget, encounteredLinks, followSymLinks, lockType, callback);
+        return this.withLockDo(root, symLinkTarget, encounteredLinks, followSymLinks, lockType, callback);
       }
 
     } else {
