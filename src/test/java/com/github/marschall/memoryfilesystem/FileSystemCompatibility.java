@@ -53,9 +53,7 @@ public class FileSystemCompatibility {
   public void iterator() {
     FileSystem fileSystem = FileSystems.getDefault();
     Path path = fileSystem.getPath("/Users/marschall/Documents");
-    Iterator<Path> iterator = path.iterator();
-    while (iterator.hasNext()) {
-      Path next = iterator.next();
+    for (Path next : path) {
       assertThat(next, isRelative());
     }
   }
