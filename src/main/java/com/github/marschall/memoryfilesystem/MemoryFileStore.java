@@ -1,6 +1,5 @@
 package com.github.marschall.memoryfilesystem;
 
-import java.io.IOException;
 import java.nio.file.FileStore;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.FileAttributeView;

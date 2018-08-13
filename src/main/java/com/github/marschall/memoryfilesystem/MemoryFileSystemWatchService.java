@@ -1,6 +1,5 @@
 package com.github.marschall.memoryfilesystem;
 
-import java.io.IOException;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.concurrent.BlockingQueue;

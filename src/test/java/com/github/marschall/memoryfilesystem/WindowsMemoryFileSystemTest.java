@@ -20,7 +20,6 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.channels.ByteChannel;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.DirectoryStream;
