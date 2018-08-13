@@ -1889,7 +1889,7 @@ public class MemoryFileSystemTest {
 
     Map<String, Object> attributes = Files.readAttributes(patch, "lastModifiedTime,lastAccessTime,size");
 
-    Map<String, Object> expected = new HashMap<String, Object>(3);
+    Map<String, Object> expected = new HashMap<>(3);
     expected.put("size", 0L);
     expected.put("lastModifiedTime", lastModifiedTime);
     expected.put("lastAccessTime", lastAccessTime);

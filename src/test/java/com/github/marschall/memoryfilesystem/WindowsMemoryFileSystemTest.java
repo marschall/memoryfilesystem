@@ -133,7 +133,7 @@ public class WindowsMemoryFileSystemTest {
 
     Map<String, Object> attributes = Files.readAttributes(path, "dos:lastModifiedTime,lastAccessTime,size,hidden");
 
-    Map<String, Object> expected = new HashMap<String, Object>(4);
+    Map<String, Object> expected = new HashMap<>(4);
     expected.put("size", 0L);
     expected.put("lastModifiedTime", lastModifiedTime);
     expected.put("lastAccessTime", lastAccessTime);
