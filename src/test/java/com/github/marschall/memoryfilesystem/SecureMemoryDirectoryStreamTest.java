@@ -34,8 +34,7 @@ public class SecureMemoryDirectoryStreamTest {
     Files.createFile(originalFolder.resolve("child"));
     Files.createFile(fileSystem.getPath("child"));
 
-    DirectoryStream<Path> directoryStream = Files.newDirectoryStream(originalFolder);
-    try {
+    try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(originalFolder)) {
       assumeTrue(directoryStream instanceof SecureDirectoryStream);
       SecureDirectoryStream<Path> secure = (SecureDirectoryStream<Path>) directoryStream;
 
@@ -43,8 +42,6 @@ public class SecureMemoryDirectoryStreamTest {
 
       assertThat(fileSystem.getPath("child"), exists());
       assertThat(originalFolder.resolve("child"), not(exists()));
-    } finally {
-      directoryStream.close();
     }
 
   }
@@ -58,8 +55,7 @@ public class SecureMemoryDirectoryStreamTest {
     Files.createFile(originalFolder.resolve("child"));
     Files.createFile(fileSystem.getPath("child"));
 
-    DirectoryStream<Path> directoryStream = Files.newDirectoryStream(originalFolder);
-    try {
+    try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(originalFolder)) {
       assumeTrue(directoryStream instanceof SecureDirectoryStream);
       SecureDirectoryStream<Path> secure = (SecureDirectoryStream<Path>) directoryStream;
 
@@ -67,8 +63,6 @@ public class SecureMemoryDirectoryStreamTest {
 
       assertThat(fileSystem.getPath("child"), not(exists()));
       assertThat(originalFolder.resolve("child"), exists());
-    } finally {
-      directoryStream.close();
     }
 
   }
@@ -80,8 +74,7 @@ public class SecureMemoryDirectoryStreamTest {
     Path originalFolder = fileSystem.getPath("original-folder");
     Files.createDirectory(originalFolder);
 
-    DirectoryStream<Path> directoryStream = Files.newDirectoryStream(originalFolder);
-    try {
+    try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(originalFolder)) {
       assumeTrue(directoryStream instanceof SecureDirectoryStream);
       SecureDirectoryStream<Path> secure = (SecureDirectoryStream<Path>) directoryStream;
 
@@ -92,8 +85,6 @@ public class SecureMemoryDirectoryStreamTest {
         // should reach here
       }
 
-    } finally {
-      directoryStream.close();
     }
 
   }
@@ -107,8 +98,7 @@ public class SecureMemoryDirectoryStreamTest {
     Files.createDirectory(originalFolder.resolve("child"));
     Files.createDirectory(fileSystem.getPath("child"));
 
-    DirectoryStream<Path> directoryStream = Files.newDirectoryStream(originalFolder);
-    try {
+    try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(originalFolder)) {
       assumeTrue(directoryStream instanceof SecureDirectoryStream);
       SecureDirectoryStream<Path> secure = (SecureDirectoryStream<Path>) directoryStream;
 
@@ -116,8 +106,6 @@ public class SecureMemoryDirectoryStreamTest {
 
       assertThat(fileSystem.getPath("child"), exists());
       assertThat(originalFolder.resolve("child"), not(exists()));
-    } finally {
-      directoryStream.close();
     }
 
   }
@@ -131,8 +119,7 @@ public class SecureMemoryDirectoryStreamTest {
     Files.createDirectory(originalFolder.resolve("child"));
     Files.createDirectory(fileSystem.getPath("child"));
 
-    DirectoryStream<Path> directoryStream = Files.newDirectoryStream(originalFolder);
-    try {
+    try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(originalFolder)) {
       assumeTrue(directoryStream instanceof SecureDirectoryStream);
       SecureDirectoryStream<Path> secure = (SecureDirectoryStream<Path>) directoryStream;
 
@@ -140,8 +127,6 @@ public class SecureMemoryDirectoryStreamTest {
 
       assertThat(fileSystem.getPath("child"), not(exists()));
       assertThat(originalFolder.resolve("child"), exists());
-    } finally {
-      directoryStream.close();
     }
 
   }
@@ -153,8 +138,7 @@ public class SecureMemoryDirectoryStreamTest {
     Path originalFolder = fileSystem.getPath("original-folder");
     Files.createDirectory(originalFolder);
 
-    DirectoryStream<Path> directoryStream = Files.newDirectoryStream(originalFolder);
-    try {
+    try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(originalFolder)) {
       assumeTrue(directoryStream instanceof SecureDirectoryStream);
       SecureDirectoryStream<Path> secure = (SecureDirectoryStream<Path>) directoryStream;
 
@@ -165,8 +149,6 @@ public class SecureMemoryDirectoryStreamTest {
         // should reach here
       }
 
-    } finally {
-      directoryStream.close();
     }
 
   }
@@ -186,8 +168,7 @@ public class SecureMemoryDirectoryStreamTest {
     Files.createFile(absolutePath);
     FileUtility.setContents(absolutePath, "absolute");
 
-    DirectoryStream<Path> directoryStream = Files.newDirectoryStream(originalFolder);
-    try {
+    try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(originalFolder)) {
       assumeTrue(directoryStream instanceof SecureDirectoryStream);
       SecureDirectoryStream<Path> secure = (SecureDirectoryStream<Path>) directoryStream;
 
@@ -195,8 +176,6 @@ public class SecureMemoryDirectoryStreamTest {
 
       }
 
-    } finally {
-      directoryStream.close();
     }
 
   }
