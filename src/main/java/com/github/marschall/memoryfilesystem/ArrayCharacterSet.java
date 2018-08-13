@@ -10,8 +10,8 @@ class ArrayCharacterSet implements CharacterSet {
 
   @Override
   public boolean containsAny(String s) {
-    for (int i = 0; i < this.characters.length; ++i) {
-      if (s.indexOf(this.characters[i]) >= 0) {
+    for (char character : this.characters) {
+      if (s.indexOf(character) >= 0) {
         return true;
       }
     }
