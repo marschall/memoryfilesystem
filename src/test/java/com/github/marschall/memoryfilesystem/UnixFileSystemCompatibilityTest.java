@@ -442,7 +442,7 @@ public class UnixFileSystemCompatibilityTest {
     assertEquals(fileSystem.getPath("a"), fileSystem.getPath("a/b/..").normalize());
     assertEquals(fileSystem.getPath(""), fileSystem.getPath("a/..").normalize());
     assertEquals(fileSystem.getPath(".."), fileSystem.getPath("..").normalize());
-    //    System.out.println(fileSystem.getPath("a").subpath(0, 0)); // throws excepption
+    //    System.out.println(fileSystem.getPath("a").subpath(0, 0)); // throws exception
     assertEquals(fileSystem.getPath("a"), fileSystem.getPath("/a/b").getName(0));
     assertEquals(fileSystem.getPath("b"), fileSystem.getPath("/a/b").getName(1));
     assertEquals(fileSystem.getPath("a"), fileSystem.getPath("a/b").getName(0));
@@ -564,7 +564,7 @@ public class UnixFileSystemCompatibilityTest {
   }
 
   @Test
-  public void caseSsensitivePatterns() throws IOException {
+  public void caseSensitivePatterns() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path child1 = fileSystem.getPath("child1");

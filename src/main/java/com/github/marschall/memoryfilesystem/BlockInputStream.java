@@ -27,7 +27,7 @@ final class BlockInputStream extends InputStream {
   //
   //  private final Lock markLock;
   //
-  //  private long markPositon;
+  //  private long markPosition;
   //  private int readLimit;
 
 
@@ -39,7 +39,7 @@ final class BlockInputStream extends InputStream {
     this.path = path;
     //    this.markLock = new ReentrantLock();
     //    this.readLimit = -1;
-    //    this.markPositon = -1L;
+    //    this.markPosition = -1L;
   }
 
 
@@ -113,7 +113,7 @@ final class BlockInputStream extends InputStream {
   //      if (readlimit <= 0) {
   //        throw new IllegalArgumentException("read limit must be positive");
   //      }
-  //      this.markPositon = this.position.get();
+  //      this.markPosition = this.position.get();
   //      this.readLimit = readlimit;
   //    }
   //  }
@@ -127,10 +127,10 @@ final class BlockInputStream extends InputStream {
   //      if (this.readLimit == -1) {
   //        throw new IOException("#mark has not been called");
   //      }
-  //      if (this.position.get() > this.markPositon + this.readLimit) {
+  //      if (this.position.get() > this.markPosition + this.readLimit) {
   //        throw new IOException("readlimit has passed");
   //      }
-  //      this.position.set(this.markPositon);
+  //      this.position.set(this.markPosition);
   //    }
   //  }
 

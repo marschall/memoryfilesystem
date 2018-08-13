@@ -204,7 +204,7 @@ public class MemoryFileSystemCopyTest {
 
     try {
       Files.copy(source, target);
-      fail("should not be able to overwrite exsiting directories");
+      fail("should not be able to overwrite existing directories");
     } catch (FileAlreadyExistsException e) {
       // should reach here
       assert(true);
@@ -292,7 +292,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void copyNoExisitingNoAttributes() throws IOException {
+  public void copyNoExistingNoAttributes() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path a = fileSystem.getPath("/1/a");
     Path b = fileSystem.getPath("/2/b");
@@ -341,7 +341,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void copyReplaceExisitingNoAttributes() throws IOException {
+  public void copyReplaceExsitingNoAttributes() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path a = fileSystem.getPath("/1/a");
     Path b = fileSystem.getPath("/2/b");
@@ -552,7 +552,7 @@ public class MemoryFileSystemCopyTest {
 
     try {
       Files.move(source, target);
-      fail("should not be able to overwrite exsiting directories");
+      fail("should not be able to overwrite existing directories");
     } catch (FileAlreadyExistsException e) {
       // should reach here
       assert(true);
@@ -606,7 +606,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void moveNoExisitingNoAttributes() throws IOException {
+  public void moveNoExistingNoAttributes() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path a = fileSystem.getPath("/1/a");
     Path b = fileSystem.getPath("/2/b");
@@ -624,7 +624,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void moveReplaceExisitingNoAttributes() throws IOException {
+  public void moveReplaceExistingNoAttributes() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path a = fileSystem.getPath("/1/a");
     Path b = fileSystem.getPath("/2/b");

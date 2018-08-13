@@ -49,14 +49,14 @@ class EnvironmentParser {
   }
 
   StringTransformer getStoreTransformer() {
-    return this.getStringTranformer(MemoryFileSystemProperties.PATH_STORE_TRANSFORMER_PROPERTY);
+    return this.getStringTransformer(MemoryFileSystemProperties.PATH_STORE_TRANSFORMER_PROPERTY);
   }
 
   StringTransformer getLookUpTransformer() {
-    return this.getStringTranformer(MemoryFileSystemProperties.PATH_LOOKUP_TRANSFORMER_PROPERTY);
+    return this.getStringTransformer(MemoryFileSystemProperties.PATH_LOOKUP_TRANSFORMER_PROPERTY);
   }
 
-  StringTransformer getStringTranformer(String property) {
+  StringTransformer getStringTransformer(String property) {
     Object value = this.env.get(property);
     if (value != null) {
       if (value instanceof StringTransformer) {
@@ -203,17 +203,17 @@ class EnvironmentParser {
                 + Set.class + " but was " + value.getClass());
       }
     } else {
-      return this.defaultPermssions();
+      return this.defaultPermissions();
     }
   }
 
-  Set<PosixFilePermission> defaultPermssions() {
+  Set<PosixFilePermission> defaultPermissions() {
     return EnumSet.of(OWNER_WRITE, OWNER_READ, GROUP_READ, OTHERS_READ);
   }
 
 
-  StringTransformer getPrincipalNameTransfomer() {
-    return this.getStringTranformer(MemoryFileSystemProperties.PRINCIPAL_TRANSFORMER_PROPERTY);
+  StringTransformer getPrincipalNameTransformer() {
+    return this.getStringTransformer(MemoryFileSystemProperties.PRINCIPAL_TRANSFORMER_PROPERTY);
   }
 
   String getDefaultDirectory() {

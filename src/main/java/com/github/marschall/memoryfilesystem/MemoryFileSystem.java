@@ -63,7 +63,7 @@ import javax.annotation.PreDestroy;
 
 class MemoryFileSystem extends FileSystem {
 
-  private static final Set<String> UNSUPPORTED_INITIAL_ATTRIBUES;
+  private static final Set<String> UNSUPPORTED_INITIAL_ATTRIBUTES;
 
   private static final Set<OpenOption> NO_OPEN_OPTIONS = Collections.emptySet();
 
@@ -124,7 +124,7 @@ class MemoryFileSystem extends FileSystem {
     unsupported.add("creationTime");
     unsupported.add("lastModifiedTime");
 
-    UNSUPPORTED_INITIAL_ATTRIBUES = Collections.unmodifiableSet(unsupported);
+    UNSUPPORTED_INITIAL_ATTRIBUTES = Collections.unmodifiableSet(unsupported);
   }
 
   MemoryFileSystem(String key, String separator, PathParser pathParser, MemoryFileSystemProvider provider, MemoryFileStore store,
@@ -302,7 +302,7 @@ class MemoryFileSystem extends FileSystem {
     if (attrs != null) {
       for (FileAttribute<?> attribute : attrs) {
         String attributeName = attribute.name();
-        if (UNSUPPORTED_INITIAL_ATTRIBUES.contains(attributeName)) {
+        if (UNSUPPORTED_INITIAL_ATTRIBUTES.contains(attributeName)) {
           throw new UnsupportedOperationException("'" + attributeName + "' not supported as initial attribute");
         }
       }
@@ -632,7 +632,7 @@ class MemoryFileSystem extends FileSystem {
           lock.close();
         }
       }
-      return AbsolutePath.createAboslute(this, (Root) path.getRoot(), realPath);
+      return AbsolutePath.createAbsolute(this, (Root) path.getRoot(), realPath);
 
     } else {
       throw new IllegalArgumentException("unknown path type" + path);
@@ -993,7 +993,7 @@ class MemoryFileSystem extends FileSystem {
   private static CopyContext buildCopyContext(EndPointCopyContext source, EndPointCopyContext target, TwoPathOperation operation, CopyOption[] options, int order) {
     boolean followSymLinks = Options.isFollowSymLinks(options);
     boolean replaceExisting = Options.isReplaceExisting(options);
-    boolean copyAttribues = Options.isCopyAttribues(options);
+    boolean copyAttributes = Options.isCopyAttributes(options);
 
     EndPointCopyContext first;
     EndPointCopyContext second;
@@ -1015,7 +1015,7 @@ class MemoryFileSystem extends FileSystem {
     }
 
     return new CopyContext(operation, source, target, first, second, firstFollowSymLinks, secondFollowSymLinks,
-            inverted, replaceExisting, copyAttribues);
+            inverted, replaceExisting, copyAttributes);
   }
 
   static final class CopyContext {
@@ -1028,11 +1028,11 @@ class MemoryFileSystem extends FileSystem {
     final boolean secondFollowSymLinks;
     private final boolean inverted;
     final boolean replaceExisting;
-    final boolean copyAttribues;
+    final boolean copyAttributes;
     final TwoPathOperation operation;
 
     CopyContext(TwoPathOperation operation, EndPointCopyContext source, EndPointCopyContext target, EndPointCopyContext first, EndPointCopyContext second,
-            boolean firstFollowSymLinks, boolean secondFollowSymLinks, boolean inverted, boolean replaceExisting, boolean copyAttribues) {
+            boolean firstFollowSymLinks, boolean secondFollowSymLinks, boolean inverted, boolean replaceExisting, boolean copyAttributes) {
       this.operation = operation;
       this.source = source;
       this.target = target;
@@ -1042,7 +1042,7 @@ class MemoryFileSystem extends FileSystem {
       this.secondFollowSymLinks = secondFollowSymLinks;
       this.inverted = inverted;
       this.replaceExisting = replaceExisting;
-      this.copyAttribues = copyAttribues;
+      this.copyAttributes = copyAttributes;
     }
 
     boolean isSourceFollowSymLinks() {
@@ -1369,7 +1369,7 @@ class MemoryFileSystem extends FileSystem {
       if (targetEntry instanceof MemorySymbolicLink && !copyContext.operation.isMove() && !copyContext.replaceExisting) {
         MemorySymbolicLink link = (MemorySymbolicLink) targetEntry;
         link.setTarget(copyContext.source.path);
-        if (copyContext.copyAttribues) {
+        if (copyContext.copyAttributes) {
           MemoryEntry toCopy = getCopySource(copyContext, sourceEntry);
           targetEntry.initializeAttributes(toCopy);
         }
@@ -1388,7 +1388,7 @@ class MemoryFileSystem extends FileSystem {
     } else {
       MemoryEntry toCopy = getCopySource(copyContext, sourceEntry);
       MemoryEntry copy = targetContext.path.getMemoryFileSystem().copyEntry(targetContext.path, toCopy, targetElementName);
-      if (copyContext.copyAttribues) {
+      if (copyContext.copyAttributes) {
         copy.initializeAttributes(toCopy);
       }
       targetParent.addEntry(targetElementName, copy, copyContext.target.path);

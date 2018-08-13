@@ -69,18 +69,18 @@ public final class Directories {
     boolean sameFileSystem = source.getFileSystem() == target.getFileSystem();
     LinkOption[] linkOptions = linkOptions(copyOptions);
     boolean targetExists = Files.exists(target, linkOptions);
-    boolean copyAttribues = Options.isCopyAttribues(copyOptions);
-    Set<Class<? extends FileAttributeView>> supportedAttribueViews = supportedAttribueViews(source, target, sameFileSystem);
+    boolean copyAttributes = Options.isCopyAttributes(copyOptions);
+    Set<Class<? extends FileAttributeView>> supportedAttributeViews = supportedAttributeViews(source, target, sameFileSystem);
 
     if (!targetExists) {
       Files.createDirectories(target);
     }
 
-    FileVisitor<Path> copier = new DirectoryCopier(source, target, copyOptions, linkOptions, supportedAttribueViews, sameFileSystem, copyAttribues);
+    FileVisitor<Path> copier = new DirectoryCopier(source, target, copyOptions, linkOptions, supportedAttributeViews, sameFileSystem, copyAttributes);
     Files.walkFileTree(source, copier);
 
-    if (!targetExists && copyAttribues) {
-      copyAttributes(source, target, sameFileSystem, supportedAttribueViews, linkOptions);
+    if (!targetExists && copyAttributes) {
+      copyAttributes(source, target, sameFileSystem, supportedAttributeViews, linkOptions);
     }
   }
 
@@ -88,7 +88,7 @@ public final class Directories {
     return Options.isFollowSymLinks(copyOptions) ? NO_LINK_OPTIONS : NOFOLLOW_LINKS;
   }
 
-  private static Set<Class<? extends FileAttributeView>> supportedAttribueViews(Path source, Path target, boolean sameFileSystem) {
+  private static Set<Class<? extends FileAttributeView>> supportedAttributeViews(Path source, Path target, boolean sameFileSystem) {
     Set<String> viewNames = source.getFileSystem().supportedFileAttributeViews();
     if (!sameFileSystem) {
       viewNames = new HashSet<>(viewNames); // can be unmodifyable
@@ -101,13 +101,13 @@ public final class Directories {
     return supportedAttribueViews;
   }
 
-  private static void copyAttributes(Path source, Path target, boolean sameFileSystem, Set<Class<? extends FileAttributeView>> attribueViews, LinkOption[] linkOptions) throws IOException {
+  private static void copyAttributes(Path source, Path target, boolean sameFileSystem, Set<Class<? extends FileAttributeView>> attributeViews, LinkOption[] linkOptions) throws IOException {
 
     BasicFileAttributes basicAttributes = Files.readAttributes(target, BasicFileAttributes.class, linkOptions);
     BasicFileAttributeView basicView = Files.getFileAttributeView(target, BasicFileAttributeView.class, linkOptions);
     basicView.setTimes(basicAttributes.lastModifiedTime(), basicAttributes.lastAccessTime(), basicAttributes.creationTime());
 
-    if (attribueViews.contains(PosixFileAttributeView.class)) {
+    if (attributeViews.contains(PosixFileAttributeView.class)) {
       PosixFileAttributes posixAttributes = Files.readAttributes(target, PosixFileAttributes.class, linkOptions);
       PosixFileAttributeView posixView = Files.getFileAttributeView(target, PosixFileAttributeView.class, linkOptions);
       posixView.setPermissions(posixAttributes.permissions());
@@ -115,9 +115,9 @@ public final class Directories {
       copyGroup(source, target, sameFileSystem, posixAttributes, posixView, linkOptions);
     }
 
-    if (attribueViews.contains(UserDefinedFileAttributeView.class)) {
+    if (attributeViews.contains(UserDefinedFileAttributeView.class)) {
       UserDefinedFileAttributeView sourceAttributes = Files.getFileAttributeView(source, UserDefinedFileAttributeView.class, linkOptions);
-      UserDefinedFileAttributeView targeAttributes = Files.getFileAttributeView(target, UserDefinedFileAttributeView.class, linkOptions);
+      UserDefinedFileAttributeView targetAttributes = Files.getFileAttributeView(target, UserDefinedFileAttributeView.class, linkOptions);
 
       // try to reuse the buffer
       // TODO reuse buffer across files
@@ -137,7 +137,7 @@ public final class Directories {
           throw new FileSystemException(source.toString(), null,"could not read attribute: " + each);
         }
         buffer.flip();
-        int written = targeAttributes.write(each, buffer);
+        int written = targetAttributes.write(each, buffer);
         if (written != size) {
           throw new FileSystemException(target.toString(), null, "could not read attribute: " + each);
         }
@@ -145,7 +145,7 @@ public final class Directories {
       }
     }
 
-    if (attribueViews.contains(DosFileAttributeView.class)) {
+    if (attributeViews.contains(DosFileAttributeView.class)) {
       DosFileAttributes dosAttributes = Files.readAttributes(target, DosFileAttributes.class, linkOptions);
       DosFileAttributeView dosView = Files.getFileAttributeView(target, DosFileAttributeView.class, linkOptions);
       dosView.setArchive(dosAttributes.isArchive());
@@ -191,17 +191,17 @@ public final class Directories {
     private final LinkOption[] linkOptions;
     private final CopyOption[] copyOptions;
     private final boolean sameFileSystem;
-    private final boolean copyAttribues;
-    private final Set<Class<? extends FileAttributeView>> supportedAttribueViews;
+    private final boolean copyAttributes;
+    private final Set<Class<? extends FileAttributeView>> supportedAttributeViews;
 
-    DirectoryCopier(Path source, Path target, CopyOption[] copyOptions, LinkOption[] linkOptions, Set<Class<? extends FileAttributeView>> supportedAttribueViews, boolean sameFileSystem, boolean copyAttribues) {
+    DirectoryCopier(Path source, Path target, CopyOption[] copyOptions, LinkOption[] linkOptions, Set<Class<? extends FileAttributeView>> supportedAttributeViews, boolean sameFileSystem, boolean copyAttributes) {
       this.source = source;
       this.target = target;
       this.copyOptions = copyOptions;
       this.linkOptions = linkOptions;
-      this.supportedAttribueViews = supportedAttribueViews;
+      this.supportedAttributeViews = supportedAttributeViews;
       this.sameFileSystem = sameFileSystem;
-      this.copyAttribues = copyAttribues;
+      this.copyAttributes = copyAttributes;
     }
 
     private Path relativize(Path path) {
@@ -231,8 +231,8 @@ public final class Directories {
 
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-      if (this.copyAttribues) {
-        copyAttributes(this.source, this.relativize(dir), this.sameFileSystem, this.supportedAttribueViews, this.linkOptions);
+      if (this.copyAttributes) {
+        copyAttributes(this.source, this.relativize(dir), this.sameFileSystem, this.supportedAttributeViews, this.linkOptions);
       }
       return CONTINUE;
     }

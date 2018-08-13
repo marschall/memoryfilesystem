@@ -69,7 +69,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   @Override
   public FileSystem newFileSystem(URI uri, Map<String, ?> env) throws IOException {
-    this.valideUri(uri);
+    this.validateUri(uri);
     String key = this.getFileSystemKey(uri);
     EnvironmentParser parser = new EnvironmentParser(env);
     MemoryFileSystem fileSystem = this.createNewFileSystem(key, parser);
@@ -82,7 +82,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     }
   }
 
-  private void valideUri(URI uri) {
+  private void validateUri(URI uri) {
     String schemeSpecificPart = uri.getSchemeSpecificPart();
     if (schemeSpecificPart.isEmpty()) {
       throw new IllegalArgumentException("scheme specific part must not be empty");
@@ -149,8 +149,8 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
           ClosedFileSystemChecker checker) {
     List<String> userNames = parser.getUserNames();
     List<String> groupNames = parser.getGroupNames();
-    StringTransformer nameTransfomer = parser.getPrincipalNameTransfomer();
-    return MemoryUserPrincipalLookupService.newInstance(userNames, groupNames, nameTransfomer, checker);
+    StringTransformer nameTransformer = parser.getPrincipalNameTransformer();
+    return MemoryUserPrincipalLookupService.newInstance(userNames, groupNames, nameTransformer, checker);
   }
 
 

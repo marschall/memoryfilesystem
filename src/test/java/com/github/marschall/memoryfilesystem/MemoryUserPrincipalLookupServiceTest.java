@@ -16,7 +16,7 @@ import org.junit.Test;
 public class MemoryUserPrincipalLookupServiceTest {
 
   @Test
-  public void identiy() throws IOException {
+  public void identity() throws IOException {
     List<String> users = singletonList("user");
     List<String> groups = singletonList("group");
     StringTransformer transformer = StringTransformers.IDENTIY;
@@ -61,7 +61,7 @@ public class MemoryUserPrincipalLookupServiceTest {
   }
 
   @Test
-  public void caseInsenstive() throws IOException {
+  public void caseInsensitive() throws IOException {
     List<String> users = singletonList("usEr");
     List<String> groups = singletonList("grOup");
     StringTransformer transformer = StringTransformers.caseInsensitive(Locale.US);

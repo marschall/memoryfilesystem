@@ -75,7 +75,7 @@ public class LockSetTest {
   @Test
   public void tryLock() {
     FileLock lock = this.lockSet.tryLock(this.toAdd);
-    assertEquals("lock acquision successfull", this.expectedSuccess, lock != null);
+    assertEquals("lock acquisition successful", this.expectedSuccess, lock != null);
     if (this.expectedSuccess) {
       assertSame(this.toAdd, lock);
     }
@@ -87,11 +87,11 @@ public class LockSetTest {
     try {
       lock = this.lockSet.lock(this.toAdd);
       if (!this.expectedSuccess) {
-        fail("lock acquision successfull");
+        fail("lock acquisition successful");
       }
     } catch (OverlappingFileLockException e) {
       if (this.expectedSuccess) {
-        fail("lock acquision failed");
+        fail("lock acquisition failed");
       }
     }
     if (this.expectedSuccess) {

@@ -45,7 +45,7 @@ public final class StringTransformers {
    */
   public  static StringTransformer caseInsensitive(Locale locale) {
     Objects.requireNonNull(locale);
-    return new CaseInsenstive(locale);
+    return new CaseInsensitive(locale);
   }
 
   /**
@@ -56,7 +56,7 @@ public final class StringTransformers {
    * @return the transformer
    */
   public  static StringTransformer caseInsensitiveMacOSNative(Locale locale) {
-    return new CaseInsenstiveMacOSNative(locale);
+    return new CaseInsensitiveMacOSNative(locale);
   }
 
   /**
@@ -67,7 +67,7 @@ public final class StringTransformers {
    * @return the transformer
    */
   public  static StringTransformer caseInsensitiveMacOSJvm(Locale locale) {
-    return new CaseInsenstiveMacOSJvm(locale);
+    return new CaseInsensitiveMacOSJvm(locale);
   }
 
   static final class NFD implements StringTransformer {
@@ -100,11 +100,11 @@ public final class StringTransformers {
 
   }
 
-  static final class CaseInsenstiveMacOSNative implements StringTransformer {
+  static final class CaseInsensitiveMacOSNative implements StringTransformer {
 
     private final Locale locale;
 
-    CaseInsenstiveMacOSNative(Locale locale) {
+    CaseInsensitiveMacOSNative(Locale locale) {
       this.locale = locale;
     }
 
@@ -120,11 +120,11 @@ public final class StringTransformers {
 
   }
 
-  static final class CaseInsenstiveMacOSJvm implements StringTransformer {
+  static final class CaseInsensitiveMacOSJvm implements StringTransformer {
 
     private final Locale locale;
 
-    CaseInsenstiveMacOSJvm(Locale locale) {
+    CaseInsensitiveMacOSJvm(Locale locale) {
       this.locale = locale;
     }
 
@@ -140,11 +140,11 @@ public final class StringTransformers {
 
   }
 
-  static final class CaseInsenstive implements StringTransformer {
+  static final class CaseInsensitive implements StringTransformer {
 
     private final Locale locale;
 
-    CaseInsenstive(Locale locale) {
+    CaseInsensitive(Locale locale) {
       this.locale = locale;
     }
 

@@ -100,7 +100,7 @@ public final class MemoryFileSystemBuilder {
    * @return the current builder object
    * @see java.nio.file.FileSystem#getSeparator()
    */
-  public MemoryFileSystemBuilder setSeprator(String separator) {
+  public MemoryFileSystemBuilder setSeparator(String separator) {
     Objects.requireNonNull(separator);
     this.separator = separator;
     return this;
@@ -312,7 +312,7 @@ public final class MemoryFileSystemBuilder {
   public static MemoryFileSystemBuilder newLinux() {
     return new MemoryFileSystemBuilder()
             .addRoot(MemoryFileSystemProperties.UNIX_ROOT)
-            .setSeprator(MemoryFileSystemProperties.UNIX_SEPARATOR)
+            .setSeparator(MemoryFileSystemProperties.UNIX_SEPARATOR)
             .addUser(getSystemUserName())
             .addGroup(getSystemUserName())
             .addFileAttributeView(PosixFileAttributeView.class)
@@ -347,7 +347,7 @@ public final class MemoryFileSystemBuilder {
     MemoryFileSystemBuilder builder = new MemoryFileSystemBuilder();
     return builder
             .addRoot(MemoryFileSystemProperties.UNIX_ROOT)
-            .setSeprator(MemoryFileSystemProperties.UNIX_SEPARATOR)
+            .setSeparator(MemoryFileSystemProperties.UNIX_SEPARATOR)
             .addUser(getSystemUserName())
             .addGroup(getSystemUserName())
             .addFileAttributeView(PosixFileAttributeView.class)
@@ -383,7 +383,7 @@ public final class MemoryFileSystemBuilder {
     MemoryFileSystemBuilder builder = new MemoryFileSystemBuilder();
     return builder
             .addRoot(MemoryFileSystemProperties.UNIX_ROOT)
-            .setSeprator(MemoryFileSystemProperties.UNIX_SEPARATOR)
+            .setSeparator(MemoryFileSystemProperties.UNIX_SEPARATOR)
             .addUser(getSystemUserName())
             .addGroup(getSystemUserName())
             .addFileAttributeView(PosixFileAttributeView.class)
@@ -417,7 +417,7 @@ public final class MemoryFileSystemBuilder {
   public static MemoryFileSystemBuilder newWindows() {
     return new MemoryFileSystemBuilder()
             .addRoot("C:\\")
-            .setSeprator(MemoryFileSystemProperties.WINDOWS_SEPARATOR)
+            .setSeparator(MemoryFileSystemProperties.WINDOWS_SEPARATOR)
             .addUser(getSystemUserName())
             .addGroup(getSystemUserName())
             .addFileAttributeView(DosFileAttributeView.class)

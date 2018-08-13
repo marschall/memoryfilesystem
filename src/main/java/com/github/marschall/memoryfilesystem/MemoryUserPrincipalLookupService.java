@@ -101,12 +101,12 @@ final class MemoryUserPrincipalLookupService extends UserPrincipalLookupService 
     }
   }
 
-  static abstract class MemoryPrincial implements UserPrincipal {
+  static abstract class MemoryPrincipal implements UserPrincipal {
 
     private final String name;
 
 
-    MemoryPrincial(String name) {
+    MemoryPrincipal(String name) {
       this.name = name;
     }
 
@@ -122,14 +122,14 @@ final class MemoryUserPrincipalLookupService extends UserPrincipalLookupService 
     }
   }
 
-  static final class MemoryUser extends MemoryPrincial {
+  static final class MemoryUser extends MemoryPrincipal {
 
     MemoryUser(String name) {
       super(name);
     }
   }
 
-  static final class MemoryGroup extends MemoryPrincial implements GroupPrincipal {
+  static final class MemoryGroup extends MemoryPrincipal implements GroupPrincipal {
 
 
     MemoryGroup(String name) {

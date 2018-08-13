@@ -117,7 +117,7 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
   BlockChannel newChannel(Set<? extends OpenOption> options, Path path) throws IOException {
     boolean append = options.contains(APPEND);
     boolean writable = options.contains(WRITE);
-    // if neither read nor wirte are present we defautl to read
+    // if neither read nor write are present we default to read
     // java.nio.file.Files.newByteChannel(Path, Set<? extends OpenOption>, FileAttribute<?>...)
     boolean readable = options.contains(READ) || (!writable && !append);
     boolean deleteOnClose = options.contains(DELETE_ON_CLOSE);
