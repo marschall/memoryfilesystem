@@ -2,7 +2,6 @@ package com.github.marschall.memoryfilesystem;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.util.Arrays;
