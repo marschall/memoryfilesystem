@@ -37,7 +37,7 @@ final class AppendingBlockChannel extends BlockChannel {
   public int write(ByteBuffer src) throws IOException {
     try (AutoRelease lock = this.writeLock()) {
       int written = this.memoryContents.writeAtEnd(src);
-      this.position = this.memoryContents.size();
+      this.position.set(this.memoryContents.size());
       return written;
     }
   }
@@ -66,7 +66,7 @@ final class AppendingBlockChannel extends BlockChannel {
         long written = this.memoryContents.writeAtEnd(srcs[offset + i], Long.MAX_VALUE - totalWritten);
         if (written != -1) {
           // we could read data, update position and total counter
-          this.position += written;
+          this.position.addAndGet(written);
           totalWritten += written;
         } else if (i == 0) {
           // we could not read and it was the first try a reading

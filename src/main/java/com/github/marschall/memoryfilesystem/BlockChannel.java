@@ -13,12 +13,13 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 abstract class BlockChannel extends FileChannel {
 
-  volatile long position;
+  final AtomicLong position;
 
   final MemoryContents memoryContents;
 
@@ -44,6 +45,7 @@ abstract class BlockChannel extends FileChannel {
 
 
   BlockChannel(MemoryContents memoryContents, boolean readable, boolean deleteOnClose, Path path) {
+    this.position = new AtomicLong();
     this.memoryContents = memoryContents;
     this.readable = readable;
     this.deleteOnClose = deleteOnClose;
@@ -80,10 +82,9 @@ abstract class BlockChannel extends FileChannel {
   @Override
   public int read(ByteBuffer dst) throws IOException {
     try (AutoRelease lock = this.readLock()) {
-      int read = this.memoryContents.readShort(dst, this.position);
+      int read = this.memoryContents.readShort(dst, this.position.get());
       if (read != -1) {
-        this.position += read;
-      }
+        this.position.addAndGet(read);      }
       return read;
     }
   }
@@ -102,10 +103,10 @@ abstract class BlockChannel extends FileChannel {
 
         // we have to make sure a buffers capacity is exhausted before reading into the
         // next buffer so we use the method that returns a long
-        long read = this.memoryContents.read(dsts[offset + i], this.position, Long.MAX_VALUE - totalRead);
+        long read = this.memoryContents.read(dsts[offset + i], this.position.get(), Long.MAX_VALUE - totalRead);
         if (read != -1) {
           // we could read data, update position and total counter
-          this.position += read;
+          this.position.addAndGet(read);
           totalRead += read;
         } else if (i == 0) {
           // we could not read and it was the first try a reading
@@ -169,7 +170,7 @@ abstract class BlockChannel extends FileChannel {
   @Override
   public long position() throws IOException {
     this.closedCheck();
-    return this.position;
+    return this.position.get();
   }
 
 
@@ -180,7 +181,7 @@ abstract class BlockChannel extends FileChannel {
     }
     this.closedCheck();
     try (AutoRelease autoRelease = autoRelease(this.lock)) {
-      this.position = newPosition;
+      this.position.set(newPosition);
     }
     return this;
   }

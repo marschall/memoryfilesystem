@@ -37,8 +37,8 @@ final class NonAppendingBlockChannel extends BlockChannel {
   @Override
   public int write(ByteBuffer src) throws IOException {
     try (AutoRelease lock = this.writeLock()) {
-      int written = this.memoryContents.writeShort(src, this.position);
-      this.position += written;
+      int written = this.memoryContents.writeShort(src, this.position.get());
+      this.position.addAndGet(written);
       return written;
     }
   }
@@ -66,10 +66,10 @@ final class NonAppendingBlockChannel extends BlockChannel {
 
         // we have to make sure a buffers capacity is exhausted before writing into the
         // next buffer so we use the method that returns a long
-        long written = this.memoryContents.write(srcs[offset + i], this.position, Long.MAX_VALUE - totalWritten);
+        long written = this.memoryContents.write(srcs[offset + i], this.position.get(), Long.MAX_VALUE - totalWritten);
         if (written != -1) {
           // we could read data, update position and total counter
-          this.position += written;
+          this.position.addAndGet(written);
           totalWritten += written;
         } else if (i == 0) {
           // we could not read and it was the first try a reading
@@ -93,7 +93,7 @@ final class NonAppendingBlockChannel extends BlockChannel {
     try (AutoRelease lock = this.writeLock()) {
       this.memoryContents.truncate(size);
       // REVIEW, not sure from doc but kinda makes sense
-      this.position = this.memoryContents.size();
+      this.position.set(this.memoryContents.size());
     }
     return this;
   }
