@@ -157,7 +157,7 @@ public class MemoryFileSystemCopyTest {
   @Test
   public void copyRootDifferentFileSystems() throws IOException {
     Path firstRoot = this.rule.getFileSystem().getPath("/");
-    try (FileSystem second = MemoryFileSystemBuilder.newEmpty().build("second");) {
+    try (FileSystem second = MemoryFileSystemBuilder.newEmpty().build("second")) {
       Path secondRoot = second.getPath("/");
       try {
         Files.copy(firstRoot, secondRoot);
@@ -413,7 +413,7 @@ public class MemoryFileSystemCopyTest {
   @Test
   public void moveRootDifferentFileSystems() throws IOException {
     Path firstRoot = this.rule.getFileSystem().getPath("/");
-    try (FileSystem second = MemoryFileSystemBuilder.newEmpty().build("second");) {
+    try (FileSystem second = MemoryFileSystemBuilder.newEmpty().build("second")) {
       Path secondRoot = second.getPath("/");
       try {
         Files.move(firstRoot, secondRoot);
