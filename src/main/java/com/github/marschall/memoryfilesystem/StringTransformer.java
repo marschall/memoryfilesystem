@@ -19,7 +19,7 @@ public interface StringTransformer {
    * @param s the string to transform, not {@code null}
    * @return the transformed string, not {@code null}
    */
-  public String transform(String s);
+  String transform(String s);
 
   /**
    * Returns the regex flags used to achieve a compatible regex behavior.

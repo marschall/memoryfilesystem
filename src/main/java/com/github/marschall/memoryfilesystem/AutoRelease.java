@@ -4,6 +4,6 @@ interface AutoRelease extends AutoCloseable {
 
 
   @Override
-  public void close();
+  void close();
 
 }
