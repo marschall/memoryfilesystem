@@ -436,7 +436,6 @@ class MemoryFileSystem extends FileSystem {
         Set<PosixFilePermission> newPerms = EnumSet.copyOf(perms);
         newPerms.removeAll(this.umask);
         copy[i] = PosixFilePermissions.asFileAttribute(newPerms);
-        continue;
       }
     }
 
