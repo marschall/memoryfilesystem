@@ -82,7 +82,7 @@ public class UnixFileSystemCompatibilityTest {
 
 
   @Parameters(name = "native: {0}")
-  public static List<Object[]> fileSystems() throws IOException {
+  public static List<Object[]> fileSystems() {
     FileSystem defaultFileSystem = FileSystems.getDefault();
     boolean isPosix = defaultFileSystem.supportedFileAttributeViews().contains("posix");
     String osName = (String) System.getProperties().get("os.name");
@@ -97,7 +97,7 @@ public class UnixFileSystemCompatibilityTest {
 
 
   @Test
-  public void forbiddenCharacters() throws IOException {
+  public void forbiddenCharacters() {
     try {
       char c = 0;
       this.getFileSystem().getPath(c + ".txt");
@@ -185,7 +185,7 @@ public class UnixFileSystemCompatibilityTest {
   }
 
   @Test
-  public void notExistingView() throws IOException {
+  public void notExistingView() {
     Path path = this.getFileSystem().getPath("/foo/bar/does/not/exist");
     BasicFileAttributeView attributeView = Files.getFileAttributeView(path, BasicFileAttributeView.class);
     assertNotNull(attributeView);
@@ -547,7 +547,7 @@ public class UnixFileSystemCompatibilityTest {
   }
 
   @Test
-  public void unixPaths() throws IOException {
+  public void unixPaths() {
 
     // https://github.com/marschall/memoryfilesystem/pull/51
     assumeTrue(Charset.defaultCharset().equals(UTF_8));

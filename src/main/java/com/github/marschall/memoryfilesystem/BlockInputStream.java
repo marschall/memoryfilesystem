@@ -97,7 +97,7 @@ final class BlockInputStream extends InputStream {
   }
 
   @Override
-  public void close() throws IOException {
+  public void close() {
     if (this.checker.close()) {
       this.memoryContents.accessed();
       this.memoryContents.closedStream(this.path, this.deleteOnClose);

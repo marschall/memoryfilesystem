@@ -50,7 +50,7 @@ public class FileSystemCompatibilityTest {
   }
 
   @Parameters(name = "native: {0}")
-  public static List<Object[]> fileSystems() throws IOException {
+  public static List<Object[]> fileSystems() {
     return Arrays.asList(new Object[]{true}, new Object[]{false});
   }
 
@@ -215,7 +215,7 @@ public class FileSystemCompatibilityTest {
   }
 
   @Test
-  public void regression93() throws IOException {
+  public void regression93() {
     FileSystem fileSystem = this.getFileSystem();
 
     Path child = fileSystem.getPath(".gitignore");

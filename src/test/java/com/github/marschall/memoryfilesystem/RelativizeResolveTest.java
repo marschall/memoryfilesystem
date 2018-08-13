@@ -32,7 +32,7 @@ public class RelativizeResolveTest {
   }
 
   @Test
-  public void contract() throws IOException {
+  public void contract() {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path p = fileSystem.getPath(this.first);
     Path q = fileSystem.getPath(this.second);

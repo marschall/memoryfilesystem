@@ -99,7 +99,7 @@ final class NonAppendingBlockChannel extends BlockChannel {
   }
 
   @Override
-  public void force(boolean metaData) throws IOException {
+  public void force(boolean metaData) {
     if (metaData) {
       if (!this.writable) {
         this.memoryContents.accessed();

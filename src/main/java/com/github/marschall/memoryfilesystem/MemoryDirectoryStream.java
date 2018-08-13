@@ -35,7 +35,7 @@ final class MemoryDirectoryStream implements DirectoryStream<Path> {
   }
 
   @Override
-  public void close() throws IOException {
+  public void close() {
     STATE_UPDATER.set(this, CLOSED);
     this.iterator.close();
   }

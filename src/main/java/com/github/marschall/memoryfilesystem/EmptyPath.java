@@ -95,7 +95,7 @@ final class EmptyPath extends ElementPath {
   }
 
   @Override
-  public Path toRealPath(LinkOption... options) throws IOException {
+  public Path toRealPath(LinkOption... options) {
     return this.getMemoryFileSystem().getDefaultPath();
   }
 

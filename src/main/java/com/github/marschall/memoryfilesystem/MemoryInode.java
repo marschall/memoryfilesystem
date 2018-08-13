@@ -105,7 +105,7 @@ final class MemoryInode {
     }
   }
 
-  long read(ByteBuffer dst, long position, long maximum) throws IOException {
+  long read(ByteBuffer dst, long position, long maximum) {
     try (AutoRelease lock = this.readLock()) {
       if (position >= this.size) {
         return -1L;
@@ -133,7 +133,7 @@ final class MemoryInode {
     return (int) this.read(dst, position, Integer.MAX_VALUE);
   }
 
-  int read(byte[] dst, long position, int off, int len) throws IOException {
+  int read(byte[] dst, long position, int off, int len) {
     try (AutoRelease lock = this.readLock()) {
       if (position >= this.size) {
         return -1;

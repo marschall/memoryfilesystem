@@ -29,7 +29,7 @@ public class MemoryFileSystemProviderTest {
   }
 
   @Test(expected = FileSystemNotFoundException.class)
-  public void getNotExistingFileSystem() throws URISyntaxException, IOException {
+  public void getNotExistingFileSystem() {
     FileSystems.getFileSystem(SAMPLE_URI);
   }
 

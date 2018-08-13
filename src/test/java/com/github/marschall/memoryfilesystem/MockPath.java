@@ -115,7 +115,7 @@ final class MockPath implements Path {
   }
 
   @Override
-  public Path toRealPath(LinkOption... options) throws IOException {
+  public Path toRealPath(LinkOption... options) {
     throw new UnsupportedOperationException();
   }
 

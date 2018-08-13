@@ -133,7 +133,7 @@ final class AttributeAccessors {
     }
 
     @Override
-    public void writeAttribute(Object value, MemoryEntry entry) throws IOException {
+    public void writeAttribute(Object value, MemoryEntry entry) {
       throw new IllegalArgumentException("\"isRegularFile\" can not be written");
     }
 
@@ -147,7 +147,7 @@ final class AttributeAccessors {
     }
 
     @Override
-    public void writeAttribute(Object value, MemoryEntry entry) throws IOException {
+    public void writeAttribute(Object value, MemoryEntry entry) {
       throw new IllegalArgumentException("\"isDirectory\" can not be written");
     }
 
@@ -161,7 +161,7 @@ final class AttributeAccessors {
     }
 
     @Override
-    public void writeAttribute(Object value, MemoryEntry entry) throws IOException {
+    public void writeAttribute(Object value, MemoryEntry entry) {
       throw new IllegalArgumentException("\"isOther\" can not be written");
     }
 
@@ -175,7 +175,7 @@ final class AttributeAccessors {
     }
 
     @Override
-    public void writeAttribute(Object value, MemoryEntry entry) throws IOException {
+    public void writeAttribute(Object value, MemoryEntry entry) {
       throw new IllegalArgumentException("\"isSymbolicLink\" can not be written");
     }
 
@@ -189,7 +189,7 @@ final class AttributeAccessors {
     }
 
     @Override
-    public void writeAttribute(Object value, MemoryEntry entry) throws IOException {
+    public void writeAttribute(Object value, MemoryEntry entry) {
       throw new IllegalArgumentException("\"size\" can not be written");
     }
 
@@ -203,7 +203,7 @@ final class AttributeAccessors {
     }
 
     @Override
-    public void writeAttribute(Object value, MemoryEntry entry) throws IOException {
+    public void writeAttribute(Object value, MemoryEntry entry) {
       throw new IllegalArgumentException("\"fileKey\" can not be written");
     }
 
