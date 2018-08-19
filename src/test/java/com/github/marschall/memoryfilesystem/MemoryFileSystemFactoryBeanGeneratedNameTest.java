@@ -7,16 +7,21 @@ import java.nio.file.FileSystem;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @ContextConfiguration(locations = "MemoryFileSystemFactoryBeanTest-context-generated.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
-public class MemoryFileSystemFactoryBeanGeneratedNameTest {
+public class MemoryFileSystemFactoryBeanGeneratedNameTest implements ApplicationContextAware {
 
-  @Autowired
   private FileSystem fileSystem;
+
+  @Override
+  public void setApplicationContext(ApplicationContext applicationContext) {
+    this.fileSystem = applicationContext.getBean(FileSystem.class);
+  }
 
   @Test
   public void isOpen() {
