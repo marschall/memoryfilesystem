@@ -219,3 +219,8 @@ The following guidelines are designed to help you write code that can easily be 
   * Use `FileChannel#open` instead of `FileInputStream#getChannel()`, `FileOutputStream#getChannel()`, or `RandomAccessFile#getChannel()` to create a `FileChannel`
 * Use `FileSystem#getPath(String, String...)` instead of `Paths#get(String, String...)` to create a `Path` instance because the latter creates an instance on the default file system.
 
+
+Building
+--------
+
+The project requires that JAVA_HOME is set to a JDK 10 or a toolchain with version 10 is set up.
