@@ -19,8 +19,6 @@ final class FileUtility {
     }
   }
 
-
-
   static void createAndSetContents(Path path, String contents) throws IOException {
     Path parent = path.toAbsolutePath().getParent();
     if (!parent.equals(parent.getRoot())) {

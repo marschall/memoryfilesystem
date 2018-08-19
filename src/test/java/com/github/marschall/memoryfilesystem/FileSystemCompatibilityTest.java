@@ -1,5 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
+import static com.github.marschall.memoryfilesystem.FileContentsMatcher.hasContents;
+import static com.github.marschall.memoryfilesystem.FileUtility.setContents;
 import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isAbsolute;
 import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isRelative;
 import static com.github.marschall.memoryfilesystem.PathMatchesMatcher.matches;
@@ -151,8 +153,6 @@ public class FileSystemCompatibilityTest {
     assertEquals(1, path.getNameCount());
   }
 
-
-
   @Test
   public void positionAfterTruncate() throws IOException {
     Path currentDirectory = this.getFileSystem().getPath("");
@@ -184,6 +184,26 @@ public class FileSystemCompatibilityTest {
       assertEquals(5L, channel.position());
       //      channel.truncate(channel.size() - 1L);
       //      channel.truncate(1L);
+    } finally {
+      Files.delete(path);
+    }
+  }
+
+  @Test
+  public void appendPostion() throws IOException {
+    Path path = Files.createTempFile("sample", ".txt");
+    String originalContent = "0123456789";
+    setContents(path, originalContent);
+    try (SeekableByteChannel channel = Files.newByteChannel(path, APPEND)) {
+      assertEquals("position", originalContent.length(), channel.position());
+      byte[] appended = new byte[]{'a', 'b', 'c', 'd'};
+      ByteBuffer src = ByteBuffer.wrap(appended);
+      assertEquals("position", originalContent.length(), channel.position());
+      channel.write(src);
+      assertEquals("position", originalContent.length() + appended.length, channel.position());
+
+      channel.truncate(0L);
+      assertThat(path, hasContents(""));
     } finally {
       Files.delete(path);
     }
