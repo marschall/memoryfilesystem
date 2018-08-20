@@ -41,7 +41,7 @@ public class FileSystemCompatibility {
   }
 
   @Test
-  public void t() throws IOException {
+  public void posixAttributes() throws IOException {
     FileSystem fileSystem = FileSystems.getDefault();
     Path path = fileSystem.getPath("/Users/marschall/Documents");
     if (Files.exists(path)) {
@@ -53,8 +53,20 @@ public class FileSystemCompatibility {
   public void iterator() {
     FileSystem fileSystem = FileSystems.getDefault();
     Path path = fileSystem.getPath("/Users/marschall/Documents");
-    for (Path next : path) {
+    Iterator<Path> iterator = path.iterator();
+    while (iterator.hasNext()) {
+      Path next = iterator.next();
       assertThat(next, isRelative());
+      assertThat(next, isRelative());
+    }
+  }
+
+  @Test
+  public void iterable() {
+    FileSystem fileSystem = FileSystems.getDefault();
+    Path path = fileSystem.getPath("/Users/marschall/Documents");
+    for (Path element : path) {
+      assertThat(element, isRelative());
     }
   }
 
