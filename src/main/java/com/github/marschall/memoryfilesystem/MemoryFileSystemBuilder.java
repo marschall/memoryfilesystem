@@ -100,7 +100,7 @@ public final class MemoryFileSystemBuilder {
    * @return the current builder object
    * @see java.nio.file.FileSystem#getSeparator()
    */
-  public MemoryFileSystemBuilder setSeprator(String separator) {
+  public MemoryFileSystemBuilder setSeparator(String separator) {
     Objects.requireNonNull(separator);
     this.separator = separator;
     return this;
@@ -312,7 +312,7 @@ public final class MemoryFileSystemBuilder {
   public static MemoryFileSystemBuilder newLinux() {
     return new MemoryFileSystemBuilder()
             .addRoot(MemoryFileSystemProperties.UNIX_ROOT)
-            .setSeprator(MemoryFileSystemProperties.UNIX_SEPARATOR)
+            .setSeparator(MemoryFileSystemProperties.UNIX_SEPARATOR)
             .addUser(getSystemUserName())
             .addGroup(getSystemUserName())
             .addFileAttributeView(PosixFileAttributeView.class)
@@ -347,7 +347,7 @@ public final class MemoryFileSystemBuilder {
     MemoryFileSystemBuilder builder = new MemoryFileSystemBuilder();
     return builder
             .addRoot(MemoryFileSystemProperties.UNIX_ROOT)
-            .setSeprator(MemoryFileSystemProperties.UNIX_SEPARATOR)
+            .setSeparator(MemoryFileSystemProperties.UNIX_SEPARATOR)
             .addUser(getSystemUserName())
             .addGroup(getSystemUserName())
             .addFileAttributeView(PosixFileAttributeView.class)
@@ -383,7 +383,7 @@ public final class MemoryFileSystemBuilder {
     MemoryFileSystemBuilder builder = new MemoryFileSystemBuilder();
     return builder
             .addRoot(MemoryFileSystemProperties.UNIX_ROOT)
-            .setSeprator(MemoryFileSystemProperties.UNIX_SEPARATOR)
+            .setSeparator(MemoryFileSystemProperties.UNIX_SEPARATOR)
             .addUser(getSystemUserName())
             .addGroup(getSystemUserName())
             .addFileAttributeView(PosixFileAttributeView.class)
@@ -417,7 +417,7 @@ public final class MemoryFileSystemBuilder {
   public static MemoryFileSystemBuilder newWindows() {
     return new MemoryFileSystemBuilder()
             .addRoot("C:\\")
-            .setSeprator(MemoryFileSystemProperties.WINDOWS_SEPARATOR)
+            .setSeparator(MemoryFileSystemProperties.WINDOWS_SEPARATOR)
             .addUser(getSystemUserName())
             .addGroup(getSystemUserName())
             .addFileAttributeView(DosFileAttributeView.class)
@@ -502,14 +502,8 @@ public final class MemoryFileSystemBuilder {
     if (this.collator != null) {
       env.put(MemoryFileSystemProperties.COLLATOR_PROPERTY, this.collator);
     }
-    if (this.additionalFileAttributeViews != null) {
-      env.put(MemoryFileSystemProperties.FILE_ATTRIBUTE_VIEWS_PROPERTY, this.additionalFileAttributeViews);
-    }
     if (this.umask != null) {
       env.put(MemoryFileSystemProperties.UMASK_PROPERTY, this.umask);
-    }
-    if (this.forbiddenCharacters != null) {
-      env.put(MemoryFileSystemProperties.FORBIDDEN_CHARACTERS, this.forbiddenCharacters);
     }
     if (!this.users.isEmpty()) {
       env.put(MemoryFileSystemProperties.USERS_PROPERTY, new ArrayList<>(this.users));
@@ -517,6 +511,10 @@ public final class MemoryFileSystemBuilder {
     if (!this.groups.isEmpty()) {
       env.put(MemoryFileSystemProperties.GROUPS_PROPERTY, new ArrayList<>(this.groups));
     }
+
+    env.put(MemoryFileSystemProperties.FILE_ATTRIBUTE_VIEWS_PROPERTY, this.additionalFileAttributeViews);
+    env.put(MemoryFileSystemProperties.FORBIDDEN_CHARACTERS, this.forbiddenCharacters);
+
     return env;
   }
 

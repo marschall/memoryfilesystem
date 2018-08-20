@@ -1,6 +1,5 @@
 package com.github.marschall.memoryfilesystem;
 
-import java.io.IOException;
 import java.nio.file.FileStore;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.FileAttributeView;
@@ -40,21 +39,21 @@ class MemoryFileStore extends FileStore {
 
 
   @Override
-  public long getTotalSpace() throws IOException {
+  public long getTotalSpace() {
     this.checker.check();
     return Runtime.getRuntime().maxMemory();
   }
 
 
   @Override
-  public long getUsableSpace() throws IOException {
+  public long getUsableSpace() {
     this.checker.check();
     return Runtime.getRuntime().freeMemory();
   }
 
 
   @Override
-  public long getUnallocatedSpace() throws IOException {
+  public long getUnallocatedSpace() {
     this.checker.check();
     return Runtime.getRuntime().freeMemory();
   }
@@ -82,7 +81,7 @@ class MemoryFileStore extends FileStore {
 
 
   @Override
-  public Object getAttribute(String attribute) throws IOException {
+  public Object getAttribute(String attribute) {
     this.checker.check();
     throw new UnsupportedOperationException();
   }

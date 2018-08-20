@@ -75,7 +75,7 @@ public class LockSetTest {
   @Test
   public void tryLock() {
     FileLock lock = this.lockSet.tryLock(this.toAdd);
-    assertEquals("lock acquision successfull", this.expectedSuccess, lock != null);
+    assertEquals("lock acquisition successful", this.expectedSuccess, lock != null);
     if (this.expectedSuccess) {
       assertSame(this.toAdd, lock);
     }
@@ -87,11 +87,11 @@ public class LockSetTest {
     try {
       lock = this.lockSet.lock(this.toAdd);
       if (!this.expectedSuccess) {
-        fail("lock acquision successfull");
+        fail("lock acquisition successful");
       }
     } catch (OverlappingFileLockException e) {
       if (this.expectedSuccess) {
-        fail("lock acquision failed");
+        fail("lock acquisition failed");
       }
     }
     if (this.expectedSuccess) {
@@ -104,7 +104,7 @@ public class LockSetTest {
   static final class StubChannel extends AsynchronousFileChannel {
 
     @Override
-    public void close() throws IOException {
+    public void close() {
       throw new UnsupportedOperationException();
     }
 
@@ -114,17 +114,17 @@ public class LockSetTest {
     }
 
     @Override
-    public long size() throws IOException {
+    public long size() {
       throw new UnsupportedOperationException();
     }
 
     @Override
-    public AsynchronousFileChannel truncate(long size) throws IOException {
+    public AsynchronousFileChannel truncate(long size) {
       throw new UnsupportedOperationException();
     }
 
     @Override
-    public void force(boolean metaData) throws IOException {
+    public void force(boolean metaData) {
       throw new UnsupportedOperationException();
     }
 
@@ -139,7 +139,7 @@ public class LockSetTest {
     }
 
     @Override
-    public FileLock tryLock(long position, long size, boolean shared) throws IOException {
+    public FileLock tryLock(long position, long size, boolean shared) {
       throw new UnsupportedOperationException();
     }
 

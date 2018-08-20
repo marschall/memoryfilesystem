@@ -20,7 +20,6 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.channels.ByteChannel;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.DirectoryStream;
@@ -58,7 +57,7 @@ public class WindowsMemoryFileSystemTest {
   public final WindowsFileSystemRule rule = new WindowsFileSystemRule();
 
   @Test
-  public void setAttributes() throws IOException, ParseException {
+  public void setAttributes() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     FileAttribute<?> hiddenAttribute = new StubFileAttribute<>("dos:hidden", true);
@@ -70,7 +69,7 @@ public class WindowsMemoryFileSystemTest {
   }
 
   @Test
-  public void pathToUri() throws IOException {
+  public void pathToUri() {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path path = fileSystem.getPath("C:\\file.txt");
 
@@ -81,7 +80,7 @@ public class WindowsMemoryFileSystemTest {
   }
 
   @Test
-  public void uriSingleSlash() throws IOException, URISyntaxException {
+  public void uriSingleSlash() {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path path = fileSystem.getPath("C:\\file.txt");
 
@@ -91,7 +90,7 @@ public class WindowsMemoryFileSystemTest {
   }
 
   @Test
-  public void pathToWhiteSpace() throws IOException, URISyntaxException {
+  public void pathToWhiteSpace() {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path path = fileSystem.getPath("C:\\z z");
 
@@ -133,7 +132,7 @@ public class WindowsMemoryFileSystemTest {
 
     Map<String, Object> attributes = Files.readAttributes(path, "dos:lastModifiedTime,lastAccessTime,size,hidden");
 
-    Map<String, Object> expected = new HashMap<String, Object>(4);
+    Map<String, Object> expected = new HashMap<>(4);
     expected.put("size", 0L);
     expected.put("lastModifiedTime", lastModifiedTime);
     expected.put("lastAccessTime", lastAccessTime);
@@ -143,7 +142,7 @@ public class WindowsMemoryFileSystemTest {
   }
 
   @Test
-  public void windows() throws IOException {
+  public void windows() {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path c1 = fileSystem.getPath("C:\\");
     Path c2 = fileSystem.getPath("c:\\");
@@ -161,7 +160,7 @@ public class WindowsMemoryFileSystemTest {
   }
 
   @Test
-  public void windowsDiffrentFileSystems() throws IOException {
+  public void windowsDifferentFileSystems() throws IOException {
     URI uri1 = URI.create("memory:uri1");
     URI uri2 = URI.create("memory:uri2");
     Map<String, ?> env = MemoryFileSystemBuilder.newWindows().buildEnvironment();
@@ -183,7 +182,7 @@ public class WindowsMemoryFileSystemTest {
 
 
   @Test
-  public void forbiddenCharacters() throws IOException {
+  public void forbiddenCharacters() {
     FileSystem fileSystem = this.rule.getFileSystem();
     for (char c : "\\/:?\"<>|".toCharArray()) {
       try {
@@ -196,7 +195,7 @@ public class WindowsMemoryFileSystemTest {
   }
 
   @Test
-  public void windowsQuirky() throws IOException {
+  public void windowsQuirky() {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path c1 = fileSystem.getPath("C:\\");
     Path c2 = fileSystem.getPath("c:\\");
@@ -315,7 +314,7 @@ public class WindowsMemoryFileSystemTest {
   }
 
   @Test
-  public void pathOrdering() throws IOException {
+  public void pathOrdering() {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path lowerA = fileSystem.getPath("a");
     Path upperA = fileSystem.getPath("A");
@@ -343,7 +342,7 @@ public class WindowsMemoryFileSystemTest {
   public void jdk8066915() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path directory = fileSystem.getPath("directory");
-    directory = Files.createDirectory(directory);
+    Files.createDirectory(directory);
 
     try (ByteChannel channel = Files.newByteChannel(directory)) {
       fail("should not be able to create channel on directory");
@@ -399,7 +398,7 @@ public class WindowsMemoryFileSystemTest {
 
 
   @Test
-  public void testPathMatherGlob() throws Exception {
+  public void testPathMatherGlob() {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     PathMatcher matcher = fileSystem.getPathMatcher("glob:*.{java,class}");

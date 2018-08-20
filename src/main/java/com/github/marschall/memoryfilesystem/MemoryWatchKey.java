@@ -8,7 +8,6 @@ import java.nio.file.WatchEvent.Kind;
 import java.nio.file.WatchKey;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -17,18 +16,13 @@ final class MemoryWatchKey implements WatchKey {
 
   private final AbstractPath path;
   private final Lock lock;
-  private boolean isOverflow;
   private State state;
   private boolean valid;
   private final Set<Kind<?>> events;
-  private List<WatchEvent<?>> accumulatedEvents;
-  private Map<AbstractPath, Integer> accumulatedModificationEvents;
   private List<WatchEvent<?>> pendingEvents;
-  private final MemoryFileSystemWatchService watcher;
 
-  MemoryWatchKey(AbstractPath path, MemoryFileSystemWatchService watcher, Set<Kind<?>> events) {
+  MemoryWatchKey(AbstractPath path, Set<Kind<?>> events) {
     this.path = path;
-    this.watcher = watcher;
     this.events = events;
     this.state = READY;
     this.lock = new ReentrantLock();
@@ -91,7 +85,7 @@ final class MemoryWatchKey implements WatchKey {
 
   enum State {
     READY,
-    SIGNALLED;
+    SIGNALLED
   }
 
 }

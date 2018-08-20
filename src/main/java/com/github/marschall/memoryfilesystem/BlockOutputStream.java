@@ -26,12 +26,12 @@ abstract class BlockOutputStream extends OutputStream {
   }
 
   @Override
-  public void flush() throws IOException {
+  public void flush() {
     this.memoryContents.modified();
   }
 
   @Override
-  public void close() throws IOException {
+  public void close() {
     if (this.checker.close()) {
       this.checker.close();
       this.memoryContents.modified();

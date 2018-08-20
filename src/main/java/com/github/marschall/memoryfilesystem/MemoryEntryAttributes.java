@@ -183,7 +183,7 @@ abstract class MemoryEntryAttributes {
     }
   }
 
-  <A extends FileAttributeView> A getFileAttributeView(Class<A> type) throws AccessDeniedException {
+  <A extends FileAttributeView> A getFileAttributeView(Class<A> type) {
     try (AutoRelease lock = this.readLock()) {
       if (type == BasicFileAttributeView.class) {
         return (A) this.getBasicFileAttributeView();
@@ -521,7 +521,7 @@ abstract class MemoryEntryAttributes {
     }
 
     @Override
-    public void setReadOnly(boolean value) throws IOException {
+    public void setReadOnly(boolean value) {
       try (AutoRelease lock = this.attributes.writeLock()) {
         // don't check access
         this.readOnly = value;
@@ -529,7 +529,7 @@ abstract class MemoryEntryAttributes {
     }
 
     @Override
-    public void setHidden(boolean value)  throws IOException{
+    public void setHidden(boolean value) {
       try (AutoRelease lock = this.attributes.writeLock()) {
         // don't check access
         this.hidden = value;
@@ -538,7 +538,7 @@ abstract class MemoryEntryAttributes {
     }
 
     @Override
-    public void setSystem(boolean value) throws IOException {
+    public void setSystem(boolean value) {
       try (AutoRelease lock = this.attributes.writeLock()) {
         // don't check access
         this.system = value;
@@ -547,7 +547,7 @@ abstract class MemoryEntryAttributes {
     }
 
     @Override
-    public void setArchive(boolean value) throws IOException {
+    public void setArchive(boolean value) {
       try (AutoRelease lock = this.attributes.writeLock()) {
         // don't check access
         this.archive = value;
@@ -888,7 +888,7 @@ abstract class MemoryEntryAttributes {
     }
 
     @Override
-    public BasicFileAttributes readAttributes() throws IOException {
+    public BasicFileAttributes readAttributes() {
       throw new UnsupportedOperationException("readAttributes");
     }
 
@@ -919,13 +919,13 @@ abstract class MemoryEntryAttributes {
     }
 
     @Override
-    public List<String> list() throws IOException {
+    public List<String> list() {
       try (AutoRelease lock = this.attributes.readLock()) {
         if (this.values == null) {
           return Collections.emptyList();
         } else {
           Set<String> keys = this.getValues().keySet();
-          return new ArrayList<String>(keys);
+          return new ArrayList<>(keys);
         }
       }
     }
@@ -970,7 +970,7 @@ abstract class MemoryEntryAttributes {
     }
 
     @Override
-    public int write(String name, ByteBuffer src) throws IOException {
+    public int write(String name, ByteBuffer src) {
       try (AutoRelease lock = this.attributes.writeLock()) {
         if (name == null) {
           throw new NullPointerException("name is null");
@@ -990,7 +990,7 @@ abstract class MemoryEntryAttributes {
     }
 
     @Override
-    public void delete(String name) throws IOException {
+    public void delete(String name) {
       try (AutoRelease lock = this.attributes.writeLock()) {
         if (this.values != null) {
           if (name == null) {

@@ -64,7 +64,7 @@ public class WindowsFileSystemCompatibilityTest {
 
 
   @Parameters(name = "native: {0}")
-  public static List<Object[]> fileSystems() throws IOException {
+  public static List<Object[]> fileSystems() {
     FileSystem defaultFileSystem = FileSystems.getDefault();
     Set<String> supportedFileAttributeViews = defaultFileSystem.supportedFileAttributeViews();
     // a DOS view is faked into the unix file system

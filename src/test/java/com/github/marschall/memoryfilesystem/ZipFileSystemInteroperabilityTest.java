@@ -23,7 +23,7 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
-public class ZipFileSystemInteropabilityTest {
+public class ZipFileSystemInteroperabilityTest {
 
   @Rule
   public final FileSystemRule rule = new FileSystemRule();

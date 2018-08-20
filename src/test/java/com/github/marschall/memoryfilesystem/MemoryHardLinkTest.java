@@ -52,7 +52,7 @@ public class MemoryHardLinkTest {
   public final FileSystemRule rule = new FileSystemRule();
 
   @Test
-  public void sameConents() throws IOException {
+  public void sameContents() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path target = Files.createFile(fileSystem.getPath("target"));
     String initialContents = "initial";

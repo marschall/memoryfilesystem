@@ -57,7 +57,7 @@ public class PosixMemoryFileSystemTest {
   }
 
   @Test
-  public void supportedFileAttributeViews() throws IOException {
+  public void supportedFileAttributeViews() {
     FileSystem fileSystem = this.rule.getFileSystem();
     Set<String> actual = fileSystem.supportedFileAttributeViews();
     Set<String> expected = new HashSet<>(Arrays.asList("basic", "owner", "posix"));
@@ -110,7 +110,7 @@ public class PosixMemoryFileSystemTest {
   public void jdk8066915() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path directory = fileSystem.getPath("directory");
-    directory = Files.createDirectory(directory);
+    Files.createDirectory(directory);
 
     try (ByteChannel channel = Files.newByteChannel(directory)) {
       fail("should not be able to create channel on directory");

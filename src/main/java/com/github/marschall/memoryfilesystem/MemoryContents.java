@@ -41,7 +41,7 @@ interface MemoryContents {
 
   MemoryFileLock lock(MemoryFileLock lock) throws IOException;
 
-  MemoryFileLock tryLock(MemoryFileLock lock) throws IOException;
+  MemoryFileLock tryLock(MemoryFileLock lock);
 
   void accessed();
 

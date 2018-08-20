@@ -16,7 +16,6 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Iterator;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -53,9 +52,7 @@ public class FileSystemCompatibility {
   public void iterator() {
     FileSystem fileSystem = FileSystems.getDefault();
     Path path = fileSystem.getPath("/Users/marschall/Documents");
-    Iterator<Path> iterator = path.iterator();
-    while (iterator.hasNext()) {
-      Path next = iterator.next();
+    for (Path next : path) {
       assertThat(next, isRelative());
     }
   }

@@ -1,7 +1,6 @@
 package com.github.marschall.memoryfilesystem;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.nio.file.FileSystem;
 import java.nio.file.LinkOption;
@@ -115,7 +114,7 @@ final class MockPath implements Path {
   }
 
   @Override
-  public Path toRealPath(LinkOption... options) throws IOException {
+  public Path toRealPath(LinkOption... options) {
     throw new UnsupportedOperationException();
   }
 

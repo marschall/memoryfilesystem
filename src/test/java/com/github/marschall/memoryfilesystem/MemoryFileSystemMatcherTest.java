@@ -61,7 +61,7 @@ public class MemoryFileSystemMatcherTest {
   }
 
   @Test
-  public void regression91() throws IOException {
+  public void regression91() {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     PathMatcher matcher = fileSystem.getPathMatcher("glob:{,**/}.gitignore");

@@ -157,7 +157,7 @@ public class MemoryFileSystemCopyTest {
   @Test
   public void copyRootDifferentFileSystems() throws IOException {
     Path firstRoot = this.rule.getFileSystem().getPath("/");
-    try (FileSystem second = MemoryFileSystemBuilder.newEmpty().build("second");) {
+    try (FileSystem second = MemoryFileSystemBuilder.newEmpty().build("second")) {
       Path secondRoot = second.getPath("/");
       try {
         Files.copy(firstRoot, secondRoot);
@@ -175,7 +175,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void copyRoot() throws IOException {
+  public void copyRoot() {
     Path root = this.rule.getFileSystem().getPath("/");
     Path path = this.rule.getFileSystem().getPath("/a");
     try {
@@ -193,7 +193,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void copyAlreadyExists() throws IOException, ParseException {
+  public void copyAlreadyExists() throws IOException {
     // copying a folder to an already existing one should throw FileAlreadyExistsException
     FileSystem fileSystem = this.rule.getFileSystem();
     Path source = fileSystem.getPath("source");
@@ -204,7 +204,7 @@ public class MemoryFileSystemCopyTest {
 
     try {
       Files.copy(source, target);
-      fail("should not be able to overwrite exsiting directories");
+      fail("should not be able to overwrite existing directories");
     } catch (FileAlreadyExistsException e) {
       // should reach here
       assert(true);
@@ -213,7 +213,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void copyAlreadyExistsNotEmpty() throws IOException, ParseException {
+  public void copyAlreadyExistsNotEmpty() throws IOException {
     // copying a folder to an already existing one that is not empty should throw DirectoryNotEmptyException
     FileSystem fileSystem = this.rule.getFileSystem();
     Path source = fileSystem.getPath("source");
@@ -292,7 +292,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void copyNoExisitingNoAttributes() throws IOException {
+  public void copyNoExistingNoAttributes() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path a = fileSystem.getPath("/1/a");
     Path b = fileSystem.getPath("/2/b");
@@ -341,7 +341,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void copyReplaceExisitingNoAttributes() throws IOException {
+  public void copyReplaceExsitingNoAttributes() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path a = fileSystem.getPath("/1/a");
     Path b = fileSystem.getPath("/2/b");
@@ -391,7 +391,7 @@ public class MemoryFileSystemCopyTest {
     Files.move(dir, sub);
   }
 
-  public void moveRoot() throws IOException {
+  public void moveRoot() {
     Path root = this.rule.getFileSystem().getPath("/");
     Path path = this.rule.getFileSystem().getPath("/a");
     try {
@@ -413,7 +413,7 @@ public class MemoryFileSystemCopyTest {
   @Test
   public void moveRootDifferentFileSystems() throws IOException {
     Path firstRoot = this.rule.getFileSystem().getPath("/");
-    try (FileSystem second = MemoryFileSystemBuilder.newEmpty().build("second");) {
+    try (FileSystem second = MemoryFileSystemBuilder.newEmpty().build("second")) {
       Path secondRoot = second.getPath("/");
       try {
         Files.move(firstRoot, secondRoot);
@@ -519,7 +519,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void moveAlreadyExistsNotEmpty() throws IOException, ParseException {
+  public void moveAlreadyExistsNotEmpty() throws IOException {
     // moving a folder to an already existing one that is not empty should throw DirectoryNotEmptyException
     FileSystem fileSystem = this.rule.getFileSystem();
     Path source = fileSystem.getPath("source");
@@ -541,7 +541,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void moveAlreadyExists() throws IOException, ParseException {
+  public void moveAlreadyExists() throws IOException {
     // moving a folder to an already existing one should throw FileAlreadyExistsException
     FileSystem fileSystem = this.rule.getFileSystem();
     Path source = fileSystem.getPath("source");
@@ -552,7 +552,7 @@ public class MemoryFileSystemCopyTest {
 
     try {
       Files.move(source, target);
-      fail("should not be able to overwrite exsiting directories");
+      fail("should not be able to overwrite existing directories");
     } catch (FileAlreadyExistsException e) {
       // should reach here
       assert(true);
@@ -606,7 +606,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void moveNoExisitingNoAttributes() throws IOException {
+  public void moveNoExistingNoAttributes() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path a = fileSystem.getPath("/1/a");
     Path b = fileSystem.getPath("/2/b");
@@ -624,7 +624,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void moveReplaceExisitingNoAttributes() throws IOException {
+  public void moveReplaceExistingNoAttributes() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path a = fileSystem.getPath("/1/a");
     Path b = fileSystem.getPath("/2/b");

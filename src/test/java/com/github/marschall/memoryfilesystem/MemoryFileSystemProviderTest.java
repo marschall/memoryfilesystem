@@ -6,7 +6,6 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.FileSystems;
@@ -29,7 +28,7 @@ public class MemoryFileSystemProviderTest {
   }
 
   @Test(expected = FileSystemNotFoundException.class)
-  public void getNotExistingFileSystem() throws URISyntaxException, IOException {
+  public void getNotExistingFileSystem() {
     FileSystems.getFileSystem(SAMPLE_URI);
   }
 

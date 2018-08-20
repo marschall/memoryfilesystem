@@ -3,6 +3,7 @@ package com.github.marschall.memoryfilesystem;
 import static com.github.marschall.memoryfilesystem.FileContentsMatcher.hasContents;
 import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static com.github.marschall.memoryfilesystem.IsSameFileMatcher.isSameFile;
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -80,7 +81,7 @@ public class UnixFileSystemCompatibilityTest {
 
 
   @Parameters(name = "native: {0}")
-  public static List<Object[]> fileSystems() throws IOException {
+  public static List<Object[]> fileSystems() {
     FileSystem defaultFileSystem = FileSystems.getDefault();
     boolean isPosix = defaultFileSystem.supportedFileAttributeViews().contains("posix");
     String osName = (String) System.getProperties().get("os.name");
@@ -95,7 +96,7 @@ public class UnixFileSystemCompatibilityTest {
 
 
   @Test
-  public void forbiddenCharacters() throws IOException {
+  public void forbiddenCharacters() {
     try {
       char c = 0;
       this.getFileSystem().getPath(c + ".txt");
@@ -183,7 +184,7 @@ public class UnixFileSystemCompatibilityTest {
   }
 
   @Test
-  public void notExistingView() throws IOException {
+  public void notExistingView() {
     Path path = this.getFileSystem().getPath("/foo/bar/does/not/exist");
     BasicFileAttributeView attributeView = Files.getFileAttributeView(path, BasicFileAttributeView.class);
     assertNotNull(attributeView);
@@ -196,11 +197,11 @@ public class UnixFileSystemCompatibilityTest {
     try {
       Files.createFile(path);
       try (OutputStream output = Files.newOutputStream(path, StandardOpenOption.WRITE)) {
-        output.write("11111".getBytes("US-ASCII"));
+        output.write("11111".getBytes(US_ASCII));
         output.flush();
       }
       try (OutputStream output = Files.newOutputStream(path, StandardOpenOption.WRITE)) {
-        output.write("22".getBytes("US-ASCII"));
+        output.write("22".getBytes(US_ASCII));
       }
       assertThat(path, hasContents("22111"));
     } finally {
@@ -215,11 +216,11 @@ public class UnixFileSystemCompatibilityTest {
     try {
       Files.createFile(path);
       try (OutputStream output = Files.newOutputStream(path, StandardOpenOption.WRITE)) {
-        output.write("11111".getBytes("US-ASCII"));
+        output.write("11111".getBytes(US_ASCII));
         output.flush();
       }
       try (OutputStream output = Files.newOutputStream(path, StandardOpenOption.APPEND)) {
-        output.write("22".getBytes("US-ASCII"));
+        output.write("22".getBytes(US_ASCII));
       }
       assertThat(path, hasContents("1111122"));
     } finally {
@@ -234,11 +235,11 @@ public class UnixFileSystemCompatibilityTest {
     try {
       Files.createFile(path);
       try (OutputStream output = Files.newOutputStream(path)) {
-        output.write("11111".getBytes("US-ASCII"));
+        output.write("11111".getBytes(US_ASCII));
         output.flush();
       }
       try (OutputStream output = Files.newOutputStream(path)) {
-        output.write("22".getBytes("US-ASCII"));
+        output.write("22".getBytes(US_ASCII));
       }
       assertThat(path, hasContents("22"));
     } finally {
@@ -440,7 +441,7 @@ public class UnixFileSystemCompatibilityTest {
     assertEquals(fileSystem.getPath("a"), fileSystem.getPath("a/b/..").normalize());
     assertEquals(fileSystem.getPath(""), fileSystem.getPath("a/..").normalize());
     assertEquals(fileSystem.getPath(".."), fileSystem.getPath("..").normalize());
-    //    System.out.println(fileSystem.getPath("a").subpath(0, 0)); // throws excepption
+    //    System.out.println(fileSystem.getPath("a").subpath(0, 0)); // throws exception
     assertEquals(fileSystem.getPath("a"), fileSystem.getPath("/a/b").getName(0));
     assertEquals(fileSystem.getPath("b"), fileSystem.getPath("/a/b").getName(1));
     assertEquals(fileSystem.getPath("a"), fileSystem.getPath("a/b").getName(0));
@@ -545,7 +546,7 @@ public class UnixFileSystemCompatibilityTest {
   }
 
   @Test
-  public void unixPaths() throws IOException {
+  public void unixPaths() {
 
     // https://github.com/marschall/memoryfilesystem/pull/51
     assumeTrue(Charset.defaultCharset().equals(UTF_8));
@@ -562,7 +563,7 @@ public class UnixFileSystemCompatibilityTest {
   }
 
   @Test
-  public void caseSsensitivePatterns() throws IOException {
+  public void caseSensitivePatterns() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path child1 = fileSystem.getPath("child1");

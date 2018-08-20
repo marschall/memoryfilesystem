@@ -2,7 +2,6 @@ package com.github.marschall.memoryfilesystem;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -32,7 +31,7 @@ public class RelativizeResolveTest {
   }
 
   @Test
-  public void contract() throws IOException {
+  public void contract() {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path p = fileSystem.getPath(this.first);
     Path q = fileSystem.getPath(this.second);

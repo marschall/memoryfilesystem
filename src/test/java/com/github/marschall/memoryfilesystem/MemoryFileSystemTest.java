@@ -38,7 +38,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
@@ -308,7 +307,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void writeAsyncChannelTruncate() throws IOException, InterruptedException, ExecutionException {
+  public void writeAsyncChannelTruncate() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
@@ -324,7 +323,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void writeSyncChannelTruncate() throws IOException, InterruptedException, ExecutionException {
+  public void writeSyncChannelTruncate() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
@@ -378,7 +377,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void writeAsyncChannelBasicMethods() throws IOException, InterruptedException, ExecutionException {
+  public void writeAsyncChannelBasicMethods() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
@@ -396,7 +395,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void writeAsyncChannelWriteCompletionHandler() throws IOException, InterruptedException, ExecutionException {
+  public void writeAsyncChannelWriteCompletionHandler() throws IOException, InterruptedException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
@@ -423,7 +422,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void writeAsyncChannelReadCompletionHandler() throws IOException, InterruptedException, ExecutionException {
+  public void writeAsyncChannelReadCompletionHandler() throws IOException, InterruptedException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
@@ -452,7 +451,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void writeAsyncChannelWriteIoException() throws IOException, InterruptedException, ExecutionException {
+  public void writeAsyncChannelWriteIoException() throws IOException, InterruptedException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
@@ -520,7 +519,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void writeAsyncChannelWriteCompletionFutureFailed() throws IOException, InterruptedException, ExecutionException {
+  public void writeAsyncChannelWriteCompletionFutureFailed() throws IOException, InterruptedException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
@@ -648,7 +647,7 @@ public class MemoryFileSystemTest {
 
     try (
             FileChannel fromChannel = FileChannel.open(from, READ);
-            FileChannel toChannel = FileChannel.open(to, WRITE, CREATE_NEW);) {
+            FileChannel toChannel = FileChannel.open(to, WRITE, CREATE_NEW)) {
       long trasferred = fromChannel.transferTo(0, expectedSize, toChannel);
       assertEquals(expectedSize, trasferred);
     }
@@ -668,7 +667,7 @@ public class MemoryFileSystemTest {
 
     try (
             FileChannel fromChannel = FileChannel.open(from, READ);
-            FileChannel toChannel = FileChannel.open(to, WRITE, CREATE_NEW);) {
+            FileChannel toChannel = FileChannel.open(to, WRITE, CREATE_NEW)) {
       long trasferred = toChannel.transferFrom(fromChannel, 0, expectedSize);
       assertEquals(expectedSize, trasferred);
     }
@@ -900,7 +899,7 @@ public class MemoryFileSystemTest {
     try (InputStream input = Files.newInputStream(path)) {
       byte[] data = new byte[5];
       int start = 1;
-      int read = 0;
+      int read;
       while ((read = input.read(data, start, 555)) != -1) {
         start += read;
       }
@@ -979,7 +978,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void testIsSameFile() throws IOException {
+  public void testIsSameFile() {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path memoryPath = fileSystem.getPath("/");
     Path defaultPath = Paths.get("/foo/bar");
@@ -1111,12 +1110,12 @@ public class MemoryFileSystemTest {
   @Test
   public void resolveAbsoluteOtherRelative() {
     FileSystem fileSystem = this.rule.getFileSystem();
-    Path realtive = fileSystem.getPath("a/b");
+    Path relative = fileSystem.getPath("a/b");
 
-    assertEquals(fileSystem.getPath("a/b"), fileSystem.getPath("").resolve(realtive));
-    assertEquals(fileSystem.getPath("/a/b"), fileSystem.getPath("/").resolve(realtive));
-    assertEquals(fileSystem.getPath("c/d/a/b"), fileSystem.getPath("c/d").resolve(realtive));
-    assertEquals(fileSystem.getPath("/c/d/a/b"), fileSystem.getPath("/c/d").resolve(realtive));
+    assertEquals(fileSystem.getPath("a/b"), fileSystem.getPath("").resolve(relative));
+    assertEquals(fileSystem.getPath("/a/b"), fileSystem.getPath("/").resolve(relative));
+    assertEquals(fileSystem.getPath("c/d/a/b"), fileSystem.getPath("c/d").resolve(relative));
+    assertEquals(fileSystem.getPath("/c/d/a/b"), fileSystem.getPath("/c/d").resolve(relative));
   }
 
 
@@ -1135,12 +1134,12 @@ public class MemoryFileSystemTest {
   @Test
   public void resolveAbsoluteOtherRelativeString() {
     FileSystem fileSystem = this.rule.getFileSystem();
-    String realtive = "a/b";
+    String relative = "a/b";
 
-    assertEquals(fileSystem.getPath("a/b"), fileSystem.getPath("").resolve(realtive));
-    assertEquals(fileSystem.getPath("/a/b"), fileSystem.getPath("/").resolve(realtive));
-    assertEquals(fileSystem.getPath("c/d/a/b"), fileSystem.getPath("c/d").resolve(realtive));
-    assertEquals(fileSystem.getPath("/c/d/a/b"), fileSystem.getPath("/c/d").resolve(realtive));
+    assertEquals(fileSystem.getPath("a/b"), fileSystem.getPath("").resolve(relative));
+    assertEquals(fileSystem.getPath("/a/b"), fileSystem.getPath("/").resolve(relative));
+    assertEquals(fileSystem.getPath("c/d/a/b"), fileSystem.getPath("c/d").resolve(relative));
+    assertEquals(fileSystem.getPath("/c/d/a/b"), fileSystem.getPath("/c/d").resolve(relative));
   }
 
   @Test
@@ -1752,13 +1751,13 @@ public class MemoryFileSystemTest {
       assertThat(empty1, lessThan(empty2));
       assertThat(empty2, greaterThan(empty1));
 
-      Path realtive1 = fileSystem1.getPath("a");
-      Path realtive2 = fileSystem2.getPath("a");
+      Path relative1 = fileSystem1.getPath("a");
+      Path relative2 = fileSystem2.getPath("a");
 
-      assertThat(realtive1, not(equalTo(realtive2)));
-      assertThat(realtive2, not(equalTo(realtive1)));
-      assertThat(realtive1, lessThan(realtive2));
-      assertThat(realtive2, greaterThan(realtive1));
+      assertThat(relative1, not(equalTo(relative2)));
+      assertThat(relative2, not(equalTo(relative1)));
+      assertThat(relative1, lessThan(relative2));
+      assertThat(relative2, greaterThan(relative1));
 
       Path absolute1 = fileSystem1.getPath("/a");
       Path absolute2 = fileSystem2.getPath("/a");
@@ -1858,7 +1857,7 @@ public class MemoryFileSystemTest {
   }
 
   @Test
-  public void normalizeEmptyPath() throws IOException {
+  public void normalizeEmptyPath() {
     // https://bugs.openjdk.java.net/browse/JDK-8037945
     Path path = this.rule.getFileSystem().getPath("");
     assertEquals(path, path.normalize());
@@ -1889,7 +1888,7 @@ public class MemoryFileSystemTest {
 
     Map<String, Object> attributes = Files.readAttributes(patch, "lastModifiedTime,lastAccessTime,size");
 
-    Map<String, Object> expected = new HashMap<String, Object>(3);
+    Map<String, Object> expected = new HashMap<>(3);
     expected.put("size", 0L);
     expected.put("lastModifiedTime", lastModifiedTime);
     expected.put("lastAccessTime", lastAccessTime);
@@ -2031,7 +2030,7 @@ public class MemoryFileSystemTest {
    * Regression test for <a href="https://github.com/marschall/memoryfilesystem/issues/55">Issue 55</a>.
    */
   @Test
-  public void unsupportedViews() throws IOException {
+  public void unsupportedViews() {
     Path root = this.rule.getFileSystem().getPath("/");
     PosixFileAttributeView unsupportedView = Files.getFileAttributeView(root, PosixFileAttributeView.class);
     assertNull(unsupportedView);
@@ -2061,7 +2060,7 @@ public class MemoryFileSystemTest {
 
 
   @Test
-  public void fromUriSingleSlash() throws IOException, URISyntaxException {
+  public void fromUriSingleSlash() throws IOException {
     Path root = this.rule.getFileSystem().getPath("/root");
     Files.createFile(root);
     Path singleSlash = Paths.get(URI.create("memory:name:/root"));

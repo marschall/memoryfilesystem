@@ -37,7 +37,7 @@ public class MemoryFileSystemProperties {
 
   public static final String PATH_LOOKUP_TRANSFORMER_PROPERTY = "path.lookup.transformer";
 
-  public static final String PRINCIPAL_TRANSFORMER_PROPERTY = "princial.transformer";
+  public static final String PRINCIPAL_TRANSFORMER_PROPERTY = "principal.transformer";
 
   public static final String COLLATOR_PROPERTY = "collator";
 

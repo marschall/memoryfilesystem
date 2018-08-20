@@ -1,6 +1,5 @@
 package com.github.marschall.memoryfilesystem;
 
-import java.io.IOException;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.concurrent.BlockingQueue;
@@ -22,7 +21,7 @@ final class MemoryFileSystemWatchService implements WatchService {
   }
 
   @Override
-  public void close() throws IOException {
+  public void close() {
     if (this.checker.close()) {
       // TODO invalidate keys
       // TODO throw new UnsupportedOperationException for all poll/take

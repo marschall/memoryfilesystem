@@ -2,7 +2,6 @@ package com.github.marschall.memoryfilesystem;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,7 +27,7 @@ public class ToUriTest {
   }
 
   @Test
-  public void contract() throws IOException {
+  public void contract() {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path p = fileSystem.getPath(this.path);
     assertEquals(p.toAbsolutePath(), Paths.get(p.toUri()));

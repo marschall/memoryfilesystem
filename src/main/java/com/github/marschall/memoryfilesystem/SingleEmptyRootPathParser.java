@@ -31,7 +31,7 @@ final class SingleEmptyRootPathParser extends PathParser {
     MemoryFileSystem memoryFileSystem = root.getMemoryFileSystem();
     this.check(elements);
     if (this.startWithSeparator(first, more)) {
-      return AbstractPath.createAboslute(memoryFileSystem, root, elements);
+      return AbstractPath.createAbsolute(memoryFileSystem, root, elements);
     } else {
       return AbstractPath.createRelative(memoryFileSystem, elements);
     }
