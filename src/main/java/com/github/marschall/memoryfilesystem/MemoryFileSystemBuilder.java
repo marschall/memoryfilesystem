@@ -99,6 +99,19 @@ public final class MemoryFileSystemBuilder {
    * @param separator the name separator, not {@code null}
    * @return the current builder object
    * @see java.nio.file.FileSystem#getSeparator()
+   * @deprecated use {@link #setSeparator(String)}
+   */
+  @Deprecated
+  public MemoryFileSystemBuilder setSeprator(String separator) {
+    return this.setSeparator(separator);
+  }
+
+  /**
+   * Sets the the name separator.
+   *
+   * @param separator the name separator, not {@code null}
+   * @return the current builder object
+   * @see java.nio.file.FileSystem#getSeparator()
    */
   public MemoryFileSystemBuilder setSeparator(String separator) {
     Objects.requireNonNull(separator);
