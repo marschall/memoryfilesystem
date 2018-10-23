@@ -14,6 +14,7 @@ import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -24,6 +25,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.GroupPrincipal;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFilePermission;
@@ -134,6 +136,32 @@ public class PosixPermissionMemoryFileSystemTest {
     assertTrue(Files.isReadable(path)); // ok
     assertTrue(Files.isWritable(path)); // (should be) ok
     assertFalse(Files.isExecutable(path)); // ok
+  }
+
+  /**
+   * You should be able to read the attributes of a file depending on the directory permissions.
+   */
+  @Test
+  public void issue112() throws IOException {
+    final Path path = this.rule.getFileSystem().getPath("not-mine");
+    Files.createFile(path);
+    UserPrincipal other = this.rule.getFileSystem().getUserPrincipalLookupService().lookupPrincipalByName(PosixPermissionFileSystemRule.OTHER);
+    Files.setOwner(path, other);
+    CurrentUser.useDuring(other, new UserTask<Object>() {
+      @Override
+      public Object call() throws IOException {
+        Files.setPosixFilePermissions(path, PosixFilePermissions.fromString("---------"));
+        return null;
+      }
+    });
+
+    assertTrue(Files.exists(path));
+    BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
+    assertNotNull(attributes);
+    assertTrue(attributes.isRegularFile());
+    assertFalse(attributes.isDirectory());
+    assertFalse(attributes.isSymbolicLink());
+    assertFalse(attributes.isOther());
   }
 
   private static Set<PosixFilePermission> asSet(PosixFilePermission... permissions) {

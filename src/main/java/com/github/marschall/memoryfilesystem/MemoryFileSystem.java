@@ -719,9 +719,9 @@ class MemoryFileSystem extends FileSystem {
   private <R> R accessFile(AbstractPath path, boolean followSymLinks, LockType lockType, MemoryEntryBlock<? extends R> callback) throws IOException {
     this.checker.check();
     AbstractPath absolutePath = (AbstractPath) path.toAbsolutePath().normalize();
-    MemoryDirectory directory = this.getRootDirectory(absolutePath);
+    MemoryDirectory root = this.getRootDirectory(absolutePath);
     if (lockType == LockType.READ) {
-      return this.withReadLockDo(directory, absolutePath, followSymLinks, callback);
+      return this.withReadLockDo(root, absolutePath, followSymLinks, callback);
     } else {
       MemoryDirectory rootDirectory = this.getRootDirectory(absolutePath);
       if (absolutePath.isRoot()) {
