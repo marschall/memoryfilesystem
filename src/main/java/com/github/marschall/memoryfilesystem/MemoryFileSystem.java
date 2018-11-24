@@ -723,10 +723,9 @@ class MemoryFileSystem extends FileSystem {
     if (lockType == LockType.READ) {
       return this.withReadLockDo(root, absolutePath, followSymLinks, callback);
     } else {
-      MemoryDirectory rootDirectory = this.getRootDirectory(absolutePath);
       if (absolutePath.isRoot()) {
-        try (AutoRelease autoRelease = rootDirectory.writeLock()) {
-          return callback.value(rootDirectory);
+        try (AutoRelease autoRelease = root.writeLock()) {
+          return callback.value(root);
         }
       }
       ElementPath elementPath = (ElementPath) absolutePath;
@@ -736,7 +735,7 @@ class MemoryFileSystem extends FileSystem {
       } else {
         encounteredSymlinks = Collections.emptySet();
       }
-      return this.withLockDo(rootDirectory, elementPath, encounteredSymlinks, followSymLinks, LockType.WRITE, callback);
+      return this.withLockDo(root, elementPath, encounteredSymlinks, followSymLinks, LockType.WRITE, callback);
     }
   }
 
@@ -1247,23 +1246,22 @@ class MemoryFileSystem extends FileSystem {
   }
 
   boolean isHidden(AbstractPath abstractPath) throws IOException {
-    return this.accessFileReading(abstractPath, false, new MemoryEntryBlock<Boolean>(){
+    if (this.supportedFileAttributeViews.contains(FileAttributeViews.POSIX)) {
+      return this.accessFileReading(abstractPath, false, new MemoryEntryBlock<Boolean>(){
 
-      @Override
-      public Boolean value(MemoryEntry entry) throws IOException {
-        Set<String> supportedFileAttributeViews = MemoryFileSystem.this.supportedFileAttributeViews();
-        // Posix seems to check only the file name
-        if (supportedFileAttributeViews.contains(FileAttributeViews.POSIX)) {
+        @Override
+        public Boolean value(MemoryEntry entry) throws IOException {
+          // Posix seems to check only the file name
           String originalName = entry.getOriginalName();
           return !originalName.isEmpty() && originalName.charAt(0) == '.';
-        } else if (supportedFileAttributeViews.contains(FileAttributeViews.DOS)) {
-          return entry.readAttributes(DosFileAttributes.class).isHidden();
-        } else {
-          return false;
         }
-      }
 
-    });
+      });
+    } else if (this.supportedFileAttributeViews.contains(FileAttributeViews.DOS)) {
+      return this.readAttributes(abstractPath, DosFileAttributes.class).isHidden();
+    } else {
+      return false;
+    }
   }
 
   private MemoryEntry copyEntry(Path absoluteTargetPath, MemoryEntry sourceEntry, String targetElementName) throws IOException {
