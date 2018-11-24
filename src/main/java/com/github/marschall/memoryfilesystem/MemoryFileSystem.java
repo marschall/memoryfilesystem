@@ -720,23 +720,13 @@ class MemoryFileSystem extends FileSystem {
     this.checker.check();
     AbstractPath absolutePath = (AbstractPath) path.toAbsolutePath().normalize();
     MemoryDirectory root = this.getRootDirectory(absolutePath);
-    if (lockType == LockType.READ) {
-      return this.withReadLockDo(root, absolutePath, followSymLinks, callback);
+    Set<MemorySymbolicLink> encounteredSymlinks;
+    if (followSymLinks) {
+      encounteredSymlinks = new HashSet<>(4);
     } else {
-      if (absolutePath.isRoot()) {
-        try (AutoRelease autoRelease = root.writeLock()) {
-          return callback.value(root);
-        }
-      }
-      ElementPath elementPath = (ElementPath) absolutePath;
-      Set<MemorySymbolicLink> encounteredSymlinks;
-      if (followSymLinks) {
-        encounteredSymlinks = new HashSet<>(4);
-      } else {
-        encounteredSymlinks = Collections.emptySet();
-      }
-      return this.withLockDo(root, elementPath, encounteredSymlinks, followSymLinks, LockType.WRITE, callback);
+      encounteredSymlinks = Collections.emptySet();
     }
+    return this.withLockDo(root, absolutePath, encounteredSymlinks, followSymLinks, lockType, callback);
   }
 
 
@@ -776,7 +766,7 @@ class MemoryFileSystem extends FileSystem {
 
   private <R> R withLockDo(MemoryDirectory root, AbstractPath path, Set<MemorySymbolicLink> encounteredLinks, boolean followSymLinks, LockType lockType, MemoryEntryBlock<? extends R> callback) throws IOException {
     if (path.isRoot()) {
-      try (AutoRelease lock = root.readLock()) {
+      try (AutoRelease lock = root.lock(lockType)) {
         return callback.value(root);
       }
     } else if (path instanceof ElementPath) {
@@ -795,8 +785,8 @@ class MemoryFileSystem extends FileSystem {
           String key = this.lookUpTransformer.transform(fileName);
           MemoryEntry current = parent.getEntryOrException(key, path);
           boolean isLast = i == nameElementsSize - 1;
-          if (isLast && lockType == LockType.WRITE) {
-            locks.add(current.writeLock());
+          if (isLast) {
+            locks.add(current.lock(lockType));
           } else {
             locks.add(current.readLock());
           }
@@ -1490,11 +1480,6 @@ class MemoryFileSystem extends FileSystem {
 
     MemoryEntry create(String name) throws IOException;
 
-  }
-
-  enum LockType {
-    READ,
-    WRITE
   }
 
 }

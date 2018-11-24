@@ -60,6 +60,17 @@ abstract class MemoryEntry {
     return autoRelease(this.lock.writeLock());
   }
 
+  AutoRelease lock(LockType lockType) {
+    switch (lockType) {
+      case READ:
+        return autoRelease(this.lock.readLock());
+      case WRITE:
+        return autoRelease(this.lock.writeLock());
+      default:
+        throw new IllegalArgumentException("unknown lock type");
+    }
+  }
+
   FileTime lastModifiedTime() {
     return this.attributes.lastAccessTime();
   }
