@@ -1066,12 +1066,16 @@ class MemoryFileSystem extends FileSystem {
         throw new FileSystemException(abstractPath.toString(), null, "can not delete root");
       }
       final ElementPath elementPath = (ElementPath) absolutePath;
-      MemoryDirectory rootDirectory = this.getRootDirectory(elementPath);
 
-      this.withWriteLockOnLastDo(rootDirectory, (AbstractPath) elementPath.getParent(), true, new MemoryDirectoryBlock<Void>() {
+      final AbstractPath parent = (AbstractPath) elementPath.getParent();
+      this.accessFileWriting(parent, true, new MemoryEntryBlock<Void>() {
 
         @Override
-        public Void value(MemoryDirectory directory) throws IOException {
+        public Void value(MemoryEntry parentEntry) throws IOException {
+          if (!(parentEntry instanceof MemoryDirectory)) {
+            throw new FileSystemException(parent.toString(), null, "is not a directory");
+          }
+          MemoryDirectory directory = (MemoryDirectory) parentEntry;
           String fileName = elementPath.getLastNameElement();
           String key = MemoryFileSystem.this.lookUpTransformer.transform(fileName);
           MemoryEntry child = directory.getEntryOrException(key, abstractPath);
