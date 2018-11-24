@@ -223,4 +223,4 @@ The following guidelines are designed to help you write code that can easily be 
 Building
 --------
 
-The project requires that JAVA_HOME is set to a JDK 10 or a toolchain with version 10 is set up.
+The project requires that JAVA_HOME is set to a JDK 11 or a [toolchain](https://maven.apache.org/guides/mini/guide-using-toolchains.html) with version 11 is set up.
