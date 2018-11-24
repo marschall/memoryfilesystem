@@ -549,9 +549,8 @@ class MemoryFileSystem extends FileSystem {
       throw new FileAlreadyExistsException(path.toString(), null, "can not create root");
     }
     final ElementPath elementPath = (ElementPath) absolutePath;
-    MemoryDirectory rootDirectory = this.getRootDirectory(elementPath);
 
-    this.withWriteLockOnLastDo(rootDirectory, (AbstractPath) elementPath.getParent(), true, new MemoryDirectoryBlock<Void>() {
+    this.accessDirectoryWriting((AbstractPath) elementPath.getParent(), true, new MemoryDirectoryBlock<Void>() {
 
       @Override
       public Void value(MemoryDirectory directory) throws IOException {
@@ -740,6 +739,19 @@ class MemoryFileSystem extends FileSystem {
 
   private <R> R withWriteLockOnLastDo(MemoryDirectory root, final AbstractPath path, boolean followSymLinks, Set<MemorySymbolicLink> encounteredSymlinks, final MemoryDirectoryBlock<R> callback) throws IOException {
     return this.withLockDo(root, path, encounteredSymlinks, followSymLinks, LockType.WRITE, new MemoryEntryBlock<R>() {
+
+      @Override
+      public R value(MemoryEntry entry) throws IOException {
+        if (!(entry instanceof MemoryDirectory)) {
+          throw new NotDirectoryException(path.toString());
+        }
+        return callback.value((MemoryDirectory) entry);
+      }
+    });
+  }
+
+  private <R> R accessDirectoryWriting(final AbstractPath path, boolean followSymLinks, final MemoryDirectoryBlock<R> callback) throws IOException {
+    return this.accessFileWriting(path, followSymLinks, new MemoryEntryBlock<R>() {
 
       @Override
       public R value(MemoryEntry entry) throws IOException {
@@ -1068,14 +1080,10 @@ class MemoryFileSystem extends FileSystem {
       final ElementPath elementPath = (ElementPath) absolutePath;
 
       final AbstractPath parent = (AbstractPath) elementPath.getParent();
-      this.accessFileWriting(parent, true, new MemoryEntryBlock<Void>() {
+      this.accessDirectoryWriting(parent, true, new MemoryDirectoryBlock<Void>() {
 
         @Override
-        public Void value(MemoryEntry parentEntry) throws IOException {
-          if (!(parentEntry instanceof MemoryDirectory)) {
-            throw new FileSystemException(parent.toString(), null, "is not a directory");
-          }
-          MemoryDirectory directory = (MemoryDirectory) parentEntry;
+        public Void value(MemoryDirectory directory) throws IOException {
           String fileName = elementPath.getLastNameElement();
           String key = MemoryFileSystem.this.lookUpTransformer.transform(fileName);
           MemoryEntry child = directory.getEntryOrException(key, abstractPath);
