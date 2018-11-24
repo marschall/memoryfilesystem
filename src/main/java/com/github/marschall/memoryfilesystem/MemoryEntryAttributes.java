@@ -215,7 +215,6 @@ abstract class MemoryEntryAttributes {
 
   <A extends BasicFileAttributes> A readAttributes(Class<A> type) throws IOException {
     try (AutoRelease lock = this.readLock()) {
-      this.checkAccess(AccessMode.READ);
       if (type == BasicFileAttributes.class) {
         return (A) this.getBasicFileAttributeView().readAttributes();
       } else {
@@ -233,8 +232,6 @@ abstract class MemoryEntryAttributes {
       }
     }
   }
-
-
 
   void checkAccess(AccessMode... modes) throws AccessDeniedException {
     try (AutoRelease lock = this.readLock()) {
@@ -504,7 +501,6 @@ abstract class MemoryEntryAttributes {
 
     @Override
     public DosFileAttributes readAttributes() throws IOException {
-      this.attributes.checkAccess(AccessMode.READ);
       try (AutoRelease lock = this.attributes.readLock()) {
         BasicFileAttributeView view = this.attributes.getFileAttributeView(BasicFileAttributeView.class);
         return new MemoryDosFileAttributes(view.readAttributes(), this.readOnly, this.hidden, this.system, this.archive);
@@ -782,7 +778,6 @@ abstract class MemoryEntryAttributes {
 
     @Override
     public PosixFileAttributes readAttributes() throws IOException {
-      this.attributes.checkAccess(AccessMode.READ);
       try (AutoRelease lock = this.attributes.readLock()) {
         BasicFileAttributeView view = this.attributes.getFileAttributeView(BasicFileAttributeView.class);
         return new MemoryPosixFileAttributes(view.readAttributes(), this.getOwner(), this.group, toSet(this.permissions));
@@ -1007,7 +1002,6 @@ abstract class MemoryEntryAttributes {
 
     @Override
     public BasicFileAttributes readAttributes() throws IOException {
-      MemoryEntryAttributes.this.checkAccess(AccessMode.READ);
       try (AutoRelease lock = MemoryEntryAttributes.this.readLock()) {
         FileTime creationTime = MemoryEntryAttributes.this.creationTime();
         FileTime lastModifiedTime = MemoryEntryAttributes.this.lastModifiedTime();
@@ -1056,7 +1050,6 @@ abstract class MemoryEntryAttributes {
 
     @Override
     public BasicFileAttributes readAttributes() throws IOException {
-      MemoryEntryAttributes.this.checkAccess(AccessMode.READ);
       try (AutoRelease lock = MemoryEntryAttributes.this.readLock()) {
         FileTime lastModifiedTime = MemoryEntryAttributes.this.lastModifiedTime();
         FileTime lastAccessTime = MemoryEntryAttributes.this.lastAccessTime();
@@ -1107,7 +1100,6 @@ abstract class MemoryEntryAttributes {
 
     @Override
     public BasicFileAttributes readAttributes() throws IOException {
-      MemoryEntryAttributes.this.checkAccess(AccessMode.READ);
       try (AutoRelease lock = MemoryEntryAttributes.this.readLock()) {
         FileTime lastModifiedTime = MemoryEntryAttributes.this.lastModifiedTime();
         FileTime lastAccessTime = MemoryEntryAttributes.this.lastAccessTime();

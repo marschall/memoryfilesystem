@@ -266,9 +266,9 @@ public class PosixPermissionMemoryFileSystemTest {
     PosixFileAttributeView directoryView = Files.getFileAttributeView(sourceDirectory, PosixFileAttributeView.class);
     directoryView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE));
 
-    UserPrincipal user = fileSystem.getUserPrincipalLookupService().lookupPrincipalByName(PosixPermissionFileSystemRule.OTHER);
+    UserPrincipal other = fileSystem.getUserPrincipalLookupService().lookupPrincipalByName(PosixPermissionFileSystemRule.OTHER);
 
-    CurrentUser.useDuring(user, new UserTask<Void>() {
+    CurrentUser.useDuring(other, new UserTask<Void>() {
 
       @Override
       public Void call() throws IOException {
@@ -283,8 +283,8 @@ public class PosixPermissionMemoryFileSystemTest {
     });
 
 
-    directoryView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_WRITE));
-    CurrentUser.useDuring(user, new UserTask<Void>() {
+    directoryView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_EXECUTE, OTHERS_WRITE));
+    CurrentUser.useDuring(other, new UserTask<Void>() {
 
       @Override
       public Void call() throws IOException {
@@ -327,7 +327,7 @@ public class PosixPermissionMemoryFileSystemTest {
     sourceView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_WRITE));
     targetView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE));
 
-    // write permission on source only is not enough
+    // write and execute permission on source only is not enough
     CurrentUser.useDuring(user, new UserTask<Void>() {
 
       @Override
@@ -360,10 +360,10 @@ public class PosixPermissionMemoryFileSystemTest {
       }
     });
 
-    sourceView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_WRITE));
-    targetView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_WRITE));
+    sourceView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_EXECUTE, OTHERS_WRITE));
+    targetView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_EXECUTE, OTHERS_WRITE));
 
-    // write permission on source and target is enough
+    // write and execute permission on source and target is enough
     CurrentUser.useDuring(user, new UserTask<Void>() {
 
       @Override

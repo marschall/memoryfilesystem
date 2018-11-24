@@ -65,6 +65,7 @@ class MemoryDirectory extends MemoryEntry {
   }
 
   MemoryEntry getEntryOrException(String name, Path path) throws IOException {
+    this.checkAccess(AccessMode.EXECUTE);
     MemoryEntry entry = this.getEntry(name);
     if (entry == null) {
       throw new NoSuchFileException(path.toString());
