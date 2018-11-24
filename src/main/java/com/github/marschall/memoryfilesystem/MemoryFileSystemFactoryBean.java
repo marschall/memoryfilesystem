@@ -26,7 +26,7 @@ import java.util.UUID;
  *
  * </code></pre>
  *
- * <p>You can also save the <tt>destroy-method</tt> enable {@code @PreDestroy} with:</p>
+ * <p>You can also save the <code>destroy-method</code> enable {@code @PreDestroy} with:</p>
  * <pre><code>
  * &lt;bean id="memoryFileSystemFactory"
  *    class="com.github.marschall.memoryfilesystem.MemoryFileSystemFactoryBean"/&gt;
