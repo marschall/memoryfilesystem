@@ -12,11 +12,11 @@ import static java.nio.file.attribute.PosixFilePermission.OTHERS_WRITE;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
@@ -38,16 +38,16 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import com.github.marschall.memoryfilesystem.CurrentGroup.GroupTask;
 import com.github.marschall.memoryfilesystem.CurrentUser.UserTask;
 
 public class PosixPermissionMemoryFileSystemTest {
 
-  @Rule
-  public final PosixPermissionFileSystemRule rule = new PosixPermissionFileSystemRule();
+  @RegisterExtension
+  public final PosixPermissionFileSystemExtension rule = new PosixPermissionFileSystemExtension();
 
   @Test
   public void directoryRead() throws IOException {
@@ -58,7 +58,7 @@ public class PosixPermissionMemoryFileSystemTest {
     Files.createFile(file);
 
     Files.setAttribute(directory, "posix:permissions", asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_READ, OTHERS_WRITE));
-    UserPrincipal user = fileSystem.getUserPrincipalLookupService().lookupPrincipalByName(PosixPermissionFileSystemRule.OTHER);
+    UserPrincipal user = fileSystem.getUserPrincipalLookupService().lookupPrincipalByName(PosixPermissionFileSystemExtension.OTHER);
     CurrentUser.useDuring(user, new UserTask<Void>() {
 
       @Override
@@ -76,23 +76,23 @@ public class PosixPermissionMemoryFileSystemTest {
 
   @Test
   public void owner() throws IOException {
-    this.checkPermission(READ, OWNER_READ, PosixPermissionFileSystemRule.OWNER);
-    this.checkPermission(WRITE, OWNER_WRITE, PosixPermissionFileSystemRule.OWNER);
-    this.checkPermission(EXECUTE, OWNER_EXECUTE, PosixPermissionFileSystemRule.OWNER);
+    this.checkPermission(READ, OWNER_READ, PosixPermissionFileSystemExtension.OWNER);
+    this.checkPermission(WRITE, OWNER_WRITE, PosixPermissionFileSystemExtension.OWNER);
+    this.checkPermission(EXECUTE, OWNER_EXECUTE, PosixPermissionFileSystemExtension.OWNER);
   }
 
   @Test
   public void group() throws IOException {
-    this.checkPermission(READ, GROUP_READ, PosixPermissionFileSystemRule.GROUP);
-    this.checkPermission(WRITE, GROUP_WRITE, PosixPermissionFileSystemRule.GROUP);
-    this.checkPermission(EXECUTE, GROUP_EXECUTE, PosixPermissionFileSystemRule.GROUP);
+    this.checkPermission(READ, GROUP_READ, PosixPermissionFileSystemExtension.GROUP);
+    this.checkPermission(WRITE, GROUP_WRITE, PosixPermissionFileSystemExtension.GROUP);
+    this.checkPermission(EXECUTE, GROUP_EXECUTE, PosixPermissionFileSystemExtension.GROUP);
   }
 
   @Test
   public void others() throws IOException {
-    this.checkPermission(READ, OTHERS_READ, PosixPermissionFileSystemRule.OTHER);
-    this.checkPermission(WRITE, OTHERS_WRITE, PosixPermissionFileSystemRule.OTHER);
-    this.checkPermission(EXECUTE, OTHERS_EXECUTE, PosixPermissionFileSystemRule.OTHER);
+    this.checkPermission(READ, OTHERS_READ, PosixPermissionFileSystemExtension.OTHER);
+    this.checkPermission(WRITE, OTHERS_WRITE, PosixPermissionFileSystemExtension.OTHER);
+    this.checkPermission(EXECUTE, OTHERS_EXECUTE, PosixPermissionFileSystemExtension.OTHER);
   }
 
 
@@ -145,7 +145,7 @@ public class PosixPermissionMemoryFileSystemTest {
   public void issue112() throws IOException {
     final Path path = this.rule.getFileSystem().getPath("not-mine");
     Files.createFile(path);
-    UserPrincipal other = this.rule.getFileSystem().getUserPrincipalLookupService().lookupPrincipalByName(PosixPermissionFileSystemRule.OTHER);
+    UserPrincipal other = this.rule.getFileSystem().getUserPrincipalLookupService().lookupPrincipalByName(PosixPermissionFileSystemExtension.OTHER);
     Files.setOwner(path, other);
     CurrentUser.useDuring(other, new UserTask<Object>() {
       @Override
@@ -199,7 +199,7 @@ public class PosixPermissionMemoryFileSystemTest {
   private void checkPermissionPositive(final AccessMode mode, PosixFilePermission permission, final Path file, UserPrincipal user, final GroupPrincipal group) throws IOException {
     PosixFileAttributeView view = Files.getFileAttributeView(file, PosixFileAttributeView.class);
     FileSystem fileSystem = this.rule.getFileSystem();
-    GroupPrincipal fileGroup = fileSystem.getUserPrincipalLookupService().lookupPrincipalByGroupName(PosixPermissionFileSystemRule.GROUP);
+    GroupPrincipal fileGroup = fileSystem.getUserPrincipalLookupService().lookupPrincipalByGroupName(PosixPermissionFileSystemExtension.GROUP);
     view.setGroup(fileGroup); // change group before changing permissions
     view.setPermissions(Collections.singleton(permission));
 
@@ -226,7 +226,7 @@ public class PosixPermissionMemoryFileSystemTest {
 
     Set<PosixFilePermission> permissions = EnumSet.allOf(PosixFilePermission.class);
     FileSystem fileSystem = this.rule.getFileSystem();
-    GroupPrincipal fileGroup = fileSystem.getUserPrincipalLookupService().lookupPrincipalByGroupName(PosixPermissionFileSystemRule.GROUP);
+    GroupPrincipal fileGroup = fileSystem.getUserPrincipalLookupService().lookupPrincipalByGroupName(PosixPermissionFileSystemExtension.GROUP);
     view.setGroup(fileGroup); // change group before changing permissions
     permissions.remove(permission);
     view.setPermissions(permissions);
@@ -266,7 +266,7 @@ public class PosixPermissionMemoryFileSystemTest {
     PosixFileAttributeView directoryView = Files.getFileAttributeView(sourceDirectory, PosixFileAttributeView.class);
     directoryView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE));
 
-    UserPrincipal other = fileSystem.getUserPrincipalLookupService().lookupPrincipalByName(PosixPermissionFileSystemRule.OTHER);
+    UserPrincipal other = fileSystem.getUserPrincipalLookupService().lookupPrincipalByName(PosixPermissionFileSystemExtension.OTHER);
 
     CurrentUser.useDuring(other, new UserTask<Void>() {
 
@@ -301,7 +301,7 @@ public class PosixPermissionMemoryFileSystemTest {
     Path targetDirectory = Files.createDirectory(fileSystem.getPath("target-directory"));
     final Path source = Files.createFile(sourceDirectory.resolve("file.txt"));
     final Path target = targetDirectory.resolve("file.txt");
-    UserPrincipal user = fileSystem.getUserPrincipalLookupService().lookupPrincipalByName(PosixPermissionFileSystemRule.OTHER);
+    UserPrincipal user = fileSystem.getUserPrincipalLookupService().lookupPrincipalByName(PosixPermissionFileSystemExtension.OTHER);
 
     PosixFileAttributeView sourceView = Files.getFileAttributeView(sourceDirectory, PosixFileAttributeView.class);
     sourceView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE));
@@ -383,7 +383,7 @@ public class PosixPermissionMemoryFileSystemTest {
     PosixFileAttributeView view = Files.getFileAttributeView(sourceDirectory, PosixFileAttributeView.class);
     view.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE));
 
-    UserPrincipal user = fileSystem.getUserPrincipalLookupService().lookupPrincipalByName(PosixPermissionFileSystemRule.OTHER);
+    UserPrincipal user = fileSystem.getUserPrincipalLookupService().lookupPrincipalByName(PosixPermissionFileSystemExtension.OTHER);
 
     CurrentUser.useDuring(user, new UserTask<Void>() {
 
