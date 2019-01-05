@@ -1,39 +1,27 @@
 package com.github.marschall.memoryfilesystem;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class ParameterizedSingleEmptyRootPathParserTest {
 
-  @Rule
-  public final FileSystemRule rule = new FileSystemRule();
+  private static final String DISPLAY_NAME = "first: {0} more: {1}";
 
-  private final String first;
-  private final String[] more;
+  @RegisterExtension
+  public final FileSystemExtension rule = new FileSystemExtension();
 
   private Path expected;
-
   private PathParser parser;
 
-
-  public ParameterizedSingleEmptyRootPathParserTest(String first, String[] more) {
-    this.first = first;
-    this.more = more;
-  }
-
-  @Parameters(name = "first: {0} more: {1}")
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
             { "/a", new String[]{"b", "c"} },
@@ -61,17 +49,18 @@ public class ParameterizedSingleEmptyRootPathParserTest {
     });
   }
 
-  @Before
+  @BeforeEach
   public void setUp() {
     this.parser = new SingleEmptyRootPathParser("/", EmptyCharacterSet.INSTANCE);
     Root root = (Root) this.rule.getFileSystem().getRootDirectories().iterator().next();
     this.expected = AbstractPath.createAbsolute(root.getMemoryFileSystem(), root, Arrays.asList("a", "b", "c"));
   }
 
-  @Test
-  public void test() {
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("data")
+  public void test(String first, String[] more) {
     Root root = (Root) this.rule.getFileSystem().getRootDirectories().iterator().next();
-    Path actual = this.parser.parse(Collections.singletonMap("", root), this.first, this.more);
+    Path actual = this.parser.parse(Collections.singletonMap("", root), first, more);
     assertEquals(this.expected, actual);
   }
 

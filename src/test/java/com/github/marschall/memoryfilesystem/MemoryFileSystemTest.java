@@ -23,15 +23,16 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -75,9 +76,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class MemoryFileSystemTest {
 
@@ -86,8 +87,8 @@ public class MemoryFileSystemTest {
 
   private static final byte[] SAMPLE_DATA = new byte[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 
-  @Rule
-  public final FileSystemRule rule = new FileSystemRule();
+  @RegisterExtension
+  public final FileSystemExtension rule = new FileSystemExtension();
 
   @Test
   public void tryLockNoArguments() throws IOException {
@@ -100,8 +101,8 @@ public class MemoryFileSystemTest {
     try (FileChannel channel = FileChannel.open(path, WRITE)) {
       FileLock firstLock = channel.tryLock();
       assertNotNull(firstLock);
-      assertTrue("valid", firstLock.isValid());
-      assertFalse("shared", firstLock.isShared());
+      assertTrue(firstLock.isValid(), "valid");
+      assertFalse(firstLock.isShared(), "shared");
 
       assertNull(channel.tryLock());
 
@@ -109,7 +110,7 @@ public class MemoryFileSystemTest {
       assertSame(channel, firstLock.channel());
 
       firstLock.release();
-      assertFalse("valid", firstLock.isValid());
+      assertFalse(firstLock.isValid(), "valid");
 
       FileLock secondLock = channel.tryLock();
       assertNotNull(secondLock);
@@ -128,15 +129,15 @@ public class MemoryFileSystemTest {
 
       FileLock firstLock = firstChannel.lock(2L, 6L, true);
 
-      assertTrue("valid", firstLock.isValid());
-      assertTrue("shared", firstLock.isShared());
+      assertTrue(firstLock.isValid(), "valid");
+      assertTrue(firstLock.isShared(), "shared");
       firstLock.release();
-      assertFalse("valid", firstLock.isValid());
+      assertFalse(firstLock.isValid(), "valid");
 
       firstLock = firstChannel.lock(2L, 6L, false);
 
-      assertTrue("valid", firstLock.isValid());
-      assertFalse("shared", firstLock.isShared());
+      assertTrue(firstLock.isValid(), "valid");
+      assertFalse(firstLock.isShared(), "shared");
 
       try (FileChannel secondChannel = FileChannel.open(path, WRITE)) {
 
@@ -163,7 +164,7 @@ public class MemoryFileSystemTest {
         // closing the first channel should release the first lock
         firstChannel.close();
 
-        assertFalse("valid", firstLock.isValid());
+        assertFalse(firstLock.isValid(), "valid");
 
         secondLock = secondChannel.lock();
         assertNotNull(secondLock);
@@ -214,7 +215,7 @@ public class MemoryFileSystemTest {
 
     try (FileChannel channel = FileChannel.open(path, READ)) {
       long read = channel.read(ByteBuffer.wrap(data), 1L);
-      assertEquals("bytes read", 2L, read);
+      assertEquals(2L, read, "bytes read");
     }
 
     assertArrayEquals(new byte[]{'b', 'c'}, data);
@@ -236,7 +237,7 @@ public class MemoryFileSystemTest {
     try (FileChannel channel = FileChannel.open(path, READ)) {
       ByteBuffer[] buffers = new ByteBuffer[]{ByteBuffer.wrap(a), ByteBuffer.wrap(b), ByteBuffer.wrap(c), ByteBuffer.wrap(d)};
       long read = channel.read(buffers, 1, 2);
-      assertEquals("bytes read", 2L, read);
+      assertEquals(2L, read, "bytes read");
     }
 
     assertArrayEquals(new byte[]{0}, a);
@@ -260,7 +261,7 @@ public class MemoryFileSystemTest {
     try (FileChannel channel = FileChannel.open(path, READ)) {
       ByteBuffer[] buffers = new ByteBuffer[]{ByteBuffer.wrap(a), ByteBuffer.wrap(b), ByteBuffer.wrap(c), ByteBuffer.wrap(d)};
       long read = channel.read(buffers);
-      assertEquals("bytes read", 4L, read);
+      assertEquals(4L, read, "bytes read");
     }
 
     assertArrayEquals(new byte[]{'a'}, a);
@@ -281,7 +282,7 @@ public class MemoryFileSystemTest {
 
     try (FileChannel channel = FileChannel.open(path, CREATE_NEW, WRITE)) {
       long written = channel.write(new ByteBuffer[]{a, b, c, d}, 1, 2);
-      assertEquals("byte written", 2L, written);
+      assertEquals(2L, written, "byte written");
     }
     assertThat(path, hasContents("bc"));
   }
@@ -301,7 +302,7 @@ public class MemoryFileSystemTest {
 
     try (FileChannel channel = FileChannel.open(path, APPEND)) {
       long written = channel.write(new ByteBuffer[]{a, b, c, d}, 1, 2);
-      assertEquals("byte written", 2L, written);
+      assertEquals(2L, written, "byte written");
     }
     assertThat(path, hasContents("zbc"));
   }
@@ -384,13 +385,13 @@ public class MemoryFileSystemTest {
     FileUtility.createAndSetContents(path, "z");
 
     try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, WRITE)) {
-      assertTrue("open", channel.isOpen());
+      assertTrue(channel.isOpen(), "open");
 
       assertEquals(1L, channel.size());
 
       channel.close();
 
-      assertFalse("open", channel.isOpen());
+      assertFalse(channel.isOpen(), "open");
     }
   }
 
@@ -414,8 +415,8 @@ public class MemoryFileSystemTest {
       assertTrue(handler.isCompleted());
       assertFalse(handler.isFailed());
 
-      assertSame("attachment", attachment, handler.getAttachment());
-      assertEquals("bytes written", 2, handler.getResult().intValue());
+      assertSame(attachment, handler.getAttachment(), "attachment");
+      assertEquals(2, handler.getResult().intValue(), "bytes written");
     }
 
     assertThat(path, hasContents("zab"));
@@ -442,8 +443,8 @@ public class MemoryFileSystemTest {
       assertTrue(handler.isCompleted());
       assertFalse(handler.isFailed());
 
-      assertSame("attachment", attachment, handler.getAttachment());
-      assertEquals("bytes read", 2, handler.getResult().intValue());
+      assertSame(attachment, handler.getAttachment(), "attachment");
+      assertEquals(2, handler.getResult().intValue(), "bytes read");
       assertArrayEquals(new byte[]{'b', 'c'}, data);
     }
 
@@ -467,10 +468,10 @@ public class MemoryFileSystemTest {
 
       handler.await();
 
-      assertFalse("completed", handler.isCompleted());
-      assertTrue("failed", handler.isFailed());
+      assertFalse(handler.isCompleted(), "completed");
+      assertTrue(handler.isFailed(), "failed");
 
-      assertSame("attachment", attachment, handler.getAttachment());
+      assertSame(attachment, handler.getAttachment(), "attachment");
       // TODO fix Hamcrest
       assertThat(handler.getException(), isA((Class<Throwable>) (Object) NonWritableChannelException.class));
     }
@@ -685,11 +686,11 @@ public class MemoryFileSystemTest {
     }
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void setDirectory() throws IOException {
+  @Test
+ public void setDirectory() {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path path = fileSystem.getPath("/");
-    Files.setAttribute(path, "isDirectory", false);
+    assertThrows(IllegalArgumentException.class, () -> Files.setAttribute(path, "isDirectory", false));
   }
 
 
@@ -746,17 +747,17 @@ public class MemoryFileSystemTest {
       a.toRealPath();
       fail("FileSystemLoopException expected");
     } catch (FileSystemLoopException e) {
-      assertTrue("expected", true);
+      assertTrue(true, "expected");
     }
   }
 
-  @Test(expected = NotLinkException.class)
+  @Test
   public void readSymbolicLinkNotALink() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path target = fileSystem.getPath("/target");
     Files.createFile(target);
 
-    Files.readSymbolicLink(target);
+    assertThrows(NotLinkException.class, () -> Files.readSymbolicLink(target));
   }
 
   @Test
@@ -879,13 +880,12 @@ public class MemoryFileSystemTest {
 
 
 
-  @Test(expected = FileSystemException.class)
+  @Test
   public void dontDeleteOpenFile() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path path = fileSystem.getPath("test");
     try (SeekableByteChannel channel = Files.newByteChannel(path, CREATE_NEW, WRITE)) {
-      Files.delete(path);
-      fail("you shound't be able to delete a file wile it's open");
+      assertThrows(FileSystemException.class , () -> Files.delete(path), "you shound't be able to delete a file wile it's open");
     }
   }
 
@@ -1243,20 +1243,20 @@ public class MemoryFileSystemTest {
     assertEquals(fileSystem.getPath(""), first.relativize(first));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void relativizeAbsoluteUnsupported1() {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path first = fileSystem.getPath("/a/b");
     Path second = fileSystem.getPath("c");
-    first.relativize(second);
+    assertThrows(IllegalArgumentException.class, () -> first.relativize(second));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void relativizeAbsoluteUnsupported2() {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path first = fileSystem.getPath("/a/b");
     Path second = fileSystem.getPath("c");
-    second.relativize(first);
+    assertThrows(IllegalArgumentException.class, () -> second.relativize(first));
   }
 
 
@@ -1335,7 +1335,7 @@ public class MemoryFileSystemTest {
         actualIterator.remove();
         fail("path iterator should not support #remove()");
       } catch (UnsupportedOperationException e) {
-        assertTrue("path iterator #remove() should throw UnsupportedOperationException", true);
+        assertTrue(true, "path iterator #remove() should throw UnsupportedOperationException");
       }
 
       assertTrue(expectedIterator.hasNext());
@@ -1472,18 +1472,18 @@ public class MemoryFileSystemTest {
     assertNull(usr.getParent());
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void absoluteGetName0() {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path usrBin = fileSystem.getPath("/usr/bin");
-    usrBin.getName(-1);
+    assertThrows(IllegalArgumentException.class, () -> usrBin.getName(-1));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void absoluteGetNameToLong() {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path usrBin = fileSystem.getPath("/usr/bin");
-    usrBin.getName(2);
+    assertThrows(IllegalArgumentException.class, () -> usrBin.getName(2));
   }
 
   @Test
@@ -1514,18 +1514,18 @@ public class MemoryFileSystemTest {
     assertEquals(bin, usrBin.getName(1));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void relativeGetName0() {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path usrBin = fileSystem.getPath("usr/bin");
-    usrBin.getName(-1);
+    assertThrows(IllegalArgumentException.class, () -> usrBin.getName(-1));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void relativeGetNameToLong() {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path usrBin = fileSystem.getPath("usr/bin");
-    usrBin.getName(2);
+    assertThrows(IllegalArgumentException.class, () -> usrBin.getName(2));
   }
 
   @Test
@@ -1546,8 +1546,8 @@ public class MemoryFileSystemTest {
   }
 
   // https://bugs.openjdk.java.net/browse/JDK-8066943
-  @Test(expected = IllegalArgumentException.class)
-  @Ignore
+  @Test
+  @Disabled
   public void jdk8066943() {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path path = fileSystem.getPath("..").relativize(fileSystem.getPath("x"));
@@ -1645,20 +1645,19 @@ public class MemoryFileSystemTest {
   }
 
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void slash() {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path path = fileSystem.getPath("/");
-    path.subpath(0, 1);
+    assertThrows(IllegalArgumentException.class, () -> path.subpath(0, 1));
   }
 
-  @Test(expected = IOException.class)
-  public void createDirectoryNoParent() throws IOException {
+  @Test
+  public void createDirectoryNoParent() {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path homePmarscha = fileSystem.getPath("/home/pmarscha");
     assertThat(homePmarscha, not(exists()));
-    Files.createDirectory(homePmarscha);
-    assertThat(homePmarscha,exists());
+    assertThrows(IOException.class, () -> Files.createDirectory(homePmarscha));
   }
 
   @Test
@@ -1770,12 +1769,12 @@ public class MemoryFileSystemTest {
 
   }
 
-  @Test(expected = ClassCastException.class)
+  @Test
   public void pathOrderingIncompatible() {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path a = fileSystem.getPath("a");
     Path b = FileSystems.getDefault().getPath("b");
-    a.compareTo(b);
+    assertThrows(ClassCastException.class, () -> a.compareTo(b));
   }
 
 
@@ -1800,14 +1799,14 @@ public class MemoryFileSystemTest {
     assertFalse(Files.isRegularFile(home));
   }
 
-  @Test(expected = FileAlreadyExistsException.class)
+  @Test
   public void createDirectoryAlreadyExists() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path home = fileSystem.getPath("/home");
     assertThat(home, not(exists()));
     Files.createDirectory(home);
     assertThat(home, exists());
-    Files.createDirectory(home);
+    assertThrows(FileAlreadyExistsException.class, () -> Files.createDirectory(home));
   }
 
   @Test
@@ -1863,10 +1862,10 @@ public class MemoryFileSystemTest {
     assertEquals(path, path.normalize());
   }
 
-  @Test(expected = ProviderMismatchException.class)
-  public void providerMismatch() throws IOException {
+  @Test
+  public void providerMismatch() {
     Path root = Paths.get("");
-    this.rule.getFileSystem().provider().move(root, root);
+    assertThrows(ProviderMismatchException.class, () -> this.rule.getFileSystem().provider().move(root, root));
   }
 
 

@@ -12,9 +12,10 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.nio.file.DirectoryNotEmptyException;
@@ -34,13 +35,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class MemoryFileSystemCopyTest {
 
-  @Rule
-  public final FileSystemRule rule = new FileSystemRule();
+  @RegisterExtension
+  public final FileSystemExtension rule = new FileSystemExtension();
 
   @Test
   public void copySymbolicLinkNoFollow() throws IOException {
@@ -384,11 +385,11 @@ public class MemoryFileSystemCopyTest {
     Files.move(root, root);
   }
 
-  @Test(expected = FileSystemException.class)
+  @Test
   public void moveRootIntoSubfolder() throws IOException {
     Path dir = Files.createDirectory(this.rule.getFileSystem().getPath("/dir"));
     Path sub = dir.resolve("sub");
-    Files.move(dir, sub);
+    assertThrows(FileSystemException.class, () -> Files.move(dir, sub));
   }
 
   public void moveRoot() {

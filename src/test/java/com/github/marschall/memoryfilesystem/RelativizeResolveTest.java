@@ -1,44 +1,35 @@
 package com.github.marschall.memoryfilesystem;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Tests the contract outlined in {@link Path#relativize(Path)}.
  */
-@RunWith(Parameterized.class)
 public class RelativizeResolveTest {
 
-  @Rule
-  public final FileSystemRule rule = new FileSystemRule();
+  private static final String DISPLAY_NAME = "receiver: {0}, other: {1}";
 
-  private final String first;
-  private final String second;
+  @RegisterExtension
+  public final FileSystemExtension rule = new FileSystemExtension();
 
-  public RelativizeResolveTest(String first, String second) {
-    this.first = first;
-    this.second = second;
-  }
-
-  @Test
-  public void contract() {
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("data")
+  public void contract(String first, String second) {
     FileSystem fileSystem = this.rule.getFileSystem();
-    Path p = fileSystem.getPath(this.first);
-    Path q = fileSystem.getPath(this.second);
+    Path p = fileSystem.getPath(first);
+    Path q = fileSystem.getPath(second);
     assertEquals(q, p.relativize(p.resolve(q)));
   }
 
-  @Parameters(name = "receiver: {0}, other: {1}")
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
             { "a", "a" },

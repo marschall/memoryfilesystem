@@ -9,8 +9,8 @@ import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.DELETE_ON_CLOSE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -26,8 +26,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class MemoryHardLinkTest {
 
@@ -48,8 +48,8 @@ public class MemoryHardLinkTest {
     }
   }
 
-  @Rule
-  public final FileSystemRule rule = new FileSystemRule();
+  @RegisterExtension
+  public final FileSystemExtension rule = new FileSystemExtension();
 
   @Test
   public void sameContents() throws IOException {

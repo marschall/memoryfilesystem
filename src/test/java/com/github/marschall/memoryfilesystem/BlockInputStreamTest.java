@@ -1,7 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -12,13 +12,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class BlockInputStreamTest {
 
-  @Rule
-  public final FileSystemRule rule = new FileSystemRule();
+  @RegisterExtension
+  public final FileSystemExtension rule = new FileSystemExtension();
 
   @Test
   public void skipMoreThanAvailable() throws IOException {
@@ -89,7 +89,7 @@ public class BlockInputStreamTest {
       assertEquals(size - 1, written.length); // hamcrest has no support for primitive arrays
 
       byte[] start = Arrays.copyOfRange(written, 0, 5);
-      assertArrayEquals(new byte[] {1, 2, 3, 4, 5}, start);
+      assertArrayEquals(new byte[]{1, 2, 3, 4, 5}, start);
 
       byte[] expectedEnd = new byte[5];
       byte[] end = Arrays.copyOfRange(written, size - expectedEnd.length + 1 - 2, size + 1 - 2);

@@ -1,42 +1,30 @@
 package com.github.marschall.memoryfilesystem;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.file.FileSystem;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class ParserTest {
 
-  @Rule
-  public final FileSystemRule rule = new FileSystemRule();
+  private static final String DISPLAY_NAME = "first: {0}, more: {1}, expected: {2}";
 
-  private final String first;
-  private final String[] more;
-
-  private final String expected;
+  @RegisterExtension
+  public final FileSystemExtension rule = new FileSystemExtension();
 
 
-  public ParserTest(String first, String[] more, String expected) {
-    this.first = first;
-    this.more = more;
-    this.expected = expected;
-  }
-
-  @Test
-  public void parse() {
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("data")
+  public void parse(String first, String[] more, String expected) {
     FileSystem fileSystem = this.rule.getFileSystem();
-    assertEquals(fileSystem.getPath(this.expected), fileSystem.getPath(this.first, this.more));
+    assertEquals(fileSystem.getPath(expected), fileSystem.getPath(first, more));
   }
 
-  @Parameters(name = "first: {0}, more: {1}, expected: {2}")
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
             { "", null, "" },
