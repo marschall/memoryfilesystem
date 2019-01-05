@@ -4,9 +4,10 @@ import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.DELETE_ON_CLOSE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.OpenOption;
 import java.util.Arrays;
@@ -14,15 +15,15 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class DefaultOpenOptionsTest {
 
   private Set<OpenOption> options;
   private Set<OpenOption> expected;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     this.options = DefaultOpenOptions.INSTANCE;
     this.expected = new HashSet<OpenOption>(Arrays.asList(CREATE, TRUNCATE_EXISTING, WRITE));
@@ -45,24 +46,24 @@ public class DefaultOpenOptionsTest {
     assertEquals(actual, this.expected);
   }
 
-  @Test(expected = UnsupportedOperationException.class)
+  @Test
   public void add() {
-    this.options.add(DELETE_ON_CLOSE);
+    assertThrows(UnsupportedOperationException.class, () -> this.options.add(DELETE_ON_CLOSE));
   }
 
-  @Test(expected = UnsupportedOperationException.class)
+  @Test
   public void addAll() {
-    this.options.addAll(Collections.singleton(DELETE_ON_CLOSE));
+    assertThrows(UnsupportedOperationException.class, () -> this.options.addAll(Collections.singleton(DELETE_ON_CLOSE)));
   }
 
-  @Test(expected = UnsupportedOperationException.class)
+  @Test
   public void remove() {
-    this.options.remove(DELETE_ON_CLOSE);
+    assertThrows(UnsupportedOperationException.class, () -> this.options.remove(DELETE_ON_CLOSE));
   }
 
-  @Test(expected = UnsupportedOperationException.class)
+  @Test
   public void removeAll() {
-    this.options.removeAll(Collections.singleton(DELETE_ON_CLOSE));
+    assertThrows(UnsupportedOperationException.class, () -> this.options.removeAll(Collections.singleton(DELETE_ON_CLOSE)));
   }
 
   @Test

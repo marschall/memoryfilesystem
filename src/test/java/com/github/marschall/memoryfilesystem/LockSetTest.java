@@ -2,10 +2,10 @@ package com.github.marschall.memoryfilesystem;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -18,28 +18,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Future;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class LockSetTest {
 
-  private final MemoryFileLock toAdd;
-  private final Collection<MemoryFileLock> alreadyPresent;
-  private LockSet lockSet;
-  private final boolean expectedSuccess;
-
-  public LockSetTest(MemoryFileLock toAdd, Collection<MemoryFileLock> alreadyPresent, boolean expectedSuccess) {
-    this.toAdd = toAdd;
-    this.alreadyPresent = alreadyPresent;
-    this.expectedSuccess = expectedSuccess;
-  }
-
-
-  @Parameters
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
             { lock(0L, 1000L), singletonList(lock(1000L, 9000L)), true },
@@ -64,38 +47,40 @@ public class LockSetTest {
     return new MemoryFileLock(channel, position, size, false);
   }
 
-  @Before
-  public void setUp() throws IOException {
-    this.lockSet = new LockSet();
-    for (MemoryFileLock lock : this.alreadyPresent) {
-      this.lockSet.lock(lock);
+  private LockSet createLockSet(Collection<MemoryFileLock> alreadyPresent) throws IOException {
+    LockSet lockSet = new LockSet();
+    for (MemoryFileLock lock : alreadyPresent) {
+      lockSet.lock(lock);
+    }
+    return lockSet;
+  }
+
+  @ParameterizedTest
+  @MethodSource("data")
+  public void tryLock(MemoryFileLock toAdd, Collection<MemoryFileLock> alreadyPresent, boolean expectedSuccess) throws IOException {
+    FileLock lock = createLockSet(alreadyPresent).tryLock(toAdd);
+    assertEquals(expectedSuccess, lock != null, "lock acquisition successful");
+    if (expectedSuccess) {
+      assertSame(toAdd, lock);
     }
   }
 
-  @Test
-  public void tryLock() {
-    FileLock lock = this.lockSet.tryLock(this.toAdd);
-    assertEquals("lock acquisition successful", this.expectedSuccess, lock != null);
-    if (this.expectedSuccess) {
-      assertSame(this.toAdd, lock);
-    }
-  }
-
-  @Test
-  public void lock() throws IOException {
+  @ParameterizedTest
+  @MethodSource("data")
+  public void lock(MemoryFileLock toAdd, Collection<MemoryFileLock> alreadyPresent, boolean expectedSuccess) throws IOException {
     FileLock lock = null;
     try {
-      lock = this.lockSet.lock(this.toAdd);
-      if (!this.expectedSuccess) {
+      lock = createLockSet(alreadyPresent).lock(toAdd);
+      if (!expectedSuccess) {
         fail("lock acquisition successful");
       }
     } catch (OverlappingFileLockException e) {
-      if (this.expectedSuccess) {
+      if (expectedSuccess) {
         fail("lock acquisition failed");
       }
     }
-    if (this.expectedSuccess) {
-      assertSame(this.toAdd, lock);
+    if (expectedSuccess) {
+      assertSame(toAdd, lock);
     } else {
       assertNull(lock);
     }

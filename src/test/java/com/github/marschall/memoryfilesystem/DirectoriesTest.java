@@ -4,10 +4,10 @@ import static com.github.marschall.memoryfilesystem.FileContentsMatcher.hasConte
 import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
 import static java.util.Arrays.asList;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -16,7 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class DirectoriesTest {
 

@@ -3,14 +3,15 @@ package com.github.marschall.memoryfilesystem;
 import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_ENV;
 import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_URI;
 import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isAbsolute;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.nio.file.FileSystem;
@@ -21,7 +22,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class RootTest {
 
@@ -92,17 +93,17 @@ public class RootTest {
     }
   }
 
-  @Test(expected = InvalidPathException.class)
+  @Test
   public void windowsRootInvalid1() throws IOException {
     try (FileSystem fileSystem = MemoryFileSystemBuilder.newWindows().build("name")) {
-      fileSystem.getPath("/C:\\");
+      assertThrows(InvalidPathException.class, () -> fileSystem.getPath("/C:\\"));
     }
   }
 
-  @Test(expected = InvalidPathException.class)
+  @Test
   public void windowsRootInvalid2() throws IOException {
     try (FileSystem fileSystem = MemoryFileSystemBuilder.newWindows().build("name")) {
-      fileSystem.getPath("\\C:\\");
+      assertThrows(InvalidPathException.class, () -> fileSystem.getPath("\\C:\\"));
     }
   }
 

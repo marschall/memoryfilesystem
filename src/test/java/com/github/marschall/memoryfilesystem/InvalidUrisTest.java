@@ -1,37 +1,25 @@
 package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_ENV;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.io.IOException;
 import java.net.URI;
-import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.util.Arrays;
 import java.util.List;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
-
-@RunWith(Parameterized.class)
 public class InvalidUrisTest {
 
-  private final URI uri;
+  private static final String DISPLAY_NAME = "URI: {0}";
 
-  public InvalidUrisTest(URI env) {
-    this.uri = env;
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("data")
+  public void invalidUri(URI uri) {
+    assertThrows(IllegalArgumentException.class, () -> FileSystems.newFileSystem(uri, SAMPLE_ENV), uri + " should not be a valid URI");
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void invalidUri() throws IOException {
-    try (FileSystem fileSystem = FileSystems.newFileSystem(this.uri, SAMPLE_ENV)) {
-      fail(this.uri + " should not be a valid URI");
-    }
-  }
-
-  @Parameters(name = "URI: {0}")
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
             { URI.create("memory:name#fragment") },
