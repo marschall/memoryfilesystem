@@ -1,6 +1,6 @@
 package com.github.marschall.memoryfilesystem;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
@@ -8,32 +8,25 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class ToUriTest {
 
-  @Rule
-  public final FileSystemRule rule = new FileSystemRule();
+  private static final String DISPLAY_NAME = "path: {0}";
 
-  private final String path;
+  @RegisterExtension
+  public final FileSystemExtension rule = new FileSystemExtension();
 
-  public ToUriTest(String path) {
-    this.path = path;
-  }
-
-  @Test
-  public void contract() {
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("data")
+  public void contract(String path) {
     FileSystem fileSystem = this.rule.getFileSystem();
-    Path p = fileSystem.getPath(this.path);
+    Path p = fileSystem.getPath(path);
     assertEquals(p.toAbsolutePath(), Paths.get(p.toUri()));
   }
 
-  @Parameters(name = "path: {0}")
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
             { "a" },

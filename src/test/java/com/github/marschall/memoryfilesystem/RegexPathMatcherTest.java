@@ -1,6 +1,6 @@
 package com.github.marschall.memoryfilesystem;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
@@ -8,45 +8,33 @@ import java.nio.file.PathMatcher;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class RegexPathMatcherTest {
 
-  @Rule
-  public final FileSystemRule rule = new FileSystemRule();
+  @RegisterExtension
+  public final FileSystemExtension rule = new FileSystemExtension();
 
-  private final String p;
-  private final boolean expected;
-  private final String pattern;
-
-  public RegexPathMatcherTest(String pattern, String path, boolean expected) {
-    this.p = path;
-    this.expected = expected;
-    this.pattern = pattern;
-  }
-
-  @Test
-  public void matchesUpperCase() {
+  @ParameterizedTest
+  @MethodSource("data")
+  public void matchesUpperCase(String pattern, String p, boolean expected) {
     FileSystem fileSystem = this.rule.getFileSystem();
-    Path path = fileSystem.getPath(this.p);
-    PathMatcher matcher = fileSystem.getPathMatcher(RegexPathMatcher.name().toUpperCase() + ":" + this.pattern);
-    assertEquals(this.expected, matcher.matches(path));
+    Path path = fileSystem.getPath(p);
+    PathMatcher matcher = fileSystem.getPathMatcher(RegexPathMatcher.name().toUpperCase() + ":" + pattern);
+    assertEquals(expected, matcher.matches(path));
   }
 
-  @Test
-  public void matchesLowerCase() {
+  @ParameterizedTest
+  @MethodSource("data")
+  public void matchesLowerCase(String pattern, String p, boolean expected) {
     FileSystem fileSystem = this.rule.getFileSystem();
-    Path path = fileSystem.getPath(this.p);
-    PathMatcher matcher = fileSystem.getPathMatcher(RegexPathMatcher.name().toLowerCase() + ":" + this.pattern);
-    assertEquals(this.expected, matcher.matches(path));
+    Path path = fileSystem.getPath(p);
+    PathMatcher matcher = fileSystem.getPathMatcher(RegexPathMatcher.name().toLowerCase() + ":" + pattern);
+    assertEquals(expected, matcher.matches(path));
   }
 
-  @Parameters
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
             { ".*\\.java", "GlobPathMatcherTest.java", true },

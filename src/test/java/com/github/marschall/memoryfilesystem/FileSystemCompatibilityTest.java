@@ -8,14 +8,14 @@ import static com.github.marschall.memoryfilesystem.PathMatchesMatcher.matches;
 import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.READ;
 import static java.nio.file.StandardOpenOption.WRITE;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -28,37 +28,28 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.attribute.BasicFileAttributeView;
-import java.util.Arrays;
-import java.util.List;
+import java.util.stream.Stream;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class FileSystemCompatibilityTest {
 
-  @Rule
-  public final FileSystemRule rule = new FileSystemRule();
+  private static final String DISPLAY_NAME = "native: {arguments}";
 
-  private final boolean useDefault;
+  @RegisterExtension
+  public final FileSystemExtension rule = new FileSystemExtension();
 
   private FileSystem fileSystem;
 
-  public FileSystemCompatibilityTest(boolean useDefault) {
-    this.useDefault = useDefault;
+  public static Stream<Boolean> useDefault() {
+    return Stream.of(Boolean.TRUE, Boolean.FALSE);
   }
 
-  @Parameters(name = "native: {0}")
-  public static List<Object[]> fileSystems() {
-    return Arrays.asList(new Object[]{true}, new Object[]{false});
-  }
-
-  FileSystem getFileSystem() {
+  FileSystem getFileSystem(boolean useDefault) {
     if (this.fileSystem == null) {
-      if (this.useDefault) {
+      if (useDefault) {
         this.fileSystem = FileSystems.getDefault();
       } else {
         this.fileSystem = this.rule.getFileSystem();
@@ -67,9 +58,10 @@ public class FileSystemCompatibilityTest {
     return this.fileSystem;
   }
 
-  @Test
-  public void writeOnly() throws IOException {
-    Path currentDirectory = this.getFileSystem().getPath("");
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("useDefault")
+  public void writeOnly(boolean useDefault) throws IOException {
+    Path currentDirectory = this.getFileSystem(useDefault).getPath("");
     Path path = Files.createTempFile(currentDirectory, "task-list", ".png");
     try (SeekableByteChannel channel = Files.newByteChannel(path, WRITE)) {
       channel.position(100);
@@ -85,9 +77,10 @@ public class FileSystemCompatibilityTest {
     }
   }
 
-  @Test
-  public void truncate() throws IOException {
-    Path currentDirectory = this.getFileSystem().getPath("");
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("useDefault")
+  public void truncate(boolean useDefault) throws IOException {
+    Path currentDirectory = this.getFileSystem(useDefault).getPath("");
     Path path = Files.createTempFile(currentDirectory, "sample", ".txt");
     try {
       try (SeekableByteChannel channel = Files.newByteChannel(path, WRITE)) {
@@ -106,9 +99,10 @@ public class FileSystemCompatibilityTest {
     }
   }
 
-  @Test
-  public void viewOnNotExistingFile() throws IOException {
-    Path currentDirectory = this.getFileSystem().getPath("");
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("useDefault")
+  public void viewOnNotExistingFile(boolean useDefault) throws IOException {
+    Path currentDirectory = this.getFileSystem(useDefault).getPath("");
     Path notExisting = currentDirectory.resolve("not-existing.txt");
     BasicFileAttributeView view = Files.getFileAttributeView(notExisting, BasicFileAttributeView.class);
     assertNotNull(view);
@@ -120,9 +114,10 @@ public class FileSystemCompatibilityTest {
     }
   }
 
-  @Test
-  public void position() throws IOException {
-    Path currentDirectory = this.getFileSystem().getPath("");
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("useDefault")
+  public void position(boolean useDefault) throws IOException {
+    Path currentDirectory = this.getFileSystem(useDefault).getPath("");
     Path path = Files.createTempFile(currentDirectory, "sample", ".txt");
     try (SeekableByteChannel channel = Files.newByteChannel(path, WRITE)) {
       assertEquals(0L, channel.position());
@@ -141,9 +136,10 @@ public class FileSystemCompatibilityTest {
     }
   }
 
-  @Test
-  public void emptyPath() {
-    FileSystem fileSystem = this.getFileSystem();
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("useDefault")
+  public void emptyPath(boolean useDefault) {
+    FileSystem fileSystem = this.getFileSystem(useDefault);
     Path path = fileSystem.getPath("");
     assertThat(path, isRelative());
     assertNull(path.getRoot());
@@ -153,9 +149,10 @@ public class FileSystemCompatibilityTest {
     assertEquals(1, path.getNameCount());
   }
 
-  @Test
-  public void positionAfterTruncate() throws IOException {
-    Path currentDirectory = this.getFileSystem().getPath("");
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("useDefault")
+  public void positionAfterTruncate(boolean useDefault) throws IOException {
+    Path currentDirectory = this.getFileSystem(useDefault).getPath("");
     Path tempFile = Files.createTempFile(currentDirectory, "prefix", "suffix");
     try {
       ByteBuffer src = ByteBuffer.wrap(new byte[]{1, 2, 3, 4, 5});
@@ -173,7 +170,7 @@ public class FileSystemCompatibilityTest {
   }
 
   @Test
-  public void append() throws IOException {
+  void append() throws IOException {
     Path path = Files.createTempFile("sample", ".txt");
     try (SeekableByteChannel channel = Files.newByteChannel(path, APPEND)) {
       //      channel.position(channel.size());
@@ -190,17 +187,17 @@ public class FileSystemCompatibilityTest {
   }
 
   @Test
-  public void appendPostion() throws IOException {
+  void appendPostion() throws IOException {
     Path path = Files.createTempFile("sample", ".txt");
     String originalContent = "0123456789";
     setContents(path, originalContent);
     try (SeekableByteChannel channel = Files.newByteChannel(path, APPEND)) {
-      assertEquals("position", originalContent.length(), channel.position());
+      assertEquals(originalContent.length(), channel.position(), "position");
       byte[] appended = new byte[]{'a', 'b', 'c', 'd'};
       ByteBuffer src = ByteBuffer.wrap(appended);
-      assertEquals("position", originalContent.length(), channel.position());
+      assertEquals(originalContent.length(), channel.position(), "position");
       channel.write(src);
-      assertEquals("position", originalContent.length() + appended.length, channel.position());
+      assertEquals(originalContent.length() + appended.length, channel.position(), "position");
 
       channel.truncate(0L);
       assertThat(path, hasContents(""));
@@ -209,9 +206,10 @@ public class FileSystemCompatibilityTest {
     }
   }
 
-  @Test
-  public void root() {
-    FileSystem fileSystem = this.getFileSystem();
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("useDefault")
+  public void root(boolean useDefault) {
+    FileSystem fileSystem = this.getFileSystem(useDefault);
     for (Path root : fileSystem.getRootDirectories()) {
       assertThat(root, isAbsolute());
       assertEquals(root, root.getRoot());
@@ -234,9 +232,10 @@ public class FileSystemCompatibilityTest {
     }
   }
 
-  @Test
-  public void regression93() {
-    FileSystem fileSystem = this.getFileSystem();
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("useDefault")
+  public void regression93(boolean useDefault) {
+    FileSystem fileSystem = this.getFileSystem(useDefault);
 
     Path child = fileSystem.getPath(".gitignore");
 

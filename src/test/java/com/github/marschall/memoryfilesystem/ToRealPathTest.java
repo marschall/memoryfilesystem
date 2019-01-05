@@ -1,16 +1,16 @@
 package com.github.marschall.memoryfilesystem;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * Regression test for <a href="https://github.com/marschall/memoryfilesystem/issues/60">Issue 60</a>
@@ -18,13 +18,13 @@ import org.junit.Test;
  */
 public class ToRealPathTest {
 
-  @Rule
-  public final FileSystemRule rule = new FileSystemRule();
+  @RegisterExtension
+  public final FileSystemExtension rule = new FileSystemExtension();
 
   private Path existingDirectoryPath;
   private Path existingFilePath;
 
-  @Before
+  @BeforeEach
   public void before() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 

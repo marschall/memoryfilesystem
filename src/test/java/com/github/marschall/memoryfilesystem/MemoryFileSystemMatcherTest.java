@@ -1,8 +1,9 @@
 package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.PathMatchesMatcher.matches;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.nio.file.FileSystem;
@@ -11,35 +12,35 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.regex.PatternSyntaxException;
 
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class MemoryFileSystemMatcherTest {
 
-  @Rule
-  public final FileSystemRule rule = new FileSystemRule();
+  @RegisterExtension
+  public final FileSystemExtension rule = new FileSystemExtension();
 
-  @Test(expected = UnsupportedOperationException.class)
+  @Test
   public void getPathMatcherUnknown() {
     FileSystem fileSystem = this.rule.getFileSystem();
-    fileSystem.getPathMatcher("syntax:patten");
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void getPathMatcherInvalid1() {
-    FileSystem fileSystem = this.rule.getFileSystem();
-    fileSystem.getPathMatcher("invalid");
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void getPathMatcherInvalid2() {
-    FileSystem fileSystem = this.rule.getFileSystem();
-    fileSystem.getPathMatcher("invalid:");
+    assertThrows(UnsupportedOperationException.class, () -> fileSystem.getPathMatcher("syntax:patten"));
   }
 
   @Test
-  @Ignore
+  public void getPathMatcherInvalid1() {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    assertThrows(IllegalArgumentException.class, () -> fileSystem.getPathMatcher("invalid"));
+  }
+
+  @Test
+  public void getPathMatcherInvalid2() {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    assertThrows(IllegalArgumentException.class, () -> fileSystem.getPathMatcher("invalid:"));
+  }
+
+  @Test
+  @Disabled
   public void getPathMatcherGlob() {
     FileSystem fileSystem = this.rule.getFileSystem();
     PathMatcher matcher = fileSystem.getPathMatcher("glob:*.java");
@@ -53,11 +54,10 @@ public class MemoryFileSystemMatcherTest {
     assertTrue(matcher instanceof RegexPathMatcher);
   }
 
-  @Test(expected = PatternSyntaxException.class)
+  @Test
   public void getPathMatcherRegexInvalid() {
     FileSystem fileSystem = this.rule.getFileSystem();
-    PathMatcher matcher = fileSystem.getPathMatcher("regex:*\\.java");
-    assertTrue(matcher instanceof RegexPathMatcher);
+    assertThrows(PatternSyntaxException.class, () -> fileSystem.getPathMatcher("regex:*\\.java"));
   }
 
   @Test

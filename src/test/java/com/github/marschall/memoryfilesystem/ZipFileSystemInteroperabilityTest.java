@@ -4,7 +4,7 @@ package com.github.marschall.memoryfilesystem;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
 import static java.nio.file.StandardOpenOption.WRITE;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -19,14 +19,14 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.jar.JarOutputStream;
 
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class ZipFileSystemInteroperabilityTest {
 
-  @Rule
-  public final FileSystemRule rule = new FileSystemRule();
+  @RegisterExtension
+  public final FileSystemExtension rule = new FileSystemExtension();
 
   @Test
   public void createZipFileSystem() throws IOException {
@@ -41,7 +41,7 @@ public class ZipFileSystemInteroperabilityTest {
   }
 
   @Test
-  @Ignore("broken")
+  @Disabled("broken")
   public void createNestedZips() throws IOException {
     FileSystem memoryFileSystem = this.rule.getFileSystem();
     Map<String, String> env = Collections.singletonMap("create", "false");
@@ -68,7 +68,7 @@ public class ZipFileSystemInteroperabilityTest {
   }
 
   @Test
-  @Ignore("broken upstream")
+  @Disabled("broken upstream")
   public void jarToUriRegression() throws IOException {
     Path jarFolder = Files.createTempDirectory("jartest");
     try {
@@ -107,7 +107,7 @@ public class ZipFileSystemInteroperabilityTest {
   }
 
   @Test
-  @Ignore("broken upstream")
+  @Disabled("broken upstream")
   public void nestesJarsRegression() throws IOException {
     Path outerJar = Files.createTempFile("outer", ".jar");
     try (OutputStream stream = new JarOutputStream(Files.newOutputStream(outerJar))) {
