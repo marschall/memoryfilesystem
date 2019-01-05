@@ -13,10 +13,10 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.net.URI;
@@ -47,14 +47,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class WindowsMemoryFileSystemTest {
 
-  @Rule
-  public final WindowsFileSystemRule rule = new WindowsFileSystemRule();
+  @RegisterExtension
+  public final WindowsFileSystemExtension rule = new WindowsFileSystemExtension();
 
   @Test
   public void setAttributes() throws IOException {
@@ -215,7 +215,7 @@ public class WindowsMemoryFileSystemTest {
     Files.createFile(file);
     DosFileAttributeView attributeView = Files.getFileAttributeView(file, DosFileAttributeView.class);
     DosFileAttributes attributes = attributeView.readAttributes();
-    assertFalse("is read only", attributes.isReadOnly());
+    assertFalse(attributes.isReadOnly(), "is read only");
 
     FileSystemProvider provider = file.getFileSystem().provider();
     provider.checkAccess(file, READ);
@@ -348,7 +348,7 @@ public class WindowsMemoryFileSystemTest {
       fail("should not be able to create channel on directory");
     } catch (FileSystemException e) {
       // should reach here
-      assertEquals("file", directory.toAbsolutePath().toString(), e.getFile());
+      assertEquals(directory.toAbsolutePath().toString(), e.getFile(), "file");
     }
 
     try (ByteChannel channel = Files.newByteChannel(directory, StandardOpenOption.READ)) {
@@ -356,14 +356,14 @@ public class WindowsMemoryFileSystemTest {
 
     } catch (FileSystemException e) {
       // should reach here
-      assertEquals("file", directory.toAbsolutePath().toString(), e.getFile());
+      assertEquals(directory.toAbsolutePath().toString(), e.getFile(), "file");
     }
 
     try (ByteChannel channel = Files.newByteChannel(directory, StandardOpenOption.WRITE)) {
       fail("should not be able to create channel on directory");
     } catch (FileSystemException e) {
       // should reach here
-      assertEquals("file", directory.toAbsolutePath().toString(), e.getFile());
+      assertEquals(directory.toAbsolutePath().toString(), e.getFile(), "file");
     }
   }
 
@@ -427,7 +427,7 @@ public class WindowsMemoryFileSystemTest {
   }
 
   @Test
-  @Ignore
+  @Disabled
   public void relativePaths() {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path relative = fileSystem.getPath("C:folder\\file.txt");
