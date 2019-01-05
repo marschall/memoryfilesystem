@@ -1,6 +1,6 @@
 package com.github.marschall.memoryfilesystem;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -10,15 +10,15 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Set;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public final class UmaskTest {
 
   private static final Set<PosixFilePermission> UMASK = PosixFilePermissions.fromString("----w-rwx"); // ie, 027
 
-  @Rule
-  public final PosixFileSystemRule rule = new PosixFileSystemRule(UMASK);
+  @RegisterExtension
+  public final PosixFileSystemExtension rule = new PosixFileSystemExtension(UMASK);
 
   /**
    * Tests creating a file without permissions respects umask.

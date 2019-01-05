@@ -11,13 +11,14 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -48,29 +49,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class UnixFileSystemCompatibilityTest {
 
-  @Rule
-  public final PosixFileSystemRule rule = new PosixFileSystemRule();
+  private static final String DISPLAY_NAME = "native: {0}";
 
+  @RegisterExtension
+  public final PosixFileSystemExtension rule = new PosixFileSystemExtension();
   private FileSystem fileSystem;
 
-  private final boolean useDefault;
-
-  public UnixFileSystemCompatibilityTest(boolean useDefault) {
-    this.useDefault = useDefault;
-  }
-
-  FileSystem getFileSystem() {
+  FileSystem getFileSystem(boolean useDefault) {
     if (this.fileSystem == null) {
-      if (this.useDefault) {
+      if (useDefault) {
         this.fileSystem = FileSystems.getDefault();
       } else {
         this.fileSystem = this.rule.getFileSystem();
@@ -80,7 +74,6 @@ public class UnixFileSystemCompatibilityTest {
   }
 
 
-  @Parameters(name = "native: {0}")
   public static List<Object[]> fileSystems() {
     FileSystem defaultFileSystem = FileSystems.getDefault();
     boolean isPosix = defaultFileSystem.supportedFileAttributeViews().contains("posix");
@@ -95,23 +88,25 @@ public class UnixFileSystemCompatibilityTest {
   }
 
 
-  @Test
-  public void forbiddenCharacters() {
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("fileSystems")
+  public void forbiddenCharacters(boolean useDefault) {
     try {
       char c = 0;
-      this.getFileSystem().getPath(c + ".txt");
+      this.getFileSystem(useDefault).getPath(c + ".txt");
       fail("0x00 should be forbidden");
     } catch (InvalidPathException e) {
       // should reach here
     }
   }
 
-  @Test
-  public void notForbiddenCharacters() throws IOException {
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("fileSystems")
+  public void notForbiddenCharacters(boolean useDefault) throws IOException {
     for (int i = 1; i < 128; ++i) {
       char c = (char) i;
       if (c != '/') {
-        Path path = this.getFileSystem().getPath(c + ".txt");
+        Path path = this.getFileSystem(useDefault).getPath(c + ".txt");
         assertNotNull(path);
         try {
           Files.createFile(path);
@@ -122,9 +117,10 @@ public class UnixFileSystemCompatibilityTest {
     }
   }
 
-  @Test
-  public void isHidden() throws IOException {
-    Path hidden = this.getFileSystem().getPath(".hidden");
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("fileSystems")
+  public void isHidden(boolean useDefault) throws IOException {
+    Path hidden = this.getFileSystem(useDefault).getPath(".hidden");
     Files.createFile(hidden);
     try {
       assertTrue(Files.isHidden(hidden));
@@ -133,9 +129,10 @@ public class UnixFileSystemCompatibilityTest {
     }
   }
 
-  @Test
-  public void isNotHidden() throws IOException {
-    Path hidden = this.getFileSystem().getPath("not_hidden");
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("fileSystems")
+  public void isNotHidden(boolean useDefault) throws IOException {
+    Path hidden = this.getFileSystem(useDefault).getPath("not_hidden");
     Files.createFile(hidden);
     try {
       assertFalse(Files.isHidden(hidden));
@@ -144,48 +141,54 @@ public class UnixFileSystemCompatibilityTest {
     }
   }
 
-  @Test
-  public void rootAttributes() throws IOException {
-    Path root = this.getFileSystem().getRootDirectories().iterator().next();
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("fileSystems")
+  public void rootAttributes(boolean useDefault) throws IOException {
+    Path root = this.getFileSystem(useDefault).getRootDirectories().iterator().next();
     BasicFileAttributes attributes = Files.readAttributes(root, BasicFileAttributes.class);
     assertTrue(attributes.isDirectory());
     assertFalse(attributes.isRegularFile());
   }
 
-  @Test(expected = UnsupportedOperationException.class)
-  public void initialLastModifiedTime() throws ParseException, IOException {
-    this.assertUnsupportedCreateOption("lastAccessTime");
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("fileSystems")
+ public void initialLastModifiedTime(boolean useDefault) {
+    assertThrows(UnsupportedOperationException.class, () -> assertUnsupportedCreateOption("lastAccessTime", useDefault));
   }
 
-  @Test(expected = UnsupportedOperationException.class)
-  public void initialCreationTime() throws ParseException, IOException {
-    this.assertUnsupportedCreateOption("creationTime");
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("fileSystems")
+ public void initialCreationTime(boolean useDefault) {
+    assertThrows(UnsupportedOperationException.class, () -> assertUnsupportedCreateOption("creationTime", useDefault));
   }
 
-  @Test(expected = UnsupportedOperationException.class)
-  public void initiallastModifiedTime() throws ParseException, IOException {
-    this.assertUnsupportedCreateOption("lastModifiedTime");
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("fileSystems")
+  void initiallastModifiedTime(boolean useDefault) {
+    assertThrows(UnsupportedOperationException.class, () -> assertUnsupportedCreateOption("lastModifiedTime", useDefault));
   }
 
-  private void assertUnsupportedCreateOption(String attributeName) throws IOException, ParseException {
+  private void assertUnsupportedCreateOption(String attributeName, boolean useDefault) throws IOException, ParseException {
     SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
     FileTime time = FileTime.fromMillis(format.parse("2012-11-07T20:30:22").getTime());
 
     FileAttribute<?> lastModifiedAttribute = new StubFileAttribute<>(attributeName, time);
 
-    Path path = this.getFileSystem().getPath("time");
+    Path path = this.getFileSystem(useDefault).getPath("time");
     Files.createFile(path, lastModifiedAttribute);
     fail("'" + attributeName + "' not supported as initial attribute");
   }
 
-  @Test
-  public void supportsOwner() {
-    assertThat(this.getFileSystem().supportedFileAttributeViews(), hasItem("owner"));
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("fileSystems")
+  public void supportsOwner(boolean useDefault) {
+    assertThat(this.getFileSystem(useDefault).supportedFileAttributeViews(), hasItem("owner"));
   }
 
-  @Test
-  public void notExistingView() {
-    Path path = this.getFileSystem().getPath("/foo/bar/does/not/exist");
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("fileSystems")
+  public void notExistingView(boolean useDefault) {
+    Path path = this.getFileSystem(useDefault).getPath("/foo/bar/does/not/exist");
     BasicFileAttributeView attributeView = Files.getFileAttributeView(path, BasicFileAttributeView.class);
     assertNotNull(attributeView);
   }
@@ -248,9 +251,10 @@ public class UnixFileSystemCompatibilityTest {
 
   }
 
-  @Test
-  public void readOwner() throws IOException {
-    Path path = this.getFileSystem().getPath("/");
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("fileSystems")
+  public void readOwner(boolean useDefault) throws IOException {
+    Path path = this.getFileSystem(useDefault).getPath("/");
     Map<String, Object> attributes = Files.readAttributes(path, "owner:owner");
     //TODO fix hamcrest
     //assertThat(attributes, hasSize(1));
@@ -264,9 +268,10 @@ public class UnixFileSystemCompatibilityTest {
     assertFalse(value instanceof GroupPrincipal);
   }
 
-  @Test
-  public void readPosixSize() throws IOException {
-    Path path = this.getFileSystem().getPath("/");
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("fileSystems")
+  public void readPosixSize(boolean useDefault) throws IOException {
+    Path path = this.getFileSystem(useDefault).getPath("/");
     Map<String, Object> attributes = Files.readAttributes(path, "posix:size");
     //TODO fix hamcrest
     //assertThat(attributes, hasSize(1));
@@ -277,9 +282,10 @@ public class UnixFileSystemCompatibilityTest {
     assertTrue(attributes.values().iterator().next() instanceof Long);
   }
 
-  @Test
-  public void readPosixAttributeNames() throws IOException {
-    Path path = this.getFileSystem().getPath("/");
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("fileSystems")
+  public void readPosixAttributeNames(boolean useDefault) throws IOException {
+    Path path = this.getFileSystem(useDefault).getPath("/");
     Map<String, Object> attributes = Files.readAttributes(path, "posix:*");
     Set<String> expectedAttributeNames = new HashSet<>(Arrays.asList(
             "lastModifiedTime",
@@ -297,17 +303,19 @@ public class UnixFileSystemCompatibilityTest {
     assertEquals(expectedAttributeNames, attributes.keySet());
   }
 
-  @Test
-  public void readOwnerAttributeNames() throws IOException {
-    Path path = this.getFileSystem().getPath("/");
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("fileSystems")
+  public void readOwnerAttributeNames(boolean useDefault) throws IOException {
+    Path path = this.getFileSystem(useDefault).getPath("/");
     Map<String, Object> attributes = Files.readAttributes(path, "owner:*");
     Set<String> expectedAttributeNames = Collections.singleton("owner");
     assertEquals(expectedAttributeNames, attributes.keySet());
   }
 
-  @Test
-  public void startsWith() {
-    FileSystem fileSystem = this.getFileSystem();
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("fileSystems")
+  public void startsWith(boolean useDefault) {
+    FileSystem fileSystem = this.getFileSystem(useDefault);
 
     assertTrue(fileSystem.getPath("a").startsWith(fileSystem.getPath("a")));
     assertFalse(fileSystem.getPath("a").startsWith(fileSystem.getPath("/a")));
@@ -334,9 +342,10 @@ public class UnixFileSystemCompatibilityTest {
     assertFalse(fileSystem.getPath("").startsWith(fileSystem.getPath("/a/b")));
   }
 
-  @Test
-  public void endsWith() {
-    FileSystem fileSystem = this.getFileSystem();
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("fileSystems")
+  public void endsWith(boolean useDefault) {
+    FileSystem fileSystem = this.getFileSystem(useDefault);
 
     assertTrue(fileSystem.getPath("a").endsWith(fileSystem.getPath("a")));
     assertFalse(fileSystem.getPath("a").endsWith(fileSystem.getPath("a/b")));
@@ -379,24 +388,27 @@ public class UnixFileSystemCompatibilityTest {
     assertFalse(fileSystem.getPath("").endsWith(fileSystem.getPath("/a/b")));
   }
 
-  @Test
-  public void resolve() {
-    FileSystem fileSystem = this.getFileSystem();
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("fileSystems")
+  public void resolve(boolean useDefault) {
+    FileSystem fileSystem = this.getFileSystem(useDefault);
 
     assertEquals(fileSystem.getPath("/"), fileSystem.getPath("/a").resolve(fileSystem.getPath("/")));
   }
 
 
-  @Test(expected = IllegalArgumentException.class)
-  public void slash() {
-    FileSystem fileSystem = this.getFileSystem();
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("fileSystems")
+  public void slash(boolean useDefault) {
+    FileSystem fileSystem = this.getFileSystem(useDefault);
     Path path = fileSystem.getPath("/");
-    path.subpath(0, 1);
+    assertThrows(IllegalArgumentException.class, () -> path.subpath(0, 1));
   }
 
-  @Test
-  public void test() {
-    FileSystem fileSystem = this.getFileSystem();
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("fileSystems")
+  public void test(boolean useDefault) {
+    FileSystem fileSystem = this.getFileSystem(useDefault);
     Iterable<Path> rootDirectories = fileSystem.getRootDirectories();
     Path root = rootDirectories.iterator().next();
     assertTrue(root.endsWith(root));
@@ -420,9 +432,10 @@ public class UnixFileSystemCompatibilityTest {
   }
 
 
-  @Test
-  public void absoluteGetParent() {
-    FileSystem fileSystem = this.getFileSystem();
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("fileSystems")
+  public void absoluteGetParent(boolean useDefault) {
+    FileSystem fileSystem = this.getFileSystem(useDefault);
 
     Path usrBin = fileSystem.getPath("/usr/bin");
     Path usr = fileSystem.getPath("/usr");
@@ -448,9 +461,10 @@ public class UnixFileSystemCompatibilityTest {
     assertEquals(fileSystem.getPath("b"), fileSystem.getPath("a/b").getName(1));
   }
 
-  @Test
-  public void pathOrdering() {
-    FileSystem fileSystem = this.getFileSystem();
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("fileSystems")
+  public void pathOrdering(boolean useDefault) {
+    FileSystem fileSystem = this.getFileSystem(useDefault);
     Path root = fileSystem.getPath("/");
     Path empty = fileSystem.getPath("");
     Path a = fileSystem.getPath("a");
@@ -467,9 +481,10 @@ public class UnixFileSystemCompatibilityTest {
     assertThat(a, greaterThan(empty));
   }
 
-  @Test
-  public void relativeGetParent() {
-    FileSystem fileSystem = this.getFileSystem();
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("fileSystems")
+  public void relativeGetParent(boolean useDefault) {
+    FileSystem fileSystem = this.getFileSystem(useDefault);
     Path usrBin = fileSystem.getPath("usr/bin");
     Path usr = fileSystem.getPath("usr");
 
@@ -477,9 +492,10 @@ public class UnixFileSystemCompatibilityTest {
     assertNull(usr.getParent());
   }
 
-  @Test
-  public void resolveSibling() {
-    FileSystem fileSystem = this.getFileSystem();
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("fileSystems")
+  public void resolveSibling(boolean useDefault) {
+    FileSystem fileSystem = this.getFileSystem(useDefault);
 
     assertEquals(fileSystem.getPath("a"), fileSystem.getPath("/").resolveSibling(fileSystem.getPath("a")));
     assertEquals(fileSystem.getPath("b"), fileSystem.getPath("a").resolveSibling(fileSystem.getPath("b")));
@@ -502,15 +518,16 @@ public class UnixFileSystemCompatibilityTest {
     assertEquals(fileSystem.getPath(""), fileSystem.getPath("a").resolveSibling(fileSystem.getPath("")));
   }
 
-  @Test
-  public void unixNoNormalization() throws IOException {
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("fileSystems")
+  public void unixNoNormalization(boolean useDefault) throws IOException {
     /*
      * Verifies that Linux does no Unicode normalization and that we can have
      * both a NFC and NFD file.
      */
     // https://github.com/marschall/memoryfilesystem/pull/51
     assumeTrue(Charset.defaultCharset().equals(UTF_8));
-    FileSystem fileSystem = this.getFileSystem();
+    FileSystem fileSystem = this.getFileSystem(useDefault);
     String aUmlaut = "\u00C4";
     Path nfcPath = fileSystem.getPath(aUmlaut);
     String normalized = Normalizer.normalize(aUmlaut, Form.NFD);
@@ -545,12 +562,13 @@ public class UnixFileSystemCompatibilityTest {
     }
   }
 
-  @Test
-  public void unixPaths() {
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("fileSystems")
+  public void unixPaths(boolean useDefault) {
 
     // https://github.com/marschall/memoryfilesystem/pull/51
     assumeTrue(Charset.defaultCharset().equals(UTF_8));
-    FileSystem fileSystem = this.getFileSystem();
+    FileSystem fileSystem = this.getFileSystem(useDefault);
     String aUmlaut = "\u00C4";
     String normalized = Normalizer.normalize(aUmlaut, Form.NFD);
     assertEquals(1, aUmlaut.length());
@@ -562,8 +580,9 @@ public class UnixFileSystemCompatibilityTest {
     assertThat(aPath, not(equalTo(nPath)));
   }
 
-  @Test
-  public void caseSensitivePatterns() throws IOException {
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("fileSystems")
+  public void caseSensitivePatterns(boolean useDefault) throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path child1 = fileSystem.getPath("child1");
@@ -577,7 +596,7 @@ public class UnixFileSystemCompatibilityTest {
         assertFalse(globMatcher.matches(path));
       }
     } finally {
-      if (this.useDefault) {
+      if (useDefault) {
         Files.delete(child1);
       }
     }
