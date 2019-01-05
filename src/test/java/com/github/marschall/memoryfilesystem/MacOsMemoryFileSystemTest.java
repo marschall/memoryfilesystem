@@ -24,16 +24,16 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class MacOsMemoryFileSystemTest {
 
-  @Rule
-  public final MacOsFileSystemRule rule = new MacOsFileSystemRule();
+  private static final String DISPLAY_NAME = "native: {0}";
+
+  @RegisterExtension
+  public final MacOsFileSystemExtension rule = new MacOsFileSystemExtension();
 
   private FileSystem fileSystem;
 
@@ -48,14 +48,12 @@ public class MacOsMemoryFileSystemTest {
     return this.fileSystem;
   }
 
-
-  @Parameters(name = DISPLAY_NAME)
   public static List<Object[]> fileSystems() {
     String osName = (String) System.getProperties().get("os.name");
     boolean isMac = osName.startsWith("Mac");
     if (isMac) {
       return Arrays.asList(new Object[]{true},
-              new Object[]{false});
+          new Object[]{false});
     } else {
       return Collections.singletonList(new Object[]{false});
     }
