@@ -4,11 +4,11 @@ import static java.nio.file.StandardOpenOption.READ;
 import static java.nio.file.StandardOpenOption.WRITE;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.nio.channels.ByteChannel;
@@ -26,14 +26,14 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 
 public class PosixMemoryFileSystemTest {
 
-  @Rule
-  public final PosixFileSystemRule rule = new PosixFileSystemRule();
+  @RegisterExtension
+  public final PosixFileSystemExtension rule = new PosixFileSystemExtension();
 
   @Test
   public void defaultAttributes() throws IOException {
@@ -44,9 +44,9 @@ public class PosixMemoryFileSystemTest {
 
     PosixFileAttributeView sourcePosixFileAttributeView = Files.getFileAttributeView(file, PosixFileAttributeView.class);
     PosixFileAttributes sourcePosixAttributes = sourcePosixFileAttributeView.readAttributes();
-    assertNotNull("permissions", sourcePosixAttributes.permissions());
-    assertNotNull("owner", sourcePosixAttributes.owner());
-    assertNotNull("group", sourcePosixAttributes.group());
+    assertNotNull(sourcePosixAttributes.permissions(), "permissions");
+    assertNotNull(sourcePosixAttributes.owner(), "owner");
+    assertNotNull(sourcePosixAttributes.group(), "group");
   }
 
   @Test
@@ -116,7 +116,7 @@ public class PosixMemoryFileSystemTest {
       fail("should not be able to create channel on directory");
     } catch (FileSystemException e) {
       // should reach here
-      assertEquals("file", directory.toAbsolutePath().toString(), e.getFile());
+      assertEquals(directory.toAbsolutePath().toString(), e.getFile(), "file");
     }
 
     try (ByteChannel channel = Files.newByteChannel(directory, READ)) {
@@ -124,14 +124,14 @@ public class PosixMemoryFileSystemTest {
 
     } catch (FileSystemException e) {
       // should reach here
-      assertEquals("file", directory.toAbsolutePath().toString(), e.getFile());
+      assertEquals(directory.toAbsolutePath().toString(), e.getFile(), "file");
     }
 
     try (ByteChannel channel = Files.newByteChannel(directory, WRITE)) {
       fail("should not be able to create channel on directory");
     } catch (FileSystemException e) {
       // should reach here
-      assertEquals("file", directory.toAbsolutePath().toString(), e.getFile());
+      assertEquals(directory.toAbsolutePath().toString(), e.getFile(), "file");
     }
   }
 
