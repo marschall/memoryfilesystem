@@ -1,13 +1,13 @@
 package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_URI;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.lessThan;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.nio.file.FileStore;
@@ -20,14 +20,13 @@ import java.nio.file.attribute.FileOwnerAttributeView;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.util.Iterator;
-
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class MemoryFileStoreTest {
 
-  @Rule
-  public final FileStoreRule rule = new FileStoreRule();
+  @RegisterExtension
+  public final FileStoreExtension rule = new FileStoreExtension();
 
   @Test
   public void onlyOneFileStore() throws IOException {
