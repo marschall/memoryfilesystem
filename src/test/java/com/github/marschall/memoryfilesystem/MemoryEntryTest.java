@@ -1,6 +1,6 @@
 package com.github.marschall.memoryfilesystem;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.nio.file.attribute.BasicFileAttributeView;
@@ -12,13 +12,12 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
 public class MemoryEntryTest {
+
+  private static final String DISPLAY_NAME = "entry: {0}";
 
   private static final Date M_TIME;
   private static final Date A_TIME;
@@ -37,13 +36,6 @@ public class MemoryEntryTest {
     }
   }
 
-  private final MemoryEntry memoryEntry;
-
-  public MemoryEntryTest(MemoryEntry memoryEntry) {
-    this.memoryEntry = memoryEntry;
-  }
-
-  @Parameters(name = "entry: {0}")
   public static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
       { new MemoryDirectory("") },
@@ -51,15 +43,17 @@ public class MemoryEntryTest {
     });
   }
 
-  @Test
-  public void basicViewName() {
-    BasicFileAttributeView view = this.memoryEntry.getBasicFileAttributeView();
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("data")
+  public void basicViewName(MemoryEntry memoryEntry) {
+    BasicFileAttributeView view = memoryEntry.getBasicFileAttributeView();
     assertEquals("basic", view.name());
   }
 
-  @Test
-  public void times() throws IOException {
-    BasicFileAttributeView view = this.memoryEntry.getBasicFileAttributeView();
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("data")
+  public void times(MemoryEntry memoryEntry) throws IOException {
+    BasicFileAttributeView view = memoryEntry.getBasicFileAttributeView();
     FileTime mTime = FileTime.fromMillis(M_TIME.getTime());
     FileTime aTime = FileTime.fromMillis(A_TIME.getTime());
     FileTime cTime = FileTime.fromMillis(C_TIME.getTime());

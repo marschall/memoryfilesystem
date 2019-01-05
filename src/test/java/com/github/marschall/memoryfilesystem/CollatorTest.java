@@ -1,19 +1,19 @@
 package com.github.marschall.memoryfilesystem;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.text.Collator;
 import java.text.Normalizer;
 import java.text.Normalizer.Form;
 import java.util.Locale;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class CollatorTest {
 
   @Test
-  @Ignore
+  @Disabled
   public void test() {
     Locale locale = Locale.getDefault();
     Collator collator = Collator.getInstance(locale);

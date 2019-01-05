@@ -1,7 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -10,31 +10,13 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-
-@RunWith(Parameterized.class)
 public class MemoryContentsBoundaryTest {
 
-  private final int initialOffset;
+  private static final String DISPLAY_NAME = "initialOffset: {0}, initialBlocks: {1}, twoWrite: {2}";
 
-  private final int initialBlocks;
-
-  private final int toWrite;
-
-  private MemoryFile contents;
-
-  public MemoryContentsBoundaryTest(int initialOffset, int initialBlocks, int twoWrite) {
-    this.initialOffset = initialOffset;
-    this.toWrite = twoWrite;
-    this.initialBlocks = initialBlocks;
-  }
-
-  @Parameters(name = "initialOffset: {0}, initialBlocks: {1}, twoWrite: {2}")
   public static List<Object[]> parameters() {
     int blockSize = MemoryInode.BLOCK_SIZE;
     List<Object[]> parameters = new ArrayList<>();
@@ -53,20 +35,20 @@ public class MemoryContentsBoundaryTest {
     return parameters;
   }
 
-  @Before
-  public void setUp() {
-    this.contents = new MemoryFile("", EntryCreationContext.empty(), this.initialBlocks);
+  private MemoryFile createContents(int initialBlocks) {
+    return new MemoryFile("", EntryCreationContext.empty(), initialBlocks);
   }
 
-  @Test
-  public void boundaryWrapping() throws IOException {
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("parameters")
+  public void boundaryWrapping(int initialOffset, int initialBlocks, int toWrite) throws IOException {
     Path path = new MockPath();
-    SeekableByteChannel channel = this.contents.newChannel(true, true, false, path);
-    byte[] initial = new byte[this.initialOffset];
+    SeekableByteChannel channel = createContents(initialBlocks).newChannel(true, true, false, path);
+    byte[] initial = new byte[initialOffset];
     channel.write(ByteBuffer.wrap(initial));
 
 
-    byte[] data = new byte[this.toWrite];
+    byte[] data = new byte[toWrite];
     data[data.length - 1] = 9;
     data[data.length - 2] = 8;
     data[data.length - 3] = 7;
@@ -76,8 +58,8 @@ public class MemoryContentsBoundaryTest {
     ByteBuffer src = ByteBuffer.wrap(data);
 
     channel.write(src);
-    assertEquals(this.toWrite + this.initialOffset, channel.size());
-    assertEquals(this.toWrite + this.initialOffset, channel.position());
+    assertEquals(toWrite + initialOffset, channel.size());
+    assertEquals(toWrite + initialOffset, channel.position());
 
     // one element tests
 
@@ -90,7 +72,7 @@ public class MemoryContentsBoundaryTest {
 
     // read first element
     dst.rewind();
-    long startOfWrite = channel.size() - this.toWrite;
+    long startOfWrite = channel.size() - toWrite;
     channel.position(startOfWrite);
     assertEquals(1, channel.read(dst));
     assertArrayEquals(new byte[]{1}, oneElement);
@@ -125,10 +107,10 @@ public class MemoryContentsBoundaryTest {
     assertArrayEquals(new byte[]{1, 2, 3}, threeElements);
 
     // read the full data back
-    byte[] readBack = new byte[this.toWrite];
+    byte[] readBack = new byte[toWrite];
     dst = ByteBuffer.wrap(readBack);
-    channel.position(channel.size() - this.toWrite);
-    assertEquals(this.toWrite, channel.read(dst));
+    channel.position(channel.size() - toWrite);
+    assertEquals(toWrite, channel.read(dst));
     assertEquals(1, readBack[0]);
     assertEquals(2, readBack[1]);
     assertEquals(3, readBack[2]);

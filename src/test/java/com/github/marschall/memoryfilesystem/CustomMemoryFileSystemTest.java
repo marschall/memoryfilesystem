@@ -2,12 +2,13 @@ package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_ENV;
 import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_URI;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.net.URI;
@@ -24,7 +25,7 @@ import java.nio.file.attribute.UserPrincipalLookupService;
 import java.util.Collections;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class CustomMemoryFileSystemTest {
 
@@ -113,12 +114,10 @@ public class CustomMemoryFileSystemTest {
     }
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void invalidCustomSeparator() throws IOException {
+  @Test
+  public void invalidCustomSeparator() {
     Map<String, Object> env = Collections.singletonMap(MemoryFileSystemProperties.DEFAULT_NAME_SEPARATOR_PROPERTY, (Object) "\u2603");
-    try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, env)) {
-      fail("unicode snow man should not be allowed as separator");
-    }
+    assertThrows(IllegalArgumentException.class, () -> FileSystems.newFileSystem(SAMPLE_URI, env), "unicode snow man should not be allowed as separator");
   }
 
 }
