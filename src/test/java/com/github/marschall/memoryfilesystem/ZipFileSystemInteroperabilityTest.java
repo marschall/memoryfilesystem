@@ -23,13 +23,13 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class ZipFileSystemInteroperabilityTest {
+class ZipFileSystemInteroperabilityTest {
 
   @RegisterExtension
-  public final FileSystemExtension rule = new FileSystemExtension();
+  final FileSystemExtension rule = new FileSystemExtension();
 
   @Test
-  public void createZipFileSystem() throws IOException {
+  void createZipFileSystem() throws IOException {
     FileSystem memoryFileSystem = this.rule.getFileSystem();
     Map<String, String> env = Collections.singletonMap("create", "true");
     URI uri = URI.create("zipfs:" + memoryFileSystem.getPath("/file.zip").toUri());
@@ -42,7 +42,7 @@ public class ZipFileSystemInteroperabilityTest {
 
   @Test
   @Disabled("broken")
-  public void createNestedZips() throws IOException {
+  void createNestedZips() throws IOException {
     FileSystem memoryFileSystem = this.rule.getFileSystem();
     Map<String, String> env = Collections.singletonMap("create", "false");
     Path outerZip = memoryFileSystem.getPath("/file.zip");
@@ -69,7 +69,7 @@ public class ZipFileSystemInteroperabilityTest {
 
   @Test
   @Disabled("broken upstream")
-  public void jarToUriRegression() throws IOException {
+  void jarToUriRegression() throws IOException {
     Path jarFolder = Files.createTempDirectory("jartest");
     try {
       Path jarFile = jarFolder.resolve("test.jar");
@@ -89,7 +89,7 @@ public class ZipFileSystemInteroperabilityTest {
   }
 
   @Test
-  public void jarToUriRegressionFixed() throws IOException {
+  void jarToUriRegressionFixed() throws IOException {
     Path jarFile = Files.createTempFile(null, ".jar");
     try (OutputStream stream = new JarOutputStream(Files.newOutputStream(jarFile))) {
       // nothing, just create an empty jar
@@ -108,7 +108,7 @@ public class ZipFileSystemInteroperabilityTest {
 
   @Test
   @Disabled("broken upstream")
-  public void nestesJarsRegression() throws IOException {
+  void nestesJarsRegression() throws IOException {
     Path outerJar = Files.createTempFile("outer", ".jar");
     try (OutputStream stream = new JarOutputStream(Files.newOutputStream(outerJar))) {
       // nothing, just create an empty jar

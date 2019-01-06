@@ -38,13 +38,13 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class MemoryFileSystemCopyTest {
+class MemoryFileSystemCopyTest {
 
   @RegisterExtension
-  public final FileSystemExtension rule = new FileSystemExtension();
+  final FileSystemExtension rule = new FileSystemExtension();
 
   @Test
-  public void copySymbolicLinkNoFollow() throws IOException {
+  void copySymbolicLinkNoFollow() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     // /link -> /file
@@ -65,7 +65,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void copySymbolicLinkFollow() throws IOException {
+  void copySymbolicLinkFollow() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     // /link -> /file
@@ -84,7 +84,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void copySymbolicLinkReplace() throws IOException {
+  void copySymbolicLinkReplace() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     // /target -> /file1
@@ -107,7 +107,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void copySymbolicLinkReplaceNoFollow() throws IOException {
+  void copySymbolicLinkReplaceNoFollow() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     // /link -> /file1
@@ -130,7 +130,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void copySameFile() throws IOException {
+  void copySameFile() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path a = fileSystem.getPath("a");
@@ -150,13 +150,13 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void copyRootIntoItself() throws IOException {
+  void copyRootIntoItself() throws IOException {
     Path root = this.rule.getFileSystem().getPath("/");
     Files.copy(root, root);
   }
 
   @Test
-  public void copyRootDifferentFileSystems() throws IOException {
+  void copyRootDifferentFileSystems() throws IOException {
     Path firstRoot = this.rule.getFileSystem().getPath("/");
     try (FileSystem second = MemoryFileSystemBuilder.newEmpty().build("second")) {
       Path secondRoot = second.getPath("/");
@@ -176,7 +176,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void copyRoot() {
+  void copyRoot() {
     Path root = this.rule.getFileSystem().getPath("/");
     Path path = this.rule.getFileSystem().getPath("/a");
     try {
@@ -194,7 +194,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void copyAlreadyExists() throws IOException {
+  void copyAlreadyExists() throws IOException {
     // copying a folder to an already existing one should throw FileAlreadyExistsException
     FileSystem fileSystem = this.rule.getFileSystem();
     Path source = fileSystem.getPath("source");
@@ -214,7 +214,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void copyAlreadyExistsNotEmpty() throws IOException {
+  void copyAlreadyExistsNotEmpty() throws IOException {
     // copying a folder to an already existing one that is not empty should throw DirectoryNotEmptyException
     FileSystem fileSystem = this.rule.getFileSystem();
     Path source = fileSystem.getPath("source");
@@ -236,7 +236,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void copyOverwriteExists() throws IOException, ParseException {
+  void copyOverwriteExists() throws IOException, ParseException {
     // copying a folder to an already existing one should work with REPLACE_EXISTING
     FileSystem fileSystem = this.rule.getFileSystem();
     Path source = fileSystem.getPath("source");
@@ -263,7 +263,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void copyAttributes() throws IOException, ParseException {
+  void copyAttributes() throws IOException, ParseException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path source = fileSystem.getPath("/source.txt");
     Path target = fileSystem.getPath("/target.txt");
@@ -293,7 +293,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void copyNoExistingNoAttributes() throws IOException {
+  void copyNoExistingNoAttributes() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path a = fileSystem.getPath("/1/a");
     Path b = fileSystem.getPath("/2/b");
@@ -317,7 +317,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void copyAcrossFileSystems() throws IOException {
+  void copyAcrossFileSystems() throws IOException {
     FileSystem source = this.rule.getFileSystem();
     try (FileSystem target = MemoryFileSystemBuilder.newEmpty().build("target")) {
       Path a = source.getPath("a");
@@ -342,7 +342,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void copyReplaceExsitingNoAttributes() throws IOException {
+  void copyReplaceExsitingNoAttributes() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path a = fileSystem.getPath("/1/a");
     Path b = fileSystem.getPath("/2/b");
@@ -366,7 +366,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void issue102() throws IOException {
+  void issue102() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path baseDir = Files.createDirectory(fileSystem.getPath("/anywhere"));
     Path sourceDir = Files.createDirectory(baseDir.resolve("somewhere"));
@@ -380,19 +380,19 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void moveRootIntoItself() throws IOException {
+  void moveRootIntoItself() throws IOException {
     Path root = this.rule.getFileSystem().getPath("/");
     Files.move(root, root);
   }
 
   @Test
-  public void moveRootIntoSubfolder() throws IOException {
+  void moveRootIntoSubfolder() throws IOException {
     Path dir = Files.createDirectory(this.rule.getFileSystem().getPath("/dir"));
     Path sub = dir.resolve("sub");
     assertThrows(FileSystemException.class, () -> Files.move(dir, sub));
   }
 
-  public void moveRoot() {
+  void moveRoot() {
     Path root = this.rule.getFileSystem().getPath("/");
     Path path = this.rule.getFileSystem().getPath("/a");
     try {
@@ -412,7 +412,7 @@ public class MemoryFileSystemCopyTest {
 
 
   @Test
-  public void moveRootDifferentFileSystems() throws IOException {
+  void moveRootDifferentFileSystems() throws IOException {
     Path firstRoot = this.rule.getFileSystem().getPath("/");
     try (FileSystem second = MemoryFileSystemBuilder.newEmpty().build("second")) {
       Path secondRoot = second.getPath("/");
@@ -432,7 +432,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void moveToDifferentParent() throws IOException {
+  void moveToDifferentParent() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     // move /a/c to /b/c
@@ -472,7 +472,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void renameFile() throws IOException {
+  void renameFile() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     // move /a/c to /b/c
@@ -501,7 +501,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void moveSameFile() throws IOException {
+  void moveSameFile() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path a = fileSystem.getPath("a");
@@ -520,7 +520,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void moveAlreadyExistsNotEmpty() throws IOException {
+  void moveAlreadyExistsNotEmpty() throws IOException {
     // moving a folder to an already existing one that is not empty should throw DirectoryNotEmptyException
     FileSystem fileSystem = this.rule.getFileSystem();
     Path source = fileSystem.getPath("source");
@@ -542,7 +542,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void moveAlreadyExists() throws IOException {
+  void moveAlreadyExists() throws IOException {
     // moving a folder to an already existing one should throw FileAlreadyExistsException
     FileSystem fileSystem = this.rule.getFileSystem();
     Path source = fileSystem.getPath("source");
@@ -562,7 +562,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void moveOverwriteExists() throws IOException, ParseException {
+  void moveOverwriteExists() throws IOException, ParseException {
     // moving a folder to an already existing one should work with REPLACE_EXISTING
     FileSystem fileSystem = this.rule.getFileSystem();
     Path source = fileSystem.getPath("source");
@@ -588,7 +588,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void moveDifferentFileSystem() throws IOException {
+  void moveDifferentFileSystem() throws IOException {
     FileSystem source = this.rule.getFileSystem();
     try (FileSystem target = MemoryFileSystemBuilder.newEmpty().build("target")) {
       Path a = source.getPath("a");
@@ -607,7 +607,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void moveNoExistingNoAttributes() throws IOException {
+  void moveNoExistingNoAttributes() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path a = fileSystem.getPath("/1/a");
     Path b = fileSystem.getPath("/2/b");
@@ -625,7 +625,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void moveReplaceExistingNoAttributes() throws IOException {
+  void moveReplaceExistingNoAttributes() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path a = fileSystem.getPath("/1/a");
     Path b = fileSystem.getPath("/2/b");
@@ -643,7 +643,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void moveNonEmptyFolder() throws IOException {
+  void moveNonEmptyFolder() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path src = fileSystem.getPath("/src");
     Path target = fileSystem.getPath("/target");
@@ -657,7 +657,7 @@ public class MemoryFileSystemCopyTest {
   }
 
   @Test
-  public void moveSymlink() throws IOException {
+  void moveSymlink() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path target = fileSystem.getPath("/target");

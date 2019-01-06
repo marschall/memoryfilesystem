@@ -20,13 +20,13 @@ import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class SecureMemoryDirectoryStreamTest {
+class SecureMemoryDirectoryStreamTest {
 
   @RegisterExtension
-  public final FileSystemExtension rule = new FileSystemExtension();
+  final FileSystemExtension rule = new FileSystemExtension();
 
   @Test
-  public void deleteFileRelative() throws IOException {
+  void deleteFileRelative() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path originalFolder = fileSystem.getPath("original-folder");
@@ -47,7 +47,7 @@ public class SecureMemoryDirectoryStreamTest {
   }
 
   @Test
-  public void deleteFileAbsolute() throws IOException {
+  void deleteFileAbsolute() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path originalFolder = fileSystem.getPath("original-folder");
@@ -68,7 +68,7 @@ public class SecureMemoryDirectoryStreamTest {
   }
 
   @Test
-  public void deleteFileClosed() throws IOException {
+  void deleteFileClosed() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path originalFolder = fileSystem.getPath("original-folder");
@@ -90,7 +90,7 @@ public class SecureMemoryDirectoryStreamTest {
   }
 
   @Test
-  public void deleteDirectoryRelative() throws IOException {
+  void deleteDirectoryRelative() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path originalFolder = fileSystem.getPath("original-folder");
@@ -111,7 +111,7 @@ public class SecureMemoryDirectoryStreamTest {
   }
 
   @Test
-  public void deleteDirectoryAbsolute() throws IOException {
+  void deleteDirectoryAbsolute() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path originalFolder = fileSystem.getPath("original-folder");
@@ -132,7 +132,7 @@ public class SecureMemoryDirectoryStreamTest {
   }
 
   @Test
-  public void deleteDirectoryClosed() throws IOException {
+  void deleteDirectoryClosed() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path originalFolder = fileSystem.getPath("original-folder");
@@ -154,7 +154,7 @@ public class SecureMemoryDirectoryStreamTest {
   }
 
   @Test
-  public void newByteChannelRelative() throws IOException {
+  void newByteChannelRelative() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path originalFolder = fileSystem.getPath("original-folder");

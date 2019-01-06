@@ -10,22 +10,22 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class ParserTest {
+class ParserTest {
 
   private static final String DISPLAY_NAME = "first: {0}, more: {1}, expected: {2}";
 
   @RegisterExtension
-  public final FileSystemExtension rule = new FileSystemExtension();
+  final FileSystemExtension rule = new FileSystemExtension();
 
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("data")
-  public void parse(String first, String[] more, String expected) {
+  void parse(String first, String[] more, String expected) {
     FileSystem fileSystem = this.rule.getFileSystem();
     assertEquals(fileSystem.getPath(expected), fileSystem.getPath(first, more));
   }
 
-  public static List<Object[]> data() {
+  static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
             { "", null, "" },
             { "a", null, "a" },

@@ -15,7 +15,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ContextConfiguration(locations = "MemoryFileSystemFactoryBeanTest-context-windows.xml")
 @ExtendWith(SpringExtension.class)
-public class MemoryFileSystemFactoryBeanTypeTest implements ApplicationContextAware {
+class MemoryFileSystemFactoryBeanTypeTest implements ApplicationContextAware {
 
   private FileSystem fileSystem;
 
@@ -25,7 +25,7 @@ public class MemoryFileSystemFactoryBeanTypeTest implements ApplicationContextAw
   }
 
   @Test
-  public void isOpen() {
+  void isOpen() {
     assertTrue(this.fileSystem.isOpen());
     assertThat(this.fileSystem.getPath("C:"), exists());
   }

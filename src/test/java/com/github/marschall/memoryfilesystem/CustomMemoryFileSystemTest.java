@@ -27,11 +27,11 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-public class CustomMemoryFileSystemTest {
+class CustomMemoryFileSystemTest {
 
 
   @Test
-  public void getFileSystemUriClosed() throws IOException {
+  void getFileSystemUriClosed() throws IOException {
     URI uri = URI.create("memory:getFileSystemUriClosed");
     Map<String, ?> env = Collections.<String, Object>emptyMap();
     try (FileSystem fileSystem = FileSystems.newFileSystem(uri, env)) {
@@ -47,7 +47,7 @@ public class CustomMemoryFileSystemTest {
   }
 
   @Test
-  public void lookupPrincipalByName() throws IOException {
+  void lookupPrincipalByName() throws IOException {
     try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
       UserPrincipalLookupService userPrincipalLookupService = fileSystem.getUserPrincipalLookupService();
       String userName = System.getProperty("user.name");
@@ -65,7 +65,7 @@ public class CustomMemoryFileSystemTest {
   }
 
   @Test
-  public void regressionIssue46() throws IOException {
+  void regressionIssue46() throws IOException {
     try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
       Path path = fileSystem.getPath("existing.zip");
       Files.createFile(path);
@@ -75,7 +75,7 @@ public class CustomMemoryFileSystemTest {
   }
 
   @Test
-  public void close() throws IOException {
+  void close() throws IOException {
     FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV);
 
     // file system should be open
@@ -107,7 +107,7 @@ public class CustomMemoryFileSystemTest {
 
 
   @Test
-  public void customSeparator() throws IOException {
+  void customSeparator() throws IOException {
     Map<String, Object> env = Collections.singletonMap(MemoryFileSystemProperties.DEFAULT_NAME_SEPARATOR_PROPERTY, (Object) "\\");
     try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, env)) {
       assertEquals("\\", fileSystem.getSeparator());
@@ -115,7 +115,7 @@ public class CustomMemoryFileSystemTest {
   }
 
   @Test
-  public void invalidCustomSeparator() {
+  void invalidCustomSeparator() {
     Map<String, Object> env = Collections.singletonMap(MemoryFileSystemProperties.DEFAULT_NAME_SEPARATOR_PROPERTY, (Object) "\u2603");
     assertThrows(IllegalArgumentException.class, () -> FileSystems.newFileSystem(SAMPLE_URI, env), "unicode snow man should not be allowed as separator");
   }

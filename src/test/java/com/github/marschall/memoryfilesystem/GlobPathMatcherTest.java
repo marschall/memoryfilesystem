@@ -13,16 +13,16 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 
-public class GlobPathMatcherTest {
+class GlobPathMatcherTest {
 
   private static final String DISPLAY_NAME = "pattern: {0}, path: {1}, should match: {2}";
 
   @RegisterExtension
-  public final FileSystemExtension rule = new FileSystemExtension();
+  final FileSystemExtension rule = new FileSystemExtension();
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("data")
-  public void matchesUpperCase(String pattern, String p, boolean expected) {
+  void matchesUpperCase(String pattern, String p, boolean expected) {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path path = fileSystem.getPath(p);
     PathMatcher matcher = fileSystem.getPathMatcher(GlobPathMatcher.name().toUpperCase() + ":" + pattern);
@@ -31,14 +31,14 @@ public class GlobPathMatcherTest {
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("data")
-  public void lowerUpperCase(String pattern, String p, boolean expected) {
+  void lowerUpperCase(String pattern, String p, boolean expected) {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path path = fileSystem.getPath(p);
     PathMatcher matcher = fileSystem.getPathMatcher(GlobPathMatcher.name().toLowerCase() + ":" + pattern);
     assertEquals(expected, matcher.matches(path));
   }
 
-  public static List<Object[]> data() {
+  static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
       { "*.java", "GlobPathMatcherTest.java", true },
       { "*.java", "GlobPathMatcherTest.JAVA", false },

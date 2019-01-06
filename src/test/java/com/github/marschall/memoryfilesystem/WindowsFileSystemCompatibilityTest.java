@@ -35,12 +35,12 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class WindowsFileSystemCompatibilityTest {
+class WindowsFileSystemCompatibilityTest {
 
   private static final String DISPLAY_NAME = "native: {0}";
 
   @RegisterExtension
-  public final WindowsFileSystemExtension rule = new WindowsFileSystemExtension();
+  final WindowsFileSystemExtension rule = new WindowsFileSystemExtension();
 
   private FileSystem fileSystem;
 
@@ -57,7 +57,7 @@ public class WindowsFileSystemCompatibilityTest {
   }
 
 
-  public static List<Object[]> fileSystems() {
+  static List<Object[]> fileSystems() {
     FileSystem defaultFileSystem = FileSystems.getDefault();
     Set<String> supportedFileAttributeViews = defaultFileSystem.supportedFileAttributeViews();
     // a DOS view is faked into the unix file system
@@ -73,7 +73,7 @@ public class WindowsFileSystemCompatibilityTest {
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("fileSystems")
-  public void isHidden(boolean useDefault) throws IOException {
+  void isHidden(boolean useDefault) throws IOException {
     Path hidden = this.getFileSystem(useDefault).getPath("hidden");
     Files.createFile(hidden);
     try {
@@ -86,7 +86,7 @@ public class WindowsFileSystemCompatibilityTest {
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("fileSystems")
-  public void isNotHidden(boolean useDefault) throws IOException {
+  void isNotHidden(boolean useDefault) throws IOException {
     Path hidden = this.getFileSystem(useDefault).getPath(".not_hidden");
     Files.createFile(hidden);
     try {
@@ -99,7 +99,7 @@ public class WindowsFileSystemCompatibilityTest {
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("fileSystems")
-  public void rootAttributes(boolean useDefault) throws IOException {
+  void rootAttributes(boolean useDefault) throws IOException {
     FileSystem fileSystem = this.getFileSystem(useDefault);
     Path root = fileSystem.getPath("C:\\");
     BasicFileAttributes attributes = Files.readAttributes(root, BasicFileAttributes.class);
@@ -116,7 +116,7 @@ public class WindowsFileSystemCompatibilityTest {
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("fileSystems")
   @Disabled("not ready")
-  public void forbiddenFileNames(boolean useDefault) {
+  void forbiddenFileNames(boolean useDefault) {
     FileSystem fileSystem = this.getFileSystem(useDefault);
     Path root = fileSystem.getPath("C:\\");
     List<String> forbidden = asList("CON", "PRN", "AUX", "CLOCK$", "NULL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9");
@@ -142,7 +142,7 @@ public class WindowsFileSystemCompatibilityTest {
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("fileSystems")
-  public void caseInsensitiveCasePreserving(boolean useDefault) throws IOException {
+  void caseInsensitiveCasePreserving(boolean useDefault) throws IOException {
     FileSystem fileSystem = this.getFileSystem(useDefault);
     Path testFile = fileSystem.getPath("tesT");
     try {
@@ -161,7 +161,7 @@ public class WindowsFileSystemCompatibilityTest {
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("fileSystems")
-  public void attributeCapitalization(boolean useDefault) throws IOException {
+  void attributeCapitalization(boolean useDefault) throws IOException {
     FileSystem fileSystem = this.getFileSystem(useDefault);
     Path root = fileSystem.getPath("C:\\");
     Map<String, Object> attributes = Files.readAttributes(root, "dos:*");
@@ -179,7 +179,7 @@ public class WindowsFileSystemCompatibilityTest {
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("fileSystems")
   @Disabled
-  public void windowsNormalization(boolean useDefault) throws IOException {
+  void windowsNormalization(boolean useDefault) throws IOException {
     FileSystem fileSystem = this.getFileSystem(useDefault);
     String aUmlaut = "\u00C4";
     Path aPath = fileSystem.getPath(aUmlaut);
@@ -210,7 +210,7 @@ public class WindowsFileSystemCompatibilityTest {
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("fileSystems")
   @Disabled
-  public void windowsNoNormalization(boolean useDefault) throws IOException {
+  void windowsNoNormalization(boolean useDefault) throws IOException {
     /*
      * Verifies that Windows does no Unicode normalization and that we can have
      * both a NFC and NFD file.
@@ -252,7 +252,7 @@ public class WindowsFileSystemCompatibilityTest {
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("fileSystems")
-  public void caseInsensitivePatterns(boolean useDefault) throws IOException {
+  void caseInsensitivePatterns(boolean useDefault) throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path child1 = fileSystem.getPath("child1");

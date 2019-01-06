@@ -6,7 +6,7 @@ import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
-public class PosixPermissionFileSystemExtension implements BeforeEachCallback, AfterEachCallback {
+class PosixPermissionFileSystemExtension implements BeforeEachCallback, AfterEachCallback {
 
   static final String OWNER = "owner";
   static final String GROUP = "group";

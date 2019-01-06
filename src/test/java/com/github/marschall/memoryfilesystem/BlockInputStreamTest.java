@@ -15,13 +15,13 @@ import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class BlockInputStreamTest {
+class BlockInputStreamTest {
 
   @RegisterExtension
-  public final FileSystemExtension rule = new FileSystemExtension();
+  final FileSystemExtension rule = new FileSystemExtension();
 
   @Test
-  public void skipMoreThanAvailable() throws IOException {
+  void skipMoreThanAvailable() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("file.txt");
@@ -38,7 +38,7 @@ public class BlockInputStreamTest {
   }
 
   @Test
-  public void skipMoreSmallNumber() throws IOException {
+  void skipMoreSmallNumber() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("file.txt");
@@ -54,7 +54,7 @@ public class BlockInputStreamTest {
   }
 
   @Test
-  public void skipMoreLargeNumberNumber() throws IOException {
+  void skipMoreLargeNumberNumber() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("file.txt");
@@ -70,7 +70,7 @@ public class BlockInputStreamTest {
   }
 
   @Test
-  public void transferTo() throws IOException {
+  void transferTo() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path path = fileSystem.getPath("file.txt");

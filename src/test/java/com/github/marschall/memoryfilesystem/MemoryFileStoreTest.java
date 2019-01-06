@@ -23,13 +23,13 @@ import java.util.Iterator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class MemoryFileStoreTest {
+class MemoryFileStoreTest {
 
   @RegisterExtension
-  public final FileStoreExtension rule = new FileStoreExtension();
+  final FileStoreExtension rule = new FileStoreExtension();
 
   @Test
-  public void onlyOneFileStore() throws IOException {
+  void onlyOneFileStore() throws IOException {
     try (FileSystem fileSystem = FileSystems.getFileSystem(SAMPLE_URI)) {
       Iterator<FileStore> fileStores = fileSystem.getFileStores().iterator();
       assertTrue(fileStores.hasNext());
@@ -45,22 +45,22 @@ public class MemoryFileStoreTest {
   }
 
   @Test
-  public void isReadOnly() {
+  void isReadOnly() {
     assertFalse(this.rule.getFileStore().isReadOnly());
   }
 
   @Test
-  public void name() {
+  void name() {
     assertEquals("name", this.rule.getFileStore().name());
   }
 
   @Test
-  public void type() {
+  void type() {
     assertEquals(MemoryFileSystemProvider.SCHEME, this.rule.getFileStore().type());
   }
 
   @Test
-  public void supportsFileAttributeViewClass() {
+  void supportsFileAttributeViewClass() {
     FileStore fileStore = this.rule.getFileStore();
     assertTrue(fileStore.supportsFileAttributeView(BasicFileAttributeView.class));
     assertFalse(fileStore.supportsFileAttributeView(PosixFileAttributeView.class));
@@ -71,7 +71,7 @@ public class MemoryFileStoreTest {
   }
 
   @Test
-  public void fileSizes() throws IOException {
+  void fileSizes() throws IOException {
     FileStore fileStore = this.rule.getFileStore();
     long totalSpace = fileStore.getTotalSpace();
     long unallocatedSpace = fileStore.getUnallocatedSpace();
@@ -86,7 +86,7 @@ public class MemoryFileStoreTest {
   }
 
   @Test
-  public void supportsFileAttributeView() {
+  void supportsFileAttributeView() {
     FileStore fileStore = this.rule.getFileStore();
     assertTrue(fileStore.supportsFileAttributeView(FileAttributeViews.BASIC));
     assertFalse(fileStore.supportsFileAttributeView(FileAttributeViews.POSIX));

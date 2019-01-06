@@ -22,10 +22,10 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 @Disabled("not portable")
-public class FileSystemCompatibility {
+class FileSystemCompatibility {
 
   @Test
-  public void forbidden() throws IOException {
+  void forbidden() throws IOException {
     for (int i = 0; i < 128; ++i) {
       char c = (char) i;
       if (c != '/') {
@@ -41,7 +41,7 @@ public class FileSystemCompatibility {
   }
 
   @Test
-  public void posixAttributes() throws IOException {
+  void posixAttributes() throws IOException {
     FileSystem fileSystem = FileSystems.getDefault();
     Path path = fileSystem.getPath("/Users/marschall/Documents");
     if (Files.exists(path)) {
@@ -50,7 +50,7 @@ public class FileSystemCompatibility {
   }
 
   @Test
-  public void iterator() {
+  void iterator() {
     FileSystem fileSystem = FileSystems.getDefault();
     Path path = fileSystem.getPath("/Users/marschall/Documents");
     Iterator<Path> iterator = path.iterator();
@@ -62,7 +62,7 @@ public class FileSystemCompatibility {
   }
 
   @Test
-  public void iterable() {
+  void iterable() {
     FileSystem fileSystem = FileSystems.getDefault();
     Path path = fileSystem.getPath("/Users/marschall/Documents");
     for (Path element : path) {
@@ -71,7 +71,7 @@ public class FileSystemCompatibility {
   }
 
   @Test
-  public void getFileName() {
+  void getFileName() {
 
     FileSystem fileSystem = FileSystems.getDefault();
     Path usrBin = fileSystem.getPath("/usr/bin");
@@ -86,7 +86,7 @@ public class FileSystemCompatibility {
   }
 
   @Test
-  public void relativePath() {
+  void relativePath() {
     FileSystem fileSystem = FileSystems.getDefault();
     Path path = fileSystem.getPath("Documents");
     assertThat(path, isRelative());
@@ -94,7 +94,7 @@ public class FileSystemCompatibility {
   }
 
   @Test
-  public void absolutePath() {
+  void absolutePath() {
     FileSystem fileSystem = FileSystems.getDefault();
     Path path = fileSystem.getPath("/Documents");
     assertThat(path, isAbsolute());

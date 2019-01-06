@@ -14,23 +14,23 @@ import org.junit.jupiter.params.provider.MethodSource;
 /**
  * Tests the contract outlined in {@link Path#relativize(Path)}.
  */
-public class RelativizeResolveTest {
+class RelativizeResolveTest {
 
   private static final String DISPLAY_NAME = "receiver: {0}, other: {1}";
 
   @RegisterExtension
-  public final FileSystemExtension rule = new FileSystemExtension();
+  final FileSystemExtension rule = new FileSystemExtension();
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("data")
-  public void contract(String first, String second) {
+  void contract(String first, String second) {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path p = fileSystem.getPath(first);
     Path q = fileSystem.getPath(second);
     assertEquals(q, p.relativize(p.resolve(q)));
   }
 
-  public static List<Object[]> data() {
+  static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
             { "a", "a" },
             { "/a", "a" },

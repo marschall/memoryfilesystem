@@ -9,7 +9,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_ENV;
 import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_URI;
 
-public class RootExtension implements BeforeEachCallback, AfterEachCallback {
+class RootExtension implements BeforeEachCallback, AfterEachCallback {
 
   private Path root;
   private FileSystem fileSystem;

@@ -28,12 +28,12 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class MacOsMemoryFileSystemTest {
+class MacOsMemoryFileSystemTest {
 
   private static final String DISPLAY_NAME = "native: {0}";
 
   @RegisterExtension
-  public final MacOsFileSystemExtension rule = new MacOsFileSystemExtension();
+  final MacOsFileSystemExtension rule = new MacOsFileSystemExtension();
 
   private FileSystem fileSystem;
 
@@ -48,7 +48,7 @@ public class MacOsMemoryFileSystemTest {
     return this.fileSystem;
   }
 
-  public static List<Object[]> fileSystems() {
+  static List<Object[]> fileSystems() {
     String osName = (String) System.getProperties().get("os.name");
     boolean isMac = osName.startsWith("Mac");
     if (isMac) {
@@ -61,7 +61,7 @@ public class MacOsMemoryFileSystemTest {
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("fileSystems")
-  public void macOsNormalization(boolean useDefault) throws IOException {
+  void macOsNormalization(boolean useDefault) throws IOException {
     FileSystem fileSystem = this.getFileSystem(useDefault);
     String aUmlaut = "\u00C4";
     Path aPath = fileSystem.getPath(aUmlaut);
@@ -89,7 +89,7 @@ public class MacOsMemoryFileSystemTest {
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("fileSystems")
-  public void macOsComparison(boolean useDefault) throws IOException {
+  void macOsComparison(boolean useDefault) throws IOException {
     FileSystem fileSystem = this.getFileSystem(useDefault);
     Path aLower = fileSystem.getPath("a");
     Path aUpper = fileSystem.getPath("A");
@@ -110,7 +110,7 @@ public class MacOsMemoryFileSystemTest {
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("fileSystems")
-  public void forbiddenCharacters(boolean useDefault) {
+  void forbiddenCharacters(boolean useDefault) {
     try {
       char c = 0;
       this.getFileSystem(useDefault).getPath(c + ".txt");
@@ -122,7 +122,7 @@ public class MacOsMemoryFileSystemTest {
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("fileSystems")
-  public void notForbiddenCharacters(boolean useDefault) throws IOException {
+  void notForbiddenCharacters(boolean useDefault) throws IOException {
     for (int i = 1; i < 128; ++i) {
       char c = (char) i;
       if (c != '/') {
@@ -139,7 +139,7 @@ public class MacOsMemoryFileSystemTest {
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("fileSystems")
-  public void macOsPaths(boolean useDefault) {
+  void macOsPaths(boolean useDefault) {
     FileSystem fileSystem = this.getFileSystem(useDefault);
     String aUmlaut = "\u00C4";
     String normalized = Normalizer.normalize(aUmlaut, Form.NFD);
@@ -153,7 +153,7 @@ public class MacOsMemoryFileSystemTest {
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("fileSystems")
-  public void caseInsensitivePatterns(boolean useDefault) throws IOException {
+  void caseInsensitivePatterns(boolean useDefault) throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path child1 = fileSystem.getPath("child1");

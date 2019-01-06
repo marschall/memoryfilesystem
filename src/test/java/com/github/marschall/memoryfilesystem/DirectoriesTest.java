@@ -18,10 +18,10 @@ import java.nio.file.attribute.UserDefinedFileAttributeView;
 
 import org.junit.jupiter.api.Test;
 
-public class DirectoriesTest {
+class DirectoriesTest {
 
   @Test
-  public void basicCopy() throws IOException {
+  void basicCopy() throws IOException {
     try (FileSystem sourceFileSystem = MemoryFileSystemBuilder.newEmpty().build("source")) {
       try (FileSystem targetFileSystem = MemoryFileSystemBuilder.newEmpty().build("target")) {
 
@@ -42,7 +42,7 @@ public class DirectoriesTest {
 
 
   @Test
-  public void copyUserDefinedAttributes() throws IOException {
+  void copyUserDefinedAttributes() throws IOException {
     try (FileSystem sourceFileSystem = MemoryFileSystemBuilder.newEmpty().addFileAttributeView(UserDefinedFileAttributeView.class).build("source")) {
       try (FileSystem targetFileSystem = MemoryFileSystemBuilder.newEmpty().addFileAttributeView(UserDefinedFileAttributeView.class).build("target")) {
         Path sourceFile = Files.createFile(sourceFileSystem.getPath("file"));

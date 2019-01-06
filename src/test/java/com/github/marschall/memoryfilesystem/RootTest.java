@@ -24,11 +24,11 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-public class RootTest {
+class RootTest {
 
 
   @Test
-  public void unixRoot() throws IOException {
+  void unixRoot() throws IOException {
     try (FileSystem fileSystem = MemoryFileSystemBuilder.newLinux().build("name")) {
       for (Path root : fileSystem.getRootDirectories()) {
         assertCommonRootProperties(root);
@@ -85,7 +85,7 @@ public class RootTest {
   }
 
   @Test
-  public void defaultRoot() throws IOException {
+  void defaultRoot() throws IOException {
     try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
       for (Path root : fileSystem.getRootDirectories()) {
         assertCommonRootProperties(root);
@@ -94,21 +94,21 @@ public class RootTest {
   }
 
   @Test
-  public void windowsRootInvalid1() throws IOException {
+  void windowsRootInvalid1() throws IOException {
     try (FileSystem fileSystem = MemoryFileSystemBuilder.newWindows().build("name")) {
       assertThrows(InvalidPathException.class, () -> fileSystem.getPath("/C:\\"));
     }
   }
 
   @Test
-  public void windowsRootInvalid2() throws IOException {
+  void windowsRootInvalid2() throws IOException {
     try (FileSystem fileSystem = MemoryFileSystemBuilder.newWindows().build("name")) {
       assertThrows(InvalidPathException.class, () -> fileSystem.getPath("\\C:\\"));
     }
   }
 
   @Test
-  public void windowsPaths() throws IOException {
+  void windowsPaths() throws IOException {
     try (FileSystem fileSystem = MemoryFileSystemBuilder.newWindows().build("name")) {
       fileSystem.getPath("C:\\");
 
@@ -119,7 +119,7 @@ public class RootTest {
   }
 
   @Test
-  public void windowsRootMethods() throws IOException {
+  void windowsRootMethods() throws IOException {
     try (FileSystem fileSystem = MemoryFileSystemBuilder.newWindows().addRoot("D:\\").build("name")) {
       List<Path> roots = this.asList(fileSystem.getRootDirectories());
       for (int i = 0; i < roots.size(); ++i) {

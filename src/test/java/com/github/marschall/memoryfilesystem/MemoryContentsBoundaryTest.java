@@ -13,11 +13,11 @@ import java.util.List;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class MemoryContentsBoundaryTest {
+class MemoryContentsBoundaryTest {
 
   private static final String DISPLAY_NAME = "initialOffset: {0}, initialBlocks: {1}, twoWrite: {2}";
 
-  public static List<Object[]> parameters() {
+  static List<Object[]> parameters() {
     int blockSize = MemoryInode.BLOCK_SIZE;
     List<Object[]> parameters = new ArrayList<>();
     for (int initialOffset : new int[]{0, blockSize - 2, blockSize - 1, blockSize, blockSize + 1, blockSize + 2}) {
@@ -41,7 +41,7 @@ public class MemoryContentsBoundaryTest {
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("parameters")
-  public void boundaryWrapping(int initialOffset, int initialBlocks, int toWrite) throws IOException {
+  void boundaryWrapping(int initialOffset, int initialBlocks, int toWrite) throws IOException {
     Path path = new MockPath();
     SeekableByteChannel channel = createContents(initialBlocks).newChannel(true, true, false, path);
     byte[] initial = new byte[initialOffset];

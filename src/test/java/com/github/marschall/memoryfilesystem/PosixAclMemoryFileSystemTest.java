@@ -18,14 +18,14 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class PosixAclMemoryFileSystemTest {
+class PosixAclMemoryFileSystemTest {
 
   @RegisterExtension
-  public final PosixAclFileSystemExtension rule = new PosixAclFileSystemExtension();
+  final PosixAclFileSystemExtension rule = new PosixAclFileSystemExtension();
 
   @Test
   @Disabled("not ready yet")
-  public void defaultAttributes() throws IOException {
+  void defaultAttributes() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path file = fileSystem.getPath("file.txt");
 

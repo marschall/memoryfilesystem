@@ -15,7 +15,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ContextConfiguration
 @ExtendWith(SpringExtension.class)
-public class MemoryFileSystemFactoryBeanTest implements ApplicationContextAware {
+class MemoryFileSystemFactoryBeanTest implements ApplicationContextAware {
 
   private FileSystem fileSystem;
 
@@ -26,7 +26,7 @@ public class MemoryFileSystemFactoryBeanTest implements ApplicationContextAware 
 
 
   @Test
-  public void isOpen() {
+  void isOpen() {
     assertNotNull(this.fileSystem);
     assertTrue(this.fileSystem.isOpen());
     assertEquals("memory:test:///", this.fileSystem.getPath("").toUri().toString());

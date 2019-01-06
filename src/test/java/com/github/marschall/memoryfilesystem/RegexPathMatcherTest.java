@@ -12,14 +12,14 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class RegexPathMatcherTest {
+class RegexPathMatcherTest {
 
   @RegisterExtension
-  public final FileSystemExtension rule = new FileSystemExtension();
+  final FileSystemExtension rule = new FileSystemExtension();
 
   @ParameterizedTest
   @MethodSource("data")
-  public void matchesUpperCase(String pattern, String p, boolean expected) {
+  void matchesUpperCase(String pattern, String p, boolean expected) {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path path = fileSystem.getPath(p);
     PathMatcher matcher = fileSystem.getPathMatcher(RegexPathMatcher.name().toUpperCase() + ":" + pattern);
@@ -28,14 +28,14 @@ public class RegexPathMatcherTest {
 
   @ParameterizedTest
   @MethodSource("data")
-  public void matchesLowerCase(String pattern, String p, boolean expected) {
+  void matchesLowerCase(String pattern, String p, boolean expected) {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path path = fileSystem.getPath(p);
     PathMatcher matcher = fileSystem.getPathMatcher(RegexPathMatcher.name().toLowerCase() + ":" + pattern);
     assertEquals(expected, matcher.matches(path));
   }
 
-  public static List<Object[]> data() {
+  static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
             { ".*\\.java", "GlobPathMatcherTest.java", true },
             { ".*\\.java", ".java", true },

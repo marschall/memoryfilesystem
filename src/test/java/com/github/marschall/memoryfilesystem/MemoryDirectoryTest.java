@@ -11,18 +11,18 @@ import java.nio.file.attribute.BasicFileAttributes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class MemoryDirectoryTest {
+class MemoryDirectoryTest {
 
   private MemoryDirectory memoryDirectory;
 
   @BeforeEach
-  public void setUp() {
+  void setUp() {
     this.memoryDirectory = new MemoryDirectory("");
   }
 
 
   @Test
-  public void testCheckMethods() throws IOException {
+  void testCheckMethods() throws IOException {
     BasicFileAttributes attributes = this.memoryDirectory.getBasicFileAttributeView().readAttributes();
 
     assertTrue(attributes.isDirectory());
