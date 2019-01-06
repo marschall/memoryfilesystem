@@ -44,13 +44,13 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import com.github.marschall.memoryfilesystem.CurrentGroup.GroupTask;
 import com.github.marschall.memoryfilesystem.CurrentUser.UserTask;
 
-public class PosixPermissionMemoryFileSystemTest {
+class PosixPermissionMemoryFileSystemTest {
 
   @RegisterExtension
-  public final PosixPermissionFileSystemExtension rule = new PosixPermissionFileSystemExtension();
+  final PosixPermissionFileSystemExtension rule = new PosixPermissionFileSystemExtension();
 
   @Test
-  public void directoryRead() throws IOException {
+  void directoryRead() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     final Path directory = fileSystem.getPath("directory");
     Path file = directory.resolve("file");
@@ -75,21 +75,21 @@ public class PosixPermissionMemoryFileSystemTest {
   }
 
   @Test
-  public void owner() throws IOException {
+  void owner() throws IOException {
     this.checkPermission(READ, OWNER_READ, PosixPermissionFileSystemExtension.OWNER);
     this.checkPermission(WRITE, OWNER_WRITE, PosixPermissionFileSystemExtension.OWNER);
     this.checkPermission(EXECUTE, OWNER_EXECUTE, PosixPermissionFileSystemExtension.OWNER);
   }
 
   @Test
-  public void group() throws IOException {
+  void group() throws IOException {
     this.checkPermission(READ, GROUP_READ, PosixPermissionFileSystemExtension.GROUP);
     this.checkPermission(WRITE, GROUP_WRITE, PosixPermissionFileSystemExtension.GROUP);
     this.checkPermission(EXECUTE, GROUP_EXECUTE, PosixPermissionFileSystemExtension.GROUP);
   }
 
   @Test
-  public void others() throws IOException {
+  void others() throws IOException {
     this.checkPermission(READ, OTHERS_READ, PosixPermissionFileSystemExtension.OTHER);
     this.checkPermission(WRITE, OTHERS_WRITE, PosixPermissionFileSystemExtension.OTHER);
     this.checkPermission(EXECUTE, OTHERS_EXECUTE, PosixPermissionFileSystemExtension.OTHER);
@@ -104,7 +104,7 @@ public class PosixPermissionMemoryFileSystemTest {
    * @throws IOException if the test fails
    */
   @Test
-  public void issue50() throws IOException {
+  void issue50() throws IOException {
     Path path = this.rule.getFileSystem().getPath("readable-at-first");
     Files.createFile(path,  PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("r--r--r--")));
 
@@ -123,7 +123,7 @@ public class PosixPermissionMemoryFileSystemTest {
    * The owner should be able to read current permissions for its own file.
    */
   @Test
-  public void issue51() throws IOException {
+  void issue51() throws IOException {
     Path path = this.rule.getFileSystem().getPath("readable-at-first");
     Files.createFile(path,  PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("---------")));
 
@@ -142,7 +142,7 @@ public class PosixPermissionMemoryFileSystemTest {
    * You should be able to read the attributes of a file depending on the directory permissions.
    */
   @Test
-  public void issue112() throws IOException {
+  void issue112() throws IOException {
     final Path path = this.rule.getFileSystem().getPath("not-mine");
     Files.createFile(path);
     UserPrincipal other = this.rule.getFileSystem().getUserPrincipalLookupService().lookupPrincipalByName(PosixPermissionFileSystemExtension.OTHER);
@@ -169,14 +169,14 @@ public class PosixPermissionMemoryFileSystemTest {
   }
 
   @Test
-  public void toSet() {
+  void toSet() {
     assertEquals(asSet(OWNER_READ), MemoryEntryAttributes.toSet(0b1));
     assertEquals(asSet(OTHERS_EXECUTE), MemoryEntryAttributes.toSet(0b100000000));
     assertEquals(asSet(OWNER_READ, OTHERS_EXECUTE), MemoryEntryAttributes.toSet(0b100000001));
   }
 
   @Test
-  public void toMask() {
+  void toMask() {
     assertEquals(0b1, MemoryEntryAttributes.toMask(asSet(OWNER_READ)));
     assertEquals(0b100000000, MemoryEntryAttributes.toMask(asSet(OTHERS_EXECUTE)));
     assertEquals(0b100000001, MemoryEntryAttributes.toMask(asSet(OWNER_READ, OTHERS_EXECUTE)));
@@ -255,7 +255,7 @@ public class PosixPermissionMemoryFileSystemTest {
   }
 
   @Test
-  public void deletePermission() throws IOException {
+  void deletePermission() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path sourceDirectory = Files.createDirectory(fileSystem.getPath("source-directory"));
     final Path file = Files.createFile(sourceDirectory.resolve("file.txt"));
@@ -295,7 +295,7 @@ public class PosixPermissionMemoryFileSystemTest {
   }
 
   @Test
-  public void movePermission() throws IOException {
+  void movePermission() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path sourceDirectory = Files.createDirectory(fileSystem.getPath("source-directory"));
     Path targetDirectory = Files.createDirectory(fileSystem.getPath("target-directory"));
@@ -375,7 +375,7 @@ public class PosixPermissionMemoryFileSystemTest {
   }
 
   @Test
-  public void createPermission() throws IOException {
+  void createPermission() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path sourceDirectory = Files.createDirectory(fileSystem.getPath("source-directory"));
     final Path file = sourceDirectory.resolve("file.txt");

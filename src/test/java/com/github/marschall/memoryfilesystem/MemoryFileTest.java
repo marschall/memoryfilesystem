@@ -11,17 +11,17 @@ import java.nio.file.attribute.BasicFileAttributes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class MemoryFileTest {
+class MemoryFileTest {
 
   private MemoryFile memoryFile;
 
   @BeforeEach
-  public void setUp() {
+  void setUp() {
     this.memoryFile = new MemoryFile("", EntryCreationContext.empty());
   }
 
   @Test
-  public void testCheckMethods() throws IOException {
+  void testCheckMethods() throws IOException {
     BasicFileAttributes attributes = this.memoryFile.getBasicFileAttributeView().readAttributes();
 
     assertTrue(attributes.isRegularFile());

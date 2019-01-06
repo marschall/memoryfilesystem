@@ -21,9 +21,9 @@ import java.util.concurrent.Future;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class LockSetTest {
+class LockSetTest {
 
-  public static List<Object[]> data() {
+  static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
             { lock(0L, 1000L), singletonList(lock(1000L, 9000L)), true },
             { lock(10001L, 999L), singletonList(lock(1000L, 9001L)), true },
@@ -57,7 +57,7 @@ public class LockSetTest {
 
   @ParameterizedTest
   @MethodSource("data")
-  public void tryLock(MemoryFileLock toAdd, Collection<MemoryFileLock> alreadyPresent, boolean expectedSuccess) throws IOException {
+  void tryLock(MemoryFileLock toAdd, Collection<MemoryFileLock> alreadyPresent, boolean expectedSuccess) throws IOException {
     FileLock lock = createLockSet(alreadyPresent).tryLock(toAdd);
     assertEquals(expectedSuccess, lock != null, "lock acquisition successful");
     if (expectedSuccess) {
@@ -67,7 +67,7 @@ public class LockSetTest {
 
   @ParameterizedTest
   @MethodSource("data")
-  public void lock(MemoryFileLock toAdd, Collection<MemoryFileLock> alreadyPresent, boolean expectedSuccess) throws IOException {
+  void lock(MemoryFileLock toAdd, Collection<MemoryFileLock> alreadyPresent, boolean expectedSuccess) throws IOException {
     FileLock lock = null;
     try {
       lock = createLockSet(alreadyPresent).lock(toAdd);

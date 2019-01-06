@@ -16,52 +16,52 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class MemoryFileSystemMatcherTest {
+class MemoryFileSystemMatcherTest {
 
   @RegisterExtension
-  public final FileSystemExtension rule = new FileSystemExtension();
+  final FileSystemExtension rule = new FileSystemExtension();
 
   @Test
-  public void getPathMatcherUnknown() {
+  void getPathMatcherUnknown() {
     FileSystem fileSystem = this.rule.getFileSystem();
     assertThrows(UnsupportedOperationException.class, () -> fileSystem.getPathMatcher("syntax:patten"));
   }
 
   @Test
-  public void getPathMatcherInvalid1() {
+  void getPathMatcherInvalid1() {
     FileSystem fileSystem = this.rule.getFileSystem();
     assertThrows(IllegalArgumentException.class, () -> fileSystem.getPathMatcher("invalid"));
   }
 
   @Test
-  public void getPathMatcherInvalid2() {
+  void getPathMatcherInvalid2() {
     FileSystem fileSystem = this.rule.getFileSystem();
     assertThrows(IllegalArgumentException.class, () -> fileSystem.getPathMatcher("invalid:"));
   }
 
   @Test
   @Disabled
-  public void getPathMatcherGlob() {
+  void getPathMatcherGlob() {
     FileSystem fileSystem = this.rule.getFileSystem();
     PathMatcher matcher = fileSystem.getPathMatcher("glob:*.java");
     assertTrue(matcher instanceof GlobPathMatcher);
   }
 
   @Test
-  public void getPathMatcherRegex() {
+  void getPathMatcherRegex() {
     FileSystem fileSystem = this.rule.getFileSystem();
     PathMatcher matcher = fileSystem.getPathMatcher("regex:.*\\.java");
     assertTrue(matcher instanceof RegexPathMatcher);
   }
 
   @Test
-  public void getPathMatcherRegexInvalid() {
+  void getPathMatcherRegexInvalid() {
     FileSystem fileSystem = this.rule.getFileSystem();
     assertThrows(PatternSyntaxException.class, () -> fileSystem.getPathMatcher("regex:*\\.java"));
   }
 
   @Test
-  public void regression91() {
+  void regression91() {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     PathMatcher matcher = fileSystem.getPathMatcher("glob:{,**/}.gitignore");
@@ -70,7 +70,7 @@ public class MemoryFileSystemMatcherTest {
   }
 
   @Test
-  public void regression92() throws IOException {
+  void regression92() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     Path parent = fileSystem.getPath("/a/b");

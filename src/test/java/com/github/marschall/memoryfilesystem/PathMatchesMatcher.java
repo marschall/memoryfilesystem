@@ -7,7 +7,7 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 
-public class PathMatchesMatcher  extends TypeSafeMatcher<PathMatcher> {
+class PathMatchesMatcher  extends TypeSafeMatcher<PathMatcher> {
 
   private final Path path;
 

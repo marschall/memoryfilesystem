@@ -14,11 +14,11 @@ import java.nio.file.spi.FileSystemProvider;
 
 import org.junit.jupiter.api.Test;
 
-public class MemoryFileSystemProviderTest {
+class MemoryFileSystemProviderTest {
 
 
   @Test
-  public void checkInstallation() {
+  void checkInstallation() {
     boolean found = false;
     for (FileSystemProvider provider : FileSystemProvider.installedProviders()) {
       if (provider.getScheme().equals(MemoryFileSystemProvider.SCHEME)) {
@@ -29,12 +29,12 @@ public class MemoryFileSystemProviderTest {
   }
 
   @Test
-  public void getNotExistingFileSystem() {
+  void getNotExistingFileSystem() {
     assertThrows(FileSystemNotFoundException.class, () -> FileSystems.getFileSystem(SAMPLE_URI));
   }
 
   @Test
-  public void getFileSystem() throws IOException {
+  void getFileSystem() throws IOException {
     try (FileSystem fileSystem = FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV)) {
       assertSame(fileSystem, FileSystems.getFileSystem(SAMPLE_URI));
     }

@@ -18,19 +18,19 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class DefaultOpenOptionsTest {
+class DefaultOpenOptionsTest {
 
   private Set<OpenOption> options;
   private Set<OpenOption> expected;
 
   @BeforeEach
-  public void setUp() {
+  void setUp() {
     this.options = DefaultOpenOptions.INSTANCE;
     this.expected = new HashSet<OpenOption>(Arrays.asList(CREATE, TRUNCATE_EXISTING, WRITE));
   }
 
   @Test
-  public void contains() {
+  void contains() {
     assertTrue(this.options.contains(CREATE));
     assertTrue(this.options.contains(TRUNCATE_EXISTING));
     assertTrue(this.options.contains(WRITE));
@@ -38,7 +38,7 @@ public class DefaultOpenOptionsTest {
   }
 
   @Test
-  public void iterator() {
+  void iterator() {
     Set<OpenOption> actual = new HashSet<>(3);
     for (OpenOption each : this.options) {
       assertTrue(actual.add(each));
@@ -47,32 +47,32 @@ public class DefaultOpenOptionsTest {
   }
 
   @Test
-  public void add() {
+  void add() {
     assertThrows(UnsupportedOperationException.class, () -> this.options.add(DELETE_ON_CLOSE));
   }
 
   @Test
-  public void addAll() {
+  void addAll() {
     assertThrows(UnsupportedOperationException.class, () -> this.options.addAll(Collections.singleton(DELETE_ON_CLOSE)));
   }
 
   @Test
-  public void remove() {
+  void remove() {
     assertThrows(UnsupportedOperationException.class, () -> this.options.remove(DELETE_ON_CLOSE));
   }
 
   @Test
-  public void removeAll() {
+  void removeAll() {
     assertThrows(UnsupportedOperationException.class, () -> this.options.removeAll(Collections.singleton(DELETE_ON_CLOSE)));
   }
 
   @Test
-  public void size() {
+  void size() {
     assertEquals(3, this.options.size());
   }
 
   @Test
-  public void equals() {
+  void equals() {
     assertEquals(this.options, this.expected);
   }
 

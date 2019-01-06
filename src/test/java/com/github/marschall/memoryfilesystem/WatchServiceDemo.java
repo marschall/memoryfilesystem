@@ -13,9 +13,9 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.List;
 
-public class WatchServiceDemo {
+class WatchServiceDemo {
 
-  public static void main(String[] args) throws IOException, InterruptedException {
+  static void main(String[] args) throws IOException, InterruptedException {
     Path dir = Paths.get("/Users/marschall/tmp/watch/file.txt");
 
     FileSystem fileSystem = dir.getFileSystem();

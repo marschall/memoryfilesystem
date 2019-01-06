@@ -9,10 +9,10 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-public class CompositeListTest {
+class CompositeListTest {
 
   @Test
-  public void create() {
+  void create() {
     List<String> a = Collections.singletonList("a");
     List<String> b = Collections.singletonList("b");
 
@@ -20,7 +20,7 @@ public class CompositeListTest {
   }
 
   @Test
-  public void createOneEmpty() {
+  void createOneEmpty() {
     List<String> emptyList = Collections.emptyList();
     List<String> singletonList = Collections.singletonList("x");
     assertSame(singletonList, CompositeList.create(emptyList, singletonList));
@@ -28,7 +28,7 @@ public class CompositeListTest {
   }
 
   @Test
-  public void subList() {
+  void subList() {
     List<String> first = Arrays.asList("1", "2", "3");
     List<String> second = Arrays.asList("4", "5", "6");
     List<String> composite = CompositeList.create(first, second);

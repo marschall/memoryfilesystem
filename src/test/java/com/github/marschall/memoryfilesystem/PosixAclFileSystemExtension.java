@@ -6,7 +6,7 @@ import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
-public class PosixAclFileSystemExtension implements BeforeEachCallback, AfterEachCallback {
+class PosixAclFileSystemExtension implements BeforeEachCallback, AfterEachCallback {
 
   private FileSystem fileSystem;
 

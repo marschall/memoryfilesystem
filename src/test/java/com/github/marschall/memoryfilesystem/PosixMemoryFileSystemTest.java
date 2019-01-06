@@ -30,13 +30,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 
-public class PosixMemoryFileSystemTest {
+class PosixMemoryFileSystemTest {
 
   @RegisterExtension
-  public final PosixFileSystemExtension rule = new PosixFileSystemExtension();
+  final PosixFileSystemExtension rule = new PosixFileSystemExtension();
 
   @Test
-  public void defaultAttributes() throws IOException {
+  void defaultAttributes() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path file = fileSystem.getPath("file.txt");
 
@@ -50,14 +50,14 @@ public class PosixMemoryFileSystemTest {
   }
 
   @Test
-  public void getOwner() throws IOException {
+  void getOwner() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     UserPrincipal owner = Files.getOwner(fileSystem.getPath("/"));
     assertNotNull(owner);
   }
 
   @Test
-  public void supportedFileAttributeViews() {
+  void supportedFileAttributeViews() {
     FileSystem fileSystem = this.rule.getFileSystem();
     Set<String> actual = fileSystem.supportedFileAttributeViews();
     Set<String> expected = new HashSet<>(Arrays.asList("basic", "owner", "posix"));
@@ -65,7 +65,7 @@ public class PosixMemoryFileSystemTest {
   }
 
   @Test
-  public void copyAttributes() throws IOException {
+  void copyAttributes() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path source = fileSystem.getPath("source.txt");
     Path target = fileSystem.getPath("target.txt");
@@ -86,7 +86,7 @@ public class PosixMemoryFileSystemTest {
   }
 
   @Test
-  public void dontCopyAttributes() throws IOException {
+  void dontCopyAttributes() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path source = fileSystem.getPath("source.txt");
     Path target = fileSystem.getPath("target.txt");
@@ -107,7 +107,7 @@ public class PosixMemoryFileSystemTest {
 
   // https://bugs.openjdk.java.net/browse/JDK-8066915
   @Test
-  public void jdk8066915() throws IOException {
+  void jdk8066915() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path directory = fileSystem.getPath("directory");
     Files.createDirectory(directory);

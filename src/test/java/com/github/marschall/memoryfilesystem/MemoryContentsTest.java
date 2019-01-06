@@ -18,7 +18,7 @@ import java.util.List;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class MemoryContentsTest {
+class MemoryContentsTest {
 
   private static final byte[] SAMPLE_DATA = new byte[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 
@@ -33,7 +33,7 @@ public class MemoryContentsTest {
     }
   }
 
-  public static List<Object[]> parameters() {
+  static List<Object[]> parameters() {
     return Arrays.asList(new Object[]{true}, new Object[]{false});
   }
 
@@ -53,7 +53,7 @@ public class MemoryContentsTest {
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("parameters")
-  public void firstBlockEmpty(boolean direct) throws IOException {
+  void firstBlockEmpty(boolean direct) throws IOException {
     ByteBuffer src = this.allocate(SAMPLE_DATA.length, direct);
     byte[] data = SAMPLE_DATA;
     src.put(data);
@@ -82,7 +82,7 @@ public class MemoryContentsTest {
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("parameters")
-  public void positition(boolean direct) throws IOException {
+  void positition(boolean direct) throws IOException {
     Path path = new MockPath();
     SeekableByteChannel channel = createContents().newChannel(true, true, false, path);
 
@@ -108,7 +108,7 @@ public class MemoryContentsTest {
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("parameters")
-  public void readOnly(boolean direct) throws IOException {
+  void readOnly(boolean direct) throws IOException {
     Path path = new MockPath();
     SeekableByteChannel channel = createContents().newChannel(true, true, false, path);
 
@@ -126,7 +126,7 @@ public class MemoryContentsTest {
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("parameters")
-  public void writeOnly(boolean direct) throws IOException {
+  void writeOnly(boolean direct) throws IOException {
     Path path = new MockPath();
     SeekableByteChannel channel = createContents().newChannel(false, true, false, path);
 
@@ -145,7 +145,7 @@ public class MemoryContentsTest {
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("parameters")
-  public void truncate(boolean direct) throws IOException {
+  void truncate(boolean direct) throws IOException {
     Path path = new MockPath();
     SeekableByteChannel channel = createContents().newChannel(true, true, false, path);
     ByteBuffer src = this.allocate(1, direct);
@@ -189,7 +189,7 @@ public class MemoryContentsTest {
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("parameters")
-  public void appendNonTruncatable(boolean direct) throws IOException {
+  void appendNonTruncatable(boolean direct) throws IOException {
     Path path = new MockPath();
     SeekableByteChannel channel = createContents().newAppendingChannel(true, false, path);
 
@@ -206,7 +206,7 @@ public class MemoryContentsTest {
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("parameters")
-  public void appendReadable(boolean direct) throws IOException {
+  void appendReadable(boolean direct) throws IOException {
     Path path = new MockPath();
     SeekableByteChannel channel = createContents().newAppendingChannel(true, false, path);
     assertEquals(0L, channel.position());
@@ -239,7 +239,7 @@ public class MemoryContentsTest {
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("parameters")
-  public void appendNotReadable(boolean direct) throws IOException {
+  void appendNotReadable(boolean direct) throws IOException {
     Path path = new MockPath();
     SeekableByteChannel channel = createContents().newAppendingChannel(false, false, path);
 

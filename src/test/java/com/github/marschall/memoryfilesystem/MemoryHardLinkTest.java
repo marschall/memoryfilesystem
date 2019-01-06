@@ -29,7 +29,7 @@ import java.util.Date;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class MemoryHardLinkTest {
+class MemoryHardLinkTest {
 
   private static final Date A_TIME;
   private static final Date C_TIME;
@@ -49,10 +49,10 @@ public class MemoryHardLinkTest {
   }
 
   @RegisterExtension
-  public final FileSystemExtension rule = new FileSystemExtension();
+  final FileSystemExtension rule = new FileSystemExtension();
 
   @Test
-  public void sameContents() throws IOException {
+  void sameContents() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path target = Files.createFile(fileSystem.getPath("target"));
     String initialContents = "initial";
@@ -80,7 +80,7 @@ public class MemoryHardLinkTest {
   }
 
   @Test
-  public void explicitDeletePreserves() throws IOException {
+  void explicitDeletePreserves() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path target = Files.createFile(fileSystem.getPath("target"));
     String initialContents = "initial";
@@ -96,7 +96,7 @@ public class MemoryHardLinkTest {
   }
 
   @Test
-  public void implicitDeletePreserves() throws IOException {
+  void implicitDeletePreserves() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path target = Files.createFile(fileSystem.getPath("target"));
     String initialContents = "initial";
@@ -114,7 +114,7 @@ public class MemoryHardLinkTest {
   }
 
   @Test
-  public void noLinksOnDirectories() throws IOException {
+  void noLinksOnDirectories() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path target = Files.createDirectory(fileSystem.getPath("target"));
     Path link = fileSystem.getPath("link");
@@ -130,7 +130,7 @@ public class MemoryHardLinkTest {
   }
 
   @Test
-  public void sameAttributes() throws IOException {
+  void sameAttributes() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path target = Files.createFile(fileSystem.getPath("target"));
     Path link = Files.createLink(fileSystem.getPath("link"), target);

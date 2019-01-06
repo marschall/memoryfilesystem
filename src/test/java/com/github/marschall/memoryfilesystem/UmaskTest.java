@@ -13,12 +13,12 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public final class UmaskTest {
+final class UmaskTest {
 
   private static final Set<PosixFilePermission> UMASK = PosixFilePermissions.fromString("----w-rwx"); // ie, 027
 
   @RegisterExtension
-  public final PosixFileSystemExtension rule = new PosixFileSystemExtension(UMASK);
+  final PosixFileSystemExtension rule = new PosixFileSystemExtension(UMASK);
 
   /**
    * Tests creating a file without permissions respects umask.
@@ -26,7 +26,7 @@ public final class UmaskTest {
    * @throws IOException if the test fails
    */
   @Test
-  public void creatingFileWithoutPermissions() throws IOException {
+  void creatingFileWithoutPermissions() throws IOException {
     Path path = this.rule.getFileSystem().getPath("/fileWithoutPerms");
     Path created = Files.createFile(path);
     Set<PosixFilePermission> actual = Files.getPosixFilePermissions(created);
@@ -39,7 +39,7 @@ public final class UmaskTest {
    * @throws IOException if the test fails
    */
   @Test
-  public void creatingFileWithPermissions() throws IOException {
+  void creatingFileWithPermissions() throws IOException {
     Set<PosixFilePermission> permissions = PosixFilePermissions.fromString("rw-rw-rw-");
     FileAttribute<?> attr = PosixFilePermissions.asFileAttribute(permissions);
     Path file = this.rule.getFileSystem().getPath("/fileWithPerms");
@@ -54,7 +54,7 @@ public final class UmaskTest {
    * @throws IOException if the test fails
    */
   @Test
-  public void creatingDirectoryWithoutPermissions() throws IOException {
+  void creatingDirectoryWithoutPermissions() throws IOException {
     Path path = this.rule.getFileSystem().getPath("/dirWithoutPerms");
     Path created = Files.createDirectory(path);
     Set<PosixFilePermission> actual = Files.getPosixFilePermissions(created);
@@ -67,7 +67,7 @@ public final class UmaskTest {
    * @throws IOException if the test fails
    */
   @Test
-  public void creatingDirectoryWithPermissions() throws IOException {
+  void creatingDirectoryWithPermissions() throws IOException {
     Set<PosixFilePermission> permissions = PosixFilePermissions.fromString("rwxrwx-w-");
     FileAttribute<?> attribute = PosixFilePermissions.asFileAttribute(permissions);
     Path file = this.rule.getFileSystem().getPath("/dirWithPerms");

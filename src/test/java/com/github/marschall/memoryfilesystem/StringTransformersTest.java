@@ -6,16 +6,16 @@ import java.util.Locale;
 
 import org.junit.jupiter.api.Test;
 
-public class StringTransformersTest {
+class StringTransformersTest {
 
   @Test
-  public void identity() {
+  void identity() {
     StringTransformer transformer = StringTransformers.IDENTIY;
     assertEquals("aA", transformer.transform("aA"));
   }
 
   @Test
-  public void caseInsensitive() {
+  void caseInsensitive() {
     StringTransformer transformer = StringTransformers.caseInsensitive(Locale.US);
     assertEquals("AA", transformer.transform("aA"));
   }

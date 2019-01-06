@@ -13,10 +13,10 @@ import java.util.Locale;
 
 import org.junit.jupiter.api.Test;
 
-public class MemoryUserPrincipalLookupServiceTest {
+class MemoryUserPrincipalLookupServiceTest {
 
   @Test
-  public void identity() throws IOException {
+  void identity() throws IOException {
     List<String> users = singletonList("user");
     List<String> groups = singletonList("group");
     StringTransformer transformer = StringTransformers.IDENTIY;
@@ -61,7 +61,7 @@ public class MemoryUserPrincipalLookupServiceTest {
   }
 
   @Test
-  public void caseInsensitive() throws IOException {
+  void caseInsensitive() throws IOException {
     List<String> users = singletonList("usEr");
     List<String> groups = singletonList("grOup");
     StringTransformer transformer = StringTransformers.caseInsensitive(Locale.US);

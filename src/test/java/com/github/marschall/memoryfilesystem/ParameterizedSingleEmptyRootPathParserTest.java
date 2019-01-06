@@ -12,17 +12,17 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class ParameterizedSingleEmptyRootPathParserTest {
+class ParameterizedSingleEmptyRootPathParserTest {
 
   private static final String DISPLAY_NAME = "first: {0} more: {1}";
 
   @RegisterExtension
-  public final FileSystemExtension rule = new FileSystemExtension();
+  final FileSystemExtension rule = new FileSystemExtension();
 
   private Path expected;
   private PathParser parser;
 
-  public static List<Object[]> data() {
+  static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
             { "/a", new String[]{"b", "c"} },
             { "/a", new String[]{"/b/", "c"} },
@@ -50,7 +50,7 @@ public class ParameterizedSingleEmptyRootPathParserTest {
   }
 
   @BeforeEach
-  public void setUp() {
+  void setUp() {
     this.parser = new SingleEmptyRootPathParser("/", EmptyCharacterSet.INSTANCE);
     Root root = (Root) this.rule.getFileSystem().getRootDirectories().iterator().next();
     this.expected = AbstractPath.createAbsolute(root.getMemoryFileSystem(), root, Arrays.asList("a", "b", "c"));
@@ -58,7 +58,7 @@ public class ParameterizedSingleEmptyRootPathParserTest {
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("data")
-  public void test(String first, String[] more) {
+  void test(String first, String[] more) {
     Root root = (Root) this.rule.getFileSystem().getRootDirectories().iterator().next();
     Path actual = this.parser.parse(Collections.singletonMap("", root), first, more);
     assertEquals(this.expected, actual);

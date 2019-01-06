@@ -12,23 +12,23 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-public class ParentReferenceListTest {
+class ParentReferenceListTest {
 
   @Test
-  public void contains() {
+  void contains() {
     assertTrue(ParentReferenceList.create(42).contains(".."));
     assertFalse(ParentReferenceList.create(42).contains("."));
   }
 
   @Test
-  public void create() {
+  void create() {
     assertSame(Collections.emptyList(), ParentReferenceList.create(0));
     assertEquals(Collections.singletonList(".."), ParentReferenceList.create(1));
     assertEquals(Arrays.asList("..", ".."), ParentReferenceList.create(2));
   }
 
   @Test
-  public void subList() {
+  void subList() {
     List<String> list = ParentReferenceList.create(42);
     assertSame(Collections.emptyList(), list.subList(7, 7));
     assertEquals(Collections.singletonList(".."), list.subList(7, 8));
@@ -37,12 +37,12 @@ public class ParentReferenceListTest {
   }
 
   @Test
-  public void indexUnderflow() {
+  void indexUnderflow() {
     assertThrows(IndexOutOfBoundsException.class, () -> ParentReferenceList.create(42).get(-1));
   }
 
   @Test
-  public void indexOverflow() {
+  void indexOverflow() {
     assertThrows(IndexOutOfBoundsException.class, () -> ParentReferenceList.create(42).get(42));
   }
 

@@ -30,20 +30,21 @@ import java.nio.file.PathMatcher;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class FileSystemCompatibilityTest {
+class FileSystemCompatibilityTest {
 
   private static final String DISPLAY_NAME = "native: {arguments}";
 
   @RegisterExtension
-  public final FileSystemExtension rule = new FileSystemExtension();
+  final FileSystemExtension rule = new FileSystemExtension();
 
   private FileSystem fileSystem;
 
-  public static Stream<Boolean> useDefault() {
+  static Stream<Boolean> useDefault() {
     return Stream.of(Boolean.TRUE, Boolean.FALSE);
   }
 
@@ -60,7 +61,7 @@ public class FileSystemCompatibilityTest {
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("useDefault")
-  public void writeOnly(boolean useDefault) throws IOException {
+  void writeOnly(boolean useDefault) throws IOException {
     Path currentDirectory = this.getFileSystem(useDefault).getPath("");
     Path path = Files.createTempFile(currentDirectory, "task-list", ".png");
     try (SeekableByteChannel channel = Files.newByteChannel(path, WRITE)) {
@@ -79,7 +80,7 @@ public class FileSystemCompatibilityTest {
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("useDefault")
-  public void truncate(boolean useDefault) throws IOException {
+  void truncate(boolean useDefault) throws IOException {
     Path currentDirectory = this.getFileSystem(useDefault).getPath("");
     Path path = Files.createTempFile(currentDirectory, "sample", ".txt");
     try {
@@ -101,7 +102,7 @@ public class FileSystemCompatibilityTest {
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("useDefault")
-  public void viewOnNotExistingFile(boolean useDefault) throws IOException {
+  void viewOnNotExistingFile(boolean useDefault) throws IOException {
     Path currentDirectory = this.getFileSystem(useDefault).getPath("");
     Path notExisting = currentDirectory.resolve("not-existing.txt");
     BasicFileAttributeView view = Files.getFileAttributeView(notExisting, BasicFileAttributeView.class);
@@ -116,7 +117,7 @@ public class FileSystemCompatibilityTest {
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("useDefault")
-  public void position(boolean useDefault) throws IOException {
+  void position(boolean useDefault) throws IOException {
     Path currentDirectory = this.getFileSystem(useDefault).getPath("");
     Path path = Files.createTempFile(currentDirectory, "sample", ".txt");
     try (SeekableByteChannel channel = Files.newByteChannel(path, WRITE)) {
@@ -138,7 +139,7 @@ public class FileSystemCompatibilityTest {
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("useDefault")
-  public void emptyPath(boolean useDefault) {
+  void emptyPath(boolean useDefault) {
     FileSystem fileSystem = this.getFileSystem(useDefault);
     Path path = fileSystem.getPath("");
     assertThat(path, isRelative());
@@ -151,7 +152,7 @@ public class FileSystemCompatibilityTest {
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("useDefault")
-  public void positionAfterTruncate(boolean useDefault) throws IOException {
+  void positionAfterTruncate(boolean useDefault) throws IOException {
     Path currentDirectory = this.getFileSystem(useDefault).getPath("");
     Path tempFile = Files.createTempFile(currentDirectory, "prefix", "suffix");
     try {
@@ -208,7 +209,7 @@ public class FileSystemCompatibilityTest {
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("useDefault")
-  public void root(boolean useDefault) {
+  void root(boolean useDefault) {
     FileSystem fileSystem = this.getFileSystem(useDefault);
     for (Path root : fileSystem.getRootDirectories()) {
       assertThat(root, isAbsolute());
@@ -234,7 +235,7 @@ public class FileSystemCompatibilityTest {
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("useDefault")
-  public void regression93(boolean useDefault) {
+  void regression93(boolean useDefault) {
     FileSystem fileSystem = this.getFileSystem(useDefault);
 
     Path child = fileSystem.getPath(".gitignore");

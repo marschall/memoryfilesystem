@@ -16,16 +16,16 @@ import org.junit.jupiter.api.extension.RegisterExtension;
  * Regression test for <a href="https://github.com/marschall/memoryfilesystem/issues/60">Issue 60</a>
  * and <a href="https://github.com/marschall/memoryfilesystem/issues/61">Issue 61</a>.
  */
-public class ToRealPathTest {
+class ToRealPathTest {
 
   @RegisterExtension
-  public final FileSystemExtension rule = new FileSystemExtension();
+  final FileSystemExtension rule = new FileSystemExtension();
 
   private Path existingDirectoryPath;
   private Path existingFilePath;
 
   @BeforeEach
-  public void before() throws IOException {
+  void before() throws IOException {
     FileSystem fileSystem = this.rule.getFileSystem();
 
     // lets prepare the filesystem content...
@@ -64,14 +64,14 @@ public class ToRealPathTest {
 
 
   @Test
-  public void realPathDirectoryEquals() throws IOException {
+  void realPathDirectoryEquals() throws IOException {
     Path linkDirectoryRealPath = this.rule.getFileSystem().getPath("linkDirectory").toRealPath();
     assertEquals(this.existingDirectoryPath.toAbsolutePath(), linkDirectoryRealPath);
     assertEquals(this.existingDirectoryPath.toRealPath(), linkDirectoryRealPath);
   }
 
   @Test
-  public void realPathFileEquals() throws IOException {
+  void realPathFileEquals() throws IOException {
     Path linkFileRealPath = this.rule.getFileSystem().getPath("linkFile").toRealPath();
     assertEquals(this.existingFilePath.toRealPath(), linkFileRealPath);
 
@@ -80,20 +80,20 @@ public class ToRealPathTest {
   }
 
   @Test
-  public void realPathIsDirectory() throws IOException {
+  void realPathIsDirectory() throws IOException {
     Path linkDirectoryRealPath = this.rule.getFileSystem().getPath("linkDirectory").toRealPath();
     assertTrue(Files.isDirectory(linkDirectoryRealPath));
   }
 
   @Test
-  public void realPathIsFile() throws IOException {
+  void realPathIsFile() throws IOException {
     Path linkFileRealPath = this.rule.getFileSystem().getPath("linkFile").toRealPath();
     assertFalse(Files.isDirectory(linkFileRealPath));
     assertTrue(Files.isRegularFile(linkFileRealPath));
   }
 
   @Test
-  public void realPathIsSymlink() throws IOException {
+  void realPathIsSymlink() throws IOException {
     Path linkDirectoryRealPath = this.rule.getFileSystem().getPath("linkDirectory").toRealPath();
     assertFalse(Files.isSymbolicLink(linkDirectoryRealPath));
 
@@ -105,13 +105,13 @@ public class ToRealPathTest {
   }
 
   @Test
-  public void realPathDirectoryToString() throws IOException {
+  void realPathDirectoryToString() throws IOException {
     Path linkDirectoryRealPath = this.rule.getFileSystem().getPath("linkDirectory").toRealPath();
     assertEquals("/existingDirectory", linkDirectoryRealPath.toString());
   }
 
   @Test
-  public void realPathFileToString() throws IOException {
+  void realPathFileToString() throws IOException {
     Path linkFileRealPath = this.rule.getFileSystem().getPath("linkFile").toRealPath();
     assertEquals("/existingDirectory/existingFile", linkFileRealPath.toString());
 

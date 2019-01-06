@@ -15,7 +15,7 @@ import java.util.List;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class MemoryEntryTest {
+class MemoryEntryTest {
 
   private static final String DISPLAY_NAME = "entry: {0}";
 
@@ -36,7 +36,7 @@ public class MemoryEntryTest {
     }
   }
 
-  public static List<Object[]> data() {
+  static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
       { new MemoryDirectory("") },
       { new MemoryFile("", EntryCreationContext.empty()) },
@@ -45,14 +45,14 @@ public class MemoryEntryTest {
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("data")
-  public void basicViewName(MemoryEntry memoryEntry) {
+  void basicViewName(MemoryEntry memoryEntry) {
     BasicFileAttributeView view = memoryEntry.getBasicFileAttributeView();
     assertEquals("basic", view.name());
   }
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("data")
-  public void times(MemoryEntry memoryEntry) throws IOException {
+  void times(MemoryEntry memoryEntry) throws IOException {
     BasicFileAttributeView view = memoryEntry.getBasicFileAttributeView();
     FileTime mTime = FileTime.fromMillis(M_TIME.getTime());
     FileTime aTime = FileTime.fromMillis(A_TIME.getTime());

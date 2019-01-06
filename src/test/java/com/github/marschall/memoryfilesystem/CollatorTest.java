@@ -10,11 +10,11 @@ import java.util.Locale;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-public class CollatorTest {
+class CollatorTest {
 
   @Test
   @Disabled
-  public void test() {
+  void test() {
     Locale locale = Locale.getDefault();
     Collator collator = Collator.getInstance(locale);
     //    collator.setStrength(Collator.SECONDARY);

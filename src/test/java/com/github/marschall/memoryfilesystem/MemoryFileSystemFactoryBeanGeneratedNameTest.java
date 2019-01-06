@@ -14,7 +14,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ContextConfiguration(locations = "MemoryFileSystemFactoryBeanTest-context-generated.xml")
 @ExtendWith(SpringExtension.class)
-public class MemoryFileSystemFactoryBeanGeneratedNameTest implements ApplicationContextAware {
+class MemoryFileSystemFactoryBeanGeneratedNameTest implements ApplicationContextAware {
 
   private FileSystem fileSystem;
 
@@ -24,7 +24,7 @@ public class MemoryFileSystemFactoryBeanGeneratedNameTest implements Application
   }
 
   @Test
-  public void isOpen() {
+  void isOpen() {
     assertTrue(this.fileSystem.isOpen());
     assertNotEquals("memory:test:///", this.fileSystem.getPath("").toUri().toString());
   }

@@ -8,7 +8,7 @@ import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
-public class PosixFileSystemExtension implements BeforeEachCallback, AfterEachCallback {
+class PosixFileSystemExtension implements BeforeEachCallback, AfterEachCallback {
 
   private FileSystem fileSystem;
   private final Set<PosixFilePermission> umask;

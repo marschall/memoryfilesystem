@@ -10,17 +10,17 @@ import java.util.List;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class InvalidUrisTest {
+class InvalidUrisTest {
 
   private static final String DISPLAY_NAME = "URI: {0}";
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("data")
-  public void invalidUri(URI uri) {
+  void invalidUri(URI uri) {
     assertThrows(IllegalArgumentException.class, () -> FileSystems.newFileSystem(uri, SAMPLE_ENV), uri + " should not be a valid URI");
   }
 
-  public static List<Object[]> data() {
+  static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
             { URI.create("memory:name#fragment") },
             { URI.create("memory://user:pass@host:666/path?query#fragmet") },

@@ -12,22 +12,22 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class ToUriTest {
+class ToUriTest {
 
   private static final String DISPLAY_NAME = "path: {0}";
 
   @RegisterExtension
-  public final FileSystemExtension rule = new FileSystemExtension();
+  final FileSystemExtension rule = new FileSystemExtension();
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("data")
-  public void contract(String path) {
+  void contract(String path) {
     FileSystem fileSystem = this.rule.getFileSystem();
     Path p = fileSystem.getPath(path);
     assertEquals(p.toAbsolutePath(), Paths.get(p.toUri()));
   }
 
-  public static List<Object[]> data() {
+  static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
             { "a" },
             { "/a" },
