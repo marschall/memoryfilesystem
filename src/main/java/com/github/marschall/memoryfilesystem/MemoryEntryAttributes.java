@@ -32,6 +32,7 @@ import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.nio.file.attribute.UserPrincipal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -46,9 +47,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 abstract class MemoryEntryAttributes {
 
   // protected by read and write locks
-  private long lastModifiedTime;
-  private long lastAccessTime;
-  private long creationTime;
+  private Instant lastModifiedTime;
+  private Instant lastAccessTime;
+  private Instant creationTime;
 
   private final Map<String, InitializingFileAttributeView> additionalViews;
 
@@ -61,7 +62,7 @@ abstract class MemoryEntryAttributes {
     this.basicFileAttributeView = this.newBasicFileAttributeView();
     this.fileSystem = context.fileSystem;
     this.lock = new ReentrantReadWriteLock();
-    long now = this.getNow();
+    Instant now = this.getNow();
     this.lastAccessTime = now;
     this.lastModifiedTime = now;
     this.creationTime = now;
@@ -95,19 +96,19 @@ abstract class MemoryEntryAttributes {
   }
 
   FileTime lastModifiedTime() {
-    return FileTime.fromMillis(this.lastModifiedTime);
+    return FileTime.from(this.lastModifiedTime);
   }
 
   FileTime lastAccessTime() {
-    return FileTime.fromMillis(this.lastAccessTime);
+    return FileTime.from(this.lastAccessTime);
   }
 
   FileTime creationTime() {
-    return FileTime.fromMillis(this.creationTime);
+    return FileTime.from(this.creationTime);
   }
 
-  long getNow() {
-    return System.currentTimeMillis();
+  Instant getNow() {
+    return Instant.now();
   }
 
   private UserPrincipal getCurrentUser() {
@@ -158,7 +159,7 @@ abstract class MemoryEntryAttributes {
 
   void modified() {
     // No write lock because this was to be folded in an operation with a write lock
-    long now = this.getNow();
+    Instant now = this.getNow();
     this.lastAccessTime = now;
     this.lastModifiedTime = now;
   }
@@ -172,13 +173,13 @@ abstract class MemoryEntryAttributes {
     try (AutoRelease lock = this.writeLock()) {
       this.checkAccess(AccessMode.WRITE);
       if (lastModifiedTime != null) {
-        this.lastModifiedTime = lastModifiedTime.toMillis();
+        this.lastModifiedTime = lastModifiedTime.toInstant();
       }
       if (lastAccessTime != null) {
-        this.lastAccessTime = lastAccessTime.toMillis();
+        this.lastAccessTime = lastAccessTime.toInstant();
       }
       if (createTime != null) {
-        this.creationTime = createTime.toMillis();
+        this.creationTime = createTime.toInstant();
       }
     }
   }
