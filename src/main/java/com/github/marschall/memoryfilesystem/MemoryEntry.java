@@ -8,7 +8,6 @@ import java.nio.file.AccessMode;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttributeView;
-import java.nio.file.attribute.FileTime;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -69,18 +68,6 @@ abstract class MemoryEntry {
       default:
         throw new IllegalArgumentException("unknown lock type");
     }
-  }
-
-  FileTime lastModifiedTime() {
-    return this.attributes.lastAccessTime();
-  }
-
-  FileTime lastAccessTime() {
-    return this.attributes.lastAccessTime();
-  }
-
-  FileTime creationTime() {
-    return this.attributes.creationTime();
   }
 
   void checkAccess(AccessMode... modes) throws AccessDeniedException {

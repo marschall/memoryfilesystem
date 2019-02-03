@@ -85,6 +85,17 @@ abstract class MemoryEntryAttributes {
     }
   }
 
+  BasicFileAttributes readBasicFileAttributes(BasicFileAttributesBuilder builder) {
+    try (AutoRelease lock = this.readLock()) {
+      Instant creationTime = this.creationTime;
+      Instant lastModifiedTime = this.lastModifiedTime;
+      Instant lastAccessTime = this.lastAccessTime;
+      return builder.createAttributes(FileTime.from(lastModifiedTime),
+              FileTime.from(lastAccessTime),
+              FileTime.from(creationTime));
+    }
+  }
+
   abstract BasicFileAttributeView newBasicFileAttributeView();
 
   AutoRelease readLock() {
@@ -282,6 +293,22 @@ abstract class MemoryEntryAttributes {
 
   private InitializingFileAttributeView getInitializingFileAttributeView() {
     return (InitializingFileAttributeView) this.basicFileAttributeView;
+  }
+
+  @FunctionalInterface
+  interface BasicFileAttributesBuilder {
+
+    /**
+     * Create {@link BasicFileAttributes} given the {@link FileTime} parts.
+     *
+     * @implNotes the parameters are in the same order than in {@link BasicFileAttributeView#setTimes(FileTime, FileTime, FileTime)}.
+     *
+     * @param lastModifiedTime
+     * @param lastAccessTime
+     * @param creationTime
+     * @return
+     */
+    BasicFileAttributes createAttributes(FileTime lastModifiedTime, FileTime lastAccessTime, FileTime creationTime);
   }
 
   BasicFileAttributeView getBasicFileAttributeView() {
@@ -1003,12 +1030,9 @@ abstract class MemoryEntryAttributes {
 
     @Override
     public BasicFileAttributes readAttributes() throws IOException {
-      try (AutoRelease lock = MemoryEntryAttributes.this.readLock()) {
-        FileTime creationTime = MemoryEntryAttributes.this.creationTime();
-        FileTime lastModifiedTime = MemoryEntryAttributes.this.lastModifiedTime();
-        FileTime lastAccessTime = MemoryEntryAttributes.this.lastAccessTime();
+      return MemoryEntryAttributes.this.readBasicFileAttributes((lastModifiedTime, lastAccessTime, creationTime) -> {
         return new MemoryDirectoryFileAttributes(MemoryEntryAttributes.this, lastModifiedTime, lastAccessTime, creationTime);
-      }
+      });
     }
 
   }
@@ -1051,12 +1075,9 @@ abstract class MemoryEntryAttributes {
 
     @Override
     public BasicFileAttributes readAttributes() throws IOException {
-      try (AutoRelease lock = MemoryEntryAttributes.this.readLock()) {
-        FileTime lastModifiedTime = MemoryEntryAttributes.this.lastModifiedTime();
-        FileTime lastAccessTime = MemoryEntryAttributes.this.lastAccessTime();
-        FileTime creationTime = MemoryEntryAttributes.this.creationTime();
+      return MemoryEntryAttributes.this.readBasicFileAttributes((lastModifiedTime, lastAccessTime, creationTime) -> {
         return new MemorySymbolicLinkAttributes(MemoryEntryAttributes.this, lastModifiedTime, lastAccessTime, creationTime);
-      }
+      });
     }
 
   }
@@ -1101,12 +1122,9 @@ abstract class MemoryEntryAttributes {
 
     @Override
     public BasicFileAttributes readAttributes() throws IOException {
-      try (AutoRelease lock = MemoryEntryAttributes.this.readLock()) {
-        FileTime lastModifiedTime = MemoryEntryAttributes.this.lastModifiedTime();
-        FileTime lastAccessTime = MemoryEntryAttributes.this.lastAccessTime();
-        FileTime creationTime = MemoryEntryAttributes.this.creationTime();
+      return MemoryEntryAttributes.this.readBasicFileAttributes((lastModifiedTime, lastAccessTime, creationTime) -> {
         return new MemoryFileAttributes(MemoryEntryAttributes.this, lastModifiedTime, lastAccessTime, creationTime, MemoryEntryAttributes.this.size());
-      }
+      });
     }
 
   }
