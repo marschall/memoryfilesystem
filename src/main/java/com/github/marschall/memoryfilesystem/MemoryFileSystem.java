@@ -1473,19 +1473,21 @@ class MemoryFileSystem extends FileSystem {
 
   }
 
-
+  @FunctionalInterface
   interface MemoryEntryBlock<R> {
 
     R value(MemoryEntry entry) throws IOException;
 
   }
 
+  @FunctionalInterface
   interface MemoryDirectoryBlock<R> {
 
     R value(MemoryDirectory entry) throws IOException;
 
   }
 
+  @FunctionalInterface
   interface MemoryEntryCreator {
 
     MemoryEntry create(String name) throws IOException;

@@ -49,6 +49,7 @@ public final class CurrentGroup {
    *
    * @param <V> the type of the return value
    */
+  @FunctionalInterface
   public interface GroupTask<V> extends Callable<V> {
 
     /**

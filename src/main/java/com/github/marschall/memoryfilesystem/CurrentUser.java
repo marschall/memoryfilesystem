@@ -48,6 +48,7 @@ public final class CurrentUser {
    *
    * @param <V> the type of the return value
    */
+  @FunctionalInterface
   public interface UserTask<V> extends Callable<V> {
 
     /**
