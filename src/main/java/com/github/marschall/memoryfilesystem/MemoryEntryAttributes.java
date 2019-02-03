@@ -90,9 +90,7 @@ abstract class MemoryEntryAttributes {
       Instant creationTime = this.creationTime;
       Instant lastModifiedTime = this.lastModifiedTime;
       Instant lastAccessTime = this.lastAccessTime;
-      return builder.createAttributes(FileTime.from(lastModifiedTime),
-              FileTime.from(lastAccessTime),
-              FileTime.from(creationTime));
+      return builder.createAttributes(lastModifiedTime, lastAccessTime, creationTime);
     }
   }
 
@@ -308,7 +306,7 @@ abstract class MemoryEntryAttributes {
      * @param creationTime
      * @return
      */
-    BasicFileAttributes createAttributes(FileTime lastModifiedTime, FileTime lastAccessTime, FileTime creationTime);
+    BasicFileAttributes createAttributes(Instant lastModifiedTime, Instant lastAccessTime, Instant creationTime);
   }
 
   BasicFileAttributeView getBasicFileAttributeView() {
@@ -348,12 +346,12 @@ abstract class MemoryEntryAttributes {
 
   static abstract class MemoryEntryFileAttributes implements BasicFileAttributes {
 
-    private final FileTime lastModifiedTime;
-    private final FileTime lastAccessTime;
-    private final FileTime creationTime;
+    private final Instant lastModifiedTime;
+    private final Instant lastAccessTime;
+    private final Instant creationTime;
     private final Object fileKey;
 
-    MemoryEntryFileAttributes(Object fileKey, FileTime lastModifiedTime, FileTime lastAccessTime, FileTime creationTime) {
+    MemoryEntryFileAttributes(Object fileKey, Instant lastModifiedTime, Instant lastAccessTime, Instant creationTime) {
       this.fileKey = fileKey;
       this.lastModifiedTime = lastModifiedTime;
       this.lastAccessTime = lastAccessTime;
@@ -362,17 +360,17 @@ abstract class MemoryEntryAttributes {
 
     @Override
     public FileTime lastModifiedTime() {
-      return this.lastModifiedTime;
+      return FileTime.from(this.lastModifiedTime);
     }
 
     @Override
     public FileTime lastAccessTime() {
-      return this.lastAccessTime;
+      return FileTime.from(this.lastAccessTime);
     }
 
     @Override
     public FileTime creationTime() {
-      return this.creationTime;
+      return FileTime.from(this.creationTime);
     }
 
     @Override
@@ -1039,7 +1037,7 @@ abstract class MemoryEntryAttributes {
 
   static final class MemoryDirectoryFileAttributes extends MemoryEntryFileAttributes {
 
-    MemoryDirectoryFileAttributes(Object fileKey, FileTime lastModifiedTime, FileTime lastAccessTime, FileTime creationTime) {
+    MemoryDirectoryFileAttributes(Object fileKey, Instant lastModifiedTime, Instant lastAccessTime, Instant creationTime) {
       super(fileKey, lastModifiedTime, lastAccessTime, creationTime);
     }
 
@@ -1084,7 +1082,7 @@ abstract class MemoryEntryAttributes {
 
   static final class MemorySymbolicLinkAttributes extends MemoryEntryFileAttributes {
 
-    MemorySymbolicLinkAttributes(Object fileKey, FileTime lastModifiedTime, FileTime lastAccessTime, FileTime creationTime) {
+    MemorySymbolicLinkAttributes(Object fileKey, Instant lastModifiedTime, Instant lastAccessTime, Instant creationTime) {
       super(fileKey, lastModifiedTime, lastAccessTime, creationTime);
     }
 
@@ -1133,7 +1131,7 @@ abstract class MemoryEntryAttributes {
 
     private final long size;
 
-    MemoryFileAttributes(Object fileKey, FileTime lastModifiedTime, FileTime lastAccessTime, FileTime creationTime, long size) {
+    MemoryFileAttributes(Object fileKey, Instant lastModifiedTime, Instant lastAccessTime, Instant creationTime, long size) {
       super(fileKey, lastModifiedTime, lastAccessTime, creationTime);
       this.size = size;
     }
