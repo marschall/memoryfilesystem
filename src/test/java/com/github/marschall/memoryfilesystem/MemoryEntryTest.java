@@ -8,6 +8,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -63,5 +64,29 @@ class MemoryEntryTest {
     assertEquals(cTime, attributes.creationTime());
     assertEquals(mTime, attributes.lastModifiedTime());
     assertEquals(aTime, attributes.lastAccessTime());
+  }
+
+  @ParameterizedTest(name = DISPLAY_NAME)
+  @MethodSource("data")
+  void instant(MemoryEntry memoryEntry) throws IOException {
+    Instant creationTime = Instant.parse("2019-01-28T01:02:03.046Z");
+    Instant lastModificationTime = Instant.parse("2019-01-28T01:02:03.123456Z");
+    Instant lastAccessTime = Instant.parse("2019-01-28T01:02:03.123456789Z");
+
+    BasicFileAttributeView view = memoryEntry.getBasicFileAttributeView();
+    FileTime mTime = FileTime.from(lastModificationTime);
+    FileTime aTime = FileTime.from(lastAccessTime);
+    FileTime cTime = FileTime.from(creationTime);
+    view.setTimes(mTime, aTime, cTime);
+
+    BasicFileAttributes attributes = view.readAttributes();
+    assertEquals(cTime, attributes.creationTime());
+    assertEquals(mTime, attributes.lastModifiedTime());
+    assertEquals(aTime, attributes.lastAccessTime());
+
+    // check that we keep the granularity (eg: to the nano).
+    assertEquals(cTime.toInstant().getNano(), creationTime.getNano());
+    assertEquals(mTime.toInstant().getNano(), lastModificationTime.getNano());
+    assertEquals(aTime.toInstant().getNano(), lastAccessTime.getNano());
   }
 }
