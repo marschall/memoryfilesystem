@@ -39,8 +39,7 @@ final class HundredNanoseconds implements TemporalUnit {
 
   @Override
   public long between(Temporal temporal1Inclusive, Temporal temporal2Exclusive) {
-    // TODO Auto-generated method stub
-    return 0;
+    return ChronoUnit.NANOS.between(temporal1Inclusive, temporal2Exclusive) / 100L;
   }
 
 }
