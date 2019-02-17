@@ -25,6 +25,8 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 class ZipFileSystemInteroperabilityTest {
 
+  private static final String FS_URI = "jar:";
+
   @RegisterExtension
   final FileSystemExtension extension = new FileSystemExtension();
 
@@ -32,7 +34,7 @@ class ZipFileSystemInteroperabilityTest {
   void createZipFileSystem() throws IOException {
     FileSystem memoryFileSystem = this.extension.getFileSystem();
     Map<String, String> env = Collections.singletonMap("create", "true");
-    URI uri = URI.create("zipfs:" + memoryFileSystem.getPath("/file.zip").toUri());
+    URI uri = URI.create(FS_URI + memoryFileSystem.getPath("/file.zip").toUri());
     try (FileSystem zipfs = FileSystems.newFileSystem(uri, env)) {
       try (BufferedWriter writer = Files.newBufferedWriter(zipfs.getPath("hello.txt"), US_ASCII, CREATE_NEW, WRITE)) {
         writer.write("world");
@@ -49,7 +51,7 @@ class ZipFileSystemInteroperabilityTest {
     try (OutputStream stream = new JarOutputStream(Files.newOutputStream(outerZip, CREATE_NEW, WRITE))) {
       // nothing, just create an empty jar
     }
-    URI uri = URI.create("zipfs:" + outerZip.toUri());
+    URI uri = URI.create(FS_URI + outerZip.toUri());
     try (FileSystem zipfs = FileSystems.newFileSystem(uri, env)) {
       Path innerZip = zipfs.getPath("hello.zip");
       try (OutputStream stream = new JarOutputStream(Files.newOutputStream(innerZip, CREATE_NEW, WRITE))) {
@@ -58,7 +60,7 @@ class ZipFileSystemInteroperabilityTest {
       Map<String, String> env2 = Collections.singletonMap("create", "false");
       // locate file system by using the syntax
       // defined in java.net.JarURLConnection
-      URI uri2 = URI.create("zipfs:" + innerZip.toUri());
+      URI uri2 = URI.create(FS_URI + innerZip.toUri());
       try (FileSystem zipfs2 = FileSystems.newFileSystem(uri2, env2)) {
         try (BufferedWriter writer = Files.newBufferedWriter(zipfs2.getPath("hello.txt"), US_ASCII, CREATE_NEW, WRITE)) {
           writer.write("world");
@@ -75,7 +77,7 @@ class ZipFileSystemInteroperabilityTest {
       Path jarFile = jarFolder.resolve("test.jar");
       try {
         Map<String, String> env = Collections.singletonMap("create", "true");
-        URI uri = URI.create("jar:" + jarFile.toUri());
+        URI uri = URI.create(FS_URI + jarFile.toUri());
         try (FileSystem jarfs = FileSystems.newFileSystem(uri, env)) {
           Path p = jarfs.getPath("hello.txt");
           assertNotNull(Paths.get(p.toUri()));
@@ -96,7 +98,7 @@ class ZipFileSystemInteroperabilityTest {
     }
     try {
       Map<String, String> env = Collections.singletonMap("create", "false");
-      URI uri = URI.create("jar:" + jarFile.toUri());
+      URI uri = URI.create(FS_URI + jarFile.toUri());
       try (FileSystem jarfs = FileSystems.newFileSystem(uri, env)) {
         Path p = jarfs.getPath("hello.txt");
         assertNotNull(Paths.get(p.toUri()));
@@ -115,14 +117,14 @@ class ZipFileSystemInteroperabilityTest {
     }
     try {
       Map<String, String> outerEnv = Collections.singletonMap("create", "false");
-      URI outerUri = URI.create("jar:" + outerJar.toUri());
+      URI outerUri = URI.create(FS_URI + outerJar.toUri());
       try (FileSystem jarfs = FileSystems.newFileSystem(outerUri, outerEnv)) {
         Path innerJar = jarfs.getPath("inner.jar");
         try (OutputStream stream = new JarOutputStream(Files.newOutputStream(innerJar, CREATE_NEW, WRITE))) {
           // nothing, just create an empty jar
         }
         Map<String, String> innerEnv = Collections.singletonMap("create", "false");
-        URI innerUri = URI.create("jar:" + innerJar.toUri());
+        URI innerUri = URI.create(FS_URI + innerJar.toUri());
         try (FileSystem zipfs2 = FileSystems.newFileSystem(innerUri, innerEnv)) {
           try (BufferedWriter writer = Files.newBufferedWriter(zipfs2.getPath("hello.txt"), US_ASCII, CREATE_NEW, WRITE)) {
             writer.write("world");

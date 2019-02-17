@@ -90,12 +90,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.github.marschall</groupId>
-      <artifactId>zipfilesystem-standalone</artifactId>
-      <version>1.0.1</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context</artifactId>
       <version>${spring.version}</version>
