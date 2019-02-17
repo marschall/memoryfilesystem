@@ -6,11 +6,6 @@ class MemorySymbolicLink extends MemoryEntry {
 
   private AbstractPath target;
 
-  MemorySymbolicLink(String originalName, AbstractPath target) {
-    this(originalName, target, EntryCreationContext.empty());
-  }
-
-
   MemorySymbolicLink(String originalName, AbstractPath target, EntryCreationContext context) {
     super(originalName, context);
     this.target = target;

@@ -42,6 +42,8 @@ import java.nio.file.attribute.PosixFilePermissions;
 import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.spi.FileSystemProvider;
 import java.text.Collator;
+import java.time.Instant;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -61,7 +63,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.annotation.PreDestroy;
 
-class MemoryFileSystem extends FileSystem {
+class MemoryFileSystem extends FileSystem implements FileSystemContext {
 
   private static final Set<String> UNSUPPORTED_INITIAL_ATTRIBUTES;
 
@@ -118,6 +120,8 @@ class MemoryFileSystem extends FileSystem {
 
   private final Set<PosixFilePermission> umask;
 
+  private final TemporalUnit resolution;
+
   static {
     Set<String> unsupported = new HashSet<>(3);
     unsupported.add("lastAccessTime");
@@ -130,7 +134,7 @@ class MemoryFileSystem extends FileSystem {
   MemoryFileSystem(String key, String separator, PathParser pathParser, MemoryFileSystemProvider provider, MemoryFileStore store,
           MemoryUserPrincipalLookupService userPrincipalLookupService, ClosedFileSystemChecker checker, StringTransformer storeTransformer,
           StringTransformer lookUpTransformer, Collator collator, Set<Class<? extends FileAttributeView>> additionalViews,
-          Set<PosixFilePermission> umask) {
+          Set<PosixFilePermission> umask, TemporalUnit resolution) {
     this.key = key;
     this.separator = separator;
     this.pathParser = pathParser;
@@ -143,6 +147,7 @@ class MemoryFileSystem extends FileSystem {
     this.collator = collator;
     this.additionalViews = additionalViews;
     this.umask = umask;
+    this.resolution = resolution;
     this.stores = Collections.<FileStore>singletonList(store);
     this.watchKeys = new ConcurrentHashMap<>(1);
     this.emptyPath = new EmptyPath(this);
@@ -1243,6 +1248,19 @@ class MemoryFileSystem extends FileSystem {
 
   Collator getCollator() {
     return this.collator;
+  }
+
+  @Override
+  public Instant truncate(Instant instant) {
+    if (instant == null || this.resolution == null) {
+      return instant;
+    }
+    return instant.truncatedTo(this.resolution);
+  }
+
+  @Override
+  public UserPrincipal getDefaultUser() {
+    return this.getUserPrincipalLookupService().getDefaultUser();
   }
 
   boolean isHidden(AbstractPath abstractPath) throws IOException {

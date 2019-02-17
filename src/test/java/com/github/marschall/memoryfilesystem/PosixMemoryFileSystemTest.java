@@ -17,10 +17,14 @@ import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributeView;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.UserPrincipal;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -133,6 +137,24 @@ class PosixMemoryFileSystemTest {
       // should reach here
       assertEquals(directory.toAbsolutePath().toString(), e.getFile(), "file");
     }
+  }
+
+  @Test
+  void noTruncation() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Instant mtime = Instant.parse("2019-02-27T12:37:03.123456789Z");
+    Instant atime = Instant.parse("2019-02-27T12:37:03.223456789Z");
+    Instant ctime = Instant.parse("2019-02-27T12:37:03.323456789Z");
+
+    Path file = Files.createFile(fileSystem.getPath("C:\\file.txt"));
+    BasicFileAttributeView view = Files.getFileAttributeView(file, BasicFileAttributeView.class);
+    view.setTimes(FileTime.from(mtime), FileTime.from(atime), FileTime.from(ctime));
+
+    BasicFileAttributes attributes = view.readAttributes();
+
+    assertEquals(mtime, attributes.lastModifiedTime().toInstant());
+    assertEquals(atime, attributes.lastAccessTime().toInstant());
+    assertEquals(ctime, attributes.creationTime().toInstant());
   }
 
 }

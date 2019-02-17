@@ -36,7 +36,7 @@ class MemoryContentsBoundaryTest {
   }
 
   private MemoryFile createContents(int initialBlocks) {
-    return new MemoryFile("", EntryCreationContext.empty(), initialBlocks);
+    return new MemoryFile("", EntryCreationContextUtil.empty(), initialBlocks);
   }
 
   @ParameterizedTest(name = DISPLAY_NAME)

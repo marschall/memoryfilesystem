@@ -56,7 +56,7 @@ abstract class MemoryEntryAttributes {
   private final ReadWriteLock lock;
   private final BasicFileAttributeView basicFileAttributeView;
 
-  private final MemoryFileSystem fileSystem;
+  private final FileSystemContext fileSystem;
 
   MemoryEntryAttributes(EntryCreationContext context) {
     this.basicFileAttributeView = this.newBasicFileAttributeView();
@@ -116,14 +116,18 @@ abstract class MemoryEntryAttributes {
     return FileTime.from(this.creationTime);
   }
 
-  Instant getNow() {
-    return Instant.now();
+  private Instant getNow() {
+    return this.truncate(Instant.now());
+  }
+
+  private Instant truncate(Instant instant) {
+    return this.fileSystem.truncate(instant);
   }
 
   private UserPrincipal getCurrentUser() {
     UserPrincipal user = CurrentUser.get();
     if (user == null) {
-      return this.fileSystem.getUserPrincipalLookupService().getDefaultUser();
+      return this.fileSystem.getDefaultUser();
     } else {
       return user;
     }
@@ -182,13 +186,13 @@ abstract class MemoryEntryAttributes {
     try (AutoRelease lock = this.writeLock()) {
       this.checkAccess(AccessMode.WRITE);
       if (lastModifiedTime != null) {
-        this.lastModifiedTime = lastModifiedTime.toInstant();
+        this.lastModifiedTime = this.truncate(lastModifiedTime.toInstant());
       }
       if (lastAccessTime != null) {
-        this.lastAccessTime = lastAccessTime.toInstant();
+        this.lastAccessTime = this.truncate(lastAccessTime.toInstant());
       }
       if (createTime != null) {
-        this.creationTime = createTime.toInstant();
+        this.creationTime = this.truncate(createTime.toInstant());
       }
     }
   }

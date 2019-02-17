@@ -28,10 +28,6 @@ class MemoryDirectory extends MemoryEntry {
 
   private static final Set<PosixFilePermission> EXECUTE = EnumSet.of(OWNER_EXECUTE, GROUP_EXECUTE, OTHERS_EXECUTE);
 
-  MemoryDirectory(String originalName) {
-    this(originalName, EntryCreationContext.empty());
-  }
-
   MemoryDirectory(String originalName, EntryCreationContext context) {
     super(originalName, context);
     this.entries = new HashMap<>();

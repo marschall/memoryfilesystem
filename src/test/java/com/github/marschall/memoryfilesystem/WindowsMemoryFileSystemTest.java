@@ -34,6 +34,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributeView;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.DosFileAttributeView;
 import java.nio.file.attribute.DosFileAttributes;
 import java.nio.file.attribute.FileAttribute;
@@ -41,6 +42,7 @@ import java.nio.file.attribute.FileTime;
 import java.nio.file.spi.FileSystemProvider;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -435,6 +437,36 @@ class WindowsMemoryFileSystemTest {
 
     assertThat(relative, isRelative());
     assertThat(absolute, isAbsolute());
+  }
+
+  @Test
+  void truncationViaSetTimes() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Instant mtime = Instant.parse("2019-02-27T12:37:03.123456789Z");
+    Instant atime = Instant.parse("2019-02-27T12:37:03.223456789Z");
+    Instant ctime = Instant.parse("2019-02-27T12:37:03.323456789Z");
+
+    Path file = Files.createFile(fileSystem.getPath("C:\\file.txt"));
+    BasicFileAttributeView view = Files.getFileAttributeView(file, BasicFileAttributeView.class);
+    view.setTimes(FileTime.from(mtime), FileTime.from(atime), FileTime.from(ctime));
+
+    BasicFileAttributes attributes = view.readAttributes();
+
+    assertEquals(Instant.parse("2019-02-27T12:37:03.123456700Z"), attributes.lastModifiedTime().toInstant());
+    assertEquals(Instant.parse("2019-02-27T12:37:03.223456700Z"), attributes.lastAccessTime().toInstant());
+    assertEquals(Instant.parse("2019-02-27T12:37:03.323456700Z"), attributes.creationTime().toInstant());
+  }
+
+  @Test
+  void truncationViaSet() throws IOException {
+    FileSystem fileSystem = this.rule.getFileSystem();
+    Instant atime = Instant.parse("2019-02-27T12:37:03.223456789Z");
+
+    Path file = Files.createFile(fileSystem.getPath("C:\\file.txt"));
+    Files.setAttribute(file, "lastAccessTime", FileTime.from(atime));
+
+    BasicFileAttributes attributes = Files.readAttributes(file, BasicFileAttributes.class);
+    assertEquals(Instant.parse("2019-02-27T12:37:03.223456700Z"), attributes.lastAccessTime().toInstant());
   }
 
 }

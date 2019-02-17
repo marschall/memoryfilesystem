@@ -1,6 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
 import java.text.Collator;
+import java.time.temporal.TemporalUnit;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -16,6 +17,11 @@ public class MemoryFileSystemProperties {
   static final String UNIX_SEPARATOR = "/";
 
   static final String WINDOWS_SEPARATOR = "\\";
+
+  /**
+   * The resolution of the Windows file system, 100ns.
+   */
+  public static final TemporalUnit WINDOWS_RESOLUTION = new HundredNanoseconds();
 
   public static final String DEFAULT_NAME_SEPARATOR = UNIX_SEPARATOR;
 
@@ -38,6 +44,15 @@ public class MemoryFileSystemProperties {
   public static final String PATH_LOOKUP_TRANSFORMER_PROPERTY = "path.lookup.transformer";
 
   public static final String PRINCIPAL_TRANSFORMER_PROPERTY = "principal.transformer";
+
+  /**
+   * The resolution of the file time used for modification, access and creation time.
+   *
+   * Must be an implementation of {@link java.time.temporal.TemporalUnit}.
+   *
+   * @see java.time.Instant#truncatedTo(java.time.temporal.TemporalUnit)
+   */
+  public static final String FILE_TIME_RESOLUTION = "file.time.resolution";
 
   public static final String COLLATOR_PROPERTY = "collator";
 

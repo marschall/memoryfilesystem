@@ -11,6 +11,8 @@ import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFilePermission;
 import java.text.Collator;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -67,6 +69,8 @@ public final class MemoryFileSystemBuilder {
   private Collator collator;
 
   private Locale locale;
+
+  private TemporalUnit resolution;
 
   private MemoryFileSystemBuilder() {
     this.roots = new ArrayList<>();
@@ -290,6 +294,17 @@ public final class MemoryFileSystemBuilder {
   }
 
   /**
+   * The resolution of the file time used for modification, access and creation time.
+   *
+   * @param resolution used to truncate file times
+   * @return the current builder object
+   */
+  public MemoryFileSystemBuilder setFileTimeResolution(TemporalUnit resolution) {
+    this.resolution = resolution;
+    return this;
+  }
+
+  /**
    * Creates a builder for a very basic file system.
    *
    * <p>The file system does not support permissions and only supports
@@ -317,6 +332,7 @@ public final class MemoryFileSystemBuilder {
    *  <li>{@link PosixFileAttributeView} is added as an attribute view</li>
    *  <li>the current working directory is {@code "/home/${user.name}"}</li>
    *  <li>the file system is case sensitive</li>
+   *  <li>the file file time resolution is 1ns</li>
    *  <li>{@code 0x00} is not allowed in file names</li>
    * </ul>
    *
@@ -350,6 +366,7 @@ public final class MemoryFileSystemBuilder {
    *  <li>the current working directory is {@code "/Users/${user.name}"}</li>
    *  <li>the file system is case insensitive and case case preserving</li>
    *  <li>file names are normalized to NFC</li>
+   *  <li>the file file time resolution is 1ns</li>
    *  <li>{@code 0x00} is not allowed in file names</li>
    * </ul>
    *
@@ -386,6 +403,7 @@ public final class MemoryFileSystemBuilder {
    *  <li>the current working directory is {@code "/Users/${user.name}"}</li>
    *  <li>the file system is case insensitive and case case preserving</li>
    *  <li>file names are normalized to NFD</li>
+   *  <li>the file file time resolution is 1s</li>
    *  <li>{@code 0x00} is not allowed in file names</li>
    * </ul>
    *
@@ -404,6 +422,7 @@ public final class MemoryFileSystemBuilder {
             .setCollator(MemoryFileSystemProperties.caseSensitiveCollator(builder.getLocale(), false))
             .setLookUpTransformer(StringTransformers.caseInsensitiveMacOSNative(builder.getLocale()))
             .setStoreTransformer(StringTransformers.NFD)
+            .setFileTimeResolution(ChronoUnit.SECONDS)
             .addForbiddenCharacter((char) 0);
   }
   /**
@@ -420,6 +439,7 @@ public final class MemoryFileSystemBuilder {
    *  <li>{@link DosFileAttributeView} is added as an attribute view</li>
    *  <li>the current working directory is {@code "C:\\Users\\${user.name}"}</li>
    *  <li>the file system is case insensitive and case case preserving</li>
+   *  <li>the file file time resolution is 100ns</li>
    *  <li>{@code '\\'}, {@code '/'}, {@code ':'}, {@code '*'}, {@code '?'},
    *  {@code '"'}, {@code '<'}, {@code '<'} and {@code '|'} and not allowed
    *  in file names</li>
@@ -437,6 +457,7 @@ public final class MemoryFileSystemBuilder {
             .setCurrentWorkingDirectory("C:\\Users\\" + getSystemUserName())
             .setStoreTransformer(StringTransformers.IDENTIY)
             .setCaseSensitive(false)
+            .setFileTimeResolution(MemoryFileSystemProperties.WINDOWS_RESOLUTION)
             // TODO forbid
             // CON, PRN, AUX, CLOCK$, NULL
             // COM1, COM2, COM3, COM4, COM5, COM6, COM7, COM8, COM9
@@ -523,6 +544,9 @@ public final class MemoryFileSystemBuilder {
     }
     if (!this.groups.isEmpty()) {
       env.put(MemoryFileSystemProperties.GROUPS_PROPERTY, new ArrayList<>(this.groups));
+    }
+    if (this.resolution != null) {
+      env.put(MemoryFileSystemProperties.FILE_TIME_RESOLUTION, this.resolution);
     }
 
     env.put(MemoryFileSystemProperties.FILE_ATTRIBUTE_VIEWS_PROPERTY, this.additionalFileAttributeViews);

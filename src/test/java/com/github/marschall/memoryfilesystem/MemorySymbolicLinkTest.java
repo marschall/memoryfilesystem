@@ -17,7 +17,7 @@ class MemorySymbolicLinkTest {
 
   @BeforeEach
   void setUp() {
-    this.memoryFile = new MemorySymbolicLink("", null);
+    this.memoryFile = new MemorySymbolicLink("", null, EntryCreationContextUtil.empty());
   }
 
   @Test

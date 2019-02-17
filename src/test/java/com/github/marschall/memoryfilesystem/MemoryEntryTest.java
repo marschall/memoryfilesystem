@@ -39,8 +39,8 @@ class MemoryEntryTest {
 
   static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
-      { new MemoryDirectory("") },
-      { new MemoryFile("", EntryCreationContext.empty()) },
+      { new MemoryDirectory("", EntryCreationContextUtil.empty()) },
+      { new MemoryFile("", EntryCreationContextUtil.empty()) },
     });
   }
 

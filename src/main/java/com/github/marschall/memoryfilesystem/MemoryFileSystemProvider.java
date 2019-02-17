@@ -28,6 +28,7 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.nio.file.spi.FileSystemProvider;
 import java.text.Collator;
+import java.time.temporal.TemporalUnit;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -131,9 +132,10 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     if (!additionalViews.contains(PosixFileAttributeView.class)) {
       umask = Collections.emptySet();
     }
+    TemporalUnit resolution =  parser.getFileTimeResolution();
 
     MemoryFileSystem fileSystem = new MemoryFileSystem(key, separator, pathParser, this, memoryStore,
-            userPrincipalLookupService, checker, storeTransformer, lookUpTransformer, collator, additionalViews, umask);
+            userPrincipalLookupService, checker, storeTransformer, lookUpTransformer, collator, additionalViews, umask, resolution);
     fileSystem.setRootDirectories(this.buildRootsDirectories(parser,  fileSystem, additionalViews, umask));
     String defaultDirectory = parser.getDefaultDirectory();
     fileSystem.setCurrentWorkingDirectory(defaultDirectory);

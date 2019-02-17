@@ -17,7 +17,7 @@ class MemoryDirectoryTest {
 
   @BeforeEach
   void setUp() {
-    this.memoryDirectory = new MemoryDirectory("");
+    this.memoryDirectory = new MemoryDirectory("", EntryCreationContextUtil.empty());
   }
 
 

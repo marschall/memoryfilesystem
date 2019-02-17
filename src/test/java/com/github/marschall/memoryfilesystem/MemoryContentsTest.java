@@ -38,7 +38,7 @@ class MemoryContentsTest {
   }
 
   private MemoryFile createContents() {
-    return new MemoryFile("", EntryCreationContext.empty(), INITIAL_BLOCKS);
+    return new MemoryFile("", EntryCreationContextUtil.empty(), INITIAL_BLOCKS);
   }
 
 

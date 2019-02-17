@@ -9,6 +9,7 @@ import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.attribute.FileOwnerAttributeView;
 import java.nio.file.attribute.PosixFilePermission;
 import java.text.Collator;
+import java.time.temporal.TemporalUnit;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -54,6 +55,20 @@ class EnvironmentParser {
 
   StringTransformer getLookUpTransformer() {
     return this.getStringTransformer(MemoryFileSystemProperties.PATH_LOOKUP_TRANSFORMER_PROPERTY);
+  }
+
+  TemporalUnit getFileTimeResolution() {
+    Object value = this.env.get(MemoryFileSystemProperties.FILE_TIME_RESOLUTION);
+    if (value != null) {
+      if (value instanceof TemporalUnit) {
+        return (TemporalUnit) value;
+      } else {
+        throw new IllegalArgumentException(MemoryFileSystemProperties.FILE_TIME_RESOLUTION + " must be a "
+                + TemporalUnit.class + " but was " + value.getClass());
+      }
+    } else {
+      return null;
+    }
   }
 
   StringTransformer getStringTransformer(String property) {

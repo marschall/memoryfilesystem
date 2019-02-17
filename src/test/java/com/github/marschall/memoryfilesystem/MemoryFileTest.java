@@ -17,7 +17,7 @@ class MemoryFileTest {
 
   @BeforeEach
   void setUp() {
-    this.memoryFile = new MemoryFile("", EntryCreationContext.empty());
+    this.memoryFile = new MemoryFile("", EntryCreationContextUtil.empty());
   }
 
   @Test
