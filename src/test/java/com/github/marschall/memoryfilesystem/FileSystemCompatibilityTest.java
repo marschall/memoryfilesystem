@@ -5,6 +5,8 @@ import static com.github.marschall.memoryfilesystem.FileUtility.setContents;
 import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isAbsolute;
 import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isRelative;
 import static com.github.marschall.memoryfilesystem.PathMatchesMatcher.matches;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.READ;
 import static java.nio.file.StandardOpenOption.WRITE;
@@ -18,6 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 import java.nio.ByteBuffer;
 import java.nio.channels.NonReadableChannelException;
 import java.nio.channels.SeekableByteChannel;
@@ -59,8 +63,15 @@ class FileSystemCompatibilityTest {
     return this.fileSystem;
   }
 
+  @Target(METHOD)
+  @Retention(RUNTIME)
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("useDefault")
+  @interface CompatibilityTest {
+
+  }
+
+  @CompatibilityTest
   void writeOnly(boolean useDefault) throws IOException {
     Path currentDirectory = this.getFileSystem(useDefault).getPath("");
     Path path = Files.createTempFile(currentDirectory, "task-list", ".png");
@@ -78,8 +89,7 @@ class FileSystemCompatibilityTest {
     }
   }
 
-  @ParameterizedTest(name = DISPLAY_NAME)
-  @MethodSource("useDefault")
+  @CompatibilityTest
   void truncate(boolean useDefault) throws IOException {
     Path currentDirectory = this.getFileSystem(useDefault).getPath("");
     Path path = Files.createTempFile(currentDirectory, "sample", ".txt");
@@ -100,8 +110,7 @@ class FileSystemCompatibilityTest {
     }
   }
 
-  @ParameterizedTest(name = DISPLAY_NAME)
-  @MethodSource("useDefault")
+  @CompatibilityTest
   void viewOnNotExistingFile(boolean useDefault) throws IOException {
     Path currentDirectory = this.getFileSystem(useDefault).getPath("");
     Path notExisting = currentDirectory.resolve("not-existing.txt");
@@ -115,8 +124,7 @@ class FileSystemCompatibilityTest {
     }
   }
 
-  @ParameterizedTest(name = DISPLAY_NAME)
-  @MethodSource("useDefault")
+  @CompatibilityTest
   void position(boolean useDefault) throws IOException {
     Path currentDirectory = this.getFileSystem(useDefault).getPath("");
     Path path = Files.createTempFile(currentDirectory, "sample", ".txt");
@@ -137,8 +145,7 @@ class FileSystemCompatibilityTest {
     }
   }
 
-  @ParameterizedTest(name = DISPLAY_NAME)
-  @MethodSource("useDefault")
+  @CompatibilityTest
   void emptyPath(boolean useDefault) {
     FileSystem fileSystem = this.getFileSystem(useDefault);
     Path path = fileSystem.getPath("");
@@ -150,8 +157,7 @@ class FileSystemCompatibilityTest {
     assertEquals(1, path.getNameCount());
   }
 
-  @ParameterizedTest(name = DISPLAY_NAME)
-  @MethodSource("useDefault")
+  @CompatibilityTest
   void positionAfterTruncate(boolean useDefault) throws IOException {
     Path currentDirectory = this.getFileSystem(useDefault).getPath("");
     Path tempFile = Files.createTempFile(currentDirectory, "prefix", "suffix");
@@ -207,8 +213,7 @@ class FileSystemCompatibilityTest {
     }
   }
 
-  @ParameterizedTest(name = DISPLAY_NAME)
-  @MethodSource("useDefault")
+  @CompatibilityTest
   void root(boolean useDefault) {
     FileSystem fileSystem = this.getFileSystem(useDefault);
     for (Path root : fileSystem.getRootDirectories()) {
@@ -233,8 +238,7 @@ class FileSystemCompatibilityTest {
     }
   }
 
-  @ParameterizedTest(name = DISPLAY_NAME)
-  @MethodSource("useDefault")
+  @CompatibilityTest
   void regression93(boolean useDefault) {
     FileSystem fileSystem = this.getFileSystem(useDefault);
 
