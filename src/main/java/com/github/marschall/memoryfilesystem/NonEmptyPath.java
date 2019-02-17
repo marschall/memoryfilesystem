@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Consumer;
 
 abstract class NonEmptyPath extends ElementPath {
 
@@ -280,6 +281,15 @@ abstract class NonEmptyPath extends ElementPath {
     @Override
     public Path next() {
       return createRelative(this.fileSystem, this.nameIterator.next());
+    }
+
+    @Override
+    public void forEachRemaining(Consumer<? super Path> action) {
+      while (this.nameIterator.hasNext()) {
+        String nextName = this.nameIterator.next();
+        AbstractPath nextPath = createRelative(this.fileSystem, nextName);
+        action.accept(nextPath);
+      }
     }
 
     @Override

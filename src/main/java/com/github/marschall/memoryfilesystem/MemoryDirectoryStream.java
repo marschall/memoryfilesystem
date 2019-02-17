@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
+import java.util.function.Consumer;
 
 final class MemoryDirectoryStream implements DirectoryStream<Path> {
 
@@ -103,34 +104,33 @@ final class MemoryDirectoryStream implements DirectoryStream<Path> {
       return result;
     }
 
-    // has to run on Java 7
-    //    @Override
-    //    public void forEachRemaining(Consumer<? super Path> action) {
-    //      if (this.next == null) {
-    //        return;
-    //      }
-    //      try {
-    //        try {
-    //          if (this.filter.accept(this.next)) {
-    //            action.accept(this.next);
-    //          }
-    //        } catch (IOException e) {
-    //          throw new DirectoryIteratorException(e);
-    //        }
-    //        while (this.iterator.hasNext()) {
-    //          Path path = this.basePath.resolve(this.iterator.next());
-    //          try {
-    //            if (this.filter.accept(path)) {
-    //              action.accept(path);
-    //            }
-    //          } catch (IOException e) {
-    //            throw new DirectoryIteratorException(e);
-    //          }
-    //        }
-    //      } finally {
-    //        this.next = null;
-    //      }
-    //    }
+    @Override
+    public void forEachRemaining(Consumer<? super Path> action) {
+      if (this.next == null) {
+        return;
+      }
+      try {
+        try {
+          if (this.filter.accept(this.next)) {
+            action.accept(this.next);
+          }
+        } catch (IOException e) {
+          throw new DirectoryIteratorException(e);
+        }
+        while (this.iterator.hasNext()) {
+          Path path = this.basePath.resolve(this.iterator.next());
+          try {
+            if (this.filter.accept(path)) {
+              action.accept(path);
+            }
+          } catch (IOException e) {
+            throw new DirectoryIteratorException(e);
+          }
+        }
+      } finally {
+        this.next = null;
+      }
+    }
 
     @Override
     public void remove() {
