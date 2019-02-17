@@ -1,5 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -7,6 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 import java.nio.ByteBuffer;
 import java.nio.channels.NonReadableChannelException;
 import java.nio.channels.NonWritableChannelException;
@@ -51,8 +55,15 @@ class MemoryContentsTest {
     return src;
   }
 
+  @Target(METHOD)
+  @Retention(RUNTIME)
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("parameters")
+  @interface BufferTest {
+
+  }
+
+  @BufferTest
   void firstBlockEmpty(boolean direct) throws IOException {
     ByteBuffer src = this.allocate(SAMPLE_DATA.length, direct);
     byte[] data = SAMPLE_DATA;
@@ -60,7 +71,7 @@ class MemoryContentsTest {
     src.rewind();
 
     Path path = new MockPath();
-    SeekableByteChannel channel = createContents().newChannel(true, true, false, path);
+    SeekableByteChannel channel = this.createContents().newChannel(true, true, false, path);
     assertEquals(0, channel.size());
     assertEquals(0, channel.position());
     assertEquals(SAMPLE_DATA.length, channel.write(src));
@@ -80,11 +91,10 @@ class MemoryContentsTest {
   }
 
 
-  @ParameterizedTest(name = DISPLAY_NAME)
-  @MethodSource("parameters")
+  @BufferTest
   void positition(boolean direct) throws IOException {
     Path path = new MockPath();
-    SeekableByteChannel channel = createContents().newChannel(true, true, false, path);
+    SeekableByteChannel channel = this.createContents().newChannel(true, true, false, path);
 
     assertEquals(0L, channel.position());
 
@@ -106,15 +116,14 @@ class MemoryContentsTest {
     assertArrayEquals(SAMPLE_DATA, readBack);
   }
 
-  @ParameterizedTest(name = DISPLAY_NAME)
-  @MethodSource("parameters")
+  @BufferTest
   void readOnly(boolean direct) throws IOException {
     Path path = new MockPath();
-    SeekableByteChannel channel = createContents().newChannel(true, true, false, path);
+    SeekableByteChannel channel = this.createContents().newChannel(true, true, false, path);
 
     ByteBuffer src = this.writeTestData(channel, direct);
 
-    channel = createContents().newChannel(true, false, false, path);
+    channel = this.createContents().newChannel(true, false, false, path);
     try {
       channel.write(src);
       fail("channel should not be writable");
@@ -124,11 +133,10 @@ class MemoryContentsTest {
     }
   }
 
-  @ParameterizedTest(name = DISPLAY_NAME)
-  @MethodSource("parameters")
+  @BufferTest
   void writeOnly(boolean direct) throws IOException {
     Path path = new MockPath();
-    SeekableByteChannel channel = createContents().newChannel(false, true, false, path);
+    SeekableByteChannel channel = this.createContents().newChannel(false, true, false, path);
 
     ByteBuffer src = this.writeTestData(channel, direct);
     src.rewind();
@@ -143,11 +151,10 @@ class MemoryContentsTest {
     }
   }
 
-  @ParameterizedTest(name = DISPLAY_NAME)
-  @MethodSource("parameters")
+  @BufferTest
   void truncate(boolean direct) throws IOException {
     Path path = new MockPath();
-    SeekableByteChannel channel = createContents().newChannel(true, true, false, path);
+    SeekableByteChannel channel = this.createContents().newChannel(true, true, false, path);
     ByteBuffer src = this.allocate(1, direct);
     for (byte data : SAMPLE_DATA) {
       src.rewind();
@@ -187,11 +194,10 @@ class MemoryContentsTest {
     assertEquals(-1, channel.read(dst));
   }
 
-  @ParameterizedTest(name = DISPLAY_NAME)
-  @MethodSource("parameters")
+  @BufferTest
   void appendNonTruncatable(boolean direct) throws IOException {
     Path path = new MockPath();
-    SeekableByteChannel channel = createContents().newAppendingChannel(true, false, path);
+    SeekableByteChannel channel = this.createContents().newAppendingChannel(true, false, path);
 
     ByteBuffer src = this.writeTestData(channel, direct);
     channel.write(src);
@@ -204,11 +210,10 @@ class MemoryContentsTest {
     }
   }
 
-  @ParameterizedTest(name = DISPLAY_NAME)
-  @MethodSource("parameters")
+  @BufferTest
   void appendReadable(boolean direct) throws IOException {
     Path path = new MockPath();
-    SeekableByteChannel channel = createContents().newAppendingChannel(true, false, path);
+    SeekableByteChannel channel = this.createContents().newAppendingChannel(true, false, path);
     assertEquals(0L, channel.position());
 
     ByteBuffer src = this.allocate(1, direct);
@@ -237,11 +242,10 @@ class MemoryContentsTest {
     return readBack;
   }
 
-  @ParameterizedTest(name = DISPLAY_NAME)
-  @MethodSource("parameters")
+  @BufferTest
   void appendNotReadable(boolean direct) throws IOException {
     Path path = new MockPath();
-    SeekableByteChannel channel = createContents().newAppendingChannel(false, false, path);
+    SeekableByteChannel channel = this.createContents().newAppendingChannel(false, false, path);
 
     ByteBuffer testData = this.writeTestData(channel, direct);
     channel.position(0L);

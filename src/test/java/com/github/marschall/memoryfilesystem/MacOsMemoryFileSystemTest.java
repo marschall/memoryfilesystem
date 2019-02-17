@@ -2,6 +2,8 @@ package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static com.github.marschall.memoryfilesystem.IsSameFileMatcher.isSameFile;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
@@ -11,6 +13,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -53,14 +57,21 @@ class MacOsMemoryFileSystemTest {
     boolean isMac = osName.startsWith("Mac");
     if (isMac) {
       return Arrays.asList(new Object[]{true},
-          new Object[]{false});
+              new Object[]{false});
     } else {
       return Collections.singletonList(new Object[]{false});
     }
   }
 
+  @Target(METHOD)
+  @Retention(RUNTIME)
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("fileSystems")
+  @interface CompatibilityTest {
+
+  }
+
+  @CompatibilityTest
   void macOsNormalization(boolean useDefault) throws IOException {
     FileSystem fileSystem = this.getFileSystem(useDefault);
     String aUmlaut = "\u00C4";
@@ -87,8 +98,7 @@ class MacOsMemoryFileSystemTest {
     }
   }
 
-  @ParameterizedTest(name = DISPLAY_NAME)
-  @MethodSource("fileSystems")
+  @CompatibilityTest
   void macOsComparison(boolean useDefault) throws IOException {
     FileSystem fileSystem = this.getFileSystem(useDefault);
     Path aLower = fileSystem.getPath("a");
@@ -108,8 +118,7 @@ class MacOsMemoryFileSystemTest {
   }
 
 
-  @ParameterizedTest(name = DISPLAY_NAME)
-  @MethodSource("fileSystems")
+  @CompatibilityTest
   void forbiddenCharacters(boolean useDefault) {
     try {
       char c = 0;
@@ -120,8 +129,7 @@ class MacOsMemoryFileSystemTest {
     }
   }
 
-  @ParameterizedTest(name = DISPLAY_NAME)
-  @MethodSource("fileSystems")
+  @CompatibilityTest
   void notForbiddenCharacters(boolean useDefault) throws IOException {
     for (int i = 1; i < 128; ++i) {
       char c = (char) i;
@@ -137,8 +145,7 @@ class MacOsMemoryFileSystemTest {
     }
   }
 
-  @ParameterizedTest(name = DISPLAY_NAME)
-  @MethodSource("fileSystems")
+  @CompatibilityTest
   void macOsPaths(boolean useDefault) {
     FileSystem fileSystem = this.getFileSystem(useDefault);
     String aUmlaut = "\u00C4";
@@ -151,8 +158,7 @@ class MacOsMemoryFileSystemTest {
     assertThat(aPath, equalTo(nPath));
   }
 
-  @ParameterizedTest(name = DISPLAY_NAME)
-  @MethodSource("fileSystems")
+  @CompatibilityTest
   void caseInsensitivePatterns(boolean useDefault) throws IOException {
     FileSystem fileSystem = this.extension.getFileSystem();
 

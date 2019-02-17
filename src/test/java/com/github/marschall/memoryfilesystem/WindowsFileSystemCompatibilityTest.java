@@ -2,6 +2,8 @@ package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static com.github.marschall.memoryfilesystem.IsSameFileMatcher.isSameFile;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -13,6 +15,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -70,9 +74,16 @@ class WindowsFileSystemCompatibilityTest {
     }
   }
 
-
+  @Target(METHOD)
+  @Retention(RUNTIME)
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("fileSystems")
+  @interface CompatibilityTest {
+
+  }
+
+
+  @CompatibilityTest
   void isHidden(boolean useDefault) throws IOException {
     Path hidden = this.getFileSystem(useDefault).getPath("hidden");
     Files.createFile(hidden);
@@ -84,8 +95,7 @@ class WindowsFileSystemCompatibilityTest {
     }
   }
 
-  @ParameterizedTest(name = DISPLAY_NAME)
-  @MethodSource("fileSystems")
+  @CompatibilityTest
   void isNotHidden(boolean useDefault) throws IOException {
     Path hidden = this.getFileSystem(useDefault).getPath(".not_hidden");
     Files.createFile(hidden);
@@ -97,8 +107,7 @@ class WindowsFileSystemCompatibilityTest {
     }
   }
 
-  @ParameterizedTest(name = DISPLAY_NAME)
-  @MethodSource("fileSystems")
+  @CompatibilityTest
   void rootAttributes(boolean useDefault) throws IOException {
     FileSystem fileSystem = this.getFileSystem(useDefault);
     Path root = fileSystem.getPath("C:\\");
@@ -113,8 +122,7 @@ class WindowsFileSystemCompatibilityTest {
     assertFalse(dosFileAttributes.isReadOnly());
   }
 
-  @ParameterizedTest(name = DISPLAY_NAME)
-  @MethodSource("fileSystems")
+  @CompatibilityTest
   @Disabled("not ready")
   void forbiddenFileNames(boolean useDefault) {
     FileSystem fileSystem = this.getFileSystem(useDefault);
@@ -140,8 +148,7 @@ class WindowsFileSystemCompatibilityTest {
   }
 
 
-  @ParameterizedTest(name = DISPLAY_NAME)
-  @MethodSource("fileSystems")
+  @CompatibilityTest
   void caseInsensitiveCasePreserving(boolean useDefault) throws IOException {
     FileSystem fileSystem = this.getFileSystem(useDefault);
     Path testFile = fileSystem.getPath("tesT");
@@ -159,8 +166,7 @@ class WindowsFileSystemCompatibilityTest {
     }
   }
 
-  @ParameterizedTest(name = DISPLAY_NAME)
-  @MethodSource("fileSystems")
+  @CompatibilityTest
   void attributeCapitalization(boolean useDefault) throws IOException {
     FileSystem fileSystem = this.getFileSystem(useDefault);
     Path root = fileSystem.getPath("C:\\");
@@ -176,8 +182,7 @@ class WindowsFileSystemCompatibilityTest {
     assertThat(keys, not(hasItem("isSystem")));
   }
 
-  @ParameterizedTest(name = DISPLAY_NAME)
-  @MethodSource("fileSystems")
+  @CompatibilityTest
   @Disabled
   void windowsNormalization(boolean useDefault) throws IOException {
     FileSystem fileSystem = this.getFileSystem(useDefault);
@@ -207,8 +212,7 @@ class WindowsFileSystemCompatibilityTest {
   }
 
 
-  @ParameterizedTest(name = DISPLAY_NAME)
-  @MethodSource("fileSystems")
+  @CompatibilityTest
   @Disabled
   void windowsNoNormalization(boolean useDefault) throws IOException {
     /*
@@ -250,8 +254,7 @@ class WindowsFileSystemCompatibilityTest {
     }
   }
 
-  @ParameterizedTest(name = DISPLAY_NAME)
-  @MethodSource("fileSystems")
+  @CompatibilityTest
   void caseInsensitivePatterns(boolean useDefault) throws IOException {
     FileSystem fileSystem = this.extension.getFileSystem();
 
