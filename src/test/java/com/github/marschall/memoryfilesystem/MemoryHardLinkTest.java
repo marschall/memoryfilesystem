@@ -22,31 +22,12 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Instant;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 class MemoryHardLinkTest {
-
-  private static final Date A_TIME;
-  private static final Date C_TIME;
-  private static final Date M_TIME;
-
-  static {
-    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
-    dateFormat.setLenient(false);
-
-    try {
-      C_TIME = dateFormat.parse("1997-08-04 02:04:00 EST");
-      M_TIME = dateFormat.parse("2004-07-25 18:18:00 EST");
-      A_TIME = dateFormat.parse("2001-04-21 12:00:00 EST");
-    } catch (ParseException e) {
-      throw new RuntimeException("could not parse date");
-    }
-  }
 
   @RegisterExtension
   final FileSystemExtension extension = new FileSystemExtension();
@@ -138,9 +119,9 @@ class MemoryHardLinkTest {
 
     BasicFileAttributeView view = Files.getFileAttributeView(target, BasicFileAttributeView.class);
 
-    FileTime mTime = FileTime.fromMillis(M_TIME.getTime());
-    FileTime aTime = FileTime.fromMillis(A_TIME.getTime());
-    FileTime cTime = FileTime.fromMillis(C_TIME.getTime());
+    FileTime mTime = FileTime.from(Instant.parse("2004-07-25T18:18:00.111111111Z"));
+    FileTime aTime = FileTime.from(Instant.parse("2001-04-21T12:00:00.222222222Z"));
+    FileTime cTime = FileTime.from(Instant.parse("1997-08-04T02:04:00.333333333Z"));
     view.setTimes(mTime, aTime, cTime);
 
     BasicFileAttributes attributes = Files.getFileAttributeView(link, BasicFileAttributeView.class).readAttributes();

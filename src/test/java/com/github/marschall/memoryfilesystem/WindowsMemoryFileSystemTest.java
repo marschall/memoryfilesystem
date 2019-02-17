@@ -41,7 +41,6 @@ import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.spi.FileSystemProvider;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -122,10 +121,9 @@ class WindowsMemoryFileSystemTest {
 
     Files.createFile(path);
 
-    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-    FileTime lastModifiedTime = FileTime.fromMillis(format.parse("2012-11-07T20:30:22").getTime());
-    FileTime lastAccessTime = FileTime.fromMillis(format.parse("2012-10-07T20:30:22").getTime());
-    FileTime createTime = FileTime.fromMillis(format.parse("2012-09-07T20:30:22").getTime());
+    FileTime lastModifiedTime = FileTime.from(Instant.parse("2012-11-07T20:30:22.1111111Z"));
+    FileTime lastAccessTime = FileTime.from(Instant.parse("2012-10-07T20:30:22.2222222Z"));
+    FileTime createTime = FileTime.from(Instant.parse("2012-09-07T20:30:22.3333333Z"));
 
     BasicFileAttributeView basicFileAttributeView = Files.getFileAttributeView(path, BasicFileAttributeView.class);
     basicFileAttributeView.setTimes(lastModifiedTime, lastAccessTime, createTime);

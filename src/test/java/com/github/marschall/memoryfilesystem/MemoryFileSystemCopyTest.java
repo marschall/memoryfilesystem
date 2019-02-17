@@ -14,8 +14,8 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.nio.file.DirectoryNotEmptyException;
@@ -30,7 +30,7 @@ import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -245,9 +245,8 @@ class MemoryFileSystemCopyTest {
     Files.createDirectory(source);
     Files.createDirectory(target);
 
-    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-    FileTime sourceTime = FileTime.fromMillis(format.parse("2012-11-07T20:30:22").getTime());
-    FileTime targetTime = FileTime.fromMillis(format.parse("2012-10-07T20:30:22").getTime());
+    FileTime sourceTime = FileTime.from(Instant.parse("2012-11-07T20:30:22.123456789Z"));
+    FileTime targetTime = FileTime.from(Instant.parse("2012-10-07T20:30:22.987654321Z"));
     Files.setLastModifiedTime(source, sourceTime);
     Files.setLastModifiedTime(target, targetTime);
 
@@ -270,10 +269,9 @@ class MemoryFileSystemCopyTest {
 
     Files.createFile(source);
 
-    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-    FileTime lastModifiedTime = FileTime.fromMillis(format.parse("2012-11-07T20:30:22").getTime());
-    FileTime lastAccessedTime = FileTime.fromMillis(format.parse("2012-10-07T20:30:22").getTime());
-    FileTime createTime = FileTime.fromMillis(format.parse("2012-09-07T20:30:22").getTime());
+    FileTime lastModifiedTime = FileTime.from(Instant.parse("2012-11-07T20:30:22.111111111Z"));
+    FileTime lastAccessedTime = FileTime.from(Instant.parse("2012-10-07T20:30:22.222222222Z"));
+    FileTime createTime = FileTime.from(Instant.parse("2012-09-07T20:30:22.333333333Z"));
 
     BasicFileAttributeView sourceBasicFileAttributeView = Files.getFileAttributeView(source, BasicFileAttributeView.class);
     BasicFileAttributes sourceBasicAttributes = sourceBasicFileAttributeView.readAttributes();
@@ -571,9 +569,8 @@ class MemoryFileSystemCopyTest {
     Files.createDirectory(source);
     Files.createDirectory(target);
 
-    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-    FileTime sourceTime = FileTime.fromMillis(format.parse("2012-11-07T20:30:22").getTime());
-    FileTime targetTime = FileTime.fromMillis(format.parse("2012-10-07T20:30:22").getTime());
+    FileTime sourceTime = FileTime.from(Instant.parse("2012-11-07T20:30:22.123456789Z"));
+    FileTime targetTime = FileTime.from(Instant.parse("2012-10-07T20:30:22.987654321Z"));
     Files.setLastModifiedTime(source, sourceTime);
     Files.setLastModifiedTime(target, targetTime);
 

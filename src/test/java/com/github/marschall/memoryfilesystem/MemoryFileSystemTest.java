@@ -30,9 +30,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -65,7 +65,7 @@ import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -1868,8 +1868,6 @@ class MemoryFileSystemTest {
     assertThrows(ProviderMismatchException.class, () -> this.extension.getFileSystem().provider().move(root, root));
   }
 
-
-
   @Test
   void readAttributes() throws IOException, ParseException {
     FileSystem fileSystem = this.extension.getFileSystem();
@@ -1877,10 +1875,9 @@ class MemoryFileSystemTest {
 
     Files.createFile(patch);
 
-    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-    FileTime lastModifiedTime = FileTime.fromMillis(format.parse("2012-11-07T20:30:22").getTime());
-    FileTime lastAccessTime = FileTime.fromMillis(format.parse("2012-10-07T20:30:22").getTime());
-    FileTime createTime = FileTime.fromMillis(format.parse("2012-09-07T20:30:22").getTime());
+    FileTime lastModifiedTime = FileTime.from(Instant.parse("2012-11-07T20:30:22.111111111Z"));
+    FileTime lastAccessTime = FileTime.from(Instant.parse("2012-10-07T20:30:22.222222222Z"));
+    FileTime createTime = FileTime.from(Instant.parse("2012-09-07T20:30:22.333333333Z"));
 
     BasicFileAttributeView basicFileAttributeView = Files.getFileAttributeView(patch, BasicFileAttributeView.class);
     basicFileAttributeView.setTimes(lastModifiedTime, lastAccessTime, createTime);
@@ -1895,9 +1892,6 @@ class MemoryFileSystemTest {
     assertEquals(expected, attributes);
   }
 
-
-
-
   @Test
   void notChangingAttributes() throws IOException, ParseException {
     // https://github.com/marschall/memoryfilesystem/issues/16
@@ -1905,9 +1899,8 @@ class MemoryFileSystemTest {
     Path source = fileSystem.getPath("/source.txt");
     Files.createFile(source);
 
-    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-    FileTime originalTime = FileTime.fromMillis(format.parse("2011-11-01T20:30:15").getTime());
-    FileTime newTime = FileTime.fromMillis(format.parse("2012-11-07T20:30:22").getTime());
+    FileTime originalTime = FileTime.from(Instant.parse("2011-11-01T20:30:15.123456789Z"));
+    FileTime newTime = FileTime.from(Instant.parse("2012-11-07T20:30:22.987654321Z"));
 
     BasicFileAttributeView attributeView = Files.getFileAttributeView(source, BasicFileAttributeView.class);
     attributeView.setTimes(originalTime, originalTime, originalTime);
@@ -1926,11 +1919,10 @@ class MemoryFileSystemTest {
     Path source = fileSystem.getPath("/source.txt");
     Files.createFile(source);
 
-    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-    FileTime originalTime = FileTime.fromMillis(format.parse("2011-11-01T20:30:15").getTime());
-    FileTime lastModifiedTime = FileTime.fromMillis(format.parse("2012-11-07T20:30:22").getTime());
-    FileTime lastAccessedTime = FileTime.fromMillis(format.parse("2012-10-07T20:30:22").getTime());
-    FileTime createTime = FileTime.fromMillis(format.parse("2012-09-07T20:30:22").getTime());
+    FileTime originalTime = FileTime.from(Instant.parse("2011-11-01T20:30:15.111111111Z"));
+    FileTime lastModifiedTime = FileTime.from(Instant.parse("2012-11-07T20:30:22.222222222Z"));
+    FileTime lastAccessedTime = FileTime.from(Instant.parse("2012-10-07T20:30:22.333333333Z"));
+    FileTime createTime = FileTime.from(Instant.parse("2012-09-07T20:30:22.444444444Z"));
 
     Files.getFileAttributeView(source, BasicFileAttributeView.class).setTimes(originalTime, originalTime, originalTime);
 

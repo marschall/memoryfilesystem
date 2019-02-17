@@ -15,10 +15,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -41,7 +41,7 @@ import java.nio.file.attribute.UserPrincipal;
 import java.text.Normalizer;
 import java.text.Normalizer.Form;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -153,24 +153,23 @@ class UnixFileSystemCompatibilityTest {
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("fileSystems")
   void initialLastModifiedTime(boolean useDefault) {
-    assertThrows(UnsupportedOperationException.class, () -> assertUnsupportedCreateOption("lastAccessTime", useDefault));
+    assertThrows(UnsupportedOperationException.class, () -> this.assertUnsupportedCreateOption("lastAccessTime", useDefault));
   }
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("fileSystems")
   void initialCreationTime(boolean useDefault) {
-    assertThrows(UnsupportedOperationException.class, () -> assertUnsupportedCreateOption("creationTime", useDefault));
+    assertThrows(UnsupportedOperationException.class, () -> this.assertUnsupportedCreateOption("creationTime", useDefault));
   }
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("fileSystems")
   void initiallastModifiedTime(boolean useDefault) {
-    assertThrows(UnsupportedOperationException.class, () -> assertUnsupportedCreateOption("lastModifiedTime", useDefault));
+    assertThrows(UnsupportedOperationException.class, () -> this.assertUnsupportedCreateOption("lastModifiedTime", useDefault));
   }
 
   private void assertUnsupportedCreateOption(String attributeName, boolean useDefault) throws IOException, ParseException {
-    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-    FileTime time = FileTime.fromMillis(format.parse("2012-11-07T20:30:22").getTime());
+    FileTime time = FileTime.from(Instant.parse("2012-11-07T20:30:22.12345678Z"));
 
     FileAttribute<?> lastModifiedAttribute = new StubFileAttribute<>(attributeName, time);
 
