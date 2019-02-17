@@ -71,6 +71,13 @@ Not Supported
 * maximum path length checks
 * hard link count checks
 
+Version History
+---------------
+
+Version 2 requires Java 8 and supports nanosecond time resolution. Automatically set mtime, atime and ctime will have nanosecond resolution only with Java 9+.
+
+Version 1 requires Java 7.
+
 FAQ
 ---
 ### Does it have bugs?
