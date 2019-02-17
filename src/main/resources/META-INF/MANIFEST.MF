@@ -4,9 +4,9 @@ Bundle-Description: An in memory implementation of a JSR-203 file system.
 Bundle-License: http://opensource.org/licenses/MIT
 Bundle-ManifestVersion: 2
 Bundle-Name: Memory File System
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-SymbolicName: ${project.groupId}.${project.artifactId};singleton:=true
 Bundle-Version: ${project.version}
 Export-Package: com.github.marschall.memoryfilesystem;version="${project.version}"
 Import-Package: javax.annotation;resolution:=optional
-Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.7))"
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.8))"
