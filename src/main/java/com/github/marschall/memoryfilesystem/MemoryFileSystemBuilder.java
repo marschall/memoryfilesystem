@@ -103,19 +103,6 @@ public final class MemoryFileSystemBuilder {
    * @param separator the name separator, not {@code null}
    * @return the current builder object
    * @see java.nio.file.FileSystem#getSeparator()
-   * @deprecated use {@link #setSeparator(String)}
-   */
-  @Deprecated
-  public MemoryFileSystemBuilder setSeprator(String separator) {
-    return this.setSeparator(separator);
-  }
-
-  /**
-   * Sets the the name separator.
-   *
-   * @param separator the name separator, not {@code null}
-   * @return the current builder object
-   * @see java.nio.file.FileSystem#getSeparator()
    */
   public MemoryFileSystemBuilder setSeparator(String separator) {
     Objects.requireNonNull(separator);
@@ -425,6 +412,7 @@ public final class MemoryFileSystemBuilder {
             .setFileTimeResolution(ChronoUnit.SECONDS)
             .addForbiddenCharacter((char) 0);
   }
+
   /**
    * Creates a builder for a Windows-like file system.
    *
@@ -546,11 +534,11 @@ public final class MemoryFileSystemBuilder {
       env.put(MemoryFileSystemProperties.GROUPS_PROPERTY, new ArrayList<>(this.groups));
     }
     if (this.resolution != null) {
-      env.put(MemoryFileSystemProperties.FILE_TIME_RESOLUTION, this.resolution);
+      env.put(MemoryFileSystemProperties.FILE_TIME_RESOLUTION_PROPERTY, this.resolution);
     }
 
     env.put(MemoryFileSystemProperties.FILE_ATTRIBUTE_VIEWS_PROPERTY, this.additionalFileAttributeViews);
-    env.put(MemoryFileSystemProperties.FORBIDDEN_CHARACTERS, this.forbiddenCharacters);
+    env.put(MemoryFileSystemProperties.FORBIDDEN_CHARACTERS_PROPERTY, this.forbiddenCharacters);
 
     return env;
   }

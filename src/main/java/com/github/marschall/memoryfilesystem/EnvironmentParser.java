@@ -58,12 +58,12 @@ class EnvironmentParser {
   }
 
   TemporalUnit getFileTimeResolution() {
-    Object value = this.env.get(MemoryFileSystemProperties.FILE_TIME_RESOLUTION);
+    Object value = this.env.get(MemoryFileSystemProperties.FILE_TIME_RESOLUTION_PROPERTY);
     if (value != null) {
       if (value instanceof TemporalUnit) {
         return (TemporalUnit) value;
       } else {
-        throw new IllegalArgumentException(MemoryFileSystemProperties.FILE_TIME_RESOLUTION + " must be a "
+        throw new IllegalArgumentException(MemoryFileSystemProperties.FILE_TIME_RESOLUTION_PROPERTY + " must be a "
                 + TemporalUnit.class + " but was " + value.getClass());
       }
     } else {
@@ -102,7 +102,7 @@ class EnvironmentParser {
   }
 
   CharacterSet getForbiddenCharacters() {
-    String property = MemoryFileSystemProperties.FORBIDDEN_CHARACTERS;
+    String property = MemoryFileSystemProperties.FORBIDDEN_CHARACTERS_PROPERTY;
     Object value = this.env.get(property);
     if (value != null) {
       if (value instanceof Set) {
@@ -116,7 +116,7 @@ class EnvironmentParser {
             if (each instanceof Character) {
               characters[i] = (Character) each;
             } else {
-              throw new IllegalArgumentException(MemoryFileSystemProperties.FORBIDDEN_CHARACTERS + " values must be a "
+              throw new IllegalArgumentException(MemoryFileSystemProperties.FORBIDDEN_CHARACTERS_PROPERTY + " values must be a "
                       + String.class + " but was " + each);
             }
             i += 1;
@@ -124,7 +124,7 @@ class EnvironmentParser {
           return new ArrayCharacterSet(characters);
         }
       } else {
-        throw new IllegalArgumentException(MemoryFileSystemProperties.FORBIDDEN_CHARACTERS + " must be a "
+        throw new IllegalArgumentException(MemoryFileSystemProperties.FORBIDDEN_CHARACTERS_PROPERTY + " must be a "
                 + Set.class + " but was " + value.getClass());
       }
     } else {

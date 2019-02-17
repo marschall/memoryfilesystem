@@ -1,5 +1,6 @@
 package com.github.marschall.memoryfilesystem;
 
+import java.nio.file.Path;
 import java.text.Collator;
 import java.time.temporal.TemporalUnit;
 import java.util.Collections;
@@ -23,39 +24,97 @@ public class MemoryFileSystemProperties {
    */
   public static final TemporalUnit WINDOWS_RESOLUTION = new HundredNanoseconds();
 
+  /**
+   * The default separator of path elements.
+   */
   public static final String DEFAULT_NAME_SEPARATOR = UNIX_SEPARATOR;
 
+  /**
+   * Name of the property of the separator of path elements. Must be a {@link String}.
+   */
   public static final String DEFAULT_NAME_SEPARATOR_PROPERTY = "file.separator";
 
+  /**
+   * Name of the property of the current working directory. Must be a {@link String}
+   * and an absolute path.
+   */
   public static final String CURRENT_WORKING_DIRECTORY_PROPERTY = "user.dir";
 
+  /**
+   * Name of the property for the file system roots, aka drive letters.
+   * Must be a {@code List<String>} with the like values having the following
+   * form {@code "C:\\"}.
+   *
+   * Only supported for Windows file systems.
+   */
   public static final String ROOTS_PROPERTY = "roots";
 
+  /**
+   * Name of the property names of the attribute view supported by the file system
+   * besides {@code "basic"}.
+   * Must be a {@code Set<String>}.
+   *
+   * @see java.nio.file.attribute.AttributeView#name()
+   */
   public static final String FILE_ATTRIBUTE_VIEWS_PROPERTY = "file.attrs";
 
-  public static final String FORBIDDEN_CHARACTERS = "file.name.forbidden";
+  /**
+   * Name of the property holding the characters not allowed in file names.
+   * Must be a {@code Set<Character>}.
+   */
+  public static final String FORBIDDEN_CHARACTERS_PROPERTY = "file.name.forbidden";
 
+  /**
+   * Name of the property holding the users supported by the file system.
+   * Must be a {@code List<String>}.
+   */
   public static final String USERS_PROPERTY = "users";
 
+  /**
+   * Name of the property holding the groups supported by the file system.
+   * Must be a {@code List<String>}.
+   */
   public static final String GROUPS_PROPERTY = "groups";
 
+  /**
+   * Name of the property of the {@link StringTransformer} used to store files
+   * in a directory.
+   */
   public static final String PATH_STORE_TRANSFORMER_PROPERTY = "path.store.transformer";
 
+  /**
+   * Name of the property of the {@link StringTransformer} used to look up files
+   * in a directory.
+   */
   public static final String PATH_LOOKUP_TRANSFORMER_PROPERTY = "path.lookup.transformer";
 
+  /**
+   * Name of the property of the {@link StringTransformer} used to look up users.
+   */
   public static final String PRINCIPAL_TRANSFORMER_PROPERTY = "principal.transformer";
 
   /**
-   * The resolution of the file time used for modification, access and creation time.
+   * Name of property for the resolution of the file time used for modification, access and creation time.
    *
    * Must be an implementation of {@link java.time.temporal.TemporalUnit}.
    *
    * @see java.time.Instant#truncatedTo(java.time.temporal.TemporalUnit)
    */
-  public static final String FILE_TIME_RESOLUTION = "file.time.resolution";
+  public static final String FILE_TIME_RESOLUTION_PROPERTY = "file.time.resolution";
 
+  /**
+   * Name of the property of the {@link Collator} used to compare path elements.
+   *
+   * @see java.nio.file.Path#compareTo(Path)
+   */
   public static final String COLLATOR_PROPERTY = "collator";
 
+  /**
+   * Name of the property of the <a href="https://en.wikipedia.org/wiki/Umask">umask</a>.
+   * The umask is a set of permissions that will be removed from newly created files.
+   *
+   * Must be a {@code Set<PosixFilePermission>}.
+   */
   public static final String UMASK_PROPERTY = "file.umask";
 
   static final String UNIX_ROOT = "/";
