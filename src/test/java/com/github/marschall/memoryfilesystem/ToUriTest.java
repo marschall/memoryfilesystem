@@ -17,12 +17,12 @@ class ToUriTest {
   private static final String DISPLAY_NAME = "path: {0}";
 
   @RegisterExtension
-  final FileSystemExtension rule = new FileSystemExtension();
+  final FileSystemExtension extension = new FileSystemExtension();
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("data")
   void contract(String path) {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path p = fileSystem.getPath(path);
     assertEquals(p.toAbsolutePath(), Paths.get(p.toUri()));
   }

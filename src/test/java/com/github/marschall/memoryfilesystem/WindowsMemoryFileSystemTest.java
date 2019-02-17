@@ -56,11 +56,11 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 class WindowsMemoryFileSystemTest {
 
   @RegisterExtension
-  final WindowsFileSystemExtension rule = new WindowsFileSystemExtension();
+  final WindowsFileSystemExtension extension = new WindowsFileSystemExtension();
 
   @Test
   void setAttributes() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     FileAttribute<?> hiddenAttribute = new StubFileAttribute<>("dos:hidden", true);
 
@@ -72,7 +72,7 @@ class WindowsMemoryFileSystemTest {
 
   @Test
   void pathToUri() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path path = fileSystem.getPath("C:\\file.txt");
 
     URI uri = path.toUri();
@@ -83,7 +83,7 @@ class WindowsMemoryFileSystemTest {
 
   @Test
   void uriSingleSlash() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path path = fileSystem.getPath("C:\\file.txt");
 
     URI uri = URI.create("memory:WindowsFileSystemRule:/C:/file.txt");
@@ -93,7 +93,7 @@ class WindowsMemoryFileSystemTest {
 
   @Test
   void pathToWhiteSpace() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path path = fileSystem.getPath("C:\\z z");
 
     URI uri = path.toUri();
@@ -103,7 +103,7 @@ class WindowsMemoryFileSystemTest {
 
   @Test
   void dosAttributeNames() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path path = fileSystem.getPath("C:\\file.txt");
 
     Files.createFile(path);
@@ -117,7 +117,7 @@ class WindowsMemoryFileSystemTest {
 
   @Test
   void readAttributes() throws IOException, ParseException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path path = fileSystem.getPath("C:\\file.txt");
 
     Files.createFile(path);
@@ -145,7 +145,7 @@ class WindowsMemoryFileSystemTest {
 
   @Test
   void windows() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path c1 = fileSystem.getPath("C:\\");
     Path c2 = fileSystem.getPath("c:\\");
     assertEquals("C:\\", c1.toString());
@@ -185,7 +185,7 @@ class WindowsMemoryFileSystemTest {
 
   @Test
   void forbiddenCharacters() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     for (char c : "\\/:?\"<>|".toCharArray()) {
       try {
         fileSystem.getPath(Character.toString(c) + ".txt");
@@ -198,7 +198,7 @@ class WindowsMemoryFileSystemTest {
 
   @Test
   void windowsQuirky() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path c1 = fileSystem.getPath("C:\\");
     Path c2 = fileSystem.getPath("c:\\");
     assertEquals("c:\\", c2.toString());
@@ -211,7 +211,7 @@ class WindowsMemoryFileSystemTest {
 
   @Test
   void checkAccess() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path file = fileSystem.getPath("file.txt");
 
     Files.createFile(file);
@@ -239,7 +239,7 @@ class WindowsMemoryFileSystemTest {
 
   @Test
   void copyAttributes() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path source = fileSystem.getPath("source.txt");
     Path target = fileSystem.getPath("target.txt");
 
@@ -269,7 +269,7 @@ class WindowsMemoryFileSystemTest {
 
   @Test
   void dontCopyAttributes() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path source = fileSystem.getPath("source.txt");
     Path target = fileSystem.getPath("target.txt");
 
@@ -301,7 +301,7 @@ class WindowsMemoryFileSystemTest {
 
   @Test
   void isHiddenPathResolution() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path hidden = fileSystem.getPath("hidden.txt");
     Files.createFile(hidden);
@@ -317,7 +317,7 @@ class WindowsMemoryFileSystemTest {
 
   @Test
   void pathOrdering() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path lowerA = fileSystem.getPath("a");
     Path upperA = fileSystem.getPath("A");
 
@@ -342,7 +342,7 @@ class WindowsMemoryFileSystemTest {
   // https://bugs.openjdk.java.net/browse/JDK-8066915
   @Test
   void jdk8066915() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path directory = fileSystem.getPath("directory");
     Files.createDirectory(directory);
 
@@ -372,7 +372,7 @@ class WindowsMemoryFileSystemTest {
   // https://bugs.openjdk.java.net/browse/JDK-8072495
   @Test
   void jdk8072495() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path x = fileSystem.getPath("x");
     Path empty = fileSystem.getPath("");
     Path actual = empty.relativize(x);
@@ -381,7 +381,7 @@ class WindowsMemoryFileSystemTest {
 
   @Test
   void preserveCase() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path originalPath = fileSystem.getPath("C:\\File0.txt");
     Files.createFile(originalPath);
     assertThat(fileSystem.getPath("C:\\file0.txt"), exists());
@@ -401,7 +401,7 @@ class WindowsMemoryFileSystemTest {
 
   @Test
   void testPathMatherGlob() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     PathMatcher matcher = fileSystem.getPathMatcher("glob:*.{java,class}");
     assertThat(matcher, matches(fileSystem.getPath("Test.java")));
@@ -416,7 +416,7 @@ class WindowsMemoryFileSystemTest {
 
   @Test
   void absoluteGlobPattern() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Files.createDirectories(fileSystem.getPath("C:\\folder\\child1"));
     Files.createDirectories(fileSystem.getPath("C:\\folder\\not-child"));
@@ -431,7 +431,7 @@ class WindowsMemoryFileSystemTest {
   @Test
   @Disabled
   void relativePaths() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path relative = fileSystem.getPath("C:folder\\file.txt");
     Path absolute = fileSystem.getPath("C:\\folder\\file.txt");
 
@@ -441,7 +441,7 @@ class WindowsMemoryFileSystemTest {
 
   @Test
   void truncationViaSetTimes() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Instant mtime = Instant.parse("2019-02-27T12:37:03.123456789Z");
     Instant atime = Instant.parse("2019-02-27T12:37:03.223456789Z");
     Instant ctime = Instant.parse("2019-02-27T12:37:03.323456789Z");
@@ -459,7 +459,7 @@ class WindowsMemoryFileSystemTest {
 
   @Test
   void truncationViaSet() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Instant atime = Instant.parse("2019-02-27T12:37:03.223456789Z");
 
     Path file = Files.createFile(fileSystem.getPath("C:\\file.txt"));

@@ -29,11 +29,11 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 class MemoryDirectoryStreamTest {
 
   @RegisterExtension
-  final FileSystemExtension rule = new FileSystemExtension();
+  final FileSystemExtension extension = new FileSystemExtension();
 
   @Test
   void directoryStreamAbsolute() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Files.createFile(fileSystem.getPath("a.java"));
     Files.createFile(fileSystem.getPath("a.cpp"));
@@ -86,7 +86,7 @@ class MemoryDirectoryStreamTest {
 
   @Test
   void absoluteGlobPattern() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Files.createDirectories(fileSystem.getPath("/root/child1"));
     Files.createDirectories(fileSystem.getPath("/root/not-child"));
@@ -100,7 +100,7 @@ class MemoryDirectoryStreamTest {
 
   @Test
   void directoryStreamRelative() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path parent = Files.createDirectory(fileSystem.getPath("src"));
     assertThat(parent, isRelative());
@@ -129,7 +129,7 @@ class MemoryDirectoryStreamTest {
 
   @Test
   void empty() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(fileSystem.getPath("/"))) {
       Iterator<Path> iterator = directoryStream.iterator();
@@ -148,7 +148,7 @@ class MemoryDirectoryStreamTest {
 
   @Test
   void iteratorTwice() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Files.createFile(fileSystem.getPath("a.java"));
 
@@ -169,7 +169,7 @@ class MemoryDirectoryStreamTest {
 
   @Test
   void alreadyClosed() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Files.createFile(fileSystem.getPath("a.java"));
 
@@ -189,7 +189,7 @@ class MemoryDirectoryStreamTest {
 
   @Test
   void close() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Files.createFile(fileSystem.getPath("a.java"));
     Files.createFile(fileSystem.getPath("b.java"));
@@ -216,7 +216,7 @@ class MemoryDirectoryStreamTest {
 
   @Test
   void remove() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Files.createFile(fileSystem.getPath("a.java"));
 

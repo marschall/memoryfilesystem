@@ -18,7 +18,7 @@ final class UmaskTest {
   private static final Set<PosixFilePermission> UMASK = PosixFilePermissions.fromString("----w-rwx"); // ie, 027
 
   @RegisterExtension
-  final PosixFileSystemExtension rule = new PosixFileSystemExtension(UMASK);
+  final PosixFileSystemExtension extension = new PosixFileSystemExtension(UMASK);
 
   /**
    * Tests creating a file without permissions respects umask.
@@ -27,7 +27,7 @@ final class UmaskTest {
    */
   @Test
   void creatingFileWithoutPermissions() throws IOException {
-    Path path = this.rule.getFileSystem().getPath("/fileWithoutPerms");
+    Path path = this.extension.getFileSystem().getPath("/fileWithoutPerms");
     Path created = Files.createFile(path);
     Set<PosixFilePermission> actual = Files.getPosixFilePermissions(created);
     assertEquals("rwxr-x---", PosixFilePermissions.toString(actual));
@@ -42,7 +42,7 @@ final class UmaskTest {
   void creatingFileWithPermissions() throws IOException {
     Set<PosixFilePermission> permissions = PosixFilePermissions.fromString("rw-rw-rw-");
     FileAttribute<?> attr = PosixFilePermissions.asFileAttribute(permissions);
-    Path file = this.rule.getFileSystem().getPath("/fileWithPerms");
+    Path file = this.extension.getFileSystem().getPath("/fileWithPerms");
     Path created = Files.createFile(file, attr);
     Set<PosixFilePermission> actual = Files.getPosixFilePermissions(created);
     assertEquals("rw-r-----", PosixFilePermissions.toString(actual));
@@ -55,7 +55,7 @@ final class UmaskTest {
    */
   @Test
   void creatingDirectoryWithoutPermissions() throws IOException {
-    Path path = this.rule.getFileSystem().getPath("/dirWithoutPerms");
+    Path path = this.extension.getFileSystem().getPath("/dirWithoutPerms");
     Path created = Files.createDirectory(path);
     Set<PosixFilePermission> actual = Files.getPosixFilePermissions(created);
     assertEquals("rwxr-x---", PosixFilePermissions.toString(actual));
@@ -70,7 +70,7 @@ final class UmaskTest {
   void creatingDirectoryWithPermissions() throws IOException {
     Set<PosixFilePermission> permissions = PosixFilePermissions.fromString("rwxrwx-w-");
     FileAttribute<?> attribute = PosixFilePermissions.asFileAttribute(permissions);
-    Path file = this.rule.getFileSystem().getPath("/dirWithPerms");
+    Path file = this.extension.getFileSystem().getPath("/dirWithPerms");
     Path created = Files.createDirectory(file, attribute);
     Set<PosixFilePermission> actual = Files.getPosixFilePermissions(created);
     assertEquals("rwxr-x---", PosixFilePermissions.toString(actual));

@@ -33,7 +33,7 @@ class MacOsMemoryFileSystemTest {
   private static final String DISPLAY_NAME = "native: {0}";
 
   @RegisterExtension
-  final MacOsFileSystemExtension rule = new MacOsFileSystemExtension();
+  final MacOsFileSystemExtension extension = new MacOsFileSystemExtension();
 
   private FileSystem fileSystem;
 
@@ -42,7 +42,7 @@ class MacOsMemoryFileSystemTest {
       if (useDefault) {
         this.fileSystem = FileSystems.getDefault();
       } else {
-        this.fileSystem = this.rule.getFileSystem();
+        this.fileSystem = this.extension.getFileSystem();
       }
     }
     return this.fileSystem;
@@ -154,7 +154,7 @@ class MacOsMemoryFileSystemTest {
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("fileSystems")
   void caseInsensitivePatterns(boolean useDefault) throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path child1 = fileSystem.getPath("child1");
     Files.createFile(child1);

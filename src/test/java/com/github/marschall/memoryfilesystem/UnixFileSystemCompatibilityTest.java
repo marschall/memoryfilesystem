@@ -59,7 +59,7 @@ class UnixFileSystemCompatibilityTest {
   private static final String DISPLAY_NAME = "native: {0}";
 
   @RegisterExtension
-  final PosixFileSystemExtension rule = new PosixFileSystemExtension();
+  final PosixFileSystemExtension extension = new PosixFileSystemExtension();
   private FileSystem fileSystem;
 
   FileSystem getFileSystem(boolean useDefault) {
@@ -67,7 +67,7 @@ class UnixFileSystemCompatibilityTest {
       if (useDefault) {
         this.fileSystem = FileSystems.getDefault();
       } else {
-        this.fileSystem = this.rule.getFileSystem();
+        this.fileSystem = this.extension.getFileSystem();
       }
     }
     return this.fileSystem;
@@ -583,7 +583,7 @@ class UnixFileSystemCompatibilityTest {
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("fileSystems")
   void caseSensitivePatterns(boolean useDefault) throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path child1 = fileSystem.getPath("child1");
     Files.createFile(child1);

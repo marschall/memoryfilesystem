@@ -19,12 +19,12 @@ class RelativizeResolveTest {
   private static final String DISPLAY_NAME = "receiver: {0}, other: {1}";
 
   @RegisterExtension
-  final FileSystemExtension rule = new FileSystemExtension();
+  final FileSystemExtension extension = new FileSystemExtension();
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("data")
   void contract(String first, String second) {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path p = fileSystem.getPath(first);
     Path q = fileSystem.getPath(second);
     assertEquals(q, p.relativize(p.resolve(q)));

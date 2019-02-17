@@ -47,11 +47,11 @@ import com.github.marschall.memoryfilesystem.CurrentUser.UserTask;
 class PosixPermissionMemoryFileSystemTest {
 
   @RegisterExtension
-  final PosixPermissionFileSystemExtension rule = new PosixPermissionFileSystemExtension();
+  final PosixPermissionFileSystemExtension extension = new PosixPermissionFileSystemExtension();
 
   @Test
   void directoryRead() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     final Path directory = fileSystem.getPath("directory");
     Path file = directory.resolve("file");
     Files.createDirectory(directory);
@@ -105,7 +105,7 @@ class PosixPermissionMemoryFileSystemTest {
    */
   @Test
   void issue50() throws IOException {
-    Path path = this.rule.getFileSystem().getPath("readable-at-first");
+    Path path = this.extension.getFileSystem().getPath("readable-at-first");
     Files.createFile(path,  PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("r--r--r--")));
 
     assertTrue(Files.isReadable(path));
@@ -124,7 +124,7 @@ class PosixPermissionMemoryFileSystemTest {
    */
   @Test
   void issue51() throws IOException {
-    Path path = this.rule.getFileSystem().getPath("readable-at-first");
+    Path path = this.extension.getFileSystem().getPath("readable-at-first");
     Files.createFile(path,  PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("---------")));
 
     assertFalse(Files.isReadable(path));
@@ -143,9 +143,9 @@ class PosixPermissionMemoryFileSystemTest {
    */
   @Test
   void issue112() throws IOException {
-    final Path path = this.rule.getFileSystem().getPath("not-mine");
+    final Path path = this.extension.getFileSystem().getPath("not-mine");
     Files.createFile(path);
-    UserPrincipal other = this.rule.getFileSystem().getUserPrincipalLookupService().lookupPrincipalByName(PosixPermissionFileSystemExtension.OTHER);
+    UserPrincipal other = this.extension.getFileSystem().getUserPrincipalLookupService().lookupPrincipalByName(PosixPermissionFileSystemExtension.OTHER);
     Files.setOwner(path, other);
     CurrentUser.useDuring(other, new UserTask<Object>() {
       @Override
@@ -184,7 +184,7 @@ class PosixPermissionMemoryFileSystemTest {
 
 
   private void checkPermission(AccessMode mode, PosixFilePermission permission, String userName) throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     final Path positive = fileSystem.getPath(userName + "-" + mode + "-" + permission + "-positive.txt");
     Files.createFile(positive);
     final Path negative = fileSystem.getPath(userName + "-" + mode + "-" + permission + "-negative.txt");
@@ -198,7 +198,7 @@ class PosixPermissionMemoryFileSystemTest {
 
   private void checkPermissionPositive(final AccessMode mode, PosixFilePermission permission, final Path file, UserPrincipal user, final GroupPrincipal group) throws IOException {
     PosixFileAttributeView view = Files.getFileAttributeView(file, PosixFileAttributeView.class);
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     GroupPrincipal fileGroup = fileSystem.getUserPrincipalLookupService().lookupPrincipalByGroupName(PosixPermissionFileSystemExtension.GROUP);
     view.setGroup(fileGroup); // change group before changing permissions
     view.setPermissions(Collections.singleton(permission));
@@ -225,7 +225,7 @@ class PosixPermissionMemoryFileSystemTest {
     PosixFileAttributeView view = Files.getFileAttributeView(file, PosixFileAttributeView.class);
 
     Set<PosixFilePermission> permissions = EnumSet.allOf(PosixFilePermission.class);
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     GroupPrincipal fileGroup = fileSystem.getUserPrincipalLookupService().lookupPrincipalByGroupName(PosixPermissionFileSystemExtension.GROUP);
     view.setGroup(fileGroup); // change group before changing permissions
     permissions.remove(permission);
@@ -256,7 +256,7 @@ class PosixPermissionMemoryFileSystemTest {
 
   @Test
   void deletePermission() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path sourceDirectory = Files.createDirectory(fileSystem.getPath("source-directory"));
     final Path file = Files.createFile(sourceDirectory.resolve("file.txt"));
 
@@ -296,7 +296,7 @@ class PosixPermissionMemoryFileSystemTest {
 
   @Test
   void movePermission() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path sourceDirectory = Files.createDirectory(fileSystem.getPath("source-directory"));
     Path targetDirectory = Files.createDirectory(fileSystem.getPath("target-directory"));
     final Path source = Files.createFile(sourceDirectory.resolve("file.txt"));
@@ -376,7 +376,7 @@ class PosixPermissionMemoryFileSystemTest {
 
   @Test
   void createPermission() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path sourceDirectory = Files.createDirectory(fileSystem.getPath("source-directory"));
     final Path file = sourceDirectory.resolve("file.txt");
 

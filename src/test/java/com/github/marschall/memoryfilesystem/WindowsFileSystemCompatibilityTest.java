@@ -40,7 +40,7 @@ class WindowsFileSystemCompatibilityTest {
   private static final String DISPLAY_NAME = "native: {0}";
 
   @RegisterExtension
-  final WindowsFileSystemExtension rule = new WindowsFileSystemExtension();
+  final WindowsFileSystemExtension extension = new WindowsFileSystemExtension();
 
   private FileSystem fileSystem;
 
@@ -50,7 +50,7 @@ class WindowsFileSystemCompatibilityTest {
       if (useDefault) {
         this.fileSystem = FileSystems.getDefault();
       } else {
-        this.fileSystem = this.rule.getFileSystem();
+        this.fileSystem = this.extension.getFileSystem();
       }
     }
     return this.fileSystem;
@@ -253,7 +253,7 @@ class WindowsFileSystemCompatibilityTest {
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("fileSystems")
   void caseInsensitivePatterns(boolean useDefault) throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path child1 = fileSystem.getPath("child1");
     Files.createFile(child1);

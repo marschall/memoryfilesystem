@@ -40,7 +40,7 @@ class FileSystemCompatibilityTest {
   private static final String DISPLAY_NAME = "native: {arguments}";
 
   @RegisterExtension
-  final FileSystemExtension rule = new FileSystemExtension();
+  final FileSystemExtension extension = new FileSystemExtension();
 
   private FileSystem fileSystem;
 
@@ -53,7 +53,7 @@ class FileSystemCompatibilityTest {
       if (useDefault) {
         this.fileSystem = FileSystems.getDefault();
       } else {
-        this.fileSystem = this.rule.getFileSystem();
+        this.fileSystem = this.extension.getFileSystem();
       }
     }
     return this.fileSystem;

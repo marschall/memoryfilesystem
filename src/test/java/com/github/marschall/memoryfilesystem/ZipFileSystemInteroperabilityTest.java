@@ -26,11 +26,11 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 class ZipFileSystemInteroperabilityTest {
 
   @RegisterExtension
-  final FileSystemExtension rule = new FileSystemExtension();
+  final FileSystemExtension extension = new FileSystemExtension();
 
   @Test
   void createZipFileSystem() throws IOException {
-    FileSystem memoryFileSystem = this.rule.getFileSystem();
+    FileSystem memoryFileSystem = this.extension.getFileSystem();
     Map<String, String> env = Collections.singletonMap("create", "true");
     URI uri = URI.create("zipfs:" + memoryFileSystem.getPath("/file.zip").toUri());
     try (FileSystem zipfs = FileSystems.newFileSystem(uri, env)) {
@@ -43,7 +43,7 @@ class ZipFileSystemInteroperabilityTest {
   @Test
   @Disabled("broken")
   void createNestedZips() throws IOException {
-    FileSystem memoryFileSystem = this.rule.getFileSystem();
+    FileSystem memoryFileSystem = this.extension.getFileSystem();
     Map<String, String> env = Collections.singletonMap("create", "false");
     Path outerZip = memoryFileSystem.getPath("/file.zip");
     try (OutputStream stream = new JarOutputStream(Files.newOutputStream(outerZip, CREATE_NEW, WRITE))) {

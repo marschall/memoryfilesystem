@@ -37,11 +37,11 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 class PosixMemoryFileSystemTest {
 
   @RegisterExtension
-  final PosixFileSystemExtension rule = new PosixFileSystemExtension();
+  final PosixFileSystemExtension extension = new PosixFileSystemExtension();
 
   @Test
   void defaultAttributes() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path file = fileSystem.getPath("file.txt");
 
     Files.createFile(file);
@@ -55,14 +55,14 @@ class PosixMemoryFileSystemTest {
 
   @Test
   void getOwner() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     UserPrincipal owner = Files.getOwner(fileSystem.getPath("/"));
     assertNotNull(owner);
   }
 
   @Test
   void supportedFileAttributeViews() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Set<String> actual = fileSystem.supportedFileAttributeViews();
     Set<String> expected = new HashSet<>(Arrays.asList("basic", "owner", "posix"));
     assertEquals(expected, actual);
@@ -70,7 +70,7 @@ class PosixMemoryFileSystemTest {
 
   @Test
   void copyAttributes() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path source = fileSystem.getPath("source.txt");
     Path target = fileSystem.getPath("target.txt");
 
@@ -91,7 +91,7 @@ class PosixMemoryFileSystemTest {
 
   @Test
   void dontCopyAttributes() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path source = fileSystem.getPath("source.txt");
     Path target = fileSystem.getPath("target.txt");
 
@@ -112,7 +112,7 @@ class PosixMemoryFileSystemTest {
   // https://bugs.openjdk.java.net/browse/JDK-8066915
   @Test
   void jdk8066915() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path directory = fileSystem.getPath("directory");
     Files.createDirectory(directory);
 
@@ -141,7 +141,7 @@ class PosixMemoryFileSystemTest {
 
   @Test
   void noTruncation() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Instant mtime = Instant.parse("2019-02-27T12:37:03.123456789Z");
     Instant atime = Instant.parse("2019-02-27T12:37:03.223456789Z");
     Instant ctime = Instant.parse("2019-02-27T12:37:03.323456789Z");

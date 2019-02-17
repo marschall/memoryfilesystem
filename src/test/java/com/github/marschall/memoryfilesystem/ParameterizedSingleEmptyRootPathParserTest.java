@@ -17,7 +17,7 @@ class ParameterizedSingleEmptyRootPathParserTest {
   private static final String DISPLAY_NAME = "first: {0} more: {1}";
 
   @RegisterExtension
-  final FileSystemExtension rule = new FileSystemExtension();
+  final FileSystemExtension extension = new FileSystemExtension();
 
   private Path expected;
   private PathParser parser;
@@ -52,14 +52,14 @@ class ParameterizedSingleEmptyRootPathParserTest {
   @BeforeEach
   void setUp() {
     this.parser = new SingleEmptyRootPathParser("/", EmptyCharacterSet.INSTANCE);
-    Root root = (Root) this.rule.getFileSystem().getRootDirectories().iterator().next();
+    Root root = (Root) this.extension.getFileSystem().getRootDirectories().iterator().next();
     this.expected = AbstractPath.createAbsolute(root.getMemoryFileSystem(), root, Arrays.asList("a", "b", "c"));
   }
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("data")
   void test(String first, String[] more) {
-    Root root = (Root) this.rule.getFileSystem().getRootDirectories().iterator().next();
+    Root root = (Root) this.extension.getFileSystem().getRootDirectories().iterator().next();
     Path actual = this.parser.parse(Collections.singletonMap("", root), first, more);
     assertEquals(this.expected, actual);
   }

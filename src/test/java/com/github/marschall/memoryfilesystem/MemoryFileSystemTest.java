@@ -88,11 +88,11 @@ class MemoryFileSystemTest {
   private static final byte[] SAMPLE_DATA = new byte[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 
   @RegisterExtension
-  final FileSystemExtension rule = new FileSystemExtension();
+  final FileSystemExtension extension = new FileSystemExtension();
 
   @Test
   void tryLockNoArguments() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path path = fileSystem.getPath("file.txt");
     Files.createFile(path);
@@ -120,7 +120,7 @@ class MemoryFileSystemTest {
 
   @Test
   void overLappingLocking() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path path = fileSystem.getPath("file.txt");
     FileUtility.createAndSetContents(path, "0123456789");
@@ -176,7 +176,7 @@ class MemoryFileSystemTest {
 
   @Test
   void writeByteArrayAppending() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path path = fileSystem.getPath("file.txt");
     FileUtility.createAndSetContents(path, "z");
@@ -192,7 +192,7 @@ class MemoryFileSystemTest {
 
   @Test
   void writeByteArrayNonAppending() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path path = fileSystem.getPath("file.txt");
     byte[] data = new byte[]{'a', 'b', 'c', 'd'};
@@ -206,7 +206,7 @@ class MemoryFileSystemTest {
 
   @Test
   void readIntoBuffer() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path path = fileSystem.getPath("file.txt");
     FileUtility.createAndSetContents(path, "abcd");
@@ -223,7 +223,7 @@ class MemoryFileSystemTest {
 
   @Test
   void scatteringRead() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path path = fileSystem.getPath("file.txt");
     Files.createFile(path);
@@ -248,7 +248,7 @@ class MemoryFileSystemTest {
 
   @Test
   void scatteringReadBufferTooSmall() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path path = fileSystem.getPath("file.txt");
     FileUtility.createAndSetContents(path, "abcdef");
@@ -272,7 +272,7 @@ class MemoryFileSystemTest {
 
   @Test
   void scatteringWrite() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path path = fileSystem.getPath("file.txt");
     ByteBuffer a = ByteBuffer.wrap(new byte[]{'a'});
@@ -289,7 +289,7 @@ class MemoryFileSystemTest {
 
   @Test
   void scatteringWriteAppend() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path path = fileSystem.getPath("file.txt");
 
@@ -309,7 +309,7 @@ class MemoryFileSystemTest {
 
   @Test
   void writeAsyncChannelTruncate() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
     FileUtility.createAndSetContents(path, "abc");
@@ -325,7 +325,7 @@ class MemoryFileSystemTest {
 
   @Test
   void writeSyncChannelTruncate() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
     FileUtility.createAndSetContents(path, "abc");
@@ -342,14 +342,14 @@ class MemoryFileSystemTest {
   @Test
   void regressionIssue33() throws IOException {
     // https://github.com/marschall/memoryfilesystem/issues/33
-    Path path = this.rule.getFileSystem().getPath("one").toAbsolutePath();
+    Path path = this.extension.getFileSystem().getPath("one").toAbsolutePath();
     Files.write(path, "hallo world".getBytes(UTF_8));
     Files.readAllBytes(path);
   }
 
   @Test
   void regressionIssue48() throws IOException {
-    Path path = this.rule.getFileSystem().getPath("file");
+    Path path = this.extension.getFileSystem().getPath("file");
     try (OutputStream stream = Files.newOutputStream(path)) {
       for (int i = 0; i <= 255; i++) {
         stream.write(i);
@@ -366,7 +366,7 @@ class MemoryFileSystemTest {
   @Test
   void blockChannelRead() throws IOException {
     // https://github.com/marschall/memoryfilesystem/issues/33
-    Path path = this.rule.getFileSystem().getPath("one").toAbsolutePath();
+    Path path = this.extension.getFileSystem().getPath("one").toAbsolutePath();
     byte[] data = new byte[]{'a', 'b'};
     Files.write(path, data);
     byte[] readBack = new byte[data.length];
@@ -379,7 +379,7 @@ class MemoryFileSystemTest {
 
   @Test
   void writeAsyncChannelBasicMethods() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
     FileUtility.createAndSetContents(path, "z");
@@ -397,7 +397,7 @@ class MemoryFileSystemTest {
 
   @Test
   void writeAsyncChannelWriteCompletionHandler() throws IOException, InterruptedException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
     FileUtility.createAndSetContents(path, "z");
@@ -424,7 +424,7 @@ class MemoryFileSystemTest {
 
   @Test
   void writeAsyncChannelReadCompletionHandler() throws IOException, InterruptedException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
     FileUtility.createAndSetContents(path, "abcd");
@@ -453,7 +453,7 @@ class MemoryFileSystemTest {
 
   @Test
   void writeAsyncChannelWriteIoException() throws IOException, InterruptedException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
     FileUtility.createAndSetContents(path, "z");
@@ -481,7 +481,7 @@ class MemoryFileSystemTest {
 
   @Test
   void writeAsyncChannelWriteCompletionFuture() throws IOException, InterruptedException, ExecutionException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
     FileUtility.createAndSetContents(path, "z");
@@ -500,7 +500,7 @@ class MemoryFileSystemTest {
 
   @Test
   void writeAsyncChannelReadCompletionFuture() throws IOException, InterruptedException, ExecutionException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
     FileUtility.createAndSetContents(path, "abcd");
@@ -521,7 +521,7 @@ class MemoryFileSystemTest {
 
   @Test
   void writeAsyncChannelWriteCompletionFutureFailed() throws IOException, InterruptedException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path path = fileSystem.getPath("async.txt");
     FileUtility.createAndSetContents(path, "z");
@@ -546,7 +546,7 @@ class MemoryFileSystemTest {
 
   @Test
   void lockAsyncChannel() throws IOException, InterruptedException, ExecutionException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path path = fileSystem.getPath("lock.txt");
     try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, WRITE, CREATE_NEW)) {
@@ -558,7 +558,7 @@ class MemoryFileSystemTest {
 
   @Test
   void deleteOnCloseInputStream() throws IOException {
-    Path path = this.rule.getFileSystem().getPath("/sample.txt");
+    Path path = this.extension.getFileSystem().getPath("/sample.txt");
     Files.createFile(path);
     assertThat(path, exists());
 
@@ -576,7 +576,7 @@ class MemoryFileSystemTest {
   @Test
   void newBufferedWriterNoArguments() throws IOException {
     // https://github.com/marschall/memoryfilesystem/issues/9
-    Path path = this.rule.getFileSystem().getPath("hello.txt");
+    Path path = this.extension.getFileSystem().getPath("hello.txt");
 
     // file should be created
     try (BufferedWriter writer = Files.newBufferedWriter(path, US_ASCII)) {
@@ -595,7 +595,7 @@ class MemoryFileSystemTest {
 
   @Test
   void deleteOnCloseOutputStream() throws IOException {
-    Path path = this.rule.getFileSystem().getPath("/sample.txt");
+    Path path = this.extension.getFileSystem().getPath("/sample.txt");
     Files.createFile(path);
     assertThat(path, exists());
 
@@ -612,7 +612,7 @@ class MemoryFileSystemTest {
 
   @Test
   void deleteOnCloseByteChannelStream() throws IOException {
-    Path path = this.rule.getFileSystem().getPath("/sample.txt");
+    Path path = this.extension.getFileSystem().getPath("/sample.txt");
     Files.createFile(path);
     assertThat(path, exists());
 
@@ -629,7 +629,7 @@ class MemoryFileSystemTest {
 
   @Test
   void probeContent() throws IOException {
-    Path path = this.rule.getFileSystem().getPath("/sample.txt");
+    Path path = this.extension.getFileSystem().getPath("/sample.txt");
     Files.createFile(path);
     // returns "null" on JDK7 and "text/plain" on JDK8
     Files.probeContentType(path);
@@ -637,7 +637,7 @@ class MemoryFileSystemTest {
 
   @Test
   void trasferFrom() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path from = fileSystem.getPath("from.txt");
     Path to = fileSystem.getPath("to.txt");
@@ -657,7 +657,7 @@ class MemoryFileSystemTest {
 
   @Test
   void trasferTo() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path from = fileSystem.getPath("from.txt");
     Path to = fileSystem.getPath("to.txt");
@@ -688,7 +688,7 @@ class MemoryFileSystemTest {
 
   @Test
   void setDirectory() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path path = fileSystem.getPath("/");
     assertThrows(IllegalArgumentException.class, () -> Files.setAttribute(path, "isDirectory", false));
   }
@@ -696,7 +696,7 @@ class MemoryFileSystemTest {
 
   @Test
   void getFileStore() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path root = fileSystem.getPath("/");
     FileStore fileStore = Files.getFileStore(root);
     assertNotNull(fileStore);
@@ -704,7 +704,7 @@ class MemoryFileSystemTest {
 
   @Test
   void targetDoesNotExist() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path link = fileSystem.getPath("/link");
     Path target = fileSystem.getPath("/target");
     Files.createSymbolicLink(link, target);
@@ -716,7 +716,7 @@ class MemoryFileSystemTest {
 
   @Test
   void targetIsLink() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     // a -> b -> c
     Path a = fileSystem.getPath("/a");
     Path b = fileSystem.getPath("/b");
@@ -734,7 +734,7 @@ class MemoryFileSystemTest {
 
   @Test
   void symbolicLinkLoop() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path a = fileSystem.getPath("/a");
     Path b = fileSystem.getPath("/b");
     Files.createSymbolicLink(a, b);
@@ -753,7 +753,7 @@ class MemoryFileSystemTest {
 
   @Test
   void readSymbolicLinkNotALink() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path target = fileSystem.getPath("/target");
     Files.createFile(target);
 
@@ -762,7 +762,7 @@ class MemoryFileSystemTest {
 
   @Test
   void readSymbolicLink() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path link = fileSystem.getPath("/link");
     Path target = fileSystem.getPath("/target");
     Files.createFile(target);
@@ -771,7 +771,7 @@ class MemoryFileSystemTest {
     Path resolvedSymbolicLink = Files.readSymbolicLink(link);
     assertEquals("/target", resolvedSymbolicLink.toString());
 
-    resolvedSymbolicLink = Files.readSymbolicLink(this.rule.getFileSystem().getPath("/link/.././link/"));
+    resolvedSymbolicLink = Files.readSymbolicLink(this.extension.getFileSystem().getPath("/link/.././link/"));
     assertEquals("/target", resolvedSymbolicLink.toString());
 
     assertEquals("/target", link.toRealPath().toString());
@@ -780,7 +780,7 @@ class MemoryFileSystemTest {
 
   @Test
   void readSymbolicLinkDirectory() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path link = Files.createDirectory(fileSystem.getPath("/dir1")).resolve("link");
     Path target = Files.createDirectory(fileSystem.getPath("/dir2")).resolve("target");
@@ -800,7 +800,7 @@ class MemoryFileSystemTest {
    */
   @Test
   void issue35() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     List<String> lines = Collections.singletonList("Hello world");
 
@@ -823,7 +823,7 @@ class MemoryFileSystemTest {
    */
   @Test
   void issue38() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path root = Files.createDirectory(fileSystem.getPath("/").resolve("root"));
 
     List<String> lines = Collections.singletonList("Hello world");
@@ -843,7 +843,7 @@ class MemoryFileSystemTest {
 
   @Test
   void readFromSymbolicLink() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     List<String> lines = Collections.singletonList("Hello world");
 
@@ -861,7 +861,7 @@ class MemoryFileSystemTest {
 
   @Test
   void readSymlinkLoop() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path file = fileSystem.getPath("/").resolve("file");
 
@@ -882,7 +882,7 @@ class MemoryFileSystemTest {
 
   @Test
   void dontDeleteOpenFile() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path path = fileSystem.getPath("test");
     try (SeekableByteChannel channel = Files.newByteChannel(path, CREATE_NEW, WRITE)) {
       assertThrows(FileSystemException.class , () -> Files.delete(path), "you shound't be able to delete a file wile it's open");
@@ -891,7 +891,7 @@ class MemoryFileSystemTest {
 
   @Test
   void inputStream() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path path = fileSystem.getPath("test");
     try (SeekableByteChannel channel = Files.newByteChannel(path, CREATE_NEW, WRITE)) {
       channel.write(ByteBuffer.wrap(new byte[]{1, 2, 3}));
@@ -910,7 +910,7 @@ class MemoryFileSystemTest {
 
   @Test
   void truncateExisting() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path path = fileSystem.getPath("test");
     try (SeekableByteChannel channel = Files.newByteChannel(path, CREATE_NEW, WRITE)) {
       channel.write(ByteBuffer.wrap(new byte[]{1, 2, 3}));
@@ -945,7 +945,7 @@ class MemoryFileSystemTest {
 
   @Test
   void position() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path path = Files.createTempFile(fileSystem.getPath("/"), "sample", ".txt");
     try (SeekableByteChannel channel = Files.newByteChannel(path, WRITE)) {
       assertEquals(0L, channel.position());
@@ -964,7 +964,7 @@ class MemoryFileSystemTest {
 
   @Test
   void setPosition() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path path = Files.createTempFile(fileSystem.getPath("/"), "sample", ".txt");
     try (SeekableByteChannel channel = Files.newByteChannel(path, WRITE)) {
       ByteBuffer src = ByteBuffer.wrap(new byte[]{1, 2, 3, 4, 5});
@@ -979,7 +979,7 @@ class MemoryFileSystemTest {
 
   @Test
   void testIsSameFile() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path memoryPath = fileSystem.getPath("/");
     Path defaultPath = Paths.get("/foo/bar");
 
@@ -991,7 +991,7 @@ class MemoryFileSystemTest {
 
   @Test
   void isSameFileNotExisting() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path path = fileSystem.getPath("/foo/bar");
 
     assertThat(path, not(exists()));
@@ -1009,7 +1009,7 @@ class MemoryFileSystemTest {
 
   @Test
   void isRegularFile() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path path = fileSystem.getPath("/");
     Map<String, Object> attributes = Files.readAttributes(path, "isDirectory");
     assertEquals(Collections.singletonMap("isDirectory", true), attributes);
@@ -1017,7 +1017,7 @@ class MemoryFileSystemTest {
 
   @Test
   void emptySubPath() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path empty = fileSystem.getPath("");
     assertEquals(1, empty.getNameCount());
     assertEquals(empty, empty.subpath(0, 1));
@@ -1025,7 +1025,7 @@ class MemoryFileSystemTest {
 
   @Test
   void subPath() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     assertEquals(fileSystem.getPath("a"), fileSystem.getPath("a").subpath(0, 1));
     assertEquals(fileSystem.getPath("a"), fileSystem.getPath("/a").subpath(0, 1));
     assertEquals(fileSystem.getPath("b"), fileSystem.getPath("/a/b").subpath(1, 2));
@@ -1043,7 +1043,7 @@ class MemoryFileSystemTest {
 
   @Test
   void normalizeRoot() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path root = fileSystem.getPath("/");
 
     assertEquals(root, root.normalize());
@@ -1051,7 +1051,7 @@ class MemoryFileSystemTest {
 
   @Test
   void normalizeAbsolute() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     assertEquals(fileSystem.getPath("/a"), fileSystem.getPath("/a").normalize());
     assertEquals(fileSystem.getPath("/a"), fileSystem.getPath("/a/.").normalize());
@@ -1075,7 +1075,7 @@ class MemoryFileSystemTest {
 
   @Test
   void normalizeRelative() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     assertEquals(fileSystem.getPath("a"), fileSystem.getPath("a").normalize());
     assertEquals(fileSystem.getPath("a"), fileSystem.getPath("a/.").normalize());
@@ -1090,7 +1090,7 @@ class MemoryFileSystemTest {
 
   @Test
   void resolveRoot() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     assertEquals(fileSystem.getPath("/"), fileSystem.getPath("/a").resolve(fileSystem.getPath("/")));
     assertEquals(fileSystem.getPath("/"), fileSystem.getPath("a").resolve(fileSystem.getPath("/")));
@@ -1098,7 +1098,7 @@ class MemoryFileSystemTest {
 
   @Test
   void resolveAbsoluteOtherAbsolute() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path absolute = fileSystem.getPath("/a/b");
 
     assertEquals(absolute, fileSystem.getPath("").resolve(absolute));
@@ -1109,7 +1109,7 @@ class MemoryFileSystemTest {
 
   @Test
   void resolveAbsoluteOtherRelative() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path relative = fileSystem.getPath("a/b");
 
     assertEquals(fileSystem.getPath("a/b"), fileSystem.getPath("").resolve(relative));
@@ -1121,7 +1121,7 @@ class MemoryFileSystemTest {
 
   @Test
   void resolveAbsoluteOtherAbsoluteString() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     String absolute = "/a/b";
     Path absolutePath = fileSystem.getPath("/a/b");
 
@@ -1133,7 +1133,7 @@ class MemoryFileSystemTest {
 
   @Test
   void resolveAbsoluteOtherRelativeString() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     String relative = "a/b";
 
     assertEquals(fileSystem.getPath("a/b"), fileSystem.getPath("").resolve(relative));
@@ -1144,7 +1144,7 @@ class MemoryFileSystemTest {
 
   @Test
   void resolveSibling() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     assertEquals(fileSystem.getPath("b"), fileSystem.getPath("a").resolveSibling(fileSystem.getPath("b")));
 
     // argument is relative
@@ -1182,7 +1182,7 @@ class MemoryFileSystemTest {
 
   @Test
   void resolveSiblingAgainstRoot() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path root = fileSystem.getPath("/");
 
     assertEquals(fileSystem.getPath("a"), root.resolveSibling(fileSystem.getPath("a")));
@@ -1194,7 +1194,7 @@ class MemoryFileSystemTest {
 
   @Test
   void resolveSiblingAgainstRootString() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path root = fileSystem.getPath("/");
 
     assertEquals(fileSystem.getPath("a"), root.resolveSibling("a"));
@@ -1207,7 +1207,7 @@ class MemoryFileSystemTest {
 
   @Test
   void relativizeAbsolute() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path first = fileSystem.getPath("/a/b");
     Path second = fileSystem.getPath("/a/b/c");
 
@@ -1245,7 +1245,7 @@ class MemoryFileSystemTest {
 
   @Test
   void relativizeAbsoluteUnsupported1() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path first = fileSystem.getPath("/a/b");
     Path second = fileSystem.getPath("c");
     assertThrows(IllegalArgumentException.class, () -> first.relativize(second));
@@ -1253,7 +1253,7 @@ class MemoryFileSystemTest {
 
   @Test
   void relativizeAbsoluteUnsupported2() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path first = fileSystem.getPath("/a/b");
     Path second = fileSystem.getPath("c");
     assertThrows(IllegalArgumentException.class, () -> second.relativize(first));
@@ -1262,7 +1262,7 @@ class MemoryFileSystemTest {
 
   @Test
   void relativizeRelative() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path first = fileSystem.getPath("a/b");
     Path second = fileSystem.getPath("a/b/c");
 
@@ -1301,7 +1301,7 @@ class MemoryFileSystemTest {
 
   @Test
   void relativizeRelativeRoot() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path first = fileSystem.getPath("/");
     Path second = fileSystem.getPath("/a/b");
 
@@ -1312,7 +1312,7 @@ class MemoryFileSystemTest {
 
   @Test
   void absoluteIterator() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path usrBin = fileSystem.getPath("/usr/bin");
     Iterable<String> expected = Arrays.asList("usr", "bin");
     this.assertIterator(fileSystem, usrBin, expected);
@@ -1320,7 +1320,7 @@ class MemoryFileSystemTest {
 
   @Test
   void relativeIterator() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path usrBin = fileSystem.getPath("usr/bin");
     Iterable<String> expected = Arrays.asList("usr", "bin");
     this.assertIterator(fileSystem, usrBin, expected);
@@ -1350,7 +1350,7 @@ class MemoryFileSystemTest {
 
   @Test
   void endsWith() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     assertTrue(fileSystem.getPath("a").endsWith(fileSystem.getPath("a")));
     assertFalse(fileSystem.getPath("a").endsWith(fileSystem.getPath("a/b")));
@@ -1395,7 +1395,7 @@ class MemoryFileSystemTest {
 
   @Test
   void startsWith() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     assertTrue(fileSystem.getPath("a").startsWith(fileSystem.getPath("a")));
     assertFalse(fileSystem.getPath("a").startsWith(fileSystem.getPath("a/b")));
@@ -1437,7 +1437,7 @@ class MemoryFileSystemTest {
 
   @Test
   void getFileName() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path usrBin = fileSystem.getPath("/usr/bin");
     Path bin = fileSystem.getPath("bin");
 
@@ -1450,7 +1450,7 @@ class MemoryFileSystemTest {
 
   @Test
   void absoluteGetParent() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path usrBin = fileSystem.getPath("/usr/bin");
     Path usr = fileSystem.getPath("/usr");
 
@@ -1463,7 +1463,7 @@ class MemoryFileSystemTest {
 
   @Test
   void relativeGetParent() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path usrBin = fileSystem.getPath("usr/bin");
     Path usr = fileSystem.getPath("usr");
 
@@ -1474,21 +1474,21 @@ class MemoryFileSystemTest {
 
   @Test
   void absoluteGetName0() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path usrBin = fileSystem.getPath("/usr/bin");
     assertThrows(IllegalArgumentException.class, () -> usrBin.getName(-1));
   }
 
   @Test
   void absoluteGetNameToLong() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path usrBin = fileSystem.getPath("/usr/bin");
     assertThrows(IllegalArgumentException.class, () -> usrBin.getName(2));
   }
 
   @Test
   void emptyGetName() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path empty = fileSystem.getPath("");
     assertEquals(1, empty.getNameCount());
     assertEquals(empty, empty.getName(0));
@@ -1496,7 +1496,7 @@ class MemoryFileSystemTest {
 
   @Test
   void absoluteGetName() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path usrBin = fileSystem.getPath("/usr/bin");
     Path usr = fileSystem.getPath("usr");
     assertEquals(usr, usrBin.getName(0));
@@ -1506,7 +1506,7 @@ class MemoryFileSystemTest {
 
   @Test
   void relativeGetName() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path usrBin = fileSystem.getPath("usr/bin");
     Path usr = fileSystem.getPath("usr");
     assertEquals(usr, usrBin.getName(0));
@@ -1516,21 +1516,21 @@ class MemoryFileSystemTest {
 
   @Test
   void relativeGetName0() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path usrBin = fileSystem.getPath("usr/bin");
     assertThrows(IllegalArgumentException.class, () -> usrBin.getName(-1));
   }
 
   @Test
   void relativeGetNameToLong() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path usrBin = fileSystem.getPath("usr/bin");
     assertThrows(IllegalArgumentException.class, () -> usrBin.getName(2));
   }
 
   @Test
   void emptyPath() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path path = fileSystem.getPath("");
     assertThat(path, isRelative());
     assertNull(path.getRoot());
@@ -1539,7 +1539,7 @@ class MemoryFileSystemTest {
   // https://bugs.openjdk.java.net/browse/JDK-8043208
   @Test
   void jdk8043208() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path path = fileSystem.getPath("").normalize();
     assertThat(path, isRelative());
     assertNull(path.getRoot());
@@ -1549,7 +1549,7 @@ class MemoryFileSystemTest {
   @Test
   @Disabled
   void jdk8066943() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path path = fileSystem.getPath("..").relativize(fileSystem.getPath("x"));
     assertThat(path, isRelative());
     assertEquals("../x", path.toString());
@@ -1557,7 +1557,7 @@ class MemoryFileSystemTest {
 
   @Test
   void normalizeEmptyPaths() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path p1 = fileSystem.getPath(".");
     Path p2 = fileSystem.getPath("./s");
     assertTrue(p2.startsWith(p1));
@@ -1566,7 +1566,7 @@ class MemoryFileSystemTest {
 
   @Test
   void getNameCount() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path usrBin = fileSystem.getPath("/usr/bin");
     assertEquals(2, usrBin.getNameCount());
 
@@ -1576,13 +1576,13 @@ class MemoryFileSystemTest {
 
   @Test
   void isReadOnly() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     assertFalse(fileSystem.isReadOnly());
   }
 
   @Test
   void absolutePaths() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path path = fileSystem.getPath("/");
     assertThat(path, isAbsolute());
     assertSame(path, path.toAbsolutePath());
@@ -1596,7 +1596,7 @@ class MemoryFileSystemTest {
 
   @Test
   void relativePaths() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path path = fileSystem.getPath("sample");
     assertThat(path, isRelative());
     assertNull(path.getRoot());
@@ -1612,13 +1612,13 @@ class MemoryFileSystemTest {
 
   @Test
   void supportedFileAttributeViews() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     assertEquals(Collections.singleton(FileAttributeViews.BASIC), fileSystem.supportedFileAttributeViews());
   }
 
   @Test
   void pathToString() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path path = fileSystem.getPath("/");
     assertEquals("/", path.toString());
 
@@ -1640,21 +1640,21 @@ class MemoryFileSystemTest {
 
   @Test
   void defaultSeparator() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     assertEquals("/", fileSystem.getSeparator());
   }
 
 
   @Test
   void slash() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path path = fileSystem.getPath("/");
     assertThrows(IllegalArgumentException.class, () -> path.subpath(0, 1));
   }
 
   @Test
   void createDirectoryNoParent() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path homePmarscha = fileSystem.getPath("/home/pmarscha");
     assertThat(homePmarscha, not(exists()));
     assertThrows(IOException.class, () -> Files.createDirectory(homePmarscha));
@@ -1662,7 +1662,7 @@ class MemoryFileSystemTest {
 
   @Test
   void pathOrdering() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path root = fileSystem.getPath("/");
     Path empty = fileSystem.getPath("");
     Path a = fileSystem.getPath("a");
@@ -1732,7 +1732,7 @@ class MemoryFileSystemTest {
 
   @Test
   void pathOrderingDifferentFileSystem() throws IOException {
-    FileSystem fileSystem1 = this.rule.getFileSystem();
+    FileSystem fileSystem1 = this.extension.getFileSystem();
     try (FileSystem fileSystem2 = FileSystems.newFileSystem(URI.create("memory:name1"), SAMPLE_ENV)) {
       Path root1 = fileSystem1.getPath("/");
       Path root2 = fileSystem2.getPath("/");
@@ -1771,7 +1771,7 @@ class MemoryFileSystemTest {
 
   @Test
   void pathOrderingIncompatible() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path a = fileSystem.getPath("a");
     Path b = FileSystems.getDefault().getPath("b");
     assertThrows(ClassCastException.class, () -> a.compareTo(b));
@@ -1780,7 +1780,7 @@ class MemoryFileSystemTest {
 
   @Test
   void createDirectories() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path homePmarscha = fileSystem.getPath("/home/pmarscha");
     assertThat(homePmarscha, not(exists()));
     Files.createDirectories(homePmarscha);
@@ -1790,7 +1790,7 @@ class MemoryFileSystemTest {
 
   @Test
   void createDirectory() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path home = fileSystem.getPath("/home");
     assertThat(home, not(exists()));
     Files.createDirectory(home);
@@ -1801,7 +1801,7 @@ class MemoryFileSystemTest {
 
   @Test
   void createDirectoryAlreadyExists() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path home = fileSystem.getPath("/home");
     assertThat(home, not(exists()));
     Files.createDirectory(home);
@@ -1811,7 +1811,7 @@ class MemoryFileSystemTest {
 
   @Test
   void pathOfFileAlreadyExistsException() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path root = fileSystem.getPath("/");
     try {
@@ -1834,7 +1834,7 @@ class MemoryFileSystemTest {
 
   @Test
   void createDirectoriesWithRoot() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path root = fileSystem.getPath("/");
     assertThat(root, exists());
     assertEquals(Files.createDirectories(root), root);
@@ -1842,7 +1842,7 @@ class MemoryFileSystemTest {
 
   @Test
   void getRootDirectories() {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Iterator<Path> directories = fileSystem.getRootDirectories().iterator();
     assertTrue(directories.hasNext());
     directories.next();
@@ -1858,21 +1858,21 @@ class MemoryFileSystemTest {
   @Test
   void normalizeEmptyPath() {
     // https://bugs.openjdk.java.net/browse/JDK-8037945
-    Path path = this.rule.getFileSystem().getPath("");
+    Path path = this.extension.getFileSystem().getPath("");
     assertEquals(path, path.normalize());
   }
 
   @Test
   void providerMismatch() {
     Path root = Paths.get("");
-    assertThrows(ProviderMismatchException.class, () -> this.rule.getFileSystem().provider().move(root, root));
+    assertThrows(ProviderMismatchException.class, () -> this.extension.getFileSystem().provider().move(root, root));
   }
 
 
 
   @Test
   void readAttributes() throws IOException, ParseException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path patch = fileSystem.getPath("/file.txt");
 
     Files.createFile(patch);
@@ -1901,7 +1901,7 @@ class MemoryFileSystemTest {
   @Test
   void notChangingAttributes() throws IOException, ParseException {
     // https://github.com/marschall/memoryfilesystem/issues/16
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path source = fileSystem.getPath("/source.txt");
     Files.createFile(source);
 
@@ -1922,7 +1922,7 @@ class MemoryFileSystemTest {
 
   @Test
   void setTimesNull() throws IOException, ParseException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path source = fileSystem.getPath("/source.txt");
     Files.createFile(source);
 
@@ -1952,7 +1952,7 @@ class MemoryFileSystemTest {
 
   @Test
   void regressionIssue46() throws IOException {
-    Path path = this.rule.getFileSystem().getPath("existing.zip");
+    Path path = this.extension.getFileSystem().getPath("existing.zip");
     Files.createFile(path);
     FileTime time = FileTime.fromMillis(System.currentTimeMillis());
     Files.setAttribute(path, "basic:lastModifiedTime", time);
@@ -1962,7 +1962,7 @@ class MemoryFileSystemTest {
   void inputStreamDoubleClose() throws IOException {
     // regression test for
     // https://github.com/marschall/memoryfilesystem/issues/49
-    Path path = this.rule.getFileSystem().getPath("double-close.txt");
+    Path path = this.extension.getFileSystem().getPath("double-close.txt");
 
     Files.write(path, new byte[]{1, 2, 3});
     try (InputStream stream = Files.newInputStream(path)) {
@@ -1979,7 +1979,7 @@ class MemoryFileSystemTest {
   void outputStreamDoubleClose() throws IOException {
     // regression test for
     // https://github.com/marschall/memoryfilesystem/issues/49
-    Path path = this.rule.getFileSystem().getPath("double-close.txt");
+    Path path = this.extension.getFileSystem().getPath("double-close.txt");
 
     try (OutputStream stream = Files.newOutputStream(path, CREATE_NEW)) {
       // intentionally double close
@@ -1995,7 +1995,7 @@ class MemoryFileSystemTest {
   void byteChannelDoubleClose() throws IOException {
     // regression test for
     // https://github.com/marschall/memoryfilesystem/issues/49
-    Path path = this.rule.getFileSystem().getPath("double-close.txt");
+    Path path = this.extension.getFileSystem().getPath("double-close.txt");
 
     try (SeekableByteChannel channel = Files.newByteChannel(path, CREATE_NEW)) {
       // intentionally double close
@@ -2013,9 +2013,9 @@ class MemoryFileSystemTest {
    */
   @Test
   void symLinkDirectory() throws IOException {
-    Path parent = this.rule.getFileSystem().getPath("/linkParent");
+    Path parent = this.extension.getFileSystem().getPath("/linkParent");
     Files.createDirectories(parent);
-    Path target = this.rule.getFileSystem().getPath("/target");
+    Path target = this.extension.getFileSystem().getPath("/target");
     Files.createDirectories(target);
     Path link = parent.resolve("link");
     Files.createSymbolicLink(link, target);
@@ -2030,14 +2030,14 @@ class MemoryFileSystemTest {
    */
   @Test
   void unsupportedViews() {
-    Path root = this.rule.getFileSystem().getPath("/");
+    Path root = this.extension.getFileSystem().getPath("/");
     PosixFileAttributeView unsupportedView = Files.getFileAttributeView(root, PosixFileAttributeView.class);
     assertNull(unsupportedView);
   }
 
   @Test
   void channelWriteTruncateExisting() throws IOException {
-    Path file = this.rule.getFileSystem().getPath("/file.txt");
+    Path file = this.extension.getFileSystem().getPath("/file.txt");
     Files.createFile(file);
     try (SeekableByteChannel channel = Files.newByteChannel(file, WRITE, APPEND, TRUNCATE_EXISTING)) {
       fail("APPEND and TRUNCATE_EXISTING and should not work");
@@ -2048,7 +2048,7 @@ class MemoryFileSystemTest {
 
   @Test
   void outputStreamWriteTruncateExisting() throws IOException {
-    Path file = this.rule.getFileSystem().getPath("/file.txt");
+    Path file = this.extension.getFileSystem().getPath("/file.txt");
     Files.createFile(file);
     try (OutputStream outputStream = Files.newOutputStream(file, APPEND, TRUNCATE_EXISTING)) {
       fail("APPEND and TRUNCATE_EXISTING and should not work");
@@ -2060,7 +2060,7 @@ class MemoryFileSystemTest {
 
   @Test
   void fromUriSingleSlash() throws IOException {
-    Path root = this.rule.getFileSystem().getPath("/root");
+    Path root = this.extension.getFileSystem().getPath("/root");
     Files.createFile(root);
     Path singleSlash = Paths.get(URI.create("memory:name:/root"));
     Path doubleSlash = Paths.get(URI.create("memory:name:///root"));
@@ -2073,7 +2073,7 @@ class MemoryFileSystemTest {
   void toUriDifferentFileSystem() {
     URI uri = URI.create("file:///etc/passwd");
     try {
-      this.rule.getFileSystem().provider().getPath(uri);
+      this.extension.getFileSystem().provider().getPath(uri);
       fail("URI " + uri + " should be invalid");
     } catch (IllegalArgumentException e) {
       // should reach here

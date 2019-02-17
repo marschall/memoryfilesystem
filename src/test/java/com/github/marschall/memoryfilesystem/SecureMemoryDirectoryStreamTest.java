@@ -23,11 +23,11 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 class SecureMemoryDirectoryStreamTest {
 
   @RegisterExtension
-  final FileSystemExtension rule = new FileSystemExtension();
+  final FileSystemExtension extension = new FileSystemExtension();
 
   @Test
   void deleteFileRelative() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path originalFolder = fileSystem.getPath("original-folder");
     Files.createDirectory(originalFolder);
@@ -48,7 +48,7 @@ class SecureMemoryDirectoryStreamTest {
 
   @Test
   void deleteFileAbsolute() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path originalFolder = fileSystem.getPath("original-folder");
     Files.createDirectory(originalFolder);
@@ -69,7 +69,7 @@ class SecureMemoryDirectoryStreamTest {
 
   @Test
   void deleteFileClosed() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path originalFolder = fileSystem.getPath("original-folder");
     Files.createDirectory(originalFolder);
@@ -91,7 +91,7 @@ class SecureMemoryDirectoryStreamTest {
 
   @Test
   void deleteDirectoryRelative() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path originalFolder = fileSystem.getPath("original-folder");
     Files.createDirectory(originalFolder);
@@ -112,7 +112,7 @@ class SecureMemoryDirectoryStreamTest {
 
   @Test
   void deleteDirectoryAbsolute() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path originalFolder = fileSystem.getPath("original-folder");
     Files.createDirectory(originalFolder);
@@ -133,7 +133,7 @@ class SecureMemoryDirectoryStreamTest {
 
   @Test
   void deleteDirectoryClosed() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path originalFolder = fileSystem.getPath("original-folder");
     Files.createDirectory(originalFolder);
@@ -155,7 +155,7 @@ class SecureMemoryDirectoryStreamTest {
 
   @Test
   void newByteChannelRelative() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path originalFolder = fileSystem.getPath("original-folder");
     Files.createDirectory(originalFolder);

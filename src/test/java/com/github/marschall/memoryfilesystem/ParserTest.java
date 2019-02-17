@@ -15,13 +15,13 @@ class ParserTest {
   private static final String DISPLAY_NAME = "first: {0}, more: {1}, expected: {2}";
 
   @RegisterExtension
-  final FileSystemExtension rule = new FileSystemExtension();
+  final FileSystemExtension extension = new FileSystemExtension();
 
 
   @ParameterizedTest(name = DISPLAY_NAME)
   @MethodSource("data")
   void parse(String first, String[] more, String expected) {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     assertEquals(fileSystem.getPath(expected), fileSystem.getPath(first, more));
   }
 

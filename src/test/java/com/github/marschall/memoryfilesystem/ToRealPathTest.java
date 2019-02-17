@@ -19,14 +19,14 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 class ToRealPathTest {
 
   @RegisterExtension
-  final FileSystemExtension rule = new FileSystemExtension();
+  final FileSystemExtension extension = new FileSystemExtension();
 
   private Path existingDirectoryPath;
   private Path existingFilePath;
 
   @BeforeEach
   void before() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     // lets prepare the filesystem content...
     // structure should looks like:
@@ -65,57 +65,57 @@ class ToRealPathTest {
 
   @Test
   void realPathDirectoryEquals() throws IOException {
-    Path linkDirectoryRealPath = this.rule.getFileSystem().getPath("linkDirectory").toRealPath();
+    Path linkDirectoryRealPath = this.extension.getFileSystem().getPath("linkDirectory").toRealPath();
     assertEquals(this.existingDirectoryPath.toAbsolutePath(), linkDirectoryRealPath);
     assertEquals(this.existingDirectoryPath.toRealPath(), linkDirectoryRealPath);
   }
 
   @Test
   void realPathFileEquals() throws IOException {
-    Path linkFileRealPath = this.rule.getFileSystem().getPath("linkFile").toRealPath();
+    Path linkFileRealPath = this.extension.getFileSystem().getPath("linkFile").toRealPath();
     assertEquals(this.existingFilePath.toRealPath(), linkFileRealPath);
 
-    linkFileRealPath = this.rule.getFileSystem().getPath("linkDirectory").resolve("existingFile").toRealPath();
+    linkFileRealPath = this.extension.getFileSystem().getPath("linkDirectory").resolve("existingFile").toRealPath();
     assertEquals(this.existingFilePath.toRealPath(), linkFileRealPath);
   }
 
   @Test
   void realPathIsDirectory() throws IOException {
-    Path linkDirectoryRealPath = this.rule.getFileSystem().getPath("linkDirectory").toRealPath();
+    Path linkDirectoryRealPath = this.extension.getFileSystem().getPath("linkDirectory").toRealPath();
     assertTrue(Files.isDirectory(linkDirectoryRealPath));
   }
 
   @Test
   void realPathIsFile() throws IOException {
-    Path linkFileRealPath = this.rule.getFileSystem().getPath("linkFile").toRealPath();
+    Path linkFileRealPath = this.extension.getFileSystem().getPath("linkFile").toRealPath();
     assertFalse(Files.isDirectory(linkFileRealPath));
     assertTrue(Files.isRegularFile(linkFileRealPath));
   }
 
   @Test
   void realPathIsSymlink() throws IOException {
-    Path linkDirectoryRealPath = this.rule.getFileSystem().getPath("linkDirectory").toRealPath();
+    Path linkDirectoryRealPath = this.extension.getFileSystem().getPath("linkDirectory").toRealPath();
     assertFalse(Files.isSymbolicLink(linkDirectoryRealPath));
 
-    Path linkFileRealPath = this.rule.getFileSystem().getPath("linkFile").toRealPath();
+    Path linkFileRealPath = this.extension.getFileSystem().getPath("linkFile").toRealPath();
     assertFalse(Files.isSymbolicLink(linkFileRealPath));
 
-    linkFileRealPath = this.rule.getFileSystem().getPath("linkDirectory").resolve("existingFile").toRealPath();
+    linkFileRealPath = this.extension.getFileSystem().getPath("linkDirectory").resolve("existingFile").toRealPath();
     assertFalse(Files.isSymbolicLink(linkFileRealPath));
   }
 
   @Test
   void realPathDirectoryToString() throws IOException {
-    Path linkDirectoryRealPath = this.rule.getFileSystem().getPath("linkDirectory").toRealPath();
+    Path linkDirectoryRealPath = this.extension.getFileSystem().getPath("linkDirectory").toRealPath();
     assertEquals("/existingDirectory", linkDirectoryRealPath.toString());
   }
 
   @Test
   void realPathFileToString() throws IOException {
-    Path linkFileRealPath = this.rule.getFileSystem().getPath("linkFile").toRealPath();
+    Path linkFileRealPath = this.extension.getFileSystem().getPath("linkFile").toRealPath();
     assertEquals("/existingDirectory/existingFile", linkFileRealPath.toString());
 
-    linkFileRealPath = this.rule.getFileSystem().getPath("linkDirectory").resolve("existingFile").toRealPath();
+    linkFileRealPath = this.extension.getFileSystem().getPath("linkDirectory").resolve("existingFile").toRealPath();
     assertEquals("/existingDirectory/existingFile", linkFileRealPath.toString());
   }
 

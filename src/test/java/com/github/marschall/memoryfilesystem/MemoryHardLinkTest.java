@@ -49,11 +49,11 @@ class MemoryHardLinkTest {
   }
 
   @RegisterExtension
-  final FileSystemExtension rule = new FileSystemExtension();
+  final FileSystemExtension extension = new FileSystemExtension();
 
   @Test
   void sameContents() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path target = Files.createFile(fileSystem.getPath("target"));
     String initialContents = "initial";
     setContents(target, initialContents);
@@ -81,7 +81,7 @@ class MemoryHardLinkTest {
 
   @Test
   void explicitDeletePreserves() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path target = Files.createFile(fileSystem.getPath("target"));
     String initialContents = "initial";
     setContents(target, initialContents);
@@ -97,7 +97,7 @@ class MemoryHardLinkTest {
 
   @Test
   void implicitDeletePreserves() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path target = Files.createFile(fileSystem.getPath("target"));
     String initialContents = "initial";
     setContents(target, initialContents);
@@ -115,7 +115,7 @@ class MemoryHardLinkTest {
 
   @Test
   void noLinksOnDirectories() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path target = Files.createDirectory(fileSystem.getPath("target"));
     Path link = fileSystem.getPath("link");
 
@@ -131,7 +131,7 @@ class MemoryHardLinkTest {
 
   @Test
   void sameAttributes() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path target = Files.createFile(fileSystem.getPath("target"));
     Path link = Files.createLink(fileSystem.getPath("link"), target);
 

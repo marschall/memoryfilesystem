@@ -21,12 +21,12 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 class PosixAclMemoryFileSystemTest {
 
   @RegisterExtension
-  final PosixAclFileSystemExtension rule = new PosixAclFileSystemExtension();
+  final PosixAclFileSystemExtension extension = new PosixAclFileSystemExtension();
 
   @Test
   @Disabled("not ready yet")
   void defaultAttributes() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
     Path file = fileSystem.getPath("file.txt");
 
     Files.createFile(file);

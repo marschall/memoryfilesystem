@@ -18,11 +18,11 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 class BlockInputStreamTest {
 
   @RegisterExtension
-  final FileSystemExtension rule = new FileSystemExtension();
+  final FileSystemExtension extension = new FileSystemExtension();
 
   @Test
   void skipMoreThanAvailable() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path path = fileSystem.getPath("file.txt");
     Files.createFile(path);
@@ -39,7 +39,7 @@ class BlockInputStreamTest {
 
   @Test
   void skipMoreSmallNumber() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path path = fileSystem.getPath("file.txt");
     Files.createFile(path);
@@ -55,7 +55,7 @@ class BlockInputStreamTest {
 
   @Test
   void skipMoreLargeNumberNumber() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path path = fileSystem.getPath("file.txt");
     Files.createFile(path);
@@ -71,7 +71,7 @@ class BlockInputStreamTest {
 
   @Test
   void transferTo() throws IOException {
-    FileSystem fileSystem = this.rule.getFileSystem();
+    FileSystem fileSystem = this.extension.getFileSystem();
 
     Path path = fileSystem.getPath("file.txt");
     int size = MemoryInode.BLOCK_SIZE + 2;
