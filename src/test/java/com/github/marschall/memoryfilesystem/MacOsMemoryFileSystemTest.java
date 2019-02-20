@@ -9,12 +9,15 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -22,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
+import java.nio.file.StandardOpenOption;
 import java.text.Normalizer;
 import java.text.Normalizer.Form;
 import java.util.Arrays;
@@ -177,6 +181,39 @@ class MacOsMemoryFileSystemTest {
         }
       }
       assertTrue(found);
+    } finally {
+      if (useDefault) {
+        Files.delete(child1);
+      }
+    }
+  }
+
+  @CompatibilityTest
+  void channelOnDirectoryReading(boolean useDefault) throws IOException {
+    FileSystem fileSystem = this.getFileSystem(useDefault);
+
+    Path child1 = fileSystem.getPath("child1");
+    Files.createDirectory(child1);
+
+    try (FileChannel channel = FileChannel.open(child1, StandardOpenOption.READ)) {
+      channel.force(true);
+      assertThrows(IOException.class, () -> channel.read(ByteBuffer.allocate(1)));
+    } finally {
+      if (useDefault) {
+        Files.delete(child1);
+      }
+    }
+  }
+
+  @CompatibilityTest
+  void channelOnDirectoryWriting(boolean useDefault) throws IOException {
+    FileSystem fileSystem = this.getFileSystem(useDefault);
+
+    Path child1 = fileSystem.getPath("child1");
+    Files.createDirectory(child1);
+
+    try {
+      assertThrows(IOException.class, () -> FileChannel.open(child1, StandardOpenOption.WRITE));
     } finally {
       if (useDefault) {
         Files.delete(child1);

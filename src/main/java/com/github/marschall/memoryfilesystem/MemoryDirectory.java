@@ -109,6 +109,11 @@ class MemoryDirectory extends MemoryEntry {
 
   static final class MemoryDirectoryAttributes extends MemoryEntryAttributes {
 
+    /**
+     * {@link java.nio.file.attribute.BasicFileAttributes#size()} says it's unspecified.
+     */
+    static final long SIZE = -1L;
+
     MemoryDirectoryAttributes(EntryCreationContext context) {
       super(context);
     }
@@ -120,7 +125,7 @@ class MemoryDirectory extends MemoryEntry {
 
     @Override
     long size() {
-      return -1;
+      return SIZE;
     }
 
   }

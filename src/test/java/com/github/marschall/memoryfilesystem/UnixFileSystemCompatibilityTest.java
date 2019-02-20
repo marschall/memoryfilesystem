@@ -26,6 +26,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.NonWritableChannelException;
 import java.nio.charset.Charset;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
@@ -567,7 +570,7 @@ class UnixFileSystemCompatibilityTest {
 
   @CompatibilityTest
   void caseSensitivePatterns(boolean useDefault) throws IOException {
-    FileSystem fileSystem = this.extension.getFileSystem();
+    FileSystem fileSystem = this.getFileSystem(useDefault);
 
     Path child1 = fileSystem.getPath("child1");
     Files.createFile(child1);
@@ -579,6 +582,47 @@ class UnixFileSystemCompatibilityTest {
         assertFalse(regexMatcher.matches(path));
         assertFalse(globMatcher.matches(path));
       }
+    } finally {
+      if (useDefault) {
+        Files.delete(child1);
+      }
+    }
+  }
+
+  @CompatibilityTest
+  void channelOnDirectoryReading(boolean useDefault) throws IOException {
+    FileSystem fileSystem = this.getFileSystem(useDefault);
+
+    Path child1 = fileSystem.getPath("child1");
+    Files.createDirectory(child1);
+
+    try (FileChannel channel = FileChannel.open(child1, StandardOpenOption.READ)) {
+      channel.force(true);
+      System.out.println(channel.isOpen());
+      System.out.println(channel.position());
+      System.out.println(channel.size());
+      channel.position(1L);
+      assertEquals(1L, channel.position());
+      assertThrows(IOException.class, () -> channel.read(ByteBuffer.allocate(1)));
+      assertThrows(NonWritableChannelException.class, () -> channel.write(ByteBuffer.allocate(1)));
+      assertThrows(NonWritableChannelException.class, () -> channel.lock());
+      assertThrows(NonWritableChannelException.class, () -> channel.truncate(5L));
+    } finally {
+      if (useDefault) {
+        Files.delete(child1);
+      }
+    }
+  }
+
+  @CompatibilityTest
+  void channelOnDirectoryWriting(boolean useDefault) throws IOException {
+    FileSystem fileSystem = this.getFileSystem(useDefault);
+
+    Path child1 = fileSystem.getPath("child1");
+    Files.createDirectory(child1);
+
+    try {
+      assertThrows(IOException.class, () -> FileChannel.open(child1, StandardOpenOption.WRITE));
     } finally {
       if (useDefault) {
         Files.delete(child1);
