@@ -7,7 +7,7 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.UserPrincipal;
 import java.util.Set;
 
-public final class EntryCreationContext {
+final class EntryCreationContext {
 
   final Set<Class<? extends FileAttributeView>> additionalViews;
   final Set<PosixFilePermission> permissions;
