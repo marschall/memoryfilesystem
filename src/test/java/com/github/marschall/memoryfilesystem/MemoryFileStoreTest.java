@@ -20,6 +20,7 @@ import java.nio.file.attribute.FileOwnerAttributeView;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.util.Iterator;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -94,6 +95,13 @@ class MemoryFileStoreTest {
     assertFalse(fileStore.supportsFileAttributeView(FileAttributeViews.OWNER));
     assertFalse(fileStore.supportsFileAttributeView(FileAttributeViews.USER));
     assertFalse(fileStore.supportsFileAttributeView(FileAttributeViews.ACL));
+  }
+
+  @Test
+  void getBlockSize() {
+    MemoryFileStore fileStore = (MemoryFileStore) this.extension.getFileStore();
+    long blockSize = fileStore.getBlockSize();
+    assertThat(blockSize, greaterThan(0L));
   }
 
 }

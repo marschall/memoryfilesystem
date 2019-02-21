@@ -37,6 +37,11 @@ class MemoryFileStore extends FileStore {
     return false;
   }
 
+  // since 10
+  public long getBlockSize() {
+    this.checker.check();
+    return MemoryInode.BLOCK_SIZE;
+  }
 
   @Override
   public long getTotalSpace() {
