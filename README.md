@@ -122,6 +122,9 @@ Use `CurrentUser#useDuring`
 ### How can I set the current group?
 Use `CurrentGroup#useDuring`
 
+### Can I run Lucene?
+Yes, starting with version 2.1 running Lucene is supported, see [LuceneRegressionTest](https://github.com/marschall/memoryfilesystem/blob/master/src/test/java/com/github/marschall/memoryfilesystem/LuceneRegressionTest.java). It is important you use the `#newLinux()` method on `MemoryFileSystemBuilder`.
+
 ### Are there other similar projects?
 Yes, [google/jimfs](https://github.com/google/jimfs), [openCage/memoryfs](https://github.com/openCage/memoryfs) and [sbridges/ephemeralfs](https://github.com/sbridges/ephemeralfs) seem similar.
 
@@ -144,7 +147,7 @@ It's important to know that at any given time there can only be one memory file 
 
 There are other `new` methods on `MemoryFileSystemBuilder` that allow you to create different file systems and other methods that allow you to customize the file system.
 
-### Next Steps
+### Next Steps JUnit 4
 You probably want to create a JUnit `TestRule` that sets up and tears down a file system for you. A rule can look like this
 
 ```java
@@ -194,7 +197,53 @@ public class FileSystemTest {
 }
 ```
 
-It's important to note that the field holding the rule must be public. If you're using an IoC container for integration tests check out the section below.
+It's important to note that the field holding the rule must be public.
+
+### Next Steps JUnit 5
+You probably want to create a JUnit extension that sets up and tears down a file system for you. A rule can look like this
+
+```java
+class FileSystemExtension implements BeforeEachCallback, AfterEachCallback {
+
+  private FileSystem fileSystem;
+
+  FileSystem getFileSystem() {
+    return this.fileSystem;
+  }
+
+  @Override
+  public void beforeEach(ExtensionContext context) throws Exception {
+    this.fileSystem = MemoryFileSystemBuilder.newEmpty().build("name");
+  }
+
+  @Override
+  public void afterEach(ExtensionContext context) throws Exception {
+    if (this.fileSystem != null) {
+      this.fileSystem.close();
+    }
+  }
+}
+```
+
+and is used like this
+```java
+class FileSystemTest {
+
+  @RegisterExtension
+  final FileSystemExtension extension = new FileSystemExtension();
+
+  @Test
+  public void lockAsyncChannel() throws IOException {
+    FileSystem fileSystem = this.extension.getFileSystem();
+
+    Path path = fileSystem.getPath("sample.txt");
+    assertFalse(Files.exists(path));
+  }
+
+}
+```
+
+If you're using an IoC container for integration tests check out the section below.
 
 ### Spring
 The `com.github.marschall.memoryfilesystem.MemoryFileSystemFactoryBean` provides integration with Spring.
