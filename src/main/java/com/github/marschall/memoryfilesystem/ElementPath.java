@@ -25,5 +25,4 @@ abstract class ElementPath extends AbstractPath {
 
   abstract int compareToNonRoot(ElementPath other);
 
-
 }

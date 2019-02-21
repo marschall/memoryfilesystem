@@ -18,6 +18,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.channels.NonWritableChannelException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -190,17 +191,33 @@ class MacOsMemoryFileSystemTest {
 
   @CompatibilityTest
   void channelOnDirectoryReading(boolean useDefault) throws IOException {
-    FileSystem fileSystem = this.getFileSystem(useDefault);
+    for (String path : new String[] {"child1", "/"}) {
+      FileSystem fileSystem = this.getFileSystem(useDefault);
 
-    Path child1 = fileSystem.getPath("child1");
-    Files.createDirectory(child1);
+      Path directory = fileSystem.getPath(path);
+      boolean created = false;
+      if (!Files.exists(directory)) {
+        Files.createDirectory(directory);
+        created = true;
+      }
 
-    try (FileChannel channel = FileChannel.open(child1, StandardOpenOption.READ)) {
-      channel.force(true);
-      assertThrows(IOException.class, () -> channel.read(ByteBuffer.allocate(1)));
-    } finally {
-      if (useDefault) {
-        Files.delete(child1);
+      try (FileChannel channel = FileChannel.open(directory, StandardOpenOption.READ)) {
+        channel.force(true);
+        assertTrue(channel.isOpen());
+        assertEquals(0, channel.position());
+        channel.position(1L);
+        assertEquals(1L, channel.position());
+        assertThrows(IOException.class, () -> channel.read(ByteBuffer.allocate(1)));
+        assertThrows(NonWritableChannelException.class, () -> channel.write(ByteBuffer.allocate(1)));
+        assertThrows(NonWritableChannelException.class, () -> channel.lock());
+        // TODO
+        //        assertThrows(OverlappingFileLockException.class, () -> channel.lock(0L, 1L, true));
+        assertThrows(NonWritableChannelException.class, () -> channel.lock(0L, 1L, false));
+        assertThrows(NonWritableChannelException.class, () -> channel.truncate(5L));
+      } finally {
+        if (created) {
+          Files.delete(directory);
+        }
       }
     }
   }

@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.nio.channels.AsynchronousFileChannel;
+import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.AccessMode;
 import java.nio.file.CopyOption;
@@ -133,9 +134,11 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
       umask = Collections.emptySet();
     }
     TemporalUnit resolution =  parser.getFileTimeResolution();
+    boolean supportFileChannelOnDirectory = parser.supportFileChannelOnDirectory();
 
     MemoryFileSystem fileSystem = new MemoryFileSystem(key, separator, pathParser, this, memoryStore,
-            userPrincipalLookupService, checker, storeTransformer, lookUpTransformer, collator, additionalViews, umask, resolution);
+            userPrincipalLookupService, checker, storeTransformer, lookUpTransformer, collator,
+            additionalViews, umask, resolution, supportFileChannelOnDirectory);
     fileSystem.setRootDirectories(this.buildRootsDirectories(parser,  fileSystem, additionalViews, umask));
     String defaultDirectory = parser.getDefaultDirectory();
     fileSystem.setCurrentWorkingDirectory(defaultDirectory);
@@ -242,7 +245,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   }
 
   @Override
-  public BlockChannel newFileChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
+  public FileChannel newFileChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
     this.checkSupported(options);
     AbstractPath abstractPath = castPath(path);
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
@@ -251,9 +254,16 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   @Override
   public AsynchronousFileChannel newAsynchronousFileChannel(Path path, Set<? extends OpenOption> options, ExecutorService executor, FileAttribute<?>... attrs) throws IOException {
-    BlockChannel fileChannel = this.newFileChannel(path, options, attrs);
-    return new AsynchronousBlockChannel(fileChannel,
-            executor != null ? executor : this.workExecutor, executor != null ? executor : this.callbackExecutor);
+    FileChannel fileChannel = this.newFileChannel(path, options, attrs);
+    if (fileChannel instanceof BlockChannel) {
+      return new AsynchronousBlockChannel((BlockChannel) fileChannel,
+              executor != null ? executor : this.workExecutor, executor != null ? executor : this.callbackExecutor);
+    } else if (fileChannel instanceof DirectoryChannel) {
+      return new AsynchronousDirectoryFileChannel((DirectoryChannel) fileChannel,
+              executor != null ? executor : this.callbackExecutor);
+    } else {
+      throw new IllegalStateException("unknown channel type: " + fileChannel.getClass());
+    }
   }
 
   @Override

@@ -1,5 +1,6 @@
 package com.github.marschall.memoryfilesystem;
 
+import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.text.Collator;
 import java.time.temporal.TemporalUnit;
@@ -101,6 +102,18 @@ public class MemoryFileSystemProperties {
    * @see java.time.Instant#truncatedTo(java.time.temporal.TemporalUnit)
    */
   public static final String FILE_TIME_RESOLUTION_PROPERTY = "file.time.resolution";
+
+  /**
+   * Name of property for supporting opening a {@link FileChannel} on a directory
+   * for reading even though subsequent reads will fail.
+   *
+   * Must be a {@link java.lang.Boolean}.
+   *
+   * @see <a href="https://bugs.openjdk.java.net/browse/JDK-8066915">JDK-8066915</a>
+   * @see <a href="https://bugs.openjdk.java.net/browse/JDK-8080629">JDK-8080629</a>
+   * @see <a href="https://bugs.openjdk.java.net/browse/JDK-8080235">JDK-8080235</a>
+   */
+  public static final String FILE_CHANNEL_DIRECTORY_PROPERTY = "filechannel.on.directory";
 
   /**
    * Name of the property of the {@link Collator} used to compare path elements.

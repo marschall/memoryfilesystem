@@ -89,15 +89,13 @@ final class DirectoryChannel extends FileChannel {
   @Override
   public long transferTo(long position, long count, WritableByteChannel target) throws IOException {
     this.closedCheck();
-    // TODO Auto-generated method stub
-    return 0;
+    throw new IOException("Operation not supported");
   }
 
   @Override
   public long transferFrom(ReadableByteChannel src, long position, long count) throws IOException {
     this.closedCheck();
-    // TODO Auto-generated method stub
-    return 0;
+    throw new NonWritableChannelException();
   }
 
   @Override
@@ -109,13 +107,19 @@ final class DirectoryChannel extends FileChannel {
   @Override
   public FileLock lock(long position, long size, boolean shared) throws IOException {
     this.closedCheck();
-    throw new NonWritableChannelException();
+    if (!shared) {
+      throw new NonWritableChannelException();
+    }
+    throw new IllegalArgumentException("directory file size is empty");
   }
 
   @Override
   public FileLock tryLock(long position, long size, boolean shared) throws IOException {
     this.closedCheck();
-    throw new NonWritableChannelException();
+    if (!shared) {
+      throw new NonWritableChannelException();
+    }
+    throw new IllegalArgumentException("directory file size is empty");
   }
 
   @Override

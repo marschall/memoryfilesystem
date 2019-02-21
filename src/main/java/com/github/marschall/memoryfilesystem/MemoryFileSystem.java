@@ -12,6 +12,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.nio.channels.FileChannel;
 import java.nio.file.AccessMode;
 import java.nio.file.CopyOption;
 import java.nio.file.DirectoryStream;
@@ -28,6 +29,7 @@ import java.nio.file.NotLinkException;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.WatchService;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -122,6 +124,8 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
 
   private final TemporalUnit resolution;
 
+  private final boolean supportFileChannelOnDirectory;
+
   static {
     Set<String> unsupported = new HashSet<>(3);
     unsupported.add("lastAccessTime");
@@ -134,7 +138,7 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
   MemoryFileSystem(String key, String separator, PathParser pathParser, MemoryFileSystemProvider provider, MemoryFileStore store,
           MemoryUserPrincipalLookupService userPrincipalLookupService, ClosedFileSystemChecker checker, StringTransformer storeTransformer,
           StringTransformer lookUpTransformer, Collator collator, Set<Class<? extends FileAttributeView>> additionalViews,
-          Set<PosixFilePermission> umask, TemporalUnit resolution) {
+          Set<PosixFilePermission> umask, TemporalUnit resolution, boolean supportDirectoryFileChannelHack) {
     this.key = key;
     this.separator = separator;
     this.pathParser = pathParser;
@@ -148,6 +152,7 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
     this.additionalViews = additionalViews;
     this.umask = umask;
     this.resolution = resolution;
+    this.supportFileChannelOnDirectory = supportDirectoryFileChannelHack;
     this.stores = Collections.<FileStore>singletonList(store);
     this.watchKeys = new ConcurrentHashMap<>(1);
     this.emptyPath = new EmptyPath(this);
@@ -265,24 +270,38 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
   }
 
 
-  BlockChannel newFileChannel(AbstractPath path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
+  FileChannel newFileChannel(AbstractPath path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
     this.checker.check();
-    MemoryFile file = this.getFile(path, options, attrs);
-    return file.newChannel(options, path);
+    MemoryEntry entry = this.getEntry(path, options, attrs);
+    if (entry instanceof MemoryFile) {
+      return ((MemoryFile) entry).newChannel(options, path);
+    }
+    if (entry instanceof MemoryDirectory) {
+      boolean isRead = options.contains(StandardOpenOption.READ);
+      boolean isWrite = options.contains(StandardOpenOption.WRITE);
+      if (this.supportFileChannelOnDirectory && isRead && !isWrite) {
+        return new DirectoryChannel();
+      }
+    }
+    throw new FileSystemException(path.toAbsolutePath().toString(), null, "is not a file");
+  }
+
+  private static Set<OpenOption> toOptionSet(Set<OpenOption> defaultOptions, OpenOption... options) {
+    if (options == null || options.length == 0) {
+      return defaultOptions;
+    } else {
+      Set<OpenOption> optionsSet = new HashSet<>(options.length);
+      for (OpenOption option : options) {
+        optionsSet.add(option);
+      }
+      return optionsSet;
+    }
   }
 
 
   InputStream newInputStream(AbstractPath path, OpenOption... options) throws IOException {
     this.checker.check();
-    Set<OpenOption> optionsSet;
-    if (options == null || options.length == 0) {
-      optionsSet = Collections.emptySet();
-    } else {
-      optionsSet = new HashSet<>(options.length);
-      for (OpenOption option : options) {
-        optionsSet.add(option);
-      }
-    }
+    Set<OpenOption> optionsSet = toOptionSet(Collections.emptySet(), options);
     MemoryFile file = this.getFile(path, optionsSet);
     return file.newInputStream(optionsSet, path);
   }
@@ -290,15 +309,7 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
 
   OutputStream newOutputStream(AbstractPath path, OpenOption... options) throws IOException {
     this.checker.check();
-    Set<OpenOption> optionsSet;
-    if (options == null || options.length == 0) {
-      optionsSet = DefaultOpenOptions.INSTANCE;
-    } else {
-      optionsSet = new HashSet<>(options.length);
-      for (OpenOption option : options) {
-        optionsSet.add(option);
-      }
-    }
+    Set<OpenOption> optionsSet = toOptionSet(DefaultOpenOptions.INSTANCE, options);
     MemoryFile file = this.getFile(path, optionsSet);
     return file.newOutputStream(optionsSet, path);
   }
@@ -314,92 +325,104 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
     }
   }
 
-  private GetFileResult getFile(final AbstractPath path, final Set<? extends OpenOption> options, FileAttribute<?>[] attrs, final boolean followSymLinks, final Set<MemorySymbolicLink> encounteredSymlinks) throws IOException {
+  private GetEntryResult getEntry(final AbstractPath path, final Set<? extends OpenOption> options, FileAttribute<?>[] attrs, final boolean followSymLinks, final Set<MemorySymbolicLink> encounteredSymlinks) throws IOException {
 
     final FileAttribute<?>[] newAttributes = this.applyUmask(attrs); // TODO lazy
     final AbstractPath absolutePath = (AbstractPath) path.toAbsolutePath().normalize();
-    if (absolutePath.isRoot()) {
-      throw new FileSystemException(path.toString(), null, "is not a file");
-    }
-    final ElementPath elementPath = (ElementPath) absolutePath;
     MemoryDirectory rootDirectory = this.getRootDirectory(absolutePath);
-
+    if (absolutePath.isRoot()) {
+      return new GetEntryResult(rootDirectory);
+    }
 
     final AbstractPath parent = (AbstractPath) absolutePath.getParent();
-    return this.withWriteLockOnLastDo(rootDirectory, parent, followSymLinks, encounteredSymlinks, new MemoryDirectoryBlock<GetFileResult>() {
+    return this.withWriteLockOnLastDo(rootDirectory, parent, followSymLinks, encounteredSymlinks, new MemoryDirectoryBlock<GetEntryResult>() {
 
       @Override
-      public GetFileResult value(MemoryDirectory directory) throws IOException {
+      public GetEntryResult value(MemoryDirectory directory) throws IOException {
+        ElementPath elementPath = (ElementPath) absolutePath;
         boolean isCreateNew = options.contains(CREATE_NEW);
         String fileName = elementPath.getLastNameElement();
         String key = MemoryFileSystem.this.lookUpTransformer.transform(fileName);
 
         EntryCreationContext creationContext = MemoryFileSystem.this.newEntryCreationContext(absolutePath, newAttributes);
         if (isCreateNew) {
-          String name = MemoryFileSystem.this.storeTransformer.transform(fileName);
-          MemoryFile file = new MemoryFile(name, creationContext);
-          checkSupportedInitialAttributes(newAttributes);
-          AttributeAccessors.setAttributes(file, newAttributes);
-          directory.checkAccess(WRITE);
-          // will throw an exception if already present
-          directory.addEntry(key, file, path);
-          return new GetFileResult(file);
+          MemoryFile file = this.createEntryOnAccess(path, newAttributes, directory, elementPath, creationContext);
+          return new GetEntryResult(file);
         } else {
           MemoryEntry storedEntry = directory.getEntry(key);
           if (storedEntry == null) {
             boolean isCreate = options.contains(CREATE);
             if (isCreate) {
-              String name = MemoryFileSystem.this.storeTransformer.transform(fileName);
-              MemoryFile file = new MemoryFile(name, creationContext);
-              checkSupportedInitialAttributes(newAttributes);
-              AttributeAccessors.setAttributes(file, newAttributes);
-              directory.checkAccess(WRITE);
-              directory.addEntry(key, file, path);
-              return new GetFileResult(file);
+              MemoryFile file = this.createEntryOnAccess(path, newAttributes, directory, elementPath, creationContext);
+              return new GetEntryResult(file);
             } else {
               throw new NoSuchFileException(path.toString());
             }
           }
-          if (storedEntry instanceof MemoryFile) {
-            return new GetFileResult((MemoryFile) storedEntry);
-          } else if (storedEntry instanceof MemorySymbolicLink && followSymLinks) {
+          if (storedEntry instanceof MemorySymbolicLink && followSymLinks) {
             MemorySymbolicLink link = (MemorySymbolicLink) storedEntry;
             if (!encounteredSymlinks.add(link)) {
               throw new FileSystemLoopException(path.toString());
             }
             AbstractPath linkTarget = link.getTarget();
             if (linkTarget.isAbsolute()) {
-              return new GetFileResult(linkTarget);
+              return new GetEntryResult(linkTarget);
             } else {
-              return new GetFileResult((AbstractPath) parent.resolve(linkTarget));
+              return new GetEntryResult((AbstractPath) parent.resolve(linkTarget));
             }
           } else {
-            throw new FileSystemException(absolutePath.toString(), null, "file is a directory");
+            return new GetEntryResult(storedEntry);
           }
 
         }
       }
+
+      private MemoryFile createEntryOnAccess(final AbstractPath path,
+              final FileAttribute<?>[] newAttributes, MemoryDirectory directory,
+              ElementPath elementPath, EntryCreationContext creationContext)
+                      throws IOException {
+        String fileName = elementPath.getLastNameElement();
+        String key = MemoryFileSystem.this.lookUpTransformer.transform(fileName);
+        String name = MemoryFileSystem.this.storeTransformer.transform(fileName);
+        MemoryFile file = new MemoryFile(name, creationContext);
+        checkSupportedInitialAttributes(newAttributes);
+        AttributeAccessors.setAttributes(file, newAttributes);
+        directory.checkAccess(WRITE);
+        // will throw an exception if already present
+        directory.addEntry(key, file, path);
+        return file;
+      }
     });
   }
 
-  static final class GetFileResult {
-    final MemoryFile file;
+  static final class GetEntryResult {
+
+    final MemoryEntry entry;
     final AbstractPath linkTarget;
 
-    GetFileResult(MemoryFile file) {
-      this.file = file;
+    GetEntryResult(MemoryEntry entry) {
+      this.entry = entry;
       this.linkTarget = null;
     }
 
-    GetFileResult(AbstractPath linkTarget) {
-      this.file = null;
+    GetEntryResult(AbstractPath linkTarget) {
+      this.entry = null;
       this.linkTarget = linkTarget;
     }
 
 
   }
 
-  private MemoryFile getFile(final AbstractPath path, final Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
+  private MemoryFile getFile(AbstractPath path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
+    MemoryEntry file = this.getEntry(path, options);
+    if (file instanceof MemoryFile) {
+      return (MemoryFile) file;
+    } else {
+      throw new FileSystemException(path.toString().toString(), null, "is not a file");
+    }
+  }
+
+  private MemoryEntry getEntry(AbstractPath path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
     boolean followSymLinks = Options.isFollowSymLinks(options);
     Set<MemorySymbolicLink> encounteredSymlinks;
     if (followSymLinks) {
@@ -409,11 +432,11 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
     } else {
       encounteredSymlinks = Collections.emptySet();
     }
-    GetFileResult result = this.getFile(path, options, attrs, followSymLinks, encounteredSymlinks);
-    while (result.file == null) {
-      result = this.getFile(result.linkTarget, options, attrs, followSymLinks, encounteredSymlinks);
+    GetEntryResult result = this.getEntry(path, options, attrs, followSymLinks, encounteredSymlinks);
+    while (result.entry == null) {
+      result = this.getEntry(result.linkTarget, options, attrs, followSymLinks, encounteredSymlinks);
     }
-    return result.file;
+    return result.entry;
   }
 
   private FileAttribute<?>[] applyUmask(FileAttribute<?>[] attributes) {
@@ -1407,11 +1430,13 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
       AbstractPath linkTarget = ((MemorySymbolicLink) sourceEntry).getTarget();
       // TODO requires reentrant lock, should build return value object
       MemoryFileSystem sourceFileSystem = copyContext.source.path.getFileSystem();
+      AbstractPath lookupPath;
       if (linkTarget.isAbsolute()) {
-        toCopy = sourceFileSystem.getFile(linkTarget, NO_OPEN_OPTIONS, NO_FILE_ATTRIBUTES);
+        lookupPath = linkTarget;
       } else {
-        toCopy = sourceFileSystem.getFile((AbstractPath) copyContext.source.parent.resolve(linkTarget), NO_OPEN_OPTIONS, NO_FILE_ATTRIBUTES);
+        lookupPath = (AbstractPath) copyContext.source.parent.resolve(linkTarget);
       }
+      toCopy = sourceFileSystem.getFile(lookupPath, NO_OPEN_OPTIONS, NO_FILE_ATTRIBUTES);
     } else {
       toCopy = sourceEntry;
     }

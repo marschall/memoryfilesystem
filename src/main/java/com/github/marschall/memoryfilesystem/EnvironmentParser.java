@@ -259,6 +259,21 @@ class EnvironmentParser {
 
   }
 
+  boolean supportFileChannelOnDirectory() {
+    return this.parseBooleanProperty(MemoryFileSystemProperties.FILE_CHANNEL_DIRECTORY_PROPERTY, false);
+  }
+
+  private boolean parseBooleanProperty(String key, boolean defaultValue) {
+    Object value = this.env.get(key);
+    if (value == null) {
+      return defaultValue;
+    }
+    if (!(value instanceof Boolean)) {
+      throw new IllegalArgumentException("value of " + key
+              + " must be an instance of " + Boolean.class + " but was " + value.getClass());
+    }
+    return (boolean) value;
+  }
 
   private List<String> parseStringProperty(String key, boolean allowEmpty) {
     Object value = this.env.get(key);

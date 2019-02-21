@@ -72,12 +72,15 @@ public final class MemoryFileSystemBuilder {
 
   private TemporalUnit resolution;
 
+  private boolean supportFileChannelOnDirectory;
+
   private MemoryFileSystemBuilder() {
     this.roots = new ArrayList<>();
     this.users = new LinkedHashSet<>();
     this.groups = new LinkedHashSet<>();
     this.additionalFileAttributeViews = new HashSet<>();
     this.forbiddenCharacters = new HashSet<>();
+    this.supportFileChannelOnDirectory = false;
   }
 
   /**
@@ -281,13 +284,28 @@ public final class MemoryFileSystemBuilder {
   }
 
   /**
-   * The resolution of the file time used for modification, access and creation time.
+   * Sets the resolution of the file time used for modification, access and creation time.
    *
    * @param resolution used to truncate file times
    * @return the current builder object
    */
   public MemoryFileSystemBuilder setFileTimeResolution(TemporalUnit resolution) {
     this.resolution = resolution;
+    return this;
+  }
+
+  /**
+   * Sets the support for opening a file channel for reading on a directory.
+   *
+   * @param supportFileChannelOnDirectory whether a file channel for reading on a directory should be supported
+   * @return the current builder object
+   *
+   * @see <a href="https://bugs.openjdk.java.net/browse/JDK-8066915">JDK-8066915</a>
+   * @see <a href="https://bugs.openjdk.java.net/browse/JDK-8080629">JDK-8080629</a>
+   * @see <a href="https://bugs.openjdk.java.net/browse/JDK-8080235">JDK-8080235</a>
+   */
+  public MemoryFileSystemBuilder setSupportFileChannelOnDirectory(boolean supportFileChannelOnDirectory) {
+    this.supportFileChannelOnDirectory = supportFileChannelOnDirectory;
     return this;
   }
 
@@ -335,6 +353,7 @@ public final class MemoryFileSystemBuilder {
             .setCurrentWorkingDirectory("/home/" + getSystemUserName())
             .setStoreTransformer(StringTransformers.IDENTIY)
             .setCaseSensitive(true)
+            .setSupportFileChannelOnDirectory(true)
             .addForbiddenCharacter((char) 0);
   }
 
@@ -372,6 +391,7 @@ public final class MemoryFileSystemBuilder {
             .setCollator(MemoryFileSystemProperties.caseSensitiveCollator(builder.getLocale(), true))
             .setLookUpTransformer(StringTransformers.caseInsensitiveMacOSJvm(builder.getLocale()))
             .setStoreTransformer(StringTransformers.NFC)
+            .setSupportFileChannelOnDirectory(true)
             .addForbiddenCharacter((char) 0);
   }
 
@@ -539,6 +559,7 @@ public final class MemoryFileSystemBuilder {
 
     env.put(MemoryFileSystemProperties.FILE_ATTRIBUTE_VIEWS_PROPERTY, this.additionalFileAttributeViews);
     env.put(MemoryFileSystemProperties.FORBIDDEN_CHARACTERS_PROPERTY, this.forbiddenCharacters);
+    env.put(MemoryFileSystemProperties.FILE_CHANNEL_DIRECTORY_PROPERTY, this.supportFileChannelOnDirectory);
 
     return env;
   }

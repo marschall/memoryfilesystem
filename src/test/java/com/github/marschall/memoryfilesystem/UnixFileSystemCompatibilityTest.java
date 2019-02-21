@@ -591,25 +591,29 @@ class UnixFileSystemCompatibilityTest {
 
   @CompatibilityTest
   void channelOnDirectoryReading(boolean useDefault) throws IOException {
-    FileSystem fileSystem = this.getFileSystem(useDefault);
+    for (String path : new String[] {"child1", "/"}) {
+      FileSystem fileSystem = this.getFileSystem(useDefault);
 
-    Path child1 = fileSystem.getPath("child1");
-    Files.createDirectory(child1);
-
-    try (FileChannel channel = FileChannel.open(child1, StandardOpenOption.READ)) {
-      channel.force(true);
-      System.out.println(channel.isOpen());
-      System.out.println(channel.position());
-      System.out.println(channel.size());
-      channel.position(1L);
-      assertEquals(1L, channel.position());
-      assertThrows(IOException.class, () -> channel.read(ByteBuffer.allocate(1)));
-      assertThrows(NonWritableChannelException.class, () -> channel.write(ByteBuffer.allocate(1)));
-      assertThrows(NonWritableChannelException.class, () -> channel.lock());
-      assertThrows(NonWritableChannelException.class, () -> channel.truncate(5L));
-    } finally {
-      if (useDefault) {
-        Files.delete(child1);
+      Path directory = fileSystem.getPath(path);
+      boolean created = false;
+      if (!Files.exists(directory)) {
+        Files.createDirectory(directory);
+        created = true;
+      }
+      try (FileChannel channel = FileChannel.open(directory, StandardOpenOption.READ)) {
+        channel.force(true);
+        assertTrue(channel.isOpen());
+        assertEquals(0, channel.position());
+        channel.position(1L);
+        assertEquals(1L, channel.position());
+        assertThrows(IOException.class, () -> channel.read(ByteBuffer.allocate(1)));
+        assertThrows(NonWritableChannelException.class, () -> channel.write(ByteBuffer.allocate(1)));
+        assertThrows(NonWritableChannelException.class, () -> channel.lock());
+        assertThrows(NonWritableChannelException.class, () -> channel.truncate(5L));
+      } finally {
+        if (created) {
+          Files.delete(directory);
+        }
       }
     }
   }
