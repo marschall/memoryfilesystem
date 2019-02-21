@@ -125,6 +125,12 @@
       <version>0.9</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-core</artifactId>
+      <version>7.7.0</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <distributionManagement>
@@ -457,6 +463,7 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <argLine>--add-opens com.github.marschall.memoryfilesystem/com.github.marschall.memoryfilesystem=ALL-UNNAMED</argLine>
+              <enableAssertions>true</enableAssertions>
             </configuration>
           </plugin>
         </plugins>
