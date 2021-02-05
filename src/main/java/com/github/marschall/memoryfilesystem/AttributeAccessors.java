@@ -405,7 +405,7 @@ final class AttributeAccessors {
     }
     AttributeAccessor accessor = viewMap.get(attribute);
     if (accessor == null) {
-      throw new IllegalArgumentException("view \"" + view + "\" is not supported");
+      throw new IllegalArgumentException("attribute \"" + attribute + "\" of view \"" + view + "\" is not supported");
 
     }
     return accessor;
