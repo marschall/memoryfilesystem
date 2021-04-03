@@ -438,7 +438,7 @@ public final class MemoryFileSystemBuilder {
    *
    * <p>The file system has the following properties:</p>
    * <ul>
-   *  <li>the root is {@code "C:\\"}</li>
+   *  <li>the only root is {@code "C:\\"}</li>
    *  <li>the separator is {@value MemoryFileSystemProperties#WINDOWS_SEPARATOR}</li>
    *  <li>the current user (value of the {@code "user.name"} system property)
    *  is added as a user</li>
@@ -452,6 +452,8 @@ public final class MemoryFileSystemBuilder {
    *  {@code '"'}, {@code '<'}, {@code '<'} and {@code '|'} and not allowed
    *  in file names</li>
    * </ul>
+   * <p>
+   * Use {@link #addRoot(String)} to add additional roots.
    *
    * @return the builder
    */

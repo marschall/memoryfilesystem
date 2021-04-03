@@ -467,4 +467,17 @@ class WindowsMemoryFileSystemTest {
     assertEquals(Instant.parse("2019-02-27T12:37:03.223456700Z"), attributes.lastAccessTime().toInstant());
   }
 
+  /**
+   * Regression test for <a href="https://github.com/marschall/memoryfilesystem/issues/125">Issue 125</a>.
+   *
+   * @throws IOException if the test fails
+   */
+  @Test
+  void mulitpleRoots() throws IOException {
+    try (FileSystem fileSystem = MemoryFileSystemBuilder.newWindows().addRoot("D:\\").build()) {
+      Files.createDirectories(fileSystem.getPath("C:\\folder\\child1"));
+      Files.createDirectories(fileSystem.getPath("D:\\otherfolder\\child1"));
+    }
+  }
+
 }
