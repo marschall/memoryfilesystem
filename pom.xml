@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.marschall</groupId>
   <artifactId>memoryfilesystem</artifactId>
-  <version>2.1.1-SNAPSHOT</version>
+  <version>2.2.0-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>Memory File System</name>
   <description>An in memory implementation of a JSR-203 file system.</description>
@@ -231,6 +231,7 @@
           <links>
             <link>https://docs.oracle.com/javase/8/docs/api/</link>
           </links>
+          <sourcepath>src/main/java</sourcepath>
         </configuration>
         <executions>
           <execution>
@@ -417,6 +418,22 @@
       </plugins>
     </pluginManagement>
   </build>
+  
+  <reporting>
+    <excludeDefaults>true</excludeDefaults>
+    <plugins>
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>javadoc-no-fork</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+    </plugins>
+  </reporting>
 
   <profiles>
     <profile>
