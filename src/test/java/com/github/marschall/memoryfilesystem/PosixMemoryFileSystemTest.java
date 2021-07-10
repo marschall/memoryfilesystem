@@ -1,9 +1,13 @@
 package com.github.marschall.memoryfilesystem;
 
+import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
+import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 import static java.nio.file.StandardOpenOption.READ;
 import static java.nio.file.StandardOpenOption.WRITE;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.junit.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -159,6 +163,83 @@ class PosixMemoryFileSystemTest {
     assertEquals(mtime, attributes.lastModifiedTime().toInstant());
     assertEquals(atime, attributes.lastAccessTime().toInstant());
     assertEquals(ctime, attributes.creationTime().toInstant());
+  }
+
+  /**
+   * Regression test for <a href="https://github.com/marschall/memoryfilesystem/issues/128">Incorrect symlink target existence via Files.exists</a>
+   *
+   * @throws IOException if this test fails
+   */
+  @Test
+  void issue128() throws IOException {
+    FileSystem fileSystem = this.extension.getFileSystem();
+    Path realFile = fileSystem.getPath("realFile");
+    FileUtility.createAndSetContents(realFile, "Test");
+    Path symLink = Files.createSymbolicLink(fileSystem.getPath("symLink"), realFile);
+
+    assertThat("Real file should exist", realFile, exists());
+    assertThat("Symlink file should exist without following links", symLink, exists(NOFOLLOW_LINKS));
+    assertThat("Target of symlink file should exist", Files.readSymbolicLink(symLink), exists());
+    assertEquals(realFile, Files.readSymbolicLink(symLink), "Target of symlink file should be real file");
+
+    assertThat("Symlink file target should exist when following links", symLink, exists());
+  }
+
+  /**
+   * Regression test for <a href="https://github.com/marschall/memoryfilesystem/issues/128">Incorrect symlink target existence via Files.exists</a>
+   *
+   * @throws IOException if this test fails
+   */
+  @Test
+  void issue128Directory() throws IOException {
+    FileSystem fileSystem = this.extension.getFileSystem();
+    Path realDirectory = fileSystem.getPath("realDirectory");
+    Files.createDirectory(realDirectory);
+    Path realFile = realDirectory.resolve("realFile");
+    FileUtility.createAndSetContents(realFile, "Test");
+    Path symLinkDirectory = Files.createSymbolicLink(fileSystem.getPath("symLink"), realDirectory);
+    Path symLinkFile = symLinkDirectory.resolve("realFile");
+
+    assertThat("Real file should exist", realFile, exists());
+    assertThat("Symlink file should not exist without following links", symLinkFile, not(exists(NOFOLLOW_LINKS)));
+
+    assertThat("Symlink file target should exist when following links", symLinkFile, exists());
+  }
+
+  @Test
+  void toRealPathWithSymlink() throws IOException {
+    // /home/user/subdir/symlink -> realfile -> /home/user/subdir/realfile
+
+    FileSystem fileSystem = this.extension.getFileSystem();
+    Path subdir = fileSystem.getPath("subdir");
+
+    Files.createDirectory(subdir);
+    Files.createFile(subdir.resolve("realfile"));
+    Files.createSymbolicLink(subdir.resolve("symlink"), fileSystem.getPath("realfile"));
+
+    Path relative = fileSystem.getPath("subdir", "symlink");
+    assertEquals(fileSystem.getPath("subdir", "realfile").toAbsolutePath(), relative.toRealPath());
+    assertEquals(fileSystem.getPath("subdir", "symlink").toAbsolutePath(), relative.toRealPath(NOFOLLOW_LINKS));
+  }
+
+  @Test
+  void toRealPathWithSymlinkInTheMiddle() throws IOException {
+    // /home/user/subdir1/symlink -> subdir2
+    // /home/user/subdir1/symlink/file -> /home/user/subdir1/subdir2/file
+
+    FileSystem fileSystem = this.extension.getFileSystem();
+    Path subdir1 = fileSystem.getPath("subdir1");
+    Path subdir2 = subdir1.resolve("subdir2");
+    Path realfile = subdir2.resolve("realfile");
+
+    Files.createDirectories(subdir2);
+    Files.createFile(realfile);
+
+    Files.createSymbolicLink(subdir1.resolve("symlink"), fileSystem.getPath("subdir2"));
+
+    Path relative = fileSystem.getPath("subdir1", "symlink", "realfile");
+    assertEquals(fileSystem.getPath("subdir1", "subdir2", "realfile").toAbsolutePath(), relative.toRealPath());
+    //    assertEquals(fileSystem.getPath("subdir1", "symlink", "realfile").toAbsolutePath(), relative.toRealPath(NOFOLLOW_LINKS));
   }
 
 }

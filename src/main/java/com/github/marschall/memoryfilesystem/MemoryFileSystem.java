@@ -635,8 +635,17 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
             if (!encounteredLinks.add(link)) {
               throw new FileSystemLoopException(path.toString());
             }
-            Path symLinkTarget = link.getTarget().toAbsolutePath();
-            Path newLookUpPath = symLinkTarget;
+            Path symLinkTarget = link.getTarget();
+            Path newLookUpPath;
+            if (symLinkTarget.isAbsolute()) {
+              newLookUpPath = symLinkTarget;
+            } else {
+              newLookUpPath = path.getRoot();
+              for (int j = 0; j < i; ++j) {
+                newLookUpPath = newLookUpPath.resolve(nameElements.get(j));
+              }
+              newLookUpPath = newLookUpPath.resolve(symLinkTarget);
+            }
             for (int j = i + 1; j < pathElementCount; ++j) {
               newLookUpPath = newLookUpPath.resolve(nameElements.get(j));
             }
@@ -809,20 +818,20 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
       }
     } else if (path instanceof ElementPath) {
       R result = null;
-      AbstractPath symLinkTarget = null;
+      Path newLookUpPath = null;
 
       ElementPath elementPath = (ElementPath) path;
       List<String> nameElements = elementPath.getNameElements();
-      int nameElementsSize = nameElements.size();
-      List<AutoRelease> locks = new ArrayList<>(nameElementsSize + 1);
+      int pathElementCount = nameElements.size();
+      List<AutoRelease> locks = new ArrayList<>(pathElementCount + 1);
       try {
         locks.add(root.readLock());
         MemoryDirectory parent = root;
-        for (int i = 0; i < nameElementsSize; ++i) {
+        for (int i = 0; i < pathElementCount; ++i) {
           String fileName = nameElements.get(i);
           String key = this.lookUpTransformer.transform(fileName);
           MemoryEntry current = parent.getEntryOrException(key, path);
-          boolean isLast = i == nameElementsSize - 1;
+          boolean isLast = i == pathElementCount - 1;
           if (isLast) {
             locks.add(current.lock(lockType));
           } else {
@@ -834,7 +843,19 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
             if (!encounteredLinks.add(link)) {
               throw new FileSystemLoopException(path.toString());
             }
-            symLinkTarget = link.getTarget();
+            Path symLinkTarget = link.getTarget();
+            if (symLinkTarget.isAbsolute()) {
+              newLookUpPath = symLinkTarget;
+            } else {
+              newLookUpPath = path.getRoot();
+              for (int j = 0; j < i; ++j) {
+                newLookUpPath = newLookUpPath.resolve(nameElements.get(j));
+              }
+              newLookUpPath = newLookUpPath.resolve(symLinkTarget);
+            }
+            for (int j = i + 1; j < pathElementCount; ++j) {
+              newLookUpPath = newLookUpPath.resolve(nameElements.get(j));
+            }
             break;
           }
 
@@ -853,10 +874,10 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
           lock.close();
         }
       }
-      if (symLinkTarget == null) {
+      if (newLookUpPath == null) {
         return result;
       } else {
-        return this.withLockDo(root, symLinkTarget, encounteredLinks, followSymLinks, lockType, callback);
+        return this.withLockDo(root, (AbstractPath) newLookUpPath, encounteredLinks, followSymLinks, lockType, callback);
       }
 
     } else {
