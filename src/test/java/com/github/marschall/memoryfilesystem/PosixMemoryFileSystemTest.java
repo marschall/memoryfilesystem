@@ -12,7 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
@@ -20,7 +19,6 @@ import java.nio.channels.ByteChannel;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributeView;
@@ -247,20 +245,22 @@ class PosixMemoryFileSystemTest {
   @Test
   void testFileExistenceInSubfolderWithFollowingLinks() throws IOException {
     FileSystem fileSystem = this.extension.getFileSystem();
-    // In contrast to https://github.com/marschall/memoryfilesystem/issues/128, work inside a subfolder:
     // dir/symLink -> dir/realFile
     Path dir = Files.createDirectories(fileSystem.getPath("dir"));
     Path realFile = dir.resolve("realFile");
     FileUtility.createAndSetContents(realFile, "Test");
     Path symLink = Files.createSymbolicLink(dir.resolve("symLink"), realFile);
 
+    // dir/realFile
     assertThat("Real file should exist", realFile, exists());
-    assertTrue(Files.exists(symLink, LinkOption.NOFOLLOW_LINKS), "Symlink file should exist without following links");
-    assertTrue(Files.exists(Files.readSymbolicLink(symLink)), "Target of symlink file should exist");
+    // dir/symLink
+    assertThat("Symlink file should exist without following links", symLink, exists(NOFOLLOW_LINKS));
+    // dir/realFile
+    assertThat("Target of symlink file should exist", Files.readSymbolicLink(symLink), exists());
     assertEquals(realFile, Files.readSymbolicLink(symLink), "Target of symlink file should be a real file");
 
-    // The following assertion fails:
-    assertThat("Symlink file target in subfolder should exist when following links", symLink, exists());
+    // dir/dir/symLink
+    assertThat("Symlink file target in subfolder should exist when following links", symLink, not(exists()));
   }
 
 }
