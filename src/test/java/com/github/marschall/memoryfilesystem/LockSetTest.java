@@ -25,20 +25,20 @@ class LockSetTest {
 
   static List<Object[]> data() {
     return Arrays.asList(new Object[][] {
-            { lock(0L, 1000L), singletonList(lock(1000L, 9000L)), true },
-            { lock(10001L, 999L), singletonList(lock(1000L, 9001L)), true },
-            { lock(1L, 1000L), singletonList(lock(1000L, 9000L)), false },
-            { lock(10000L, 999L), singletonList(lock(1000L, 9001L)), false },
-            { lock(2000L, 1000L), singletonList(lock(1000L, 9001L)), false },
-            { lock(0L, 20000L), singletonList(lock(1000L, 9001L)), false },
-            { lock(0L, 1000L), asList(lock(1000L, 1000L), lock(10000L, 1000L)), true },
-            { lock(5000L, 1000L), asList(lock(1000L, 1000L), lock(10000L, 1000L)), true },
-            { lock(20000L, 1000L), asList(lock(1000L, 1000L), lock(10000L, 1000L)), true },
-            { lock(1500L, 1000L), asList(lock(1000L, 1000L), lock(10000L, 1000L)), false },
-            { lock(1500L, 100L), asList(lock(1000L, 1000L), lock(10000L, 1000L)), false },
-            { lock(10500L, 1000L), asList(lock(1000L, 1000L), lock(10000L, 1000L)), false },
-            { lock(1500L, 9000L), asList(lock(1000L, 1000L), lock(10000L, 1000L)), false },
-            { lock(0L, 20000L), asList(lock(1000L, 1000L), lock(10000L, 1000L)), false },
+      { lock(0L, 1000L), singletonList(lock(1000L, 9000L)), true },
+      { lock(10001L, 999L), singletonList(lock(1000L, 9001L)), true },
+      { lock(1L, 1000L), singletonList(lock(1000L, 9000L)), false },
+      { lock(10000L, 999L), singletonList(lock(1000L, 9001L)), false },
+      { lock(2000L, 1000L), singletonList(lock(1000L, 9001L)), false },
+      { lock(0L, 20000L), singletonList(lock(1000L, 9001L)), false },
+      { lock(0L, 1000L), asList(lock(1000L, 1000L), lock(10000L, 1000L)), true },
+      { lock(5000L, 1000L), asList(lock(1000L, 1000L), lock(10000L, 1000L)), true },
+      { lock(20000L, 1000L), asList(lock(1000L, 1000L), lock(10000L, 1000L)), true },
+      { lock(1500L, 1000L), asList(lock(1000L, 1000L), lock(10000L, 1000L)), false },
+      { lock(1500L, 100L), asList(lock(1000L, 1000L), lock(10000L, 1000L)), false },
+      { lock(10500L, 1000L), asList(lock(1000L, 1000L), lock(10000L, 1000L)), false },
+      { lock(1500L, 9000L), asList(lock(1000L, 1000L), lock(10000L, 1000L)), false },
+      { lock(0L, 20000L), asList(lock(1000L, 1000L), lock(10000L, 1000L)), false },
     });
   }
 
@@ -55,22 +55,22 @@ class LockSetTest {
     return lockSet;
   }
 
-  @ParameterizedTest
+  @ParameterizedTest(autoCloseArguments = false) // don't call MemoryFileLock#close()
   @MethodSource("data")
   void tryLock(MemoryFileLock toAdd, Collection<MemoryFileLock> alreadyPresent, boolean expectedSuccess) throws IOException {
-    FileLock lock = createLockSet(alreadyPresent).tryLock(toAdd);
+    FileLock lock = this.createLockSet(alreadyPresent).tryLock(toAdd);
     assertEquals(expectedSuccess, lock != null, "lock acquisition successful");
     if (expectedSuccess) {
       assertSame(toAdd, lock);
     }
   }
 
-  @ParameterizedTest
+  @ParameterizedTest(autoCloseArguments = false) // don't call MemoryFileLock#close()
   @MethodSource("data")
   void lock(MemoryFileLock toAdd, Collection<MemoryFileLock> alreadyPresent, boolean expectedSuccess) throws IOException {
     FileLock lock = null;
     try {
-      lock = createLockSet(alreadyPresent).lock(toAdd);
+      lock = this.createLockSet(alreadyPresent).lock(toAdd);
       if (!expectedSuccess) {
         fail("lock acquisition successful");
       }
