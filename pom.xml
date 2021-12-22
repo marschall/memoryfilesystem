@@ -60,7 +60,7 @@
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-framework-bom</artifactId>
-        <version>5.3.13</version>
+        <version>5.3.14</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -108,6 +108,12 @@
       <groupId>org.springframework</groupId>
       <artifactId>spring-test</artifactId>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework</groupId>
+          <artifactId>spring-jcl</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
@@ -133,13 +139,13 @@
     <dependency>
       <groupId>org.openjdk.jol</groupId>
       <artifactId>jol-core</artifactId>
-      <version>0.15</version>
+      <version>0.16</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-core</artifactId>
-      <version>8.8.1</version>
+      <version>9.0.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -308,7 +314,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-javadoc-plugin</artifactId>
-          <version>3.3.0</version>
+          <version>3.3.1</version>
         </plugin>
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
@@ -325,7 +331,7 @@
         <plugin>
           <groupId>org.jboss.jandex</groupId>
           <artifactId>jandex-maven-plugin</artifactId>
-          <version>1.1.0</version>
+          <version>1.2.1</version>
         </plugin>
         <plugin>
           <artifactId>maven-source-plugin</artifactId>
@@ -357,7 +363,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-scm-plugin</artifactId>
-          <version>1.11.2</version>
+          <version>1.12.0</version>
         </plugin>
         <plugin>
           <artifactId>maven-install-plugin</artifactId>
@@ -385,19 +391,6 @@
           <configuration>
             <lifecycleMappingMetadata>
               <pluginExecutions>
-                <pluginExecution>
-                  <pluginExecutionFilter>
-                    <groupId>org.jboss.jandex</groupId>
-                    <artifactId>jandex-maven-plugin</artifactId>
-                    <versionRange>[1.0.1,)</versionRange>
-                    <goals>
-                      <goal>jandex</goal>
-                    </goals>
-                  </pluginExecutionFilter>
-                  <action>
-                    <ignore />
-                  </action>
-                </pluginExecution>
                 <pluginExecution>
                   <pluginExecutionFilter>
                     <groupId>codes.rafael.modulemaker</groupId>

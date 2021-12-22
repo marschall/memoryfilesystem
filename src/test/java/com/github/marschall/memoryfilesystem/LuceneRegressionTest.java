@@ -12,7 +12,6 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSLockFactory;
 import org.apache.lucene.store.NIOFSDirectory;
-import org.apache.lucene.store.SimpleFSDirectory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -20,20 +19,6 @@ class LuceneRegressionTest {
 
   @RegisterExtension
   final PosixFileSystemExtension extension = new PosixFileSystemExtension();
-
-  @Test
-  void issue113SimpleFSDirectory() throws IOException {
-    FileSystem fileSystem = this.extension.getFileSystem();
-    Path indexPath = fileSystem.getPath("/index");
-
-    FSLockFactory lockFactory = FSLockFactory.getDefault();
-    Analyzer analyzer = new StandardAnalyzer();
-    IndexWriterConfig writerConfiguration = new IndexWriterConfig(analyzer);
-    try (Directory directory = new SimpleFSDirectory(indexPath, lockFactory);
-            IndexWriter indexWriter = new IndexWriter(directory, writerConfiguration)) {
-      indexWriter.addDocument(new Document());
-    }
-  }
 
   @Test
   void issue113NIOFSDirectory() throws IOException {
