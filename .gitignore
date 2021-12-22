@@ -6,3 +6,5 @@ target/
 *.index
 *.threads
 *.iml
+.flattened-pom.xml
+release.properties
