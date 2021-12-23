@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -58,6 +59,9 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   private final ExecutorService callbackExecutor;
 
+  /**
+   * Default constructor called by {@link ServiceLoader} mechanism.
+   */
   public MemoryFileSystemProvider() {
     this.fileSystems = new ConcurrentHashMap<>();
     this.workExecutor = Executors.newFixedThreadPool(1, new NamedDaemonThreadFactory("memory-file-system-worker"));

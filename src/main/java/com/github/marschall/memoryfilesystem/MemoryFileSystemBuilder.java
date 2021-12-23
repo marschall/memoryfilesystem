@@ -315,7 +315,7 @@ public final class MemoryFileSystemBuilder {
    * <p>The file system does not support permissions and only supports
    * {@link BasicFileAttributeView}. It is UNIX-like in the sense that
    * is uses {@literal "/"} as a separator, has a single root and is
-   * case sensitive and case preserving.<p>
+   * case sensitive and case preserving.</p>
    *
    * @return the builder
    */

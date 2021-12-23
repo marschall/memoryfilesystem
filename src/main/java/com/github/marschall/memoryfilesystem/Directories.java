@@ -52,7 +52,7 @@ public final class Directories {
    * <p>This method makes a best effort to copy attributes across
    * different file system providers.</p>
    *
-   * <h2>Known Issues:</h2>
+   * <h4>Known Issues:</h4>
    * <ul>
    *  <li>hard links will not be handled correctly</li>
    * </ul>
