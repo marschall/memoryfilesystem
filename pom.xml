@@ -142,12 +142,6 @@
       <version>0.16</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.apache.lucene</groupId>
-      <artifactId>lucene-core</artifactId>
-      <version>9.0.0</version>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
   <distributionManagement>
@@ -234,29 +228,6 @@
          -->
       </plugin>
       <plugin>
-        <groupId>codes.rafael.modulemaker</groupId>
-        <artifactId>modulemaker-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>process-classes</phase>
-            <goals>
-              <goal>make-module</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <name>com.github.marschall.memoryfilesystem</name>
-          <exports>com.github.marschall.memoryfilesystem</exports>
-          <static-requires>java.annotation</static-requires>
-          <provides>
-            <provide>
-              <services>java.nio.file.spi.FileSystemProvider</services>
-              <providers>com.github.marschall.memoryfilesystem.MemoryFileSystemProvider</providers>
-            </provide>
-          </provides>
-        </configuration>
-      </plugin>
-      <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
         <configuration>
           <links>
@@ -329,10 +300,6 @@
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.8.1</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-toolchains-plugin</artifactId>
-          <version>3.0.0</version>
         </plugin>
         <plugin>
           <artifactId>maven-resources-plugin</artifactId>
@@ -465,74 +432,90 @@
       </build>
     </profile>
     <profile>
-      <id>not-travis</id>
+      <id>jdk-9-plus</id>
       <activation>
-        <property>
-          <name>!env.TRAVIS</name>
-        </property>
+        <jdk>[9,</jdk>
       </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.lucene</groupId>
+          <artifactId>lucene-core</artifactId>
+          <version>9.0.0</version>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
       <build>
         <plugins>
           <plugin>
             <artifactId>maven-compiler-plugin</artifactId>
             <configuration>
               <release>8</release>
-              <!-- Only required when JAVA_HOME isn't at least Java 11 and when haven't configured the maven-toolchains-plugin -->
-              <jdkToolchain>
-                <version>11</version>
-              </jdkToolchain>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>codes.rafael.modulemaker</groupId>
+            <artifactId>modulemaker-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <phase>process-classes</phase>
+                <goals>
+                  <goal>make-module</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <name>com.github.marschall.memoryfilesystem</name>
+              <exports>com.github.marschall.memoryfilesystem</exports>
+              <static-requires>java.annotation</static-requires>
+              <provides>
+                <provide>
+                  <services>java.nio.file.spi.FileSystemProvider</services>
+                  <providers>com.github.marschall.memoryfilesystem.MemoryFileSystemProvider</providers>
+                </provide>
+              </provides>
             </configuration>
           </plugin>
           <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <argLine>--add-opens com.github.marschall.memoryfilesystem/com.github.marschall.memoryfilesystem=ALL-UNNAMED</argLine>
-              <enableAssertions>true</enableAssertions>
             </configuration>
           </plugin>
         </plugins>
       </build>
     </profile>
     <profile>
-      <id>travis-8</id>
+      <id>jdk-8</id>
       <activation>
         <jdk>1.8</jdk>
-        <property>
-          <name>env.TRAVIS</name>
-        </property>
       </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.lucene</groupId>
+          <artifactId>lucene-core</artifactId>
+          <version> 8.11.1</version>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
       <build>
         <plugins>
           <plugin>
             <artifactId>maven-compiler-plugin</artifactId>
             <configuration>
-              <source>${java.version}</source>
-              <target>${java.version}</target>
+              <source>1.8</source>
+              <target>1.8</target>
             </configuration>
           </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>travis-11</id>
-      <activation>
-        <jdk>11</jdk>
-        <property>
-          <name>env.TRAVIS</name>
-        </property>
-      </activation>
-      <build>
-        <plugins>
           <plugin>
-            <artifactId>maven-compiler-plugin</artifactId>
+            <artifactId>maven-javadoc-plugin</artifactId>
             <configuration>
-              <release>8</release>
+              <doclint>none</doclint>
             </configuration>
           </plugin>
           <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
-              <argLine>--add-opens com.github.marschall.memoryfilesystem/com.github.marschall.memoryfilesystem=ALL-UNNAMED</argLine>
+              <useModulePath>false</useModulePath>
             </configuration>
           </plugin>
         </plugins>
@@ -543,7 +526,6 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <java.version>1.8</java.version>
   </properties>
 
 </project>
