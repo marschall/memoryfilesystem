@@ -292,21 +292,6 @@
             <goals>
               <goal>jandex</goal>
             </goals>
-            <!-- at the moment jandex can't handle module-info.class -->
-            <configuration>
-              <fileSets>
-                <fileSet>
-                  <directory>${project.build.outputDirectory}</directory>
-                  <includes>
-                    <include>**/*.class</include>
-                  </includes>
-                  <excludes>
-                    <exclude>**/module-info.class</exclude>
-                  </excludes>
-                  <useDefaultExcludes>true</useDefaultExcludes>
-                </fileSet>
-              </fileSets>
-            </configuration>
           </execution>
         </executions>
       </plugin>
