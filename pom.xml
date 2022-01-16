@@ -479,7 +479,7 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <argLine>--add-opens com.github.marschall.memoryfilesystem/com.github.marschall.memoryfilesystem=ALL-UNNAMED</argLine>
-          	<disableXmlReport>${closeTestReports}</disableXmlReport>
+          	  <disableXmlReport>${closeTestReports}</disableXmlReport>
             </configuration>
           </plugin>
         </plugins>
@@ -517,7 +517,7 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <useModulePath>false</useModulePath>
-          	<disableXmlReport>${closeTestReports}</disableXmlReport>
+          	  <disableXmlReport>${closeTestReports}</disableXmlReport>
             </configuration>
           </plugin>
         </plugins>
