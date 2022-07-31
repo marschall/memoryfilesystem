@@ -162,7 +162,6 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     return MemoryUserPrincipalLookupService.newInstance(userNames, groupNames, nameTransformer, checker);
   }
 
-
   @Override
   public FileSystem getFileSystem(URI uri) {
     String key = this.getFileSystemKey(uri);
@@ -231,7 +230,6 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     }
   }
 
-
   @Override
   public Path getPath(URI uri) {
     String key = this.getFileSystemKey(uri);
@@ -241,7 +239,6 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     }
     return fileSystem.getPathFromUri(this.getFileSystemPath(uri));
   }
-
 
   @Override
   public SeekableByteChannel newByteChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
@@ -286,14 +283,12 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     return memoryFileSystem.newOutputStream(abstractPath, options);
   }
 
-
   @Override
   public DirectoryStream<Path> newDirectoryStream(Path dir, Filter<? super Path> filter) throws IOException {
     AbstractPath abstractPath = castPath(dir);
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
     return memoryFileSystem.newDirectoryStream(abstractPath, filter);
   }
-
 
   @Override
   public void createDirectory(Path dir, FileAttribute<?>... attrs) throws IOException {
@@ -360,8 +355,6 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     }
   }
 
-
-
   @Override
   public boolean isSameFile(Path path, Path path2) throws IOException {
     FileSystemProvider provider = provider(path);
@@ -404,7 +397,6 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     return abstractPath.getMemoryFileSystem().isHidden(abstractPath);
   }
 
-
   @Override
   public FileStore getFileStore(Path path) {
     return castPath(path).getMemoryFileSystem().getFileStore();
@@ -418,7 +410,6 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     return (AbstractPath) path;
   }
 
-
   @Override
   public void checkAccess(Path path, AccessMode... modes) throws IOException {
     this.checkSupported(modes);
@@ -427,14 +418,12 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     memoryFileSystem.checkAccess(abstractPath, modes);
   }
 
-
   @Override
   public <V extends FileAttributeView> V getFileAttributeView(Path path, Class<V> type, LinkOption... options) {
     AbstractPath abstractPath = castPath(path);
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
     return memoryFileSystem.getLazyFileAttributeView(abstractPath, type, options);
   }
-
 
   @Override
   public <A extends BasicFileAttributes> A readAttributes(Path path, Class<A> type, LinkOption... options) throws IOException {
@@ -443,14 +432,12 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     return memoryFileSystem.readAttributes(abstractPath, type, options);
   }
 
-
   @Override
   public Map<String, Object> readAttributes(Path path, String attributes, LinkOption... options) throws IOException {
     AbstractPath abstractPath = castPath(path);
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
     return memoryFileSystem.readAttributes(abstractPath, attributes, options);
   }
-
 
   @Override
   public void setAttribute(Path path, String attribute, Object value, LinkOption... options) throws IOException {
