@@ -46,6 +46,7 @@ import java.nio.channels.FileLock;
 import java.nio.channels.NonWritableChannelException;
 import java.nio.channels.OverlappingFileLockException;
 import java.nio.channels.SeekableByteChannel;
+import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileStore;
 import java.nio.file.FileSystem;
@@ -882,15 +883,52 @@ class MemoryFileSystemTest {
             "loop");
   }
 
-
-
   @Test
   void dontDeleteOpenFile() throws IOException {
     FileSystem fileSystem = this.extension.getFileSystem();
     Path path = fileSystem.getPath("test");
     try (SeekableByteChannel channel = Files.newByteChannel(path, CREATE_NEW, WRITE)) {
       assertThrows(FileSystemException.class , () -> Files.delete(path), "you shound't be able to delete a file wile it's open");
+      assertThrows(FileSystemException.class , () -> Files.deleteIfExists(path), "you shound't be able to delete a file wile it's open");
     }
+  }
+
+  @Test
+  void delete() throws IOException {
+    FileSystem fileSystem = this.extension.getFileSystem();
+    Path directory = fileSystem.getPath("directory");
+    Path path = directory.resolve("test");
+    assertSame(directory, Files.createDirectory(directory));
+    assertSame(path, Files.createFile(path));
+
+    assertThrows(DirectoryNotEmptyException.class, () -> Files.delete(directory), "you shound't be able to delete a non-emtpy directory");
+
+    Files.delete(path);
+    assertThat(path, not(exists()));
+    assertThrows(NoSuchFileException.class, () -> Files.delete(path), "you shound't be able to delete a non-existing file");
+
+    Files.delete(directory);
+    assertThat(directory, not(exists()));
+    assertThrows(NoSuchFileException.class, () -> Files.delete(directory), "you shound't be able to delete a non-existing directory");
+  }
+
+  @Test
+  void deleteIfExists() throws IOException {
+    FileSystem fileSystem = this.extension.getFileSystem();
+    Path directory = fileSystem.getPath("directory");
+    Path path = directory.resolve("test");
+    assertSame(directory, Files.createDirectory(directory));
+    assertSame(path, Files.createFile(path));
+
+    assertThrows(DirectoryNotEmptyException.class, () -> Files.delete(directory), "you shound't be able to delete a non-emtpy directory");
+
+    assertTrue(Files.deleteIfExists(path));
+    assertThat(path, not(exists()));
+    assertFalse(Files.deleteIfExists(path));
+
+    assertTrue(Files.deleteIfExists(directory));
+    assertThat(directory, not(exists()));
+    assertFalse(Files.deleteIfExists(directory));
   }
 
   @Test
