@@ -277,6 +277,21 @@ abstract class MemoryEntryAttributes {
     }
   }
 
+  boolean canRead() {
+    try (AutoRelease lock = this.readLock()) {
+      for (Object attributeView : this.additionalViews.values()) {
+        if (attributeView instanceof AccessCheck) {
+          AccessCheck accessCheck = (AccessCheck) attributeView;
+          if (!accessCheck.canRead()) {
+            return false;
+          }
+        }
+      }
+    }
+    // no access check views -> default allow
+    return true;
+  }
+
   private AccessMode getUnsupported(AccessMode... modes) {
     for (AccessMode mode : modes) {
       if (!(mode == AccessMode.READ || mode == AccessMode.WRITE || mode == AccessMode.EXECUTE)) {
@@ -456,6 +471,17 @@ abstract class MemoryEntryAttributes {
     }
 
     public void checkAccess(AclEntryPermission mode) throws AccessDeniedException {
+      if (!this.canAccess(mode)) {
+        throw new AccessDeniedException(this.path.toString());
+      }
+    }
+
+    @Override
+    public boolean canRead() {
+      return this.canAccess(READ_DATA);
+    }
+
+    private boolean canAccess(AclEntryPermission mode) {
       // TODO "OWNER@", "GROUP@", and "EVERYONE@"
       UserPrincipal currentUser = this.attributes.getCurrentUser();
       GroupPrincipal currentGroup = this.attributes.getCurrentGroup();
@@ -467,14 +493,15 @@ abstract class MemoryEntryAttributes {
           AclEntryType type = entry.type();
           if (applies) {
             if (type == ALLOW) {
-              return;
+              return true;
             }
             if (type == DENY) {
-              throw new AccessDeniedException(this.path.toString());
+              return false;
             }
           }
         }
       }
+      return true;
     }
 
     @Override
@@ -598,6 +625,12 @@ abstract class MemoryEntryAttributes {
         default:
           throw new UnsupportedOperationException("access mode " + mode + " is not supported");
       }
+    }
+
+    @Override
+    public boolean canRead() {
+      // always fine
+      return true;
     }
 
     @Override
@@ -827,6 +860,19 @@ abstract class MemoryEntryAttributes {
 
     @Override
     public void checkAccess(AccessMode mode) throws AccessDeniedException {
+      int flag = this.computeAccessFlag(mode);
+      if (flag == 0) {
+        throw new AccessDeniedException(this.path.toString());
+      }
+    }
+
+    @Override
+    public boolean canRead() {
+      int flag = this.computeAccessFlag(AccessMode.READ);
+      return flag != 0;
+    }
+
+    private int computeAccessFlag(AccessMode mode) {
       UserPrincipal user = this.attributes.getCurrentUser();
       PosixFilePermission permission;
       if (user == this.getOwner()) {
@@ -839,10 +885,7 @@ abstract class MemoryEntryAttributes {
           permission = this.translateOthersMode(mode);
         }
       }
-      int flag = 1 << permission.ordinal() & this.permissions;
-      if (flag == 0) {
-        throw new AccessDeniedException(this.path.toString());
-      }
+      return 1 << permission.ordinal() & this.permissions;
     }
 
     void assertOwner() throws AccessDeniedException {

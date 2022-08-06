@@ -9,4 +9,6 @@ interface AccessCheck {
 
   void checkAccess(AccessMode mode) throws AccessDeniedException;
 
+  boolean canRead();
+
 }
