@@ -44,6 +44,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.GroupPrincipal;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.nio.file.attribute.UserPrincipal;
 import java.text.Normalizer;
 import java.text.Normalizer.Form;
@@ -632,6 +633,51 @@ class UnixFileSystemCompatibilityTest {
         Files.delete(child1);
       }
     }
+  }
+
+  @CompatibilityTest
+  void issue50(boolean useDefault) throws IOException {
+    FileSystem fileSystem = this.getFileSystem(useDefault);
+    Path path = fileSystem.getPath("readable-at-first");
+    Files.createFile(path,  PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("r--r--r--")));
+    try {
+      assertTrue(Files.isReadable(path));
+      assertFalse(Files.isWritable(path));
+      assertFalse(Files.isExecutable(path));
+
+      Files.setPosixFilePermissions(path, PosixFilePermissions.fromString("rw-r--r--")); // FAIL.
+
+      assertTrue(Files.isReadable(path)); // ok
+      assertTrue(Files.isWritable(path)); // (should be) ok
+      assertFalse(Files.isExecutable(path)); // ok
+    } finally {
+      if (useDefault) {
+        Files.delete(path);
+      }
+    }
+  }
+
+  @CompatibilityTest
+  void issue51(boolean useDefault) throws IOException {
+    FileSystem fileSystem = this.getFileSystem(useDefault);
+    Path path = fileSystem.getPath("readable-at-first");
+    Files.createFile(path,  PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("---------")));
+    try {
+      assertFalse(Files.isReadable(path));
+      assertFalse(Files.isWritable(path));
+      assertFalse(Files.isExecutable(path));
+
+      Files.setPosixFilePermissions(path, PosixFilePermissions.fromString("rw-r--r--")); // FAIL.
+
+      assertTrue(Files.isReadable(path)); // ok
+      assertTrue(Files.isWritable(path)); // (should be) ok
+      assertFalse(Files.isExecutable(path)); // ok
+    } finally {
+      if (useDefault) {
+        Files.delete(path);
+      }
+    }
+
   }
 
 }

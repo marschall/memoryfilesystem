@@ -15,6 +15,7 @@ import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -409,6 +410,25 @@ class PosixPermissionMemoryFileSystemTest {
         return null;
       }
     });
+  }
+
+  @Test
+  void issue135() throws IOException {
+    FileSystem fileSystem = this.extension.getFileSystem();
+    Path path = fileSystem.getPath("/test.txt");
+    FileUtility.createAndSetContents(path, "Test");
+    Files.setPosixFilePermissions(path, EnumSet.noneOf(PosixFilePermission.class));
+    assertThrows(AccessDeniedException.class, () -> Files.readAllBytes(path));
+  }
+
+  @Test
+  void readFromFileWithNoPermission() throws IOException {
+    try (FileSystem fs = MemoryFileSystemBuilder.newLinux().build()) {
+      Path path = fs.getPath("/test.txt");
+      FileUtility.createAndSetContents(path, "Test");
+      Files.setPosixFilePermissions(path, EnumSet.noneOf(PosixFilePermission.class));
+      assertThrows(AccessDeniedException.class, () -> Files.readAllBytes(path));
+    }
   }
 
 }
