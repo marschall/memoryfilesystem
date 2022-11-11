@@ -13,6 +13,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.nio.file.AccessMode;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.OpenOption;
@@ -20,6 +21,8 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.util.Arrays;
 import java.util.Set;
+
+import com.github.marschall.memoryfilesystem.OneTimePermissionChecker.PermissionChecker;
 
 class MemoryFile extends MemoryEntry implements MemoryContents {
 
@@ -142,35 +145,51 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
   InputStream newInputStream(boolean deleteOnClose, Path path) throws IOException {
     try (AutoRelease lock = this.writeLock()) {
       this.incrementOpenCount(path);
-      return new BlockInputStream(this, deleteOnClose, path);
+      return new BlockInputStream(this, deleteOnClose, path, () -> this.checkAccess(AccessMode.READ));
     }
   }
 
   OutputStream newOutputStream(boolean deleteOnClose, Path path) throws IOException {
     try (AutoRelease lock = this.writeLock()) {
       this.incrementOpenCount(path);
-      return new NonAppendingBlockOutputStream(this, deleteOnClose, path);
+      return new NonAppendingBlockOutputStream(this, deleteOnClose, path, () -> this.checkAccess(AccessMode.WRITE));
     }
   }
 
   OutputStream newAppendingOutputStream(boolean deleteOnClose, Path path) throws IOException {
     try (AutoRelease lock = this.writeLock()) {
       this.incrementOpenCount(path);
-      return new AppendingBlockOutputStream(this, deleteOnClose, path);
+      return new AppendingBlockOutputStream(this, deleteOnClose, path, () -> this.checkAccess(AccessMode.WRITE));
     }
   }
 
   BlockChannel newChannel(boolean readable, boolean writable, boolean deleteOnClose, Path path) throws IOException {
     try (AutoRelease lock = this.writeLock()) {
       this.incrementOpenCount(path);
-      return new NonAppendingBlockChannel(this, readable, writable, deleteOnClose, path);
+      PermissionChecker permissionChecker;
+      if (readable) {
+        if (writable) {
+          permissionChecker = () -> this.checkAccess(AccessMode.READ, AccessMode.WRITE);
+        } else {
+          permissionChecker = () -> this.checkAccess(AccessMode.READ);
+        }
+      } else {
+        permissionChecker = () -> this.checkAccess(AccessMode.WRITE);
+      }
+      return new NonAppendingBlockChannel(this, readable, writable, deleteOnClose, path, permissionChecker);
     }
   }
 
   BlockChannel newAppendingChannel(boolean readable, boolean deleteOnClose, Path path) throws IOException {
     try (AutoRelease lock = this.writeLock()) {
       this.incrementOpenCount(path);
-      return new AppendingBlockChannel(this, readable, deleteOnClose, path);
+      PermissionChecker permissionChecker;
+      if (readable) {
+        permissionChecker = () -> this.checkAccess(AccessMode.READ, AccessMode.WRITE);
+      } else {
+        permissionChecker = () -> this.checkAccess(AccessMode.WRITE);
+      }
+      return new AppendingBlockChannel(this, readable, deleteOnClose, path, permissionChecker);
     }
   }
 

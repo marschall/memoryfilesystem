@@ -5,19 +5,23 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.FileSystemException;
 import java.nio.file.Path;
 
+import com.github.marschall.memoryfilesystem.OneTimePermissionChecker.PermissionChecker;
+
 final class AppendingBlockChannel extends BlockChannel {
 
-  AppendingBlockChannel(MemoryContents memoryContents, boolean readable, boolean deleteOnClose, Path path) {
-    super(memoryContents, readable, deleteOnClose, path);
+  AppendingBlockChannel(MemoryContents memoryContents, boolean readable, boolean deleteOnClose, Path path, PermissionChecker permissionChecker) {
+    super(memoryContents, readable, deleteOnClose, path, permissionChecker);
   }
 
   @Override
-  void writeCheck() throws ClosedChannelException {
+  void writeCheck() throws ClosedChannelException, AccessDeniedException {
     // an appending channel is always writable
     this.closedCheck();
+    this.permissionChecker.checkPermission();
   }
 
   //TODO override position(long)?

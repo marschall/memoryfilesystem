@@ -6,24 +6,28 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.NonWritableChannelException;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Path;
+
+import com.github.marschall.memoryfilesystem.OneTimePermissionChecker.PermissionChecker;
 
 final class NonAppendingBlockChannel extends BlockChannel {
 
   private final boolean writable;
 
-  NonAppendingBlockChannel(MemoryContents memoryContents, boolean readable, boolean writable, boolean deleteOnClose, Path path) {
-    super(memoryContents, readable, deleteOnClose, path);
+  NonAppendingBlockChannel(MemoryContents memoryContents, boolean readable, boolean writable, boolean deleteOnClose, Path path, PermissionChecker permissionChecker) {
+    super(memoryContents, readable, deleteOnClose, path, permissionChecker);
     this.writable = writable;
   }
 
 
   @Override
-  void writeCheck() throws ClosedChannelException {
+  void writeCheck() throws ClosedChannelException, AccessDeniedException {
     if (!this.writable) {
       throw new NonWritableChannelException();
     }
     this.closedCheck();
+    this.permissionChecker.checkPermission();
   }
 
   @Override

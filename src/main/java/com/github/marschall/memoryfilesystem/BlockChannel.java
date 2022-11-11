@@ -10,11 +10,14 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.NonReadableChannelException;
 import java.nio.channels.WritableByteChannel;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import com.github.marschall.memoryfilesystem.OneTimePermissionChecker.PermissionChecker;
 
 abstract class BlockChannel extends FileChannel {
 
@@ -42,13 +45,16 @@ abstract class BlockChannel extends FileChannel {
 
   private final boolean deleteOnClose;
 
+  final OneTimePermissionChecker permissionChecker;
 
-  BlockChannel(MemoryContents memoryContents, boolean readable, boolean deleteOnClose, Path path) {
+
+  BlockChannel(MemoryContents memoryContents, boolean readable, boolean deleteOnClose, Path path, PermissionChecker permissionChecker) {
     this.memoryContents = memoryContents;
     this.readable = readable;
     this.deleteOnClose = deleteOnClose;
     this.lock = new ReentrantLock();
     this.path = path;
+    this.permissionChecker = new OneTimePermissionChecker(permissionChecker);
   }
 
   void closedCheck() throws ClosedChannelException {
@@ -57,21 +63,22 @@ abstract class BlockChannel extends FileChannel {
     }
   }
 
-  abstract void writeCheck() throws ClosedChannelException;
+  abstract void writeCheck() throws ClosedChannelException, AccessDeniedException;
 
-  private void readCheck() throws ClosedChannelException {
+  private void readCheck() throws ClosedChannelException, AccessDeniedException {
     this.closedCheck();
+    this.permissionChecker.checkPermission();
     if (!this.readable) {
       throw new NonReadableChannelException();
     }
   }
 
-  AutoRelease writeLock() throws ClosedChannelException {
+  AutoRelease writeLock() throws ClosedChannelException, AccessDeniedException {
     this.writeCheck();
     return autoRelease(this.lock);
   }
 
-  private AutoRelease readLock() throws ClosedChannelException {
+  private AutoRelease readLock() throws ClosedChannelException, AccessDeniedException {
     this.readCheck();
     return autoRelease(this.lock);
   }

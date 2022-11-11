@@ -4,18 +4,22 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
 
+import com.github.marschall.memoryfilesystem.OneTimePermissionChecker.PermissionChecker;
+
 abstract class BlockOutputStream extends OutputStream {
 
   final MemoryContents memoryContents;
   final ClosedStreamChecker checker;
+  final OneTimePermissionChecker permissionChecker;
   final Path path;
   private final boolean deleteOnClose;
 
 
-  BlockOutputStream(MemoryContents memoryContents, boolean deleteOnClose, Path path) {
+  BlockOutputStream(MemoryContents memoryContents, boolean deleteOnClose, Path path, PermissionChecker permissionChecker) {
     this.memoryContents = memoryContents;
     this.deleteOnClose = deleteOnClose;
     this.checker = new ClosedStreamChecker();
+    this.permissionChecker = new OneTimePermissionChecker(permissionChecker);
     this.path = path;
   }
 

@@ -8,6 +8,8 @@ import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 
+import com.github.marschall.memoryfilesystem.OneTimePermissionChecker.PermissionChecker;
+
 final class BlockInputStream extends InputStream {
 
   /**
@@ -20,6 +22,7 @@ final class BlockInputStream extends InputStream {
 
   private final MemoryContents memoryContents;
   private final ClosedStreamChecker checker;
+  private final OneTimePermissionChecker permissionChecker;
   @SuppressWarnings("unused") // POSITION_UPDATER
   private volatile long position;
   private final Path path;
@@ -31,12 +34,13 @@ final class BlockInputStream extends InputStream {
   //  private int readLimit;
 
 
-  BlockInputStream(MemoryContents memoryContents, boolean deleteOnClose, Path path) {
+  BlockInputStream(MemoryContents memoryContents, boolean deleteOnClose, Path path, PermissionChecker permissionChecker) {
     this.memoryContents = memoryContents;
     this.deleteOnClose = deleteOnClose;
     this.checker = new ClosedStreamChecker();
     POSITION_UPDATER.set(this, 0L);
     this.path = path;
+    this.permissionChecker = new OneTimePermissionChecker(permissionChecker);
     //    this.markLock = new ReentrantLock();
     //    this.readLimit = -1;
     //    this.markPosition = -1L;
@@ -46,6 +50,7 @@ final class BlockInputStream extends InputStream {
   @Override
   public int read(byte[] b, int off, int len) throws IOException {
     this.checker.check(this.path);
+    this.permissionChecker.checkPermission();
     boolean success = false;
     int read = 0;
     while (!success) {
@@ -149,6 +154,7 @@ final class BlockInputStream extends InputStream {
   // Java 9 method, has to compile under Java 1.7 so no @Override
   public long transferTo​(OutputStream out) throws IOException {
     this.checker.check(this.path);
+    this.permissionChecker.checkPermission();
     long positionBefore = POSITION_UPDATER.get(this);
     long written = this.memoryContents.transferTo(out, positionBefore);
     POSITION_UPDATER.set(this, this.memoryContents.size());
