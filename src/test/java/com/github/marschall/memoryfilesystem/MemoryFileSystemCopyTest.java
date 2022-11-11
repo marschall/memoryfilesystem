@@ -15,7 +15,6 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.nio.file.DirectoryNotEmptyException;
@@ -160,18 +159,9 @@ class MemoryFileSystemCopyTest {
     Path firstRoot = this.extension.getFileSystem().getPath("/");
     try (FileSystem second = MemoryFileSystemBuilder.newEmpty().build("second")) {
       Path secondRoot = second.getPath("/");
-      try {
-        Files.copy(firstRoot, secondRoot);
-        fail("moving the root should not work");
-      } catch (IOException e) {
-        // expected
-      }
-      try {
-        Files.copy(secondRoot, firstRoot);
-        fail("moving the root should not work");
-      } catch (IOException e) {
-        // expected
-      }
+      assertThrows(IOException.class, () -> Files.copy(firstRoot, secondRoot), "moving the root should not work");
+
+      assertThrows(IOException.class, () -> Files.copy(secondRoot, firstRoot), "moving the root should not work");
     }
   }
 
@@ -179,18 +169,9 @@ class MemoryFileSystemCopyTest {
   void copyRoot() {
     Path root = this.extension.getFileSystem().getPath("/");
     Path path = this.extension.getFileSystem().getPath("/a");
-    try {
-      Files.copy(root, path);
-      fail("moving the root should not work");
-    } catch (IOException e) {
-      // expected
-    }
-    try {
-      Files.copy(path, root);
-      fail("moving the root should not work");
-    } catch (IOException e) {
-      // expected
-    }
+    assertThrows(IOException.class, () -> Files.copy(root, path), "moving the root should not work");
+
+    assertThrows(IOException.class, () -> Files.copy(path, root), "moving the root should not work");
   }
 
   @Test
@@ -203,13 +184,9 @@ class MemoryFileSystemCopyTest {
     Files.createDirectory(source);
     Files.createDirectory(target);
 
-    try {
-      Files.copy(source, target);
-      fail("should not be able to overwrite existing directories");
-    } catch (FileAlreadyExistsException e) {
-      // should reach here
-      assert(true);
-    }
+    assertThrows(FileAlreadyExistsException.class,
+            () -> Files.copy(source, target),
+            "should not be able to overwrite existing directories");
 
   }
 
@@ -225,13 +202,9 @@ class MemoryFileSystemCopyTest {
     Files.createDirectory(target);
     Files.createFile(child);
 
-    try {
-      Files.copy(source, target, REPLACE_EXISTING);
-      fail("should not be able to overwrite non-empty directories");
-    } catch (DirectoryNotEmptyException e) {
-      // should reach here
-      assert(true);
-    }
+    assertThrows(DirectoryNotEmptyException.class,
+            () -> Files.copy(source, target, REPLACE_EXISTING),
+            "should not be able to overwrite non-empty directories");
 
   }
 
@@ -393,18 +366,13 @@ class MemoryFileSystemCopyTest {
   void moveRoot() {
     Path root = this.extension.getFileSystem().getPath("/");
     Path path = this.extension.getFileSystem().getPath("/a");
-    try {
-      Files.move(root, path);
-      fail("moving the root should not work");
-    } catch (IOException e) {
-      // expected
-    }
-    try {
-      Files.move(path, root);
-      fail("moving the root should not work");
-    } catch (IOException e) {
-      // expected
-    }
+    assertThrows(IOException.class,
+            () -> Files.move(root, path),
+            "moving the root should not work");
+
+    assertThrows(IOException.class,
+            () -> Files.move(path, root),
+            "moving the root should not work");
   }
 
 
@@ -414,18 +382,13 @@ class MemoryFileSystemCopyTest {
     Path firstRoot = this.extension.getFileSystem().getPath("/");
     try (FileSystem second = MemoryFileSystemBuilder.newEmpty().build("second")) {
       Path secondRoot = second.getPath("/");
-      try {
-        Files.move(firstRoot, secondRoot);
-        fail("moving the root should not work");
-      } catch (IOException e) {
-        // expected
-      }
-      try {
-        Files.move(secondRoot, firstRoot);
-        fail("moving the root should not work");
-      } catch (IOException e) {
-        // expected
-      }
+      assertThrows(IOException.class,
+              () -> Files.move(firstRoot, secondRoot),
+              "moving the root should not work");
+
+      assertThrows(IOException.class,
+              () -> Files.move(secondRoot, firstRoot),
+              "moving the root should not work");
     }
   }
 
@@ -529,13 +492,9 @@ class MemoryFileSystemCopyTest {
     Files.createDirectory(target);
     Files.createFile(child);
 
-    try {
-      Files.move(source, target, REPLACE_EXISTING);
-      fail("should not be able to overwrite non-empty directories");
-    } catch (DirectoryNotEmptyException e) {
-      // should reach here
-      assert(true);
-    }
+    assertThrows(DirectoryNotEmptyException.class,
+            () -> Files.move(source, target, REPLACE_EXISTING),
+            "should not be able to overwrite non-empty directories");
 
   }
 
@@ -549,13 +508,9 @@ class MemoryFileSystemCopyTest {
     Files.createDirectory(source);
     Files.createDirectory(target);
 
-    try {
-      Files.move(source, target);
-      fail("should not be able to overwrite existing directories");
-    } catch (FileAlreadyExistsException e) {
-      // should reach here
-      assert(true);
-    }
+    assertThrows(FileAlreadyExistsException.class,
+            () -> Files.move(source, target),
+            "should not be able to overwrite existing directories");
 
   }
 

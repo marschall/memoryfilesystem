@@ -6,8 +6,8 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.nio.file.FileStore;
@@ -35,12 +35,7 @@ class MemoryFileStoreTest {
       Iterator<FileStore> fileStores = fileSystem.getFileStores().iterator();
       assertTrue(fileStores.hasNext());
       fileStores.next();
-      try {
-        fileStores.remove();
-        fail("file store iterator should not support remove");
-      } catch (UnsupportedOperationException e) {
-        // should reach here
-      }
+      assertThrows(UnsupportedOperationException.class, fileStores::remove, "file store iterator should not support remove");
       assertFalse(fileStores.hasNext());
     }
   }

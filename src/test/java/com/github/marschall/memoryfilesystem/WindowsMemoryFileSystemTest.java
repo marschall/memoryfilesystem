@@ -15,6 +15,7 @@ import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -185,12 +186,9 @@ class WindowsMemoryFileSystemTest {
   void forbiddenCharacters() {
     FileSystem fileSystem = this.extension.getFileSystem();
     for (char c : "\\/:?\"<>|".toCharArray()) {
-      try {
-        fileSystem.getPath(Character.toString(c) + ".txt");
-        fail(c + " should be forbidden");
-      } catch (InvalidPathException e) {
-        // should reach here
-      }
+      assertThrows(InvalidPathException.class,
+              () -> fileSystem.getPath(Character.toString(c) + ".txt"),
+              () -> c + " should be forbidden");
     }
   }
 
@@ -226,13 +224,7 @@ class WindowsMemoryFileSystemTest {
     provider.checkAccess(file, READ);
     provider.checkAccess(file, EXECUTE);
 
-    try {
-      provider.checkAccess(file, WRITE);
-      fail("write should not be permitted");
-    } catch (AccessDeniedException e) {
-      // should reach here
-    }
-
+    assertThrows(AccessDeniedException.class, () -> provider.checkAccess(file, WRITE), "write should not be permitted");
   }
 
   @Test

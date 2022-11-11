@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.net.URI;
@@ -38,12 +37,9 @@ class CustomMemoryFileSystemTest {
       assertSame(fileSystem, FileSystems.getFileSystem(uri));
     }
     // file system is closed now
-    try {
-      FileSystems.getFileSystem(uri);
-      fail("file system should not exist anymore");
-    } catch (FileSystemNotFoundException e) {
-      // should reach here
-    }
+    assertThrows(FileSystemNotFoundException.class,
+            () -> FileSystems.getFileSystem(uri),
+            "file system should not exist anymore");
   }
 
   @Test
@@ -55,12 +51,9 @@ class CustomMemoryFileSystemTest {
       assertEquals(userName, user.getName());
 
       fileSystem.close();
-      try {
-        userPrincipalLookupService.lookupPrincipalByName(userName);
-        fail("UserPrincipalLookupService should be invalid when file system is closed");
-      } catch (ClosedFileSystemException e) {
-        // should reach here
-      }
+      assertThrows(ClosedFileSystemException.class,
+              () -> userPrincipalLookupService.lookupPrincipalByName(userName),
+              "UserPrincipalLookupService should be invalid when file system is closed");
     }
   }
 
@@ -84,12 +77,9 @@ class CustomMemoryFileSystemTest {
     assertTrue(fileSystem.isOpen());
 
     // creating a new one should fail
-    try {
-      FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV);
-      fail("file system " + SAMPLE_URI + " already exists");
-    } catch (FileSystemAlreadyExistsException e) {
-      //should reach here
-    }
+    assertThrows(FileSystemAlreadyExistsException.class,
+            () -> FileSystems.newFileSystem(SAMPLE_URI, SAMPLE_ENV),
+            () -> "file system " + SAMPLE_URI + " already exists");
 
     // closing should work
     fileSystem.close();

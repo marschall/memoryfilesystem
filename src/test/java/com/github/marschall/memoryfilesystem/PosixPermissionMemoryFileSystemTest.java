@@ -210,12 +210,9 @@ class PosixPermissionMemoryFileSystemTest {
 
     CurrentUser.useDuring(user, () -> CurrentGroup.useDuring(group, () -> {
       FileSystemProvider provider = file.getFileSystem().provider();
-      try {
-        provider.checkAccess(file, mode);
-        fail("should not be able to access");
-      } catch (AccessDeniedException e) {
-        // should reach here
-      }
+      assertThrows(AccessDeniedException.class,
+              () -> provider.checkAccess(file, mode),
+              "should not be able to access");
     }));
   }
 
@@ -234,12 +231,9 @@ class PosixPermissionMemoryFileSystemTest {
     UserPrincipal other = fileSystem.getUserPrincipalLookupService().lookupPrincipalByName(PosixPermissionFileSystemExtension.OTHER);
 
     CurrentUser.useDuring(other, () -> {
-      try {
-        Files.delete(file);
-        fail("should not be delete to create files");
-      } catch (AccessDeniedException e) {
-        // should reach here
-      }
+      assertThrows(AccessDeniedException.class,
+              () -> Files.delete(file),
+              "should not be delete to create files");
     });
 
 
@@ -266,12 +260,9 @@ class PosixPermissionMemoryFileSystemTest {
 
     // no write permission is not enough
     CurrentUser.useDuring(user, () -> {
-      try {
-        Files.move(source, target);
-        fail("should not be allowed to move files");
-      } catch (AccessDeniedException e) {
-        // should reach here
-      }
+      assertThrows(AccessDeniedException.class,
+              () -> Files.move(source, target),
+              "should not be allowed to move files");
     });
 
     sourceView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_WRITE));
@@ -279,12 +270,9 @@ class PosixPermissionMemoryFileSystemTest {
 
     // write and execute permission on source only is not enough
     CurrentUser.useDuring(user, () -> {
-      try {
-        Files.move(source, target);
-        fail("should not be allowed to move files");
-      } catch (AccessDeniedException e) {
-        // should reach here
-      }
+      assertThrows(AccessDeniedException.class,
+              () -> Files.move(source, target),
+              "should not be allowed to move files");
     });
 
     sourceView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE));
@@ -292,12 +280,9 @@ class PosixPermissionMemoryFileSystemTest {
 
     // write permission on target only is not enough
     CurrentUser.useDuring(user, () -> {
-      try {
-        Files.move(source, target);
-        fail("should not be allowed to move files");
-      } catch (AccessDeniedException e) {
-        // should reach here
-      }
+      assertThrows(AccessDeniedException.class,
+              () -> Files.move(source, target),
+              "should not be allowed to move files");
     });
 
     sourceView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_EXECUTE, OTHERS_WRITE));
@@ -321,12 +306,9 @@ class PosixPermissionMemoryFileSystemTest {
     UserPrincipal user = fileSystem.getUserPrincipalLookupService().lookupPrincipalByName(PosixPermissionFileSystemExtension.OTHER);
 
     CurrentUser.useDuring(user, () -> {
-      try {
-        Files.createFile(file);
-        fail("should not be allowed to create files");
-      } catch (AccessDeniedException e) {
-        // should reach here
-      }
+      assertThrows(AccessDeniedException.class,
+              () -> Files.createFile(file),
+              "should not be allowed to create files");
     });
 
     view.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_WRITE));

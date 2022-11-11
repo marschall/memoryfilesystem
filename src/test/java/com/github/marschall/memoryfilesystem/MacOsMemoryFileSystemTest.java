@@ -11,7 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.lang.annotation.Retention;
@@ -125,13 +124,10 @@ class MacOsMemoryFileSystemTest {
 
   @CompatibilityTest
   void forbiddenCharacters(boolean useDefault) {
-    try {
-      char c = 0;
-      this.getFileSystem(useDefault).getPath(c + ".txt");
-      fail("0x00 should be forbidden");
-    } catch (InvalidPathException e) {
-      // should reach here
-    }
+    char c = 0;
+    assertThrows(InvalidPathException.class,
+            () -> this.getFileSystem(useDefault).getPath(c + ".txt"),
+            "0x00 should be forbidden");
   }
 
   @CompatibilityTest

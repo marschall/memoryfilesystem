@@ -2,7 +2,7 @@ package com.github.marschall.memoryfilesystem;
 
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.nio.file.attribute.UserPrincipal;
@@ -27,37 +27,29 @@ class MemoryUserPrincipalLookupServiceTest {
     assertEquals("user", user.getName());
     assertEquals(user,lookupService.lookupPrincipalByName("user"));
 
-    try {
-      lookupService.lookupPrincipalByName("USER");
-      fail("lookup should fail");
-    } catch (UserPrincipalNotFoundException e) {
-      assertEquals("USER", e.getName());
-    }
+    UserPrincipalNotFoundException e = assertThrows(UserPrincipalNotFoundException.class,
+            () -> lookupService.lookupPrincipalByName("USER"),
+            "lookup should fail");
+    assertEquals("USER", e.getName());
 
-    try {
-      lookupService.lookupPrincipalByName("group");
-      fail("lookup should fail");
-    } catch (UserPrincipalNotFoundException e) {
-      assertEquals("group", e.getName());
-    }
+    e = assertThrows(UserPrincipalNotFoundException.class,
+            () -> lookupService.lookupPrincipalByName("group"),
+            "lookup should fail");
+    assertEquals("group", e.getName());
 
     UserPrincipal group = lookupService.lookupPrincipalByGroupName("group");
     assertEquals("group", group.getName());
     assertEquals(group,lookupService.lookupPrincipalByGroupName("group"));
 
-    try {
-      lookupService.lookupPrincipalByGroupName("GROUP");
-      fail("lookup should fail");
-    } catch (UserPrincipalNotFoundException e) {
-      assertEquals("GROUP", e.getName());
-    }
+    e = assertThrows(UserPrincipalNotFoundException.class,
+            () -> lookupService.lookupPrincipalByGroupName("GROUP"),
+            "lookup should fail");
+    assertEquals("GROUP", e.getName());
 
-    try {
-      lookupService.lookupPrincipalByGroupName("user");
-      fail("lookup should fail");
-    } catch (UserPrincipalNotFoundException e) {
-      assertEquals("user", e.getName());
-    }
+    e = assertThrows(UserPrincipalNotFoundException.class,
+            () -> lookupService.lookupPrincipalByGroupName("user"),
+            "lookup should fail");
+    assertEquals("user", e.getName());
   }
 
   @Test
@@ -72,23 +64,19 @@ class MemoryUserPrincipalLookupServiceTest {
     assertEquals("usEr", user.getName());
     assertEquals(user,lookupService.lookupPrincipalByName("USER"));
 
-    try {
-      lookupService.lookupPrincipalByName("group");
-      fail("lookup should fail");
-    } catch (UserPrincipalNotFoundException e) {
-      assertEquals("group", e.getName());
-    }
+    UserPrincipalNotFoundException e = assertThrows(UserPrincipalNotFoundException.class,
+            () -> lookupService.lookupPrincipalByName("group"),
+            "lookup should fail");
+    assertEquals("group", e.getName());
 
     UserPrincipal group = lookupService.lookupPrincipalByGroupName("group");
     assertEquals("grOup", group.getName());
     assertEquals(group,lookupService.lookupPrincipalByGroupName("GROUP"));
 
-    try {
-      lookupService.lookupPrincipalByGroupName("user");
-      fail("lookup should fail");
-    } catch (UserPrincipalNotFoundException e) {
-      assertEquals("user", e.getName());
-    }
+    e = assertThrows(UserPrincipalNotFoundException.class,
+            () -> lookupService.lookupPrincipalByGroupName("user"),
+            "lookup should fail");
+    assertEquals("user", e.getName());
   }
 
 }

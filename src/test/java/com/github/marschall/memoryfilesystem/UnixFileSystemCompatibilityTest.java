@@ -106,13 +106,10 @@ class UnixFileSystemCompatibilityTest {
 
   @CompatibilityTest
   void forbiddenCharacters(boolean useDefault) {
-    try {
-      char c = 0;
-      this.getFileSystem(useDefault).getPath(c + ".txt");
-      fail("0x00 should be forbidden");
-    } catch (InvalidPathException e) {
-      // should reach here
-    }
+    char c = 0;
+    assertThrows(InvalidPathException.class,
+            () -> this.getFileSystem(useDefault).getPath(c + ".txt"),
+            "0x00 should be forbidden");
   }
 
   @CompatibilityTest
@@ -408,18 +405,9 @@ class UnixFileSystemCompatibilityTest {
     Iterable<Path> rootDirectories = fileSystem.getRootDirectories();
     Path root = rootDirectories.iterator().next();
     assertTrue(root.endsWith(root));
-    try {
-      root.endsWith((String) null);
-      fail("path#endsWith(null) should not work");
-    } catch (NullPointerException e) {
-      // should reach here
-    }
-    try {
-      root.startsWith((String) null);
-      fail("path#startsWith(null) should not work");
-    } catch (NullPointerException e) {
-      // should reach here
-    }
+    assertThrows(NullPointerException.class, () -> root.endsWith((String) null), "path#endsWith(null) should not work");
+
+    assertThrows(NullPointerException.class, () -> root.startsWith((String) null), "path#startsWith(null) should not work");
     assertTrue(root.startsWith(root));
     assertFalse(root.startsWith(""));
     assertTrue(root.startsWith("/"));

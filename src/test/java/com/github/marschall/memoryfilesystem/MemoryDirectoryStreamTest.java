@@ -7,8 +7,8 @@ import static org.hamcrest.Matchers.everyItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -136,12 +136,7 @@ class MemoryDirectoryStreamTest {
 
       assertFalse(iterator.hasNext());
 
-      try {
-        iterator.next();
-        fail("next() should throw");
-      } catch (NoSuchElementException e) {
-        // should reach here
-      }
+      assertThrows(NoSuchElementException.class, iterator::next, "next() should throw");
     }
 
   }
@@ -157,12 +152,7 @@ class MemoryDirectoryStreamTest {
         assertNotNull(each);
       }
 
-      try {
-        directoryStream.iterator();
-        fail("iterator() can be called only once");
-      } catch (IllegalStateException e) {
-        // should reach here
-      }
+      assertThrows(IllegalStateException.class, directoryStream::iterator, "iterator() can be called only once");
     }
 
   }
@@ -177,12 +167,7 @@ class MemoryDirectoryStreamTest {
 
       directoryStream.close();
 
-      try {
-        directoryStream.iterator();
-        fail("already closed");
-      } catch (IllegalStateException e) {
-        // should reach here
-      }
+      assertThrows(IllegalStateException.class, directoryStream::iterator, "already closed");
     }
 
   }
@@ -204,12 +189,7 @@ class MemoryDirectoryStreamTest {
 
       assertFalse(iterator.hasNext());
 
-      try {
-        directoryStream.iterator();
-        fail("iterator() can be called only once");
-      } catch (IllegalStateException e) {
-        // should reach here
-      }
+      assertThrows(IllegalStateException.class, directoryStream::iterator, "iterator() can be called only once");
     }
 
   }
@@ -223,12 +203,7 @@ class MemoryDirectoryStreamTest {
     try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(fileSystem.getPath("/"))) {
       Iterator<Path> iterator = directoryStream.iterator();
 
-      try {
-        iterator.remove();
-        fail("iterator.remove() should throw");
-      } catch (UnsupportedOperationException e) {
-        // should reach here
-      }
+      assertThrows(UnsupportedOperationException.class, iterator::remove, "iterator.remove() should throw");
     }
 
   }

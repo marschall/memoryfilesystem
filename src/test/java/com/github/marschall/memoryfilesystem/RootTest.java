@@ -11,7 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.nio.file.FileSystem;
@@ -61,26 +60,19 @@ class RootTest {
     assertEquals(root.toAbsolutePath(), Paths.get(root.toUri()));
 
     for (int i = -1; i < 2; ++i) {
-      try {
-        root.getName(i);
-        fail("root should not support #getName(int)");
-      } catch (IllegalArgumentException e) {
-        // should reach here
-      }
+      int j = i;
+      assertThrows(IllegalArgumentException.class,
+              () -> root.getName(j),
+              "root should not support #getName(int)");
     }
 
-    try {
-      root.endsWith((String) null);
-      fail("path#endsWith(null) should not work");
-    } catch (NullPointerException e) {
-      // should reach here
-    }
-    try {
-      root.startsWith((String) null);
-      fail("path#startsWith(null) should not work");
-    } catch (NullPointerException e) {
-      // should reach here
-    }
+    assertThrows(NullPointerException.class,
+            () -> root.endsWith((String) null),
+            "path#endsWith(null) should not work");
+
+    assertThrows(NullPointerException.class,
+            () -> root.startsWith((String) null),
+            "path#startsWith(null) should not work");
 
   }
 

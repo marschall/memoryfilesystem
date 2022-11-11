@@ -13,7 +13,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.lang.annotation.Retention;
@@ -133,20 +132,12 @@ class WindowsFileSystemCompatibilityTest {
     List<String> forbidden = asList("CON", "PRN", "AUX", "CLOCK$", "NULL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9");
     for (String each : forbidden) {
       Path forbiddenPath = root.resolve(each);
-      try {
-        Files.createFile(forbiddenPath);
-        fail(forbiddenPath + " should be forbidden");
-      } catch (IOException e) {
-        // should reach here
-      }
+      assertThrows(IOException.class, () -> Files.createFile(forbiddenPath), () -> forbiddenPath + " should be forbidden");
 
-      forbiddenPath = root.resolve(each.toLowerCase(Locale.US));
-      try {
-        Files.createFile(forbiddenPath);
-        fail(forbiddenPath + " should be forbidden");
-      } catch (IOException e) {
-        // should reach here
-      }
+      Path forbiddenPathLowerCase = root.resolve(each.toLowerCase(Locale.US));
+      assertThrows(IOException.class,
+              () -> Files.createFile(forbiddenPath),
+              () -> forbiddenPathLowerCase + " should be forbidden");
     }
   }
 

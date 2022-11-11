@@ -531,15 +531,13 @@ class MemoryFileSystemTest {
 
       Future<Integer> future = channel.write(buffer, 1L);
 
-      try {
-        future.get();
-        fail("write to reading channel should fail");
-      } catch (ExecutionException e) {
-        Throwable cause = e.getCause();
+      ExecutionException e = assertThrows(ExecutionException.class,
+              () -> future.get(),
+              "write to reading channel should fail");
+      Throwable cause = e.getCause();
 
-        // TODO fix Hamcrest
-        assertThat(cause, isA((Class<Throwable>) (Object) NonWritableChannelException.class));
-      }
+      // TODO fix Hamcrest
+      assertThat(cause, isA((Class<Throwable>) (Object) NonWritableChannelException.class));
     }
     assertThat(path, hasContents("z"));
   }
@@ -743,12 +741,9 @@ class MemoryFileSystemTest {
     Path aAsSymlink = Files.readSymbolicLink(a);
     assertEquals("/b", aAsSymlink.toString());
 
-    try {
-      a.toRealPath();
-      fail("FileSystemLoopException expected");
-    } catch (FileSystemLoopException e) {
-      assertTrue(true, "expected");
-    }
+    assertThrows(FileSystemLoopException.class,
+            a::toRealPath,
+            "FileSystemLoopException expected");
   }
 
   @Test
@@ -869,13 +864,10 @@ class MemoryFileSystemTest {
     Files.createSymbolicLink(link, file);
     Files.createSymbolicLink(file, link);
 
-    try {
-      Files.readAllLines(link, UTF_8);
-      // if the run into a loop we'll actually never reach here
-      fail("loop");
-    } catch (FileSystemLoopException e) {
-      // should reach there
-    }
+    assertThrows(FileSystemLoopException.class,
+            () -> Files.readAllLines(link, UTF_8),
+            // if the run into a loop we'll actually never reach here
+            "loop");
   }
 
 
@@ -999,12 +991,9 @@ class MemoryFileSystemTest {
 
     Path path2 = fileSystem.getPath("/foo/bar/zork");
     assertThat(path2, not(exists()));
-    try {
-      Files.isSameFile(path, path2);
-      fail("file does not exist");
-    } catch (NoSuchFileException e) {
-      // should reach here
-    }
+    assertThrows(NoSuchFileException.class,
+            () -> Files.isSameFile(path, path2),
+            "file does not exist");
   }
 
   @Test
@@ -1331,12 +1320,9 @@ class MemoryFileSystemTest {
     Iterator<String> expectedIterator = expected.iterator();
     while (actualIterator.hasNext()) {
       Path actualPath = actualIterator.next();
-      try {
-        actualIterator.remove();
-        fail("path iterator should not support #remove()");
-      } catch (UnsupportedOperationException e) {
-        assertTrue(true, "path iterator #remove() should throw UnsupportedOperationException");
-      }
+      assertThrows(UnsupportedOperationException.class,
+              actualIterator::remove,
+              "path iterator should not support #remove()");
 
       assertTrue(expectedIterator.hasNext());
       String expectedName = expectedIterator.next();
@@ -1721,12 +1707,9 @@ class MemoryFileSystemTest {
       userAttributes.delete("meta-key");
       assertThat(userAttributes.list(), empty());
 
-      try {
-        userAttributes.read("wrong-key", buffer);
-        fail("there should be nothing under \"wrong-key\"");
-      } catch (IOException e) {
-        // should reach here
-      }
+      assertThrows(IOException.class,
+              () -> userAttributes.read("wrong-key", buffer),
+              "there should be nothing under \"wrong-key\"");
     }
   }
 
@@ -1814,22 +1797,18 @@ class MemoryFileSystemTest {
     FileSystem fileSystem = this.extension.getFileSystem();
 
     Path root = fileSystem.getPath("/");
-    try {
-      Files.createDirectory(root);
-      fail("root already exists");
-    } catch (FileAlreadyExistsException e) {
-      assertEquals("/", e.getFile());
-    }
+    FileAlreadyExistsException e = assertThrows(FileAlreadyExistsException.class,
+            () -> Files.createDirectory(root),
+            "root already exists");
+    assertEquals("/", e.getFile());
 
     Path subPath = fileSystem.getPath("/sub/path");
     Files.createDirectories(subPath);
 
-    try {
-      Files.createDirectory(subPath);
-      fail("root already exists");
-    } catch (FileAlreadyExistsException e) {
-      assertEquals("/sub/path", e.getFile());
-    }
+    e = assertThrows(FileAlreadyExistsException.class,
+            () -> Files.createDirectory(subPath),
+            "root already exists");
+    assertEquals("/sub/path", e.getFile());
   }
 
   @Test
@@ -1846,12 +1825,9 @@ class MemoryFileSystemTest {
     Iterator<Path> directories = fileSystem.getRootDirectories().iterator();
     assertTrue(directories.hasNext());
     directories.next();
-    try {
-      directories.remove();
-      fail("root directories iterator should not support remove");
-    } catch (UnsupportedOperationException e) {
-      // should reach here
-    }
+    assertThrows(UnsupportedOperationException.class,
+            directories::remove,
+            "root directories iterator should not support remove");
     assertFalse(directories.hasNext());
   }
 
@@ -2064,12 +2040,9 @@ class MemoryFileSystemTest {
   @Test
   void toUriDifferentFileSystem() {
     URI uri = URI.create("file:///etc/passwd");
-    try {
-      this.extension.getFileSystem().provider().getPath(uri);
-      fail("URI " + uri + " should be invalid");
-    } catch (IllegalArgumentException e) {
-      // should reach here
-    }
+    assertThrows(IllegalArgumentException.class,
+            () -> this.extension.getFileSystem().provider().getPath(uri),
+            () -> "URI " + uri + " should be invalid");
   }
 
   @Test

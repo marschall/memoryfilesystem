@@ -5,8 +5,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.lang.annotation.Retention;
@@ -123,14 +122,8 @@ class MemoryContentsTest {
 
     ByteBuffer src = this.writeTestData(channel, direct);
 
-    channel = this.createContents().newChannel(true, false, false, path);
-    try {
-      channel.write(src);
-      fail("channel should not be writable");
-    } catch (NonWritableChannelException e) {
-      // should reach here
-      assertTrue(true);
-    }
+    BlockChannel newChannel = this.createContents().newChannel(true, false, false, path);
+    assertThrows(NonWritableChannelException.class, () -> newChannel.write(src), "channel should not be writable");
   }
 
   @BufferTest
@@ -142,13 +135,7 @@ class MemoryContentsTest {
     src.rewind();
 
     channel.position(0L);
-    try {
-      channel.read(src);
-      fail("channel should not be readable");
-    } catch (NonReadableChannelException e) {
-      // should reach here
-      assertTrue(true);
-    }
+    assertThrows(NonReadableChannelException.class, () -> channel.read(src), "channel should not be readable");
   }
 
   @BufferTest
@@ -201,13 +188,7 @@ class MemoryContentsTest {
 
     ByteBuffer src = this.writeTestData(channel, direct);
     channel.write(src);
-    try {
-      channel.truncate(5L);
-      fail("channel should not allow truncation");
-    } catch (IOException e) {
-      // should reach here
-      assertTrue(true);
-    }
+    assertThrows(IOException.class, () -> channel.truncate(5L), "channel should not allow truncation");
   }
 
   @BufferTest
@@ -251,13 +232,7 @@ class MemoryContentsTest {
     channel.position(0L);
 
     testData.rewind();
-    try {
-      channel.read(testData);
-      fail("channel should not be readable");
-    } catch (NonReadableChannelException e) {
-      // should reach here
-      assertTrue(true);
-    }
+    assertThrows(NonReadableChannelException.class, () -> channel.read(testData), "channel should not be readable");
   }
 
 }

@@ -10,7 +10,7 @@ import static java.nio.file.StandardOpenOption.DELETE_ON_CLOSE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -100,13 +100,11 @@ class MemoryHardLinkTest {
     Path target = Files.createDirectory(fileSystem.getPath("target"));
     Path link = fileSystem.getPath("link");
 
-    try {
-      Files.createLink(link, target);
-      fail("hard links on directories not supported");
-    } catch (FileSystemException e) {
-      assertEquals(link.toString(), e.getFile());
-      assertEquals(target.toString(), e.getOtherFile());
-    }
+    FileSystemException e = assertThrows(FileSystemException.class,
+            () -> Files.createLink(link, target),
+            "hard links on directories not supported");
+    assertEquals(link.toString(), e.getFile());
+    assertEquals(target.toString(), e.getOtherFile());
 
   }
 

@@ -3,7 +3,7 @@ package com.github.marschall.memoryfilesystem;
 import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;
@@ -78,12 +78,9 @@ class SecureMemoryDirectoryStreamTest {
       Assumptions.assumeTrue(directoryStream instanceof SecureDirectoryStream);
       SecureDirectoryStream<Path> secure = (SecureDirectoryStream<Path>) directoryStream;
 
-      try {
-        secure.deleteFile(fileSystem.getPath("/"));
-        fail("closed secure directory stream should throw");
-      } catch (ClosedDirectoryStreamException e) {
-        // should reach here
-      }
+      assertThrows(ClosedDirectoryStreamException.class,
+              () -> secure.deleteFile(fileSystem.getPath("/")),
+              "closed secure directory stream should throw");
 
     }
 
@@ -142,12 +139,9 @@ class SecureMemoryDirectoryStreamTest {
       Assumptions.assumeTrue(directoryStream instanceof SecureDirectoryStream);
       SecureDirectoryStream<Path> secure = (SecureDirectoryStream<Path>) directoryStream;
 
-      try {
-        secure.deleteDirectory(fileSystem.getPath("/"));
-        fail("closed secure directory stream should throw");
-      } catch (ClosedDirectoryStreamException e) {
-        // should reach here
-      }
+      assertThrows(ClosedDirectoryStreamException.class,
+              () -> secure.deleteDirectory(fileSystem.getPath("/")),
+              "closed secure directory stream should throw");
 
     }
 
