@@ -1077,9 +1077,7 @@ abstract class MemoryEntryAttributes {
 
     @Override
     public BasicFileAttributes readAttributes() throws IOException {
-      return MemoryEntryAttributes.this.readBasicFileAttributes((lastModifiedTime, lastAccessTime, creationTime) -> {
-        return new MemorySymbolicLinkAttributes(MemoryEntryAttributes.this, lastModifiedTime, lastAccessTime, creationTime);
-      });
+      return MemoryEntryAttributes.this.readBasicFileAttributes((lastModifiedTime, lastAccessTime, creationTime) -> new MemorySymbolicLinkAttributes(MemoryEntryAttributes.this, lastModifiedTime, lastAccessTime, creationTime));
     }
 
   }
@@ -1124,9 +1122,7 @@ abstract class MemoryEntryAttributes {
 
     @Override
     public BasicFileAttributes readAttributes() throws IOException {
-      return MemoryEntryAttributes.this.readBasicFileAttributes((lastModifiedTime, lastAccessTime, creationTime) -> {
-        return new MemoryFileAttributes(MemoryEntryAttributes.this, lastModifiedTime, lastAccessTime, creationTime, MemoryEntryAttributes.this.size());
-      });
+      return MemoryEntryAttributes.this.readBasicFileAttributes((lastModifiedTime, lastAccessTime, creationTime) -> new MemoryFileAttributes(MemoryEntryAttributes.this, lastModifiedTime, lastAccessTime, creationTime, MemoryEntryAttributes.this.size()));
     }
 
   }

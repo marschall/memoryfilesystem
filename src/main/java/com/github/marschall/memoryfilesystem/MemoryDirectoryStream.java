@@ -58,7 +58,7 @@ final class MemoryDirectoryStream implements DirectoryStream<Path> {
     return this.iterator;
   }
 
-  final class MemoryDirectoryIterator implements Iterator<Path> {
+  static final class MemoryDirectoryIterator implements Iterator<Path> {
 
     private final Path basePath;
     private final Iterator<String> iterator;

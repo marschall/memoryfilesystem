@@ -212,14 +212,14 @@ abstract class NonEmptyPath extends ElementPath {
           }
         } else {
           if (nameElementsSize == 1) {
-            // path is just "/.."
-            normalized = this.handleSingleDotDot(normalized);
-            modified = normalized != nameElements;
-            break;
-          } else {
-            normalized = this.handleDotDotNormalizationNotYetModified(nameElements, nameElementsSize, i);
-            modified = normalized != nameElements;
-          }
+          // path is just "/.."
+          normalized = this.handleSingleDotDot(normalized);
+          modified = normalized != nameElements;
+          break;
+        } else {
+          normalized = this.handleDotDotNormalizationNotYetModified(nameElements, nameElementsSize, i);
+          modified = normalized != nameElements;
+        }
         }
         continue;
       }

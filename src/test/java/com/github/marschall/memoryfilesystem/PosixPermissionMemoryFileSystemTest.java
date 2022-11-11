@@ -42,9 +42,6 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import com.github.marschall.memoryfilesystem.CurrentGroup.GroupTask;
-import com.github.marschall.memoryfilesystem.CurrentUser.UserTask;
-
 class PosixPermissionMemoryFileSystemTest {
 
   @RegisterExtension
@@ -60,17 +57,13 @@ class PosixPermissionMemoryFileSystemTest {
 
     Files.setAttribute(directory, "posix:permissions", asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_READ, OTHERS_WRITE));
     UserPrincipal user = fileSystem.getUserPrincipalLookupService().lookupPrincipalByName(PosixPermissionFileSystemExtension.OTHER);
-    CurrentUser.useDuring(user, new UserTask<Void>() {
-
-      @Override
-      public Void call() throws IOException {
-        try (DirectoryStream<?> stream = Files.newDirectoryStream(directory)) {
-          fail("should not be allowd to open a directory stram");
-        } catch (AccessDeniedException e) {
-          // should reach here
-        }
-        return null;
+    CurrentUser.useDuring(user, () -> {
+      try (DirectoryStream<?> stream = Files.newDirectoryStream(directory)) {
+        fail("should not be allowd to open a directory stram");
+      } catch (AccessDeniedException e) {
+        // should reach here
       }
+      return null;
     });
 
   }
@@ -148,12 +141,9 @@ class PosixPermissionMemoryFileSystemTest {
     Files.createFile(path);
     UserPrincipal other = this.extension.getFileSystem().getUserPrincipalLookupService().lookupPrincipalByName(PosixPermissionFileSystemExtension.OTHER);
     Files.setOwner(path, other);
-    CurrentUser.useDuring(other, new UserTask<Object>() {
-      @Override
-      public Object call() throws IOException {
-        Files.setPosixFilePermissions(path, PosixFilePermissions.fromString("---------"));
-        return null;
-      }
+    CurrentUser.useDuring(other, () -> {
+      Files.setPosixFilePermissions(path, PosixFilePermissions.fromString("---------"));
+      return null;
     });
 
     assertTrue(Files.exists(path));
@@ -204,22 +194,11 @@ class PosixPermissionMemoryFileSystemTest {
     view.setGroup(fileGroup); // change group before changing permissions
     view.setPermissions(Collections.singleton(permission));
 
-    CurrentUser.useDuring(user, new UserTask<Void>() {
-
-      @Override
-      public Void call() throws IOException {
-        return CurrentGroup.useDuring(group, new GroupTask<Void>() {
-
-          @Override
-          public Void call() throws IOException {
-            FileSystemProvider provider = file.getFileSystem().provider();
-            provider.checkAccess(file, mode);
-            return null;
-          }
-        });
-      }
-
-    });
+    CurrentUser.useDuring(user, () -> CurrentGroup.useDuring(group, () -> {
+      FileSystemProvider provider = file.getFileSystem().provider();
+      provider.checkAccess(file, mode);
+      return null;
+    }));
   }
 
   private void checkPermissionNegative(final AccessMode mode, PosixFilePermission permission, final Path file, UserPrincipal user, final GroupPrincipal group) throws IOException {
@@ -232,27 +211,16 @@ class PosixPermissionMemoryFileSystemTest {
     permissions.remove(permission);
     view.setPermissions(permissions);
 
-    CurrentUser.useDuring(user, new UserTask<Void>() {
-
-      @Override
-      public Void call() throws IOException {
-        return CurrentGroup.useDuring(group, new GroupTask<Void>() {
-
-          @Override
-          public Void call() throws IOException {
-            FileSystemProvider provider = file.getFileSystem().provider();
-            try {
-              provider.checkAccess(file, mode);
-              fail("should not be able to access");
-            } catch (AccessDeniedException e) {
-              // should reach here
-            }
-            return null;
-          }
-        });
+    CurrentUser.useDuring(user, () -> CurrentGroup.useDuring(group, () -> {
+      FileSystemProvider provider = file.getFileSystem().provider();
+      try {
+        provider.checkAccess(file, mode);
+        fail("should not be able to access");
+      } catch (AccessDeniedException e) {
+        // should reach here
       }
-
-    });
+      return null;
+    }));
   }
 
   @Test
@@ -269,29 +237,21 @@ class PosixPermissionMemoryFileSystemTest {
 
     UserPrincipal other = fileSystem.getUserPrincipalLookupService().lookupPrincipalByName(PosixPermissionFileSystemExtension.OTHER);
 
-    CurrentUser.useDuring(other, new UserTask<Void>() {
-
-      @Override
-      public Void call() throws IOException {
-        try {
-          Files.delete(file);
-          fail("should not be delete to create files");
-        } catch (AccessDeniedException e) {
-          // should reach here
-        }
-        return null;
+    CurrentUser.useDuring(other, () -> {
+      try {
+        Files.delete(file);
+        fail("should not be delete to create files");
+      } catch (AccessDeniedException e) {
+        // should reach here
       }
+      return null;
     });
 
 
     directoryView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_EXECUTE, OTHERS_WRITE));
-    CurrentUser.useDuring(other, new UserTask<Void>() {
-
-      @Override
-      public Void call() throws IOException {
-        Files.delete(file);
-        return null;
-      }
+    CurrentUser.useDuring(other, () -> {
+      Files.delete(file);
+      return null;
     });
   }
 
@@ -311,67 +271,51 @@ class PosixPermissionMemoryFileSystemTest {
     targetView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE));
 
     // no write permission is not enough
-    CurrentUser.useDuring(user, new UserTask<Void>() {
-
-      @Override
-      public Void call() throws IOException {
-        try {
-          Files.move(source, target);
-          fail("should not be allowed to move files");
-        } catch (AccessDeniedException e) {
-          // should reach here
-        }
-        return null;
+    CurrentUser.useDuring(user, () -> {
+      try {
+        Files.move(source, target);
+        fail("should not be allowed to move files");
+      } catch (AccessDeniedException e) {
+        // should reach here
       }
+      return null;
     });
 
     sourceView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_WRITE));
     targetView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE));
 
     // write and execute permission on source only is not enough
-    CurrentUser.useDuring(user, new UserTask<Void>() {
-
-      @Override
-      public Void call() throws IOException {
-        try {
-          Files.move(source, target);
-          fail("should not be allowed to move files");
-        } catch (AccessDeniedException e) {
-          // should reach here
-        }
-        return null;
+    CurrentUser.useDuring(user, () -> {
+      try {
+        Files.move(source, target);
+        fail("should not be allowed to move files");
+      } catch (AccessDeniedException e) {
+        // should reach here
       }
+      return null;
     });
 
     sourceView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE));
     targetView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_WRITE));
 
     // write permission on target only is not enough
-    CurrentUser.useDuring(user, new UserTask<Void>() {
-
-      @Override
-      public Void call() throws IOException {
-        try {
-          Files.move(source, target);
-          fail("should not be allowed to move files");
-        } catch (AccessDeniedException e) {
-          // should reach here
-        }
-        return null;
+    CurrentUser.useDuring(user, () -> {
+      try {
+        Files.move(source, target);
+        fail("should not be allowed to move files");
+      } catch (AccessDeniedException e) {
+        // should reach here
       }
+      return null;
     });
 
     sourceView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_EXECUTE, OTHERS_WRITE));
     targetView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_EXECUTE, OTHERS_WRITE));
 
     // write and execute permission on source and target is enough
-    CurrentUser.useDuring(user, new UserTask<Void>() {
-
-      @Override
-      public Void call() throws IOException {
-        Files.move(source, target);
-        return null;
-      }
+    CurrentUser.useDuring(user, () -> {
+      Files.move(source, target);
+      return null;
     });
   }
 
@@ -386,29 +330,21 @@ class PosixPermissionMemoryFileSystemTest {
 
     UserPrincipal user = fileSystem.getUserPrincipalLookupService().lookupPrincipalByName(PosixPermissionFileSystemExtension.OTHER);
 
-    CurrentUser.useDuring(user, new UserTask<Void>() {
-
-      @Override
-      public Void call() throws IOException {
-        try {
-          Files.createFile(file);
-          fail("should not be allowed to create files");
-        } catch (AccessDeniedException e) {
-          // should reach here
-        }
-        return null;
+    CurrentUser.useDuring(user, () -> {
+      try {
+        Files.createFile(file);
+        fail("should not be allowed to create files");
+      } catch (AccessDeniedException e) {
+        // should reach here
       }
+      return null;
     });
 
 
     view.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_WRITE));
-    CurrentUser.useDuring(user, new UserTask<Void>() {
-
-      @Override
-      public Void call() throws IOException {
-        Files.createFile(file);
-        return null;
-      }
+    CurrentUser.useDuring(user, () -> {
+      Files.createFile(file);
+      return null;
     });
   }
 

@@ -303,9 +303,7 @@ class EnvironmentParser {
           throw new IllegalArgumentException("each value of " + key + " must be a String but was " + each.getClass());
         }
       }
-      @SuppressWarnings("unchecked")
-      List<String> returnValue = (List<String>) values;
-      return returnValue;
+      return (List<String>) values;
     }
   }
 

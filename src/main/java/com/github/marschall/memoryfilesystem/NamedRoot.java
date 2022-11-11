@@ -63,10 +63,7 @@ class NamedRoot extends Root {
   }
 
   private boolean samePathAs(String other) {
-    if (other.length() != 3) {
-      return false;
-    }
-    if (other.charAt(1) != ':') {
+    if ((other.length() != 3) || (other.charAt(1) != ':')) {
       return false;
     }
     char otherLast = other.charAt(2);
@@ -129,8 +126,7 @@ class NamedRoot extends Root {
     int result = 17;
     result = 31 * result + memoryFileSystem.hashCode();
     CollationKey collationKey = collator.getCollationKey(Character.toString(this.letter));
-    result = 31 * result + Arrays.hashCode(collationKey.toByteArray());
-    return result;
+    return 31 * result + Arrays.hashCode(collationKey.toByteArray());
   }
 
 }

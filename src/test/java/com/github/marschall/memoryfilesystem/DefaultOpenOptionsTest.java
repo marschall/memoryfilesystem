@@ -26,7 +26,7 @@ class DefaultOpenOptionsTest {
   @BeforeEach
   void setUp() {
     this.options = DefaultOpenOptions.INSTANCE;
-    this.expected = new HashSet<OpenOption>(Arrays.asList(CREATE, TRUNCATE_EXISTING, WRITE));
+    this.expected = new HashSet<>(Arrays.asList(CREATE, TRUNCATE_EXISTING, WRITE));
   }
 
   @Test
