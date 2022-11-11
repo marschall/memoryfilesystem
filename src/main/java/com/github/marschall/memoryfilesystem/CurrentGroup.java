@@ -40,6 +40,24 @@ public final class CurrentGroup {
     }
   }
 
+  /**
+   * Sets the current group for a certain period.
+   *
+   * @param group the group to use
+   * @param task during this task the given group will be used, will be called
+   *  immediately by the current thread
+   * @throws IOException if any of the code in the task throws an
+   *  {@link IOException}
+   *
+   * @since 2.4.0
+   */
+  public static void useDuring(GroupPrincipal group, VoidGroupTask task) throws IOException {
+    useDuring(group, () -> {
+      task.call();
+      return null;
+    });
+  }
+
   static GroupPrincipal get() {
     return GROUP.get();
   }
@@ -61,6 +79,24 @@ public final class CurrentGroup {
      */
     @Override
     V call() throws IOException;
+
+  }
+
+  /**
+   * Functional interface for a task during which a certain group should be used.
+   *
+   * @since 2.4.0
+   */
+  @FunctionalInterface
+  public interface VoidGroupTask {
+
+    /**
+     * Executes the task.
+     *
+     * @throws IOException if any of the code in the task throws an
+     *  {@link IOException}
+     */
+    void call() throws IOException;
 
   }
 

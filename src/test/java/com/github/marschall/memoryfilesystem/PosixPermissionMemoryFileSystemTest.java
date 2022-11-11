@@ -63,7 +63,6 @@ class PosixPermissionMemoryFileSystemTest {
       } catch (AccessDeniedException e) {
         // should reach here
       }
-      return null;
     });
 
   }
@@ -143,7 +142,6 @@ class PosixPermissionMemoryFileSystemTest {
     Files.setOwner(path, other);
     CurrentUser.useDuring(other, () -> {
       Files.setPosixFilePermissions(path, PosixFilePermissions.fromString("---------"));
-      return null;
     });
 
     assertTrue(Files.exists(path));
@@ -197,7 +195,6 @@ class PosixPermissionMemoryFileSystemTest {
     CurrentUser.useDuring(user, () -> CurrentGroup.useDuring(group, () -> {
       FileSystemProvider provider = file.getFileSystem().provider();
       provider.checkAccess(file, mode);
-      return null;
     }));
   }
 
@@ -219,7 +216,6 @@ class PosixPermissionMemoryFileSystemTest {
       } catch (AccessDeniedException e) {
         // should reach here
       }
-      return null;
     }));
   }
 
@@ -244,14 +240,12 @@ class PosixPermissionMemoryFileSystemTest {
       } catch (AccessDeniedException e) {
         // should reach here
       }
-      return null;
     });
 
 
     directoryView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_EXECUTE, OTHERS_WRITE));
     CurrentUser.useDuring(other, () -> {
       Files.delete(file);
-      return null;
     });
   }
 
@@ -278,7 +272,6 @@ class PosixPermissionMemoryFileSystemTest {
       } catch (AccessDeniedException e) {
         // should reach here
       }
-      return null;
     });
 
     sourceView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_WRITE));
@@ -292,7 +285,6 @@ class PosixPermissionMemoryFileSystemTest {
       } catch (AccessDeniedException e) {
         // should reach here
       }
-      return null;
     });
 
     sourceView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE));
@@ -306,7 +298,6 @@ class PosixPermissionMemoryFileSystemTest {
       } catch (AccessDeniedException e) {
         // should reach here
       }
-      return null;
     });
 
     sourceView.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_EXECUTE, OTHERS_WRITE));
@@ -315,7 +306,6 @@ class PosixPermissionMemoryFileSystemTest {
     // write and execute permission on source and target is enough
     CurrentUser.useDuring(user, () -> {
       Files.move(source, target);
-      return null;
     });
   }
 
@@ -337,14 +327,11 @@ class PosixPermissionMemoryFileSystemTest {
       } catch (AccessDeniedException e) {
         // should reach here
       }
-      return null;
     });
-
 
     view.setPermissions(asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_WRITE));
     CurrentUser.useDuring(user, () -> {
       Files.createFile(file);
-      return null;
     });
   }
 

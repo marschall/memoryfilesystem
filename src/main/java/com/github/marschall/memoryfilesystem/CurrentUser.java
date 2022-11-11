@@ -39,6 +39,24 @@ public final class CurrentUser {
     }
   }
 
+  /**
+   * Sets the current user for a certain period.
+   *
+   * @param user the user to use
+   * @param task during this task the given user will be used, will be called
+   *  immediately by the current thread
+   * @throws IOException if any of the code in the task throws an
+   *  {@link IOException}
+   *
+   * @since 2.4.0
+   */
+  public static void useDuring(UserPrincipal user, VoidUserTask task) throws IOException {
+    useDuring(user, () -> {
+      task.call();
+      return null;
+    });
+  }
+
   static UserPrincipal get() {
     return USER.get();
   }
@@ -60,6 +78,24 @@ public final class CurrentUser {
      */
     @Override
     V call() throws IOException;
+
+  }
+
+  /**
+   * Functional interface for a task during which a certain user should be used.
+   *
+   * @since 2.4.0
+   */
+  @FunctionalInterface
+  public interface VoidUserTask {
+
+    /**
+     * Executes the task.
+     *
+     * @throws IOException if any of the code in the task throws an
+     *  {@link IOException}
+     */
+    void call() throws IOException;
 
   }
 
