@@ -336,4 +336,21 @@ class PosixPermissionMemoryFileSystemTest {
     }
   }
 
+  @Test
+  void issue138() throws IOException {
+    try (FileSystem fs = MemoryFileSystemBuilder.newLinux().build()) {
+      Path path = fs.getPath("/home/marschall/a.csv");
+      Files.createFile(path);
+
+      PosixFileAttributeView fileAttributeView = Files.getFileAttributeView(path, PosixFileAttributeView.class);
+      fileAttributeView.setPermissions(Collections.emptySet());
+
+      // double check that writing not allowed
+      // check passed
+      assertFalse(Files.isWritable(path));
+
+      assertThrows(AccessDeniedException.class, () -> Files.newOutputStream(path));
+    }
+  }
+
 }
