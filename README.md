@@ -1,4 +1,4 @@
-Memory File System [![Build Status](https://app.travis-ci.com/marschall/memoryfilesystem.svg?branch=master)](https://app.travis-ci.com/marschall/memoryfilesystem) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.marschall/memoryfilesystem/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.marschall/memoryfilesystem) [![Javadocs](https://www.javadoc.io/badge/com.github.marschall/memoryfilesystem.svg)](https://www.javadoc.io/doc/com.github.marschall/memoryfilesystem)
+Memory File System [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/marschall/memoryfilesystem/badge)](https://api.securityscorecards.dev/projects/github.com/marschall/memoryfilesystem) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.marschall/memoryfilesystem/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.marschall/memoryfilesystem) [![Javadocs](https://www.javadoc.io/badge/com.github.marschall/memoryfilesystem.svg)](https://www.javadoc.io/doc/com.github.marschall/memoryfilesystem)
 ==================
 An in memory implementation of a [JSR-203](http://jcp.org/en/jsr/detail?id=203) (Java 7) file system for testing purposes.
 
@@ -9,6 +9,8 @@ An in memory implementation of a [JSR-203](http://jcp.org/en/jsr/detail?id=203) 
     <version>2.4.0</version>
 </dependency>
 ```
+
+Versions 2.x require Java 8+, versions 1.x require Java 7+.
 
 ToC
 ---
