@@ -83,6 +83,12 @@
       <optional>true</optional>
     </dependency>
     <dependency>
+      <groupId>jakarta.annotation</groupId>
+      <artifactId>jakarta.annotation-api</artifactId>
+      <version>2.1.1</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-engine</artifactId>
       <scope>test</scope>
@@ -467,7 +473,7 @@
             <configuration>
               <name>com.github.marschall.memoryfilesystem</name>
               <exports>com.github.marschall.memoryfilesystem</exports>
-              <static-requires>java.annotation</static-requires>
+              <static-requires>java.annotation,jakarta.annotation</static-requires>
               <provides>
                 <provide>
                   <services>java.nio.file.spi.FileSystemProvider</services>

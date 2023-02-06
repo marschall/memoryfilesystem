@@ -63,8 +63,6 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import javax.annotation.PreDestroy;
-
 class MemoryFileSystem extends FileSystem implements FileSystemContext {
 
   private static final Set<String> UNSUPPORTED_INITIAL_ATTRIBUTES;
@@ -1079,7 +1077,8 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
 
 
   @Override
-  @PreDestroy
+  @javax.annotation.PreDestroy
+  @jakarta.annotation.PreDestroy
   public void close() {
     // avoid throws IOException
     // https://github.com/marschall/memoryfilesystem/issues/76
