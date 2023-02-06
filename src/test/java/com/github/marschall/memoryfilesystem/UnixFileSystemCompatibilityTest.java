@@ -3,6 +3,7 @@ package com.github.marschall.memoryfilesystem;
 import static com.github.marschall.memoryfilesystem.FileContentsMatcher.hasContents;
 import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static com.github.marschall.memoryfilesystem.IsSameFileMatcher.isSameFile;
+import static com.github.marschall.memoryfilesystem.IsWritableMatcher.isWritable;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static java.nio.charset.StandardCharsets.US_ASCII;
@@ -630,13 +631,13 @@ class UnixFileSystemCompatibilityTest {
     Files.createFile(path,  PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("r--r--r--")));
     try {
       assertTrue(Files.isReadable(path));
-      assertFalse(Files.isWritable(path));
+      assertThat(path, not(isWritable()));
       assertFalse(Files.isExecutable(path));
 
       Files.setPosixFilePermissions(path, PosixFilePermissions.fromString("rw-r--r--")); // FAIL.
 
       assertTrue(Files.isReadable(path)); // ok
-      assertTrue(Files.isWritable(path)); // (should be) ok
+      assertThat(path, isWritable()); // (should be) ok
       assertFalse(Files.isExecutable(path)); // ok
     } finally {
       if (useDefault) {
@@ -652,13 +653,13 @@ class UnixFileSystemCompatibilityTest {
     Files.createFile(path,  PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("---------")));
     try {
       assertFalse(Files.isReadable(path));
-      assertFalse(Files.isWritable(path));
+      assertThat(path, not(isWritable()));
       assertFalse(Files.isExecutable(path));
 
       Files.setPosixFilePermissions(path, PosixFilePermissions.fromString("rw-r--r--")); // FAIL.
 
       assertTrue(Files.isReadable(path)); // ok
-      assertTrue(Files.isWritable(path)); // (should be) ok
+      assertThat(path, isWritable()); // (should be) ok
       assertFalse(Files.isExecutable(path)); // ok
     } finally {
       if (useDefault) {

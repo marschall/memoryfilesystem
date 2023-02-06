@@ -151,6 +151,7 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
 
   OutputStream newOutputStream(boolean deleteOnClose, Path path) throws IOException {
     try (AutoRelease lock = this.writeLock()) {
+      this.checkAccess(AccessMode.WRITE);
       this.incrementOpenCount(path);
       return new NonAppendingBlockOutputStream(this, deleteOnClose, path, () -> this.checkAccess(AccessMode.WRITE));
     }
@@ -158,6 +159,7 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
 
   OutputStream newAppendingOutputStream(boolean deleteOnClose, Path path) throws IOException {
     try (AutoRelease lock = this.writeLock()) {
+      this.checkAccess(AccessMode.WRITE);
       this.incrementOpenCount(path);
       return new AppendingBlockOutputStream(this, deleteOnClose, path, () -> this.checkAccess(AccessMode.WRITE));
     }
