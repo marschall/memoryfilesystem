@@ -631,7 +631,7 @@ class UnixFileSystemCompatibilityTest {
     Files.createFile(path,  PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("r--r--r--")));
     try {
       assertTrue(Files.isReadable(path));
-      assertThat(path, not(isWritable()));
+      assertThat("path: " + path + " should not be writable on " + (useDefault ? "default" : "in-memory") + "f ilesystem", path, not(isWritable()));
       assertFalse(Files.isExecutable(path));
 
       Files.setPosixFilePermissions(path, PosixFilePermissions.fromString("rw-r--r--")); // FAIL.
@@ -652,7 +652,7 @@ class UnixFileSystemCompatibilityTest {
     Path path = fileSystem.getPath("readable-at-first");
     Files.createFile(path,  PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("---------")));
     try {
-      assertFalse(Files.isReadable(path));
+      assertFalse(Files.isReadable(path), () -> "path: " + path + " should not be readable on " + (useDefault ? "default" : "in-memory") + " filesystem");
       assertThat(path, not(isWritable()));
       assertFalse(Files.isExecutable(path));
 
