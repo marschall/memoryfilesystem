@@ -2046,6 +2046,20 @@ class MemoryFileSystemTest {
   }
 
   @Test
+  void testGetUriGetPath() throws IOException {
+    //    Path p = Paths.get("/memoryfilesystem/src/test/java/com/github/marschall/memoryfilesystem/MemoryFileSystemTest.java");
+    //    System.out.println(p.toUri().toASCIIString());
+    //    System.out.println(p.toUri().getPath());
+
+    Path path = this.extension.getFileSystem().getPath("root", "directory", "file.txt");
+    URI uri = path.toUri();
+    assertEquals("memory:" + FileSystemExtension.FILE_SYSTEM_NAME + ":///root/directory/file.txt", uri.toASCIIString());
+//    assertEquals("/root/directory/file.txt", uri.getPath());
+    Path recrated = Paths.get(uri);
+    assertThat(recrated, isSameFile(path));
+  }
+
+  @Test
   void anonymousFileSystems() throws IOException {
     try (FileSystem first = MemoryFileSystemBuilder.newEmpty().build()) {
       try (FileSystem second = MemoryFileSystemBuilder.newEmpty().build()) {

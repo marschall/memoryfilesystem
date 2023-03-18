@@ -8,6 +8,8 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 
 class FileSystemExtension implements BeforeEachCallback, AfterEachCallback {
 
+  static final String FILE_SYSTEM_NAME = "name";
+
   private FileSystem fileSystem;
 
   FileSystem getFileSystem() {
@@ -16,7 +18,7 @@ class FileSystemExtension implements BeforeEachCallback, AfterEachCallback {
 
   @Override
   public void beforeEach(ExtensionContext context) throws Exception {
-    this.fileSystem = MemoryFileSystemBuilder.newEmpty().build("name");
+    this.fileSystem = MemoryFileSystemBuilder.newEmpty().build(FILE_SYSTEM_NAME);
   }
 
   @Override
