@@ -6,6 +6,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 
+import com.github.marschall.memoryfilesystem.MemoryFileSystemProvider;
+
 /**
  * {@link URLStreamHandler} that can resolve memory URLs.
  * <p>
@@ -32,6 +34,14 @@ public class Handler extends URLStreamHandler {
     if (url == null) {
       throw new IllegalArgumentException("url was null");
     }
+
+    String protocol = url.getProtocol();
+
+    if (!MemoryFileSystemProvider.SCHEME.equals(protocol)) {
+      throw new UnsupportedOperationException("Cannot use protocol '"
+              + protocol + "' for this implementation");
+    }
+
     return new MemoryURLConnection(url);
   }
 

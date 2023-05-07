@@ -1,5 +1,7 @@
 package com.github.marschall.memoryfilesystem.memory;
 
+import com.github.marschall.memoryfilesystem.MemoryFileSystemProvider;
+
 import java.net.URL;
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
@@ -18,7 +20,9 @@ public final class MemoryURLStreamHandlerFactory implements URLStreamHandlerFact
 
   @Override
   public URLStreamHandler createURLStreamHandler(String protocol) {
-    return new Handler();
+    return MemoryFileSystemProvider.SCHEME.equals(protocol)
+        ? new Handler()
+        : null;
   }
 
 }
