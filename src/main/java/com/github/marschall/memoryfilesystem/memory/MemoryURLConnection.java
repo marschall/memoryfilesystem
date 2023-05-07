@@ -1,5 +1,7 @@
 package com.github.marschall.memoryfilesystem.memory;
 
+import com.github.marschall.memoryfilesystem.MemoryFileSystemProvider;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -17,6 +19,13 @@ final class MemoryURLConnection extends URLConnection {
 
   MemoryURLConnection(URL url) {
     super(url);
+
+    String protocol = url.getProtocol();
+
+    if (!MemoryFileSystemProvider.SCHEME.equals(protocol)) {
+      throw new UnsupportedOperationException("Cannot use protocol '"
+          + protocol + "' for this implementation");
+    }
   }
 
   @Override
@@ -81,5 +90,4 @@ final class MemoryURLConnection extends URLConnection {
       return 0L;
     }
   }
-
 }
