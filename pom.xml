@@ -472,7 +472,7 @@
             </executions>
             <configuration>
               <name>com.github.marschall.memoryfilesystem</name>
-              <exports>com.github.marschall.memoryfilesystem</exports>
+              <exports>com.github.marschall.memoryfilesystem,com.github.marschall.memoryfilesystem.memory</exports>
               <static-requires>java.annotation,jakarta.annotation</static-requires>
               <provides>
                 <provide>
@@ -486,6 +486,9 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <argLine>--add-opens com.github.marschall.memoryfilesystem/com.github.marschall.memoryfilesystem=ALL-UNNAMED</argLine>
+              <systemPropertyVariables>
+                <java.protocol.handler.pkgs>com.github.marschall.memoryfilesystem</java.protocol.handler.pkgs>
+              </systemPropertyVariables>
             </configuration>
           </plugin>
         </plugins>
