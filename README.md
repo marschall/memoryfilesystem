@@ -54,6 +54,9 @@ Supported
 * DOS access checks
 * POSIX access checks
 * [umask](http://en.wikipedia.org/wiki/Umask)
+* `java.net.URL` starting with version 2.6.0. Requires any of the following actions
+  * Add `-Djava.protocol.handler.pkgs=com.github.marschall.memoryfilesystem` command line parameter
+  * Call `URL.setURLStreamHandlerFactory(new MemoryURLStreamHandlerFactory())`
 
 Not Supported
 -------------
