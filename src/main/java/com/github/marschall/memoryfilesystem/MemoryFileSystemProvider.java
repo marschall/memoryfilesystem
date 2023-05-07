@@ -51,7 +51,10 @@ import java.util.concurrent.ThreadFactory;
  */
 public final class MemoryFileSystemProvider extends FileSystemProvider {
 
-  static final String SCHEME = "memory";
+  /**
+   * Name of the URI and URL scheme used by this provider.
+   */
+  public static final String SCHEME = "memory";
 
   private final ConcurrentMap<String, MemoryFileSystem> fileSystems;
 
