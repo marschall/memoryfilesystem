@@ -342,7 +342,8 @@ class PosixPermissionMemoryFileSystemTest {
   @Test
   void issue138() throws IOException {
     try (FileSystem fs = MemoryFileSystemBuilder.newLinux().build()) {
-      Path path = fs.getPath("/home/marschall/a.csv");
+
+      Path path = fs.getPath(System.getProperty("user.home") + "/a.csv");
       Files.createFile(path);
 
       PosixFileAttributeView fileAttributeView = Files.getFileAttributeView(path, PosixFileAttributeView.class);
