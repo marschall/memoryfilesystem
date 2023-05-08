@@ -5,6 +5,7 @@ import static com.github.marschall.memoryfilesystem.MemoryFileSystemProvider.SCH
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.CollationKey;
 import java.text.Collator;
@@ -113,13 +114,13 @@ final class AbsolutePath extends NonEmptyPath {
     String fileSystemKey = this.getMemoryFileSystem().getKey();
     boolean isNamed = this.root.isNamed();
     List<String> nameElements = this.getNameElements();
-    int sizeEsitmate =
+    int sizeEstimate =
             fileSystemKey.length()
             + 3 // "://".length
             + (isNamed ? 3 :0) // c:/
             + nameElements.size() // n * '/'
             + totalLength(nameElements);
-    StringBuilder schemeSpecificPart = new StringBuilder(sizeEsitmate);
+    StringBuilder schemeSpecificPart = new StringBuilder(sizeEstimate);
     schemeSpecificPart.append(fileSystemKey);
     schemeSpecificPart.append("://");
     if (isNamed) {
@@ -131,10 +132,18 @@ final class AbsolutePath extends NonEmptyPath {
       schemeSpecificPart.append('/');
       schemeSpecificPart.append(element);
     }
+
+    if (Files.isDirectory(this)) {
+      // Java expects URIs and URLs for directories to end with a forward slash.
+      // Otherwise, URLClassLoader and other mechanisms will treat it as if it were
+      // a file rather than a directory.
+      schemeSpecificPart.append('/');
+    }
+
     try {
       return new URI(SCHEME, schemeSpecificPart.toString(), null);
-    } catch (URISyntaxException e) {
-      throw new AssertionError("could not create URI");
+    } catch (URISyntaxException ex) {
+      throw new AssertionError("could not create URI", ex);
     }
   }
 
