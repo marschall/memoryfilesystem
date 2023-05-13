@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -28,6 +29,12 @@ class UrlTest {
     FileUtility.createAndSetContents(file, "abc");
     URL url = file.toUri().toURL();
     assertEquals("memory:name:///test.txt", url.toString());
+
+    Path directory = Files.createDirectory(root.resolve("dir"));
+    assertEquals("memory:name:///dir/", directory.toUri().toURL().toString());
+
+    Path notExisting = root.resolve("notExisting");
+    assertEquals("memory:name:///notExisting", notExisting.toUri().toURL().toString());
   }
 
   @Test
@@ -90,6 +97,7 @@ class UrlTest {
     assertEquals(0L, urlConnection.getLastModified());
 
     assertThrows(IOException.class, urlConnection::connect);
+    assertThrows(IOException.class, url::openStream);
   }
 
 }

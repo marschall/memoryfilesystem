@@ -652,6 +652,15 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
     });
   }
 
+  boolean isDirectory(AbstractPath path) {
+    try {
+      return this.accessFileReading(path, false, entry -> entry.isDirectory());
+    } catch (IOException e) {
+      // use for URI and URL construction, we do not want to throw in case of non-existing files
+      return false;
+    }
+  }
+
   <A extends BasicFileAttributes> A readAttributes(AbstractPath path, final Class<A> type, LinkOption... options) throws IOException {
     this.checker.check();
     return this.accessFileReading(path, Options.isFollowSymLinks(options), entry -> entry.readAttributes(type));
@@ -905,13 +914,13 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
       return parentOrder;
     } else {
       if (source.elementName == null) {
-      return target.elementName == null ? 0 : -1;
-    } else if (target.elementName == null) {
-      return 1;
-    } else {
-      return MemoryFileSystem.this.collator.compare(source.elementName, target.elementName);
+        return target.elementName == null ? 0 : -1;
+      } else if (target.elementName == null) {
+        return 1;
+      } else {
+        return MemoryFileSystem.this.collator.compare(source.elementName, target.elementName);
+      }
     }
-  }
   }
 
   private static int orderFileSystems(EndPointCopyContext source, EndPointCopyContext target) {
@@ -1242,21 +1251,21 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
       }
     } else {
       if (sourceEntry instanceof MemoryDirectory) {
-      MemoryDirectory sourceDirectory = (MemoryDirectory) sourceEntry;
-      try (AutoRelease lock = sourceDirectory.readLock()) {
-        EntryCreationContext context = MemoryFileSystem.this.newEntryCreationContext(absoluteTargetPath, NO_FILE_ATTRIBUTES);
-        return new MemoryDirectory(targetElementName, context);
+        MemoryDirectory sourceDirectory = (MemoryDirectory) sourceEntry;
+        try (AutoRelease lock = sourceDirectory.readLock()) {
+          EntryCreationContext context = MemoryFileSystem.this.newEntryCreationContext(absoluteTargetPath, NO_FILE_ATTRIBUTES);
+          return new MemoryDirectory(targetElementName, context);
+        }
+      } else if (sourceEntry instanceof MemorySymbolicLink) {
+        MemorySymbolicLink sourceLink = (MemorySymbolicLink) sourceEntry;
+        try (AutoRelease lock = sourceLink.readLock()) {
+          EntryCreationContext context = MemoryFileSystem.this.newEntryCreationContext(absoluteTargetPath, NO_FILE_ATTRIBUTES);
+          return new MemorySymbolicLink(targetElementName, sourceLink.getTarget(), context);
+        }
+      } else {
+        throw new AssertionError("unknown entry type:" + sourceEntry);
       }
-    } else if (sourceEntry instanceof MemorySymbolicLink) {
-      MemorySymbolicLink sourceLink = (MemorySymbolicLink) sourceEntry;
-      try (AutoRelease lock = sourceLink.readLock()) {
-        EntryCreationContext context = MemoryFileSystem.this.newEntryCreationContext(absoluteTargetPath, NO_FILE_ATTRIBUTES);
-        return new MemorySymbolicLink(targetElementName, sourceLink.getTarget(), context);
-      }
-    } else {
-      throw new AssertionError("unknown entry type:" + sourceEntry);
     }
-  }
   }
 
   Path readSymbolicLink(final AbstractPath path) throws IOException {

@@ -16,6 +16,11 @@ class MemorySymbolicLink extends MemoryEntry {
     return new MemorySymbolicLAttributes(context);
   }
 
+  @Override
+  boolean isDirectory() {
+    return false;
+  }
+
   AbstractPath getTarget() {
     return this.target;
   }
