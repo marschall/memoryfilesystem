@@ -6,7 +6,7 @@ An in memory implementation of a [JSR-203](http://jcp.org/en/jsr/detail?id=203) 
 <dependency>
     <groupId>com.github.marschall</groupId>
     <artifactId>memoryfilesystem</artifactId>
-    <version>2.5.0</version>
+    <version>2.6.0</version>
 </dependency>
 ```
 
@@ -72,7 +72,6 @@ Not Supported
   * SPARSE
   * SYNC
   * DSYNC
-* `URL` interoperability, needs a custom `URLStreamHandler` which [ins't very nice](https://web.archive.org/web/20120424174653/http://www.unicon.net/node/776). That means you can't for example create an `URLClassLoader` on a memory file system. However if you really want to create a `ClassLoader` on a memory file system you can use [path-classloader](https://github.com/marschall/path-classloader) which is completely portable across Java 7 file systems.
 * maximum path length checks
 * hard link count checks
 
@@ -95,7 +94,7 @@ MIT
 Yes, but hasn't been subject to much scrutiny so bugs are likely. 
 
 ### Does it work with the zipfs provider?
-Not with the one that ships with the JDK 7 because of [bug 8004789](http://bugs.sun.com/view_bug.do?bug_id=8004789). However there's a [repackaged version](https://github.com/marschall/zipfilesystem-standalone) that fixes this bug and is compatible. It should work fine in JDK 8.
+It should work fine in JDK 8+.
 
 ### Is it production ready?
 No, it's only intended for testing purposes.
