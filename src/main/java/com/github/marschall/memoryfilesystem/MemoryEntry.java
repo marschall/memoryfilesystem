@@ -59,6 +59,8 @@ abstract class MemoryEntry {
     return autoRelease(this.lock.writeLock());
   }
 
+  abstract boolean isDirectory();
+
   AutoRelease lock(LockType lockType) {
     switch (lockType) {
       case READ:

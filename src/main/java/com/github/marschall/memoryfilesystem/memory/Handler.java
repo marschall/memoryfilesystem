@@ -2,6 +2,7 @@ package com.github.marschall.memoryfilesystem.memory;
 
 import com.github.marschall.memoryfilesystem.MemoryFileSystemProvider;
 
+import java.net.InetAddress;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
@@ -51,6 +52,19 @@ public class Handler extends URLStreamHandler {
       throw new IllegalArgumentException("proxy was null");
     }
     return this.openConnection(url);
+  }
+
+  @Override
+  protected boolean hostsEqual(URL u1, URL u2) {
+    // only called when both have the same protocol
+    // memory URLs have not hosts
+    return true;
+  }
+
+  @Override
+  protected InetAddress getHostAddress(URL u) {
+    // we have not host
+    return null;
   }
 
 }

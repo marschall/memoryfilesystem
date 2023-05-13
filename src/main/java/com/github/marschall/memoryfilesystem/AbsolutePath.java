@@ -113,13 +113,15 @@ final class AbsolutePath extends NonEmptyPath {
     String fileSystemKey = this.getMemoryFileSystem().getKey();
     boolean isNamed = this.root.isNamed();
     List<String> nameElements = this.getNameElements();
-    int sizeEsitmate =
+    boolean isDirectory = this.getMemoryFileSystem().isDirectory(this);
+    int sizeEstimate =
             fileSystemKey.length()
             + 3 // "://".length
             + (isNamed ? 3 :0) // c:/
             + nameElements.size() // n * '/'
-            + totalLength(nameElements);
-    StringBuilder schemeSpecificPart = new StringBuilder(sizeEsitmate);
+            + totalLength(nameElements)
+            + (isDirectory ? 1 : 0);
+    StringBuilder schemeSpecificPart = new StringBuilder(sizeEstimate);
     schemeSpecificPart.append(fileSystemKey);
     schemeSpecificPart.append("://");
     if (isNamed) {
@@ -131,10 +133,18 @@ final class AbsolutePath extends NonEmptyPath {
       schemeSpecificPart.append('/');
       schemeSpecificPart.append(element);
     }
+
+    if (isDirectory) {
+      // Java expects URIs and URLs for directories to end with a forward slash.
+      // Otherwise, URLClassLoader and other mechanisms will treat it as if it were
+      // a file rather than a directory.
+      schemeSpecificPart.append('/');
+    }
+
     try {
       return new URI(SCHEME, schemeSpecificPart.toString(), null);
     } catch (URISyntaxException e) {
-      throw new AssertionError("could not create URI");
+      throw new AssertionError("could not create URI", e);
     }
   }
 

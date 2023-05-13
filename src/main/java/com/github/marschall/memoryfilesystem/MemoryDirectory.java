@@ -73,6 +73,11 @@ class MemoryDirectory extends MemoryEntry {
     return this.entries.isEmpty();
   }
 
+  @Override
+  boolean isDirectory() {
+    return true;
+  }
+
   void checkEmpty(Path path) throws IOException {
     if (!this.isEmpty()) {
       throw new DirectoryNotEmptyException(path.toString());

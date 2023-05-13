@@ -93,6 +93,11 @@ class MemoryFile extends MemoryEntry implements MemoryContents {
     return this.inode.size();
   }
 
+  @Override
+  boolean isDirectory() {
+    return false;
+  }
+
   InputStream newInputStream(Set<? extends OpenOption> options, Path path) throws IOException {
     boolean deleteOnClose = options.contains(DELETE_ON_CLOSE);
     boolean sync = options.contains(SYNC);
