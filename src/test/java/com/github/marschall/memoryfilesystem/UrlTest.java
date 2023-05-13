@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.junit.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
@@ -35,6 +36,17 @@ class UrlTest {
 
     Path notExisting = root.resolve("notExisting");
     assertEquals("memory:name:///notExisting", notExisting.toUri().toURL().toString());
+  }
+
+  @Test
+  void toUrlEquals() throws IOException {
+    Path root = this.extension.getFileSystem().getPath("/");
+    Path file = root.resolve("test.txt");
+    FileUtility.createAndSetContents(file, "abc");
+    URL url1 = file.toUri().toURL();
+    URL url2 = file.toUri().toURL();
+    assertNotSame(url1, url2);
+    assertEquals(url1, url2);
   }
 
   @Test
