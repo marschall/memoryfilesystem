@@ -1,9 +1,5 @@
 package com.github.marschall.memoryfilesystem;
 
-import static java.nio.file.attribute.PosixFilePermission.GROUP_EXECUTE;
-import static java.nio.file.attribute.PosixFilePermission.OTHERS_EXECUTE;
-import static java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE;
-
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.AccessMode;
@@ -14,19 +10,14 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributeView;
-import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 class MemoryDirectory extends MemoryEntry {
 
   private final Map<String, MemoryEntry> entries;
-
-  private static final Set<PosixFilePermission> EXECUTE = EnumSet.of(OWNER_EXECUTE, GROUP_EXECUTE, OTHERS_EXECUTE);
 
   MemoryDirectory(String originalName, EntryCreationContext context) {
     super(originalName, context);
@@ -36,12 +27,6 @@ class MemoryDirectory extends MemoryEntry {
   @Override
   MemoryEntryAttributes newMemoryEntryAttributes(EntryCreationContext context) {
     return new MemoryDirectoryAttributes(context);
-  }
-
-  private static Set<PosixFilePermission> addExecute(Set<PosixFilePermission> perms) {
-    Set<PosixFilePermission> copy = EnumSet.copyOf(perms);
-    copy.addAll(EXECUTE);
-    return copy;
   }
 
   DirectoryStream<Path> newDirectoryStream(Path basePath, Filter<? super Path> filter) throws AccessDeniedException {
