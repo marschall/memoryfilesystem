@@ -1,10 +1,10 @@
 package com.github.marschall.memoryfilesystem.memory;
 
-import com.github.marschall.memoryfilesystem.MemoryFileSystemProvider;
-
 import java.net.URL;
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
+
+import com.github.marschall.memoryfilesystem.MemoryFileSystemProvider;
 
 /**
  * {@link URLStreamHandlerFactory} that creates {@link URLStreamHandler} that can resolve
