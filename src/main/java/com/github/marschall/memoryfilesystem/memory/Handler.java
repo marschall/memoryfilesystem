@@ -1,12 +1,14 @@
 package com.github.marschall.memoryfilesystem.memory;
 
-import com.github.marschall.memoryfilesystem.MemoryFileSystemProvider;
-
+import java.io.IOException;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
+
+import com.github.marschall.memoryfilesystem.MemoryFileSystemProvider;
 
 /**
  * {@link URLStreamHandler} that can resolve memory URLs.
@@ -30,7 +32,7 @@ public class Handler extends URLStreamHandler {
   }
 
   @Override
-  protected URLConnection openConnection(URL url) {
+  protected URLConnection openConnection(URL url) throws IOException {
     if (url == null) {
       throw new IllegalArgumentException("url was null");
     }
@@ -38,15 +40,14 @@ public class Handler extends URLStreamHandler {
     String protocol = url.getProtocol();
 
     if (!MemoryFileSystemProvider.SCHEME.equals(protocol)) {
-      throw new UnsupportedOperationException("Cannot use protocol '"
-          + protocol + "' for this implementation");
+      throw new MalformedURLException("Cannot use protocol '" + protocol + "' for this implementation");
     }
 
     return new MemoryURLConnection(url);
   }
 
   @Override
-  protected URLConnection openConnection(URL url, Proxy proxy) {
+  protected URLConnection openConnection(URL url, Proxy proxy) throws IOException {
     // we do not support proxies, therefore by API contract we should ignore proxies
     if (proxy == null) {
       throw new IllegalArgumentException("proxy was null");
