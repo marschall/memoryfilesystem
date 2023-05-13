@@ -5,6 +5,7 @@ import static org.hamcrest.junit.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
@@ -14,7 +15,9 @@ import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.UUID;
 
+import com.github.marschall.memoryfilesystem.memory.MemoryURLStreamHandlerFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -112,4 +115,13 @@ class UrlTest {
     assertThrows(IOException.class, url::openStream);
   }
 
+  @Test
+  void doNotSupportArbitraryProtocolsForHandlerFactory() {
+    String someDefaultProtocol = "file";
+    String someMissingProtocol = UUID.randomUUID().toString();
+    MemoryURLStreamHandlerFactory factory = new MemoryURLStreamHandlerFactory();
+
+    assertNull(factory.createURLStreamHandler(someDefaultProtocol));
+    assertNull(factory.createURLStreamHandler(someMissingProtocol));
+  }
 }
