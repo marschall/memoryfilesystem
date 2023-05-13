@@ -1,5 +1,7 @@
 package com.github.marschall.memoryfilesystem.memory;
 
+import com.github.marschall.memoryfilesystem.MemoryFileSystemProvider;
+
 import java.net.InetAddress;
 import java.net.Proxy;
 import java.net.URL;
@@ -32,6 +34,14 @@ public class Handler extends URLStreamHandler {
     if (url == null) {
       throw new IllegalArgumentException("url was null");
     }
+
+    String protocol = url.getProtocol();
+
+    if (!MemoryFileSystemProvider.SCHEME.equals(protocol)) {
+      throw new UnsupportedOperationException("Cannot use protocol '"
+          + protocol + "' for this implementation");
+    }
+
     return new MemoryURLConnection(url);
   }
 
