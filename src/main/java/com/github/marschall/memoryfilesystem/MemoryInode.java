@@ -173,8 +173,11 @@ final class MemoryInode {
         // Since ByteBuffer objects are quite small and don't copy the contents
         // of the backing array allocating a ByteBuffer is probably cheaper.
         ByteBuffer buffer = ByteBuffer.wrap(block, startIndexInBlock, lengthInBlock);
-        readFully(buffer, src, lengthInBlock);
-        transferred += lengthInBlock;
+        int read = readFully(buffer, src, lengthInBlock);
+        transferred += read;
+        if (read < lengthInBlock) {
+          break;
+        }
 
         startIndexInBlock = 0;
         currentBlock += 1;
@@ -362,11 +365,15 @@ final class MemoryInode {
   }
 
   private static int readFully(ByteBuffer src, ReadableByteChannel target, int toRead) throws IOException {
-    int read = 0;
-    while (read < toRead) {
-      read += target.read(src);
+    int total = 0;
+    while (total < toRead) {
+      int read = target.read(src);
+      if (read <= 0) {
+        return total;
+      }
+      total += read;
     }
-    return read;
+    return total;
   }
 
   private void ensureCapacity(long capacity) {

@@ -634,7 +634,7 @@ class MemoryFileSystemTest {
   }
 
   @Test
-  void trasferFrom() throws IOException {
+  void trasferTo() throws IOException {
     FileSystem fileSystem = this.extension.getFileSystem();
 
     Path from = fileSystem.getPath("from.txt");
@@ -654,7 +654,7 @@ class MemoryFileSystemTest {
   }
 
   @Test
-  void trasferTo() throws IOException {
+  void transferFromExpectedSize() throws IOException {
     FileSystem fileSystem = this.extension.getFileSystem();
 
     Path from = fileSystem.getPath("from.txt");
@@ -672,6 +672,27 @@ class MemoryFileSystemTest {
     }
     assertEquals(expectedSize, Files.size(to));
 
+  }
+
+  @Test
+  void transferFromLarger() throws IOException {
+    FileSystem fileSystem = this.extension.getFileSystem();
+
+    Path from = fileSystem.getPath("from.txt");
+    Path to = fileSystem.getPath("to.txt");
+    byte[] content = "How could this be wrong?".getBytes(US_ASCII);
+    Files.write(from, content);
+    long expectedSize = content.length;
+    assertEquals(expectedSize, Files.size(from));
+
+    try (SeekableByteChannel fromChannel = Files.newByteChannel(from);
+         FileChannel toChannel = FileChannel.open(to, READ, WRITE, CREATE_NEW)) {
+      long count = toChannel.transferFrom(fromChannel, 0, content.length * 2);
+
+      assertEquals(expectedSize, count);
+    }
+    assertEquals(expectedSize, Files.size(to));
+    assertArrayEquals(content, Files.readAllBytes(to));
   }
 
   private void writeBigContents(Path path) throws IOException {
@@ -1760,7 +1781,6 @@ class MemoryFileSystemTest {
     assertThrows(ClassCastException.class, () -> a.compareTo(b));
   }
 
-
   @Test
   void createDirectories() throws IOException {
     FileSystem fileSystem = this.extension.getFileSystem();
@@ -1975,7 +1995,6 @@ class MemoryFileSystemTest {
     }
   }
 
-
   /**
    * Regression test for <a href="https://github.com/marschall/memoryfilesystem/issues/47">Issue 47</a>.
    */
@@ -1990,8 +2009,6 @@ class MemoryFileSystemTest {
 
     Files.write(link.resolve("kid"), "hallo".getBytes(US_ASCII));
   }
-
-
 
   /**
    * Regression test for <a href="https://github.com/marschall/memoryfilesystem/issues/55">Issue 55</a>.
