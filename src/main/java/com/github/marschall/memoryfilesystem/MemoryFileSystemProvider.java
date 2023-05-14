@@ -21,6 +21,7 @@ import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.ProviderMismatchException;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileAttributeView;
@@ -245,12 +246,15 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   @Override
   public SeekableByteChannel newByteChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
+    this.checkSupported(options);
+    validateOptions(options);
     return this.newFileChannel(path, options, attrs);
   }
 
   @Override
   public FileChannel newFileChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
     this.checkSupported(options);
+    validateOptions(options);
     AbstractPath abstractPath = castPath(path);
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
     return memoryFileSystem.newFileChannel(abstractPath, options, attrs);
@@ -258,6 +262,8 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   @Override
   public AsynchronousFileChannel newAsynchronousFileChannel(Path path, Set<? extends OpenOption> options, ExecutorService executor, FileAttribute<?>... attrs) throws IOException {
+    this.checkSupported(options);
+    validateOptions(options);
     FileChannel fileChannel = this.newFileChannel(path, options, attrs);
     if (fileChannel instanceof BlockChannel) {
       return new AsynchronousBlockChannel((BlockChannel) fileChannel,
@@ -273,6 +279,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   @Override
   public InputStream newInputStream(Path path, OpenOption... options) throws IOException {
     this.checkSupported(options);
+    validateOptions(options);
     AbstractPath abstractPath = castPath(path);
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
     return memoryFileSystem.newInputStream(abstractPath, options);
@@ -281,6 +288,7 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   @Override
   public OutputStream newOutputStream(Path path, OpenOption... options) throws IOException {
     this.checkSupported(options);
+    validateOptions(options);
     AbstractPath abstractPath = castPath(path);
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
     return memoryFileSystem.newOutputStream(abstractPath, options);
@@ -479,6 +487,54 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
 
   private void checkSupported(Set<? extends OpenOption> options)  {
     // TODO implement
+  }
+
+  private static void validateOptions(Set<? extends OpenOption> options) {
+    if (options == null || options.isEmpty()) {
+      return;
+    }
+    boolean read = false;
+    boolean truncateExisting = false;
+    boolean append = false;
+    for (OpenOption openOption : options) {
+      if (openOption == StandardOpenOption.READ) {
+        read = true;
+      } else if (openOption == StandardOpenOption.TRUNCATE_EXISTING) {
+        truncateExisting = true;
+      } else if (openOption == StandardOpenOption.APPEND) {
+        append = true;
+      }
+    }
+    if (read && append) {
+      throw new IllegalArgumentException("READ + APPEND is not allowed");
+    }
+    if (append && truncateExisting) {
+      throw new IllegalArgumentException("APPEND + TRUNCATE_EXISTING is not allowed");
+    }
+  }
+
+  private static void validateOptions(OpenOption... options) {
+    if (options == null || options.length == 0) {
+      return;
+    }
+    boolean read = false;
+    boolean truncateExisting = false;
+    boolean append = false;
+    for (OpenOption openOption : options) {
+      if (openOption == StandardOpenOption.READ) {
+        read = true;
+      } else if (openOption == StandardOpenOption.TRUNCATE_EXISTING) {
+        truncateExisting = true;
+      } else if (openOption == StandardOpenOption.APPEND) {
+        append = true;
+      }
+    }
+    if (read && append) {
+      throw new IllegalArgumentException("READ + APPEND is not allowed");
+    }
+    if (append && truncateExisting) {
+      throw new IllegalArgumentException("APPEND + TRUNCATE_EXISTING is not allowed");
+    }
   }
 
   private void checkSupported(AccessMode... modes)  {
