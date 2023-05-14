@@ -9,6 +9,7 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.READ;
+import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
@@ -196,6 +197,42 @@ class FileSystemCompatibilityTest {
       assertThat(path, hasContents(""));
     } finally {
       Files.delete(path);
+    }
+  }
+
+  @CompatibilityTest
+  void appendTruncateExisting(boolean useDefault) throws IOException {
+    FileSystem fileSystem = this.getFileSystem(useDefault);
+    Path target = fileSystem.getPath("target");
+    if (!useDefault) {
+      Files.createDirectory(target);
+    }
+    Path tempFile = Files.createTempFile(target, "juint", ".txt");
+    String originalContent = "0123456789";
+    setContents(tempFile, originalContent);
+
+    try {
+      assertThrows(IllegalArgumentException.class, () -> Files.newByteChannel(tempFile, APPEND, TRUNCATE_EXISTING));
+    } finally {
+      Files.delete(tempFile);
+    }
+  }
+
+  @CompatibilityTest
+  void appendRead(boolean useDefault) throws IOException {
+    FileSystem fileSystem = this.getFileSystem(useDefault);
+    Path target = fileSystem.getPath("target");
+    if (!useDefault) {
+      Files.createDirectory(target);
+    }
+    Path tempFile = Files.createTempFile(target, "juint", ".txt");
+    String originalContent = "0123456789";
+    setContents(tempFile, originalContent);
+
+    try {
+      assertThrows(IllegalArgumentException.class, () -> Files.newByteChannel(tempFile, APPEND, READ));
+    } finally {
+      Files.delete(tempFile);
     }
   }
 
