@@ -130,7 +130,7 @@ Use `CurrentGroup#useDuring`
 Yes, starting with version 2.1 running Lucene is supported, see [LuceneRegressionTest](https://github.com/marschall/memoryfilesystem/blob/master/src/test/java/com/github/marschall/memoryfilesystem/LuceneRegressionTest.java). It is important you use the `#newLinux()` method on `MemoryFileSystemBuilder`.
 
 ### Are there other similar projects?
-Yes, [google/jimfs](https://github.com/google/jimfs), [openCage/memoryfs](https://github.com/openCage/memoryfs) and [sbridges/ephemeralfs](https://github.com/sbridges/ephemeralfs) seem similar.
+Yes, [google/jimfs](https://github.com/google/jimfs), [sbridges/ephemeralfs](https://github.com/sbridges/ephemeralfs), [pbzdyl/memoryfs](https://github.com/pbzdyl/memoryfs), [sylvainjuge/memoryfs](https://github.com/sylvainjuge/memoryfs), [twh270/jmemfs](https://github.com/twh270/jmemfs) and [nidi3/j7sf](https://github.com/nidi3/j7sf) seem similar.
 
 ### How does this compare to ShrinkWrap NIO.2?
 [ShrinkWrap NIO.2](http://exitcondition.alrubinger.com/2012/08/17/shrinkwrap-nio2/) seems to be mainly targeted at interacting with a ShrinkWrap archive instead of simulating a file system.
