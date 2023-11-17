@@ -128,6 +128,35 @@ class MemoryDirectoryStreamTest {
   }
 
   @Test
+  void directoryStreamFollowsSymlink() throws IOException {
+    FileSystem fileSystem = this.extension.getFileSystem();
+
+    Path root = fileSystem.getRootDirectories().iterator().next();
+    Path volumes = Files.createDirectory(root.resolve("Volumes"));
+    Path hd = Files.createSymbolicLink(volumes.resolve("Macintosh HD"), root);
+
+    Path abc = Files.createFile(root.resolve("abc.txt"));
+
+    try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(hd)) {
+      List<String> actual = new ArrayList<>(2);
+      for (Path each : directoryStream) {
+        actual.add(each.toRealPath().toString());
+      }
+      List<String> expected = Arrays.asList(
+          volumes.toRealPath().toString(),
+          abc.toRealPath().toString()
+      );
+      assertEquals(expected.size(), actual.size());
+
+      Set<String> actualSet = new HashSet<>(actual);
+      assertEquals(actualSet.size(), actual.size());
+
+      Set<String> expectedSet = new HashSet<>(expected);
+      assertEquals(expectedSet, actualSet);
+    }
+  }
+
+  @Test
   void empty() throws IOException {
     FileSystem fileSystem = this.extension.getFileSystem();
 
