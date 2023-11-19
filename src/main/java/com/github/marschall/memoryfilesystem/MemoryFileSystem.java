@@ -478,7 +478,7 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
   }
 
   DirectoryStream<Path> newDirectoryStream(final AbstractPath abstractPath, final Filter<? super Path> filter) throws IOException {
-    return this.accessFileReading(abstractPath, false,  entry -> {
+    return this.accessFileReading(abstractPath, true,  entry -> {
       if (!(entry instanceof MemoryDirectory)) {
         throw new NotDirectoryException(abstractPath.toString());
       }
