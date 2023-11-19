@@ -18,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.lang.annotation.Retention;
@@ -25,6 +26,7 @@ import java.lang.annotation.Target;
 import java.nio.ByteBuffer;
 import java.nio.channels.NonReadableChannelException;
 import java.nio.channels.SeekableByteChannel;
+import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -32,6 +34,9 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.attribute.BasicFileAttributeView;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -267,6 +272,41 @@ class FileSystemCompatibilityTest {
 
     PathMatcher matcher = fileSystem.getPathMatcher("glob:**/.gitignore");
     assertThat(matcher, not(matches(child)));
+  }
+
+  @CompatibilityTest
+  void newDirectoryStreamFollowSymlinks(boolean useDefault) throws IOException {
+    FileSystem fileSystem = this.getFileSystem(useDefault);
+    Path target = fileSystem.getPath("target");
+    if (!useDefault) {
+      Files.createDirectory(target);
+    }
+    Path tempDirectory = Files.createTempDirectory(target, "newDirectoryStreamFollowSymlinks");
+    Files.createFile(tempDirectory.resolve("a"));
+    Files.createFile(tempDirectory.resolve("b"));
+    Path symlink = target.resolve("symlink");
+    Files.deleteIfExists(symlink);
+    Files.createSymbolicLink(symlink, tempDirectory.toAbsolutePath());
+    List<String> directoryEntries = new ArrayList<>(2);
+    try {
+      try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(symlink)) {
+        for (Path directoryEntry : directoryStream) {
+          assertFalse(directoryEntry.isAbsolute());
+          assertTrue(directoryEntry.startsWith(symlink));
+          directoryEntries.add(symlink.relativize(directoryEntry).toString());
+        }
+      }
+      directoryEntries.sort(null);
+      assertEquals(Arrays.asList("a", "b"), directoryEntries);
+    } finally {
+      try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(tempDirectory)) {
+        for (Path directoryEntry : directoryStream) {
+          Files.delete(directoryEntry);
+        }
+      }
+      Files.delete(tempDirectory);
+      Files.delete(symlink);
+    }
   }
 
 }
