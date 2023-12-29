@@ -604,21 +604,8 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
             if (!encounteredLinks.add(link)) {
               throw new FileSystemLoopException(path.toString());
             }
-            Path symLinkTarget = link.getTarget();
-            Path newLookUpPath;
-            if (symLinkTarget.isAbsolute()) {
-              newLookUpPath = symLinkTarget;
-            } else {
-              newLookUpPath = path.getRoot();
-              for (int j = 0; j < i; ++j) {
-                newLookUpPath = newLookUpPath.resolve(nameElements.get(j));
-              }
-              newLookUpPath = newLookUpPath.resolve(symLinkTarget);
-            }
-            for (int j = i + 1; j < pathElementCount; ++j) {
-              newLookUpPath = newLookUpPath.resolve(nameElements.get(j));
-            }
-            return this.toRealPath(root, (AbstractPath) newLookUpPath, encounteredLinks, followSymLinks);
+            Path newLookUpPath = this.resolveSymlink(path, link, nameElements, pathElementCount, i);
+            return this.toRealPath(root, (AbstractPath) newLookUpPath.normalize(), encounteredLinks, followSymLinks);
           }
 
           if (current instanceof MemoryDirectory) {
@@ -787,19 +774,7 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
             if (!encounteredLinks.add(link)) {
               throw new FileSystemLoopException(path.toString());
             }
-            Path symLinkTarget = link.getTarget();
-            if (symLinkTarget.isAbsolute()) {
-              newLookUpPath = symLinkTarget;
-            } else {
-              newLookUpPath = path.getRoot();
-              for (int j = 0; j < i; ++j) {
-                newLookUpPath = newLookUpPath.resolve(nameElements.get(j));
-              }
-              newLookUpPath = newLookUpPath.resolve(symLinkTarget);
-            }
-            for (int j = i + 1; j < pathElementCount; ++j) {
-              newLookUpPath = newLookUpPath.resolve(nameElements.get(j));
-            }
+            newLookUpPath = this.resolveSymlink(path, link, nameElements, pathElementCount, i);
             break;
           }
 
@@ -821,12 +796,36 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
       if (newLookUpPath == null) {
         return result;
       } else {
-        return this.withLockDo(root, (AbstractPath) newLookUpPath, encounteredLinks, followSymLinks, lockType, callback);
+        return this.withLockDo(root, (AbstractPath) newLookUpPath.normalize(), encounteredLinks, followSymLinks, lockType, callback);
       }
 
     } else {
       throw new IllegalArgumentException("unknown path type" + path);
     }
+  }
+
+  private Path resolveSymlink(AbstractPath path, MemorySymbolicLink link, List<String> nameElements, int pathElementCount, int currentNameElementIndex) {
+    Path newLookUpPath;
+    Path symLinkTarget = link.getTarget();
+    if (symLinkTarget.isAbsolute()) {
+      newLookUpPath = symLinkTarget;
+      // we can't return and have to keep appending
+    } else {
+      // start an entire new lookup
+      // start from the root
+      newLookUpPath = path.getRoot();
+      for (int j = 0; j < currentNameElementIndex; ++j) {
+        // append everything we traversed so far
+        newLookUpPath = newLookUpPath.resolve(nameElements.get(j));
+      }
+      // append the relative symlink
+      newLookUpPath = newLookUpPath.resolve(symLinkTarget);
+    }
+    // append the elements not yet traversed
+    for (int j = currentNameElementIndex + 1; j < pathElementCount; ++j) {
+      newLookUpPath = newLookUpPath.resolve(nameElements.get(j));
+    }
+    return newLookUpPath;
   }
 
   private MemoryDirectory getRootDirectory(AbstractPath path) throws IOException {
