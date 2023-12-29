@@ -346,8 +346,8 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   @Override
   public boolean deleteIfExists(Path path) throws IOException {
     AbstractPath abstractPath = castPath(path);
-    // FIXME
-    return false;
+    MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
+    return memoryFileSystem.deleteIfExists(abstractPath);
   }
 
   @Override
@@ -437,15 +437,11 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
   }
 
   // new with JDK 20
-  @Override
+  //  @Override
   public boolean exists(Path path, LinkOption... options) {
-    return false;
-  }
-
-  // new with JDK 20
-  @Override
-  public <A extends BasicFileAttributes> A readAttributesIfExists(Path path, Class<A> type, LinkOption... options) throws IOException {
-    return null;
+    AbstractPath abstractPath = castPath(path);
+    MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
+    return memoryFileSystem.exists(abstractPath, options);
   }
 
   @Override
@@ -460,6 +456,14 @@ public final class MemoryFileSystemProvider extends FileSystemProvider {
     AbstractPath abstractPath = castPath(path);
     MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
     return memoryFileSystem.readAttributes(abstractPath, type, options);
+  }
+
+  // new with JDK 20
+  //  @Override
+  public <A extends BasicFileAttributes> A readAttributesIfExists(Path path, Class<A> type, LinkOption... options) throws IOException {
+    AbstractPath abstractPath = castPath(path);
+    MemoryFileSystem memoryFileSystem = abstractPath.getMemoryFileSystem();
+    return memoryFileSystem.readAttributesIfExists(abstractPath, type, options);
   }
 
   @Override
