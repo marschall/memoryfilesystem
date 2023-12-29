@@ -12,10 +12,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
-import java.nio.channels.ByteChannel;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
@@ -123,27 +122,14 @@ class PosixMemoryFileSystemTest {
       Path directory = fileSystem.getPath("directory");
       Files.createDirectory(directory);
 
-      try (ByteChannel channel = Files.newByteChannel(directory)) {
-        fail("should not be able to create channel on directory");
-      } catch (FileSystemException e) {
-        // should reach here
-        assertEquals(directory.toAbsolutePath().toString(), e.getFile(), "file");
-      }
+      FileSystemException e = assertThrows(FileSystemException.class, () -> Files.newByteChannel(directory), "should not be able to create channel on directory");
+      assertEquals(directory.toAbsolutePath().toString(), e.getFile(), "file");
 
-      try (ByteChannel channel = Files.newByteChannel(directory, READ)) {
-        fail("should not be able to create channel on directory");
+      e = assertThrows(FileSystemException.class, () ->  Files.newByteChannel(directory, READ), "should not be able to create channel on directory");
+      assertEquals(directory.toAbsolutePath().toString(), e.getFile(), "file");
 
-      } catch (FileSystemException e) {
-        // should reach here
-        assertEquals(directory.toAbsolutePath().toString(), e.getFile(), "file");
-      }
-
-      try (ByteChannel channel = Files.newByteChannel(directory, WRITE)) {
-        fail("should not be able to create channel on directory");
-      } catch (FileSystemException e) {
-        // should reach here
-        assertEquals(directory.toAbsolutePath().toString(), e.getFile(), "file");
-      }
+      e = assertThrows(FileSystemException.class, () ->  Files.newByteChannel(directory, WRITE), "should not be able to create channel on directory");
+      assertEquals(directory.toAbsolutePath().toString(), e.getFile(), "file");
     }
   }
 
