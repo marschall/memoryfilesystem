@@ -1,6 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.FileContentsMatcher.hasContents;
+import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static com.github.marschall.memoryfilesystem.FileUtility.setContents;
 import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isAbsolute;
 import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isRelative;
@@ -306,6 +307,54 @@ class FileSystemCompatibilityTest {
       }
       Files.delete(tempDirectory);
       Files.delete(symlink);
+    }
+  }
+
+  @CompatibilityTest
+  void manyDots(boolean useDefault) throws IOException {
+    FileSystem fileSystem = this.getFileSystem(useDefault);
+    Path target = fileSystem.getPath("target");
+    if (!useDefault) {
+      Files.createDirectory(target);
+    }
+    int dotDotCount = target.toAbsolutePath().getNameCount() + 1;
+    String lotsOfDotDot = String.join("/", ParentReferenceList.create(dotDotCount));
+    Path shouldBeRoot = target.resolve(lotsOfDotDot);
+    assertThat(shouldBeRoot, exists());
+    assertEquals(target.toAbsolutePath().getRoot(), shouldBeRoot.toAbsolutePath().normalize());
+  }
+
+  @CompatibilityTest
+  void relativeSymlinks(boolean useDefault) throws IOException {
+    FileSystem fileSystem = this.getFileSystem(useDefault);
+    Path target = fileSystem.getPath("target");
+    if (!useDefault) {
+      Files.createDirectory(target);
+    }
+    Path symlinktests = Files.createDirectory(target.resolve("symlinktests"));
+    Path root = Files.createDirectory(symlinktests.resolve("root"));
+    Path directory1 = Files.createDirectory(root.resolve("directory1"));
+    Path directory2 = Files.createDirectory(root.resolve("directory2"));
+    assertThat(directory1, exists());
+    assertThat(directory2, exists());
+
+    Path link = null;
+    try {
+      Path originalLinkTarget = fileSystem.getPath("root/directory1/./../directory2");
+      link = Files.createSymbolicLink(symlinktests.resolve("link"), originalLinkTarget);
+      Path actualLinkTarget = Files.readSymbolicLink(link);
+      assertEquals(originalLinkTarget, actualLinkTarget);
+      assertThat(link, exists());
+      assertEquals(directory2.toAbsolutePath(), link.toRealPath());
+      //      Files.delete(link);
+    } finally {
+      Files.deleteIfExists(directory1);
+      Files.deleteIfExists(directory2);
+      if (link != null) {
+        Files.deleteIfExists(link);
+      }
+      Files.deleteIfExists(root);
+      Files.deleteIfExists(symlinktests);
     }
   }
 

@@ -686,7 +686,7 @@ class MemoryFileSystemTest {
     assertEquals(expectedSize, Files.size(from));
 
     try (SeekableByteChannel fromChannel = Files.newByteChannel(from);
-         FileChannel toChannel = FileChannel.open(to, READ, WRITE, CREATE_NEW)) {
+            FileChannel toChannel = FileChannel.open(to, READ, WRITE, CREATE_NEW)) {
       long count = toChannel.transferFrom(fromChannel, 0, content.length * 2);
 
       assertEquals(expectedSize, count);
@@ -1980,6 +1980,15 @@ class MemoryFileSystemTest {
   }
 
   @Test
+  void inputStreamNormalizePath() throws IOException {
+    Path file = this.extension.getFileSystem().getPath("/file.txt");
+    Files.createFile(file);
+    try (InputStream inputStream = Files.newInputStream(this.extension.getFileSystem().getPath("/./file.txt/../file.txt"), READ)) {
+      assertNotNull(inputStream);
+    }
+  }
+
+  @Test
   void byteChannelDoubleClose() throws IOException {
     // regression test for
     // https://github.com/marschall/memoryfilesystem/issues/49
@@ -2032,6 +2041,15 @@ class MemoryFileSystemTest {
   }
 
   @Test
+  void channelNormalizePath() throws IOException {
+    Path file = this.extension.getFileSystem().getPath("/file.txt");
+    Files.createFile(file);
+    try (SeekableByteChannel channel = Files.newByteChannel(this.extension.getFileSystem().getPath("/./file.txt/../file.txt"), WRITE)) {
+      assertNotNull(channel);
+    }
+  }
+
+  @Test
   void outputStreamWriteTruncateExisting() throws IOException {
     Path file = this.extension.getFileSystem().getPath("/file.txt");
     Files.createFile(file);
@@ -2042,6 +2060,14 @@ class MemoryFileSystemTest {
     }
   }
 
+  @Test
+  void outputStreamNormalizePath() throws IOException {
+    Path file = this.extension.getFileSystem().getPath("/file.txt");
+    Files.createFile(file);
+    try (OutputStream outputStream = Files.newOutputStream(this.extension.getFileSystem().getPath("/./file.txt/../file.txt"), WRITE)) {
+      assertNotNull(outputStream);
+    }
+  }
 
   @Test
   void fromUriSingleSlash() throws IOException {
