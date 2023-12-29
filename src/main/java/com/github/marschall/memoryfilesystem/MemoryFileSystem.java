@@ -55,6 +55,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -402,7 +403,6 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
       this.linkTarget = linkTarget;
     }
 
-
   }
 
   private MemoryFile getFile(AbstractPath path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
@@ -644,9 +644,27 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
     }
   }
 
+  boolean exists(AbstractPath path, LinkOption... options) {
+    try {
+      return this.accessFileReadingIfExists(path, Options.isFollowSymLinks(options), entry -> true).orElse(Boolean.FALSE);
+    } catch (IOException e) {
+      return false;
+    }
+  }
+
   <A extends BasicFileAttributes> A readAttributes(AbstractPath path, Class<A> type, LinkOption... options) throws IOException {
     this.checker.check();
     return this.accessFileReading(path, Options.isFollowSymLinks(options), entry -> entry.readAttributes(type));
+  }
+
+  <A extends BasicFileAttributes> A readAttributesIfExists(AbstractPath path, Class<A> type, LinkOption... options) throws IOException {
+    this.checker.check();
+    Optional<A> result = this.accessFileReadingIfExists(path, Options.isFollowSymLinks(options), entry -> entry.readAttributes(type));
+    if (result.isPresent()) {
+      return result.get();
+    } else {
+      return null;
+    }
   }
 
   <V extends FileAttributeView> V getLazyFileAttributeView(AbstractPath path, Class<V> type, LinkOption... options) {
@@ -685,6 +703,14 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
     return this.accessFile(path, followSymLinks, LockType.WRITE, callback);
   }
 
+  private <R> Optional<R> accessFileReadingIfExists(AbstractPath path, boolean followSymLinks, MemoryEntryBlock<? extends R> callback) throws IOException {
+    return this.accessFileIfExists(path, followSymLinks, LockType.READ, callback);
+  }
+
+  private <R> Optional<R> accessFileWritingIfExists(AbstractPath path, boolean followSymLinks, MemoryEntryBlock<? extends R> callback) throws IOException {
+    return this.accessFileIfExists(path, followSymLinks, LockType.WRITE, callback);
+  }
+
   private <R> R accessFile(AbstractPath path, boolean followSymLinks, LockType lockType, MemoryEntryBlock<? extends R> callback) throws IOException {
     this.checker.check();
     AbstractPath absolutePath = (AbstractPath) path.toAbsolutePath().normalize();
@@ -696,6 +722,19 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
       encounteredSymlinks = Collections.emptySet();
     }
     return this.withLockDo(root, absolutePath, encounteredSymlinks, followSymLinks, lockType, callback);
+  }
+
+  private <R> Optional<R> accessFileIfExists(AbstractPath path, boolean followSymLinks, LockType lockType, MemoryEntryBlock<? extends R> callback) throws IOException {
+    this.checker.check();
+    AbstractPath absolutePath = (AbstractPath) path.toAbsolutePath().normalize();
+    MemoryDirectory root = this.getRootDirectory(absolutePath);
+    Set<MemorySymbolicLink> encounteredSymlinks;
+    if (followSymLinks) {
+      encounteredSymlinks = new HashSet<>(4);
+    } else {
+      encounteredSymlinks = Collections.emptySet();
+    }
+    return this.withLockDoIfExists(root, absolutePath, encounteredSymlinks, followSymLinks, lockType, callback);
   }
 
 
@@ -720,6 +759,15 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
 
   private <R> R accessDirectoryWriting(AbstractPath path, boolean followSymLinks, MemoryDirectoryBlock<R> callback) throws IOException {
     return this.accessFileWriting(path, followSymLinks, entry -> {
+      if (!(entry instanceof MemoryDirectory)) {
+        throw new NotDirectoryException(path.toString());
+      }
+      return callback.value((MemoryDirectory) entry);
+    });
+  }
+
+  private <R> Optional<R> accessDirectoryWritingIfExists(AbstractPath path, boolean followSymLinks, MemoryDirectoryBlock<R> callback) throws IOException {
+    return this.accessFileWritingIfExists(path, followSymLinks, entry -> {
       if (!(entry instanceof MemoryDirectory)) {
         throw new NotDirectoryException(path.toString());
       }
@@ -793,6 +841,72 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
         return result;
       } else {
         return this.withLockDo(root, (AbstractPath) newLookUpPath.normalize(), encounteredLinks, followSymLinks, lockType, callback);
+      }
+
+    } else {
+      throw new IllegalArgumentException("unknown path type" + path);
+    }
+  }
+
+  private <R> Optional<R> withLockDoIfExists(MemoryDirectory root, AbstractPath path, Set<MemorySymbolicLink> encounteredLinks, boolean followSymLinks, LockType lockType, MemoryEntryBlock<? extends R> callback) throws IOException {
+    if (path.isRoot()) {
+      try (AutoRelease lock = root.lock(lockType)) {
+        return Optional.of(callback.value(root));
+      }
+    } else if (path instanceof ElementPath) {
+      Optional<R> result = null;
+      Path newLookUpPath = null;
+
+      ElementPath elementPath = (ElementPath) path;
+      List<String> nameElements = elementPath.getNameElements();
+      int pathElementCount = nameElements.size();
+      List<AutoRelease> locks = new ArrayList<>(pathElementCount + 1);
+      try {
+        locks.add(root.readLock());
+        MemoryDirectory parent = root;
+        for (int i = 0; i < pathElementCount; ++i) {
+          String fileName = nameElements.get(i);
+          String key = this.lookUpTransformer.transform(fileName);
+          MemoryEntry current = parent.getEntry(key);
+          if (current == null) {
+            result = Optional.empty();
+            break;
+          }
+          boolean isLast = i == pathElementCount - 1;
+          if (isLast) {
+            locks.add(current.lock(lockType));
+          } else {
+            locks.add(current.readLock());
+          }
+
+          if (followSymLinks && current instanceof MemorySymbolicLink) {
+            MemorySymbolicLink link = (MemorySymbolicLink) current;
+            if (!encounteredLinks.add(link)) {
+              throw new FileSystemLoopException(path.toString());
+            }
+            newLookUpPath = this.resolveSymlink(path, link, nameElements, pathElementCount, i);
+            break;
+          }
+
+          if (isLast) {
+            result = Optional.of(callback.value(current));
+          } else if (current instanceof MemoryDirectory) {
+            parent = (MemoryDirectory) current;
+          } else {
+            throw new NotDirectoryException(path.toString());
+          }
+
+        }
+      } finally {
+        for (int i = locks.size() - 1; i >= 0; --i) {
+          AutoRelease lock = locks.get(i);
+          lock.close();
+        }
+      }
+      if (newLookUpPath == null) {
+        return result;
+      } else {
+        return this.withLockDoIfExists(root, (AbstractPath) newLookUpPath.normalize(), encounteredLinks, followSymLinks, lockType, callback);
       }
 
     } else {
@@ -1038,7 +1152,6 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
 
   }
 
-
   void delete(AbstractPath abstractPath) throws IOException {
     try (AutoRelease autoRelease = autoRelease(this.pathOrderingLock.readLock())) {
       AbstractPath absolutePath = (AbstractPath) abstractPath.toAbsolutePath().normalize();
@@ -1072,13 +1185,48 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
     }
   }
 
+  boolean deleteIfExists(AbstractPath abstractPath) throws IOException {
+    try (AutoRelease autoRelease = autoRelease(this.pathOrderingLock.readLock())) {
+      AbstractPath absolutePath = (AbstractPath) abstractPath.toAbsolutePath().normalize();
+      if (absolutePath.isRoot()) {
+        throw new FileSystemException(abstractPath.toString(), null, "can not delete root");
+      }
+      ElementPath elementPath = (ElementPath) absolutePath;
+
+      AbstractPath parent = (AbstractPath) elementPath.getParent();
+      return this.accessDirectoryWritingIfExists(parent, true, directory -> {
+        String fileName = elementPath.getLastNameElement();
+        String key = MemoryFileSystem.this.lookUpTransformer.transform(fileName);
+        MemoryEntry child = directory.getEntry(key);
+        if (child != null) {
+          try (AutoRelease lock = child.writeLock()) {
+            if (child instanceof MemoryDirectory) {
+              MemoryDirectory childDirectory = (MemoryDirectory) child;
+              childDirectory.checkEmpty(abstractPath);
+            }
+            if (child instanceof MemoryFile) {
+              MemoryFile file = (MemoryFile) child;
+              if (file.openCount() > 0) {
+                throw new FileSystemException(abstractPath.toString(), null, "file still open");
+              }
+              file.markForDeletion();
+            }
+            directory.checkAccess(WRITE);
+            directory.removeEntry(key);
+          }
+          return true;
+        } else {
+          return false;
+        }
+      }).orElse(Boolean.FALSE);
+    }
+  }
 
   @Override
   public FileSystemProvider provider() {
     this.checker.check();
     return this.provider;
   }
-
 
   @Override
   @javax.annotation.PreDestroy
@@ -1093,19 +1241,16 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
     }
   }
 
-
   @Override
   public boolean isOpen() {
     return this.checker.isOpen();
   }
-
 
   @Override
   public boolean isReadOnly() {
     this.checker.check();
     return this.store.isReadOnly();
   }
-
 
   @Override
   public String getSeparator() {
@@ -1121,13 +1266,11 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
     return (Iterable<Path>) ((Object) this.roots.keySet());
   }
 
-
   @Override
   public Iterable<FileStore> getFileStores() {
     this.checker.check();
     return this.stores;
   }
-
 
   @Override
   public Set<String> supportedFileAttributeViews() {
@@ -1168,13 +1311,11 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
     throw new UnsupportedOperationException("unsupported syntax \"" + syntax + "\"");
   }
 
-
   @Override
   public MemoryUserPrincipalLookupService getUserPrincipalLookupService() {
     this.checker.check();
     return this.userPrincipalLookupService;
   }
-
 
   @Override
   public WatchService newWatchService() {
@@ -1185,7 +1326,6 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
     }
     return new MemoryFileSystemWatchService(this);
   }
-
 
   void register(MemoryWatchKey watchKey) {
     this.checker.check();
@@ -1200,7 +1340,6 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
     }
     keys.add(watchKey);
   }
-
 
   FileStore getFileStore() {
     return this.store;
