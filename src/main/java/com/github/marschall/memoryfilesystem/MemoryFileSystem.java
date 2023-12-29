@@ -294,14 +294,12 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
     }
   }
 
-
   InputStream newInputStream(AbstractPath path, OpenOption... options) throws IOException {
     this.checker.check();
     Set<OpenOption> optionsSet = toOptionSet(Collections.emptySet(), options);
     MemoryFile file = this.getFile(path, optionsSet);
     return file.newInputStream(optionsSet, path);
   }
-
 
   OutputStream newOutputStream(AbstractPath path, OpenOption... options) throws IOException {
     this.checker.check();
@@ -321,16 +319,16 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
     }
   }
 
-  private GetEntryResult getEntry(final AbstractPath path, final Set<? extends OpenOption> options, FileAttribute<?>[] attrs, final boolean followSymLinks, final Set<MemorySymbolicLink> encounteredSymlinks) throws IOException {
+  private GetEntryResult getEntry(AbstractPath path, Set<? extends OpenOption> options, FileAttribute<?>[] attrs, boolean followSymLinks, Set<MemorySymbolicLink> encounteredSymlinks) throws IOException {
 
-    final FileAttribute<?>[] newAttributes = this.applyUmask(attrs); // TODO lazy
-    final AbstractPath absolutePath = (AbstractPath) path.toAbsolutePath().normalize();
+    FileAttribute<?>[] newAttributes = this.applyUmask(attrs); // TODO lazy
+    AbstractPath absolutePath = (AbstractPath) path.toAbsolutePath().normalize();
     MemoryDirectory rootDirectory = this.getRootDirectory(absolutePath);
     if (absolutePath.isRoot()) {
       return new GetEntryResult(rootDirectory);
     }
 
-    final AbstractPath parent = (AbstractPath) absolutePath.getParent();
+    AbstractPath parent = (AbstractPath) absolutePath.getParent();
     return this.withWriteLockOnLastDo(rootDirectory, parent, followSymLinks, encounteredSymlinks, new MemoryDirectoryBlock<GetEntryResult>() {
 
       @Override
@@ -373,10 +371,8 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
         }
       }
 
-      private MemoryFile createEntryOnAccess(final AbstractPath path,
-              final FileAttribute<?>[] newAttributes, MemoryDirectory directory,
-              ElementPath elementPath, EntryCreationContext creationContext)
-                      throws IOException {
+      private MemoryFile createEntryOnAccess(AbstractPath path, FileAttribute<?>[] newAttributes, MemoryDirectory directory,
+              ElementPath elementPath, EntryCreationContext creationContext) throws IOException {
         String fileName = elementPath.getLastNameElement();
         String key = MemoryFileSystem.this.lookUpTransformer.transform(fileName);
         String name = MemoryFileSystem.this.storeTransformer.transform(fileName);
@@ -477,7 +473,7 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
     }
   }
 
-  DirectoryStream<Path> newDirectoryStream(final AbstractPath abstractPath, final Filter<? super Path> filter) throws IOException {
+  DirectoryStream<Path> newDirectoryStream(AbstractPath abstractPath, Filter<? super Path> filter) throws IOException {
     return this.accessFileReading(abstractPath, true,  entry -> {
       if (!(entry instanceof MemoryDirectory)) {
         throw new NotDirectoryException(abstractPath.toString());
@@ -488,8 +484,8 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
   }
 
 
-  void createDirectory(final AbstractPath path, final FileAttribute<?>... attrs) throws IOException {
-    final FileAttribute<?>[] masked = this.applyUmask(attrs);
+  void createDirectory(AbstractPath path, FileAttribute<?>... attrs) throws IOException {
+    FileAttribute<?>[] masked = this.applyUmask(attrs);
     this.createFile(path, name -> {
       EntryCreationContext context = MemoryFileSystem.this.newEntryCreationContext(path, masked);
       MemoryDirectory directory = new MemoryDirectory(name, context);
@@ -498,9 +494,9 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
     });
   }
 
-  void createSymbolicLink(final AbstractPath link, final AbstractPath target, final FileAttribute<?>... attrs) throws IOException {
+  void createSymbolicLink(AbstractPath link, AbstractPath target, FileAttribute<?>... attrs) throws IOException {
 
-    final FileAttribute<?>[] masked = this.applyUmask(attrs);
+    FileAttribute<?>[] masked = this.applyUmask(attrs);
     this.createFile(link, name -> {
       EntryCreationContext context = MemoryFileSystem.this.newEntryCreationContext(link, masked);
       MemorySymbolicLink symbolicLink = new MemorySymbolicLink(name, target, context);
@@ -509,8 +505,8 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
     });
   }
 
-  void createLink(final AbstractPath link, AbstractPath existing) throws IOException {
-    final MemoryFile existingFile = this.getFile(existing);
+  void createLink(AbstractPath link, AbstractPath existing) throws IOException {
+    MemoryFile existingFile = this.getFile(existing);
     if (existingFile == null) {
       throw new FileSystemException(link.toString(), existing.toString(), "hard links are only supported for regular files");
     }
@@ -521,12 +517,12 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
   }
 
   boolean isSameFile(AbstractPath path, AbstractPath path2) throws IOException {
-    final MemoryFile file = this.getFile(path);
+    MemoryFile file = this.getFile(path);
     if (file == null) {
       return false;
     }
 
-    final MemoryFile file2 = this.getFile(path2);
+    MemoryFile file2 = this.getFile(path2);
     if (file2 == null) {
       return false;
     }
@@ -543,13 +539,13 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
     });
   }
 
-  private void createFile(final AbstractPath path, final MemoryEntryCreator creator) throws IOException {
+  private void createFile(AbstractPath path, MemoryEntryCreator creator) throws IOException {
     this.checker.check();
     AbstractPath absolutePath = (AbstractPath) path.toAbsolutePath().normalize();
     if (absolutePath.isRoot()) {
       throw new FileAlreadyExistsException(path.toString(), null, "can not create root");
     }
-    final ElementPath elementPath = (ElementPath) absolutePath;
+    ElementPath elementPath = (ElementPath) absolutePath;
 
     this.accessDirectoryWriting((AbstractPath) elementPath.getParent(), true, directory -> {
       String name = MemoryFileSystem.this.storeTransformer.transform(elementPath.getLastNameElement());
@@ -629,7 +625,7 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
     }
   }
 
-  void checkAccess(AbstractPath path, final AccessMode... modes) throws IOException {
+  void checkAccess(AbstractPath path, AccessMode... modes) throws IOException {
     this.checker.check();
     // java.nio.file.spi.FileSystemProvider#checkAccess(Path, AccessMode...)
     // says we should follow symbolic links
@@ -648,7 +644,7 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
     }
   }
 
-  <A extends BasicFileAttributes> A readAttributes(AbstractPath path, final Class<A> type, LinkOption... options) throws IOException {
+  <A extends BasicFileAttributes> A readAttributes(AbstractPath path, Class<A> type, LinkOption... options) throws IOException {
     this.checker.check();
     return this.accessFileReading(path, Options.isFollowSymLinks(options), entry -> entry.readAttributes(type));
   }
@@ -663,16 +659,16 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
     return type.cast(proxy);
   }
 
-  <V extends FileAttributeView> V getFileAttributeView(AbstractPath path, final Class<V> type, LinkOption... options) throws IOException {
+  <V extends FileAttributeView> V getFileAttributeView(AbstractPath path, Class<V> type, LinkOption... options) throws IOException {
     return this.accessFileReading(path, Options.isFollowSymLinks(options), entry -> entry.getFileAttributeView(type));
   }
 
-  Map<String, Object> readAttributes(AbstractPath path, final String attributes, LinkOption... options) throws IOException {
+  Map<String, Object> readAttributes(AbstractPath path, String attributes, LinkOption... options) throws IOException {
     this.checker.check();
     return this.accessFileReading(path, Options.isFollowSymLinks(options), entry -> AttributeAccessors.readAttributes(entry, attributes));
   }
 
-  void setAttribute(AbstractPath path, final String attribute, final Object value, LinkOption... options) throws IOException {
+  void setAttribute(AbstractPath path, String attribute, Object value, LinkOption... options) throws IOException {
     this.checker.check();
     this.accessFileWriting(path, Options.isFollowSymLinks(options), entry -> {
       // TODO write lock?
@@ -703,7 +699,7 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
   }
 
 
-  private <R> R withWriteLockOnLastDo(MemoryDirectory root, final AbstractPath path, boolean followSymLinks, final MemoryDirectoryBlock<R> callback) throws IOException {
+  private <R> R withWriteLockOnLastDo(MemoryDirectory root, AbstractPath path, boolean followSymLinks, MemoryDirectoryBlock<R> callback) throws IOException {
     Set<MemorySymbolicLink> encounteredSymlinks;
     if (followSymLinks) {
       encounteredSymlinks = new HashSet<>(4);
@@ -713,7 +709,7 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
     return this.withWriteLockOnLastDo(root, path, followSymLinks, encounteredSymlinks, callback);
   }
 
-  private <R> R withWriteLockOnLastDo(MemoryDirectory root, final AbstractPath path, boolean followSymLinks, Set<MemorySymbolicLink> encounteredSymlinks, final MemoryDirectoryBlock<R> callback) throws IOException {
+  private <R> R withWriteLockOnLastDo(MemoryDirectory root, AbstractPath path, boolean followSymLinks, Set<MemorySymbolicLink> encounteredSymlinks, final MemoryDirectoryBlock<R> callback) throws IOException {
     return this.withLockDo(root, path, encounteredSymlinks, followSymLinks, LockType.WRITE, entry -> {
       if (!(entry instanceof MemoryDirectory)) {
         throw new NotDirectoryException(path.toString());
@@ -722,7 +718,7 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
     });
   }
 
-  private <R> R accessDirectoryWriting(final AbstractPath path, boolean followSymLinks, final MemoryDirectoryBlock<R> callback) throws IOException {
+  private <R> R accessDirectoryWriting(AbstractPath path, boolean followSymLinks, MemoryDirectoryBlock<R> callback) throws IOException {
     return this.accessFileWriting(path, followSymLinks, entry -> {
       if (!(entry instanceof MemoryDirectory)) {
         throw new NotDirectoryException(path.toString());
@@ -844,10 +840,10 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
       EndPointCopyContext targetContext = this.buildEndpointCopyContext(target);
 
       int order = this.orderPaths(sourceContext, targetContext);
-      final CopyContext copyContext = buildCopyContext(sourceContext, targetContext, operation, options, order);
+      CopyContext copyContext = buildCopyContext(sourceContext, targetContext, operation, options, order);
 
       AbstractPath firstParent = copyContext.first.parent;
-      final AbstractPath secondParent = copyContext.second.parent;
+      AbstractPath secondParent = copyContext.second.parent;
       if (firstParent == null && secondParent == null) {
         // both of the involved paths is a root
         // simply ignore
@@ -860,7 +856,7 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
       }
 
       MemoryDirectory firstRoot = this.getRootDirectory(copyContext.first.path);
-      final MemoryDirectory secondRoot = this.getRootDirectory(copyContext.second.path);
+      MemoryDirectory secondRoot = this.getRootDirectory(copyContext.second.path);
 
       this.withWriteLockOnLastDo(firstRoot, firstParent, copyContext.firstFollowSymLinks, firstDirectory -> {
         MemoryFileSystem.this.withWriteLockOnLastDo(secondRoot, secondParent, copyContext.secondFollowSymLinks, secondDirectory -> {
@@ -878,15 +874,15 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
     EndPointCopyContext targetContext = targetFileSystem.buildEndpointCopyContext(target);
 
     int order = orderFileSystems(sourceContext, targetContext);
-    final CopyContext copyContext = buildCopyContext(sourceContext, targetContext, operation, options, order);
+    CopyContext copyContext = buildCopyContext(sourceContext, targetContext, operation, options, order);
     AbstractPath firstParent = copyContext.first.parent;
-    final AbstractPath secondParent = copyContext.second.parent;
+    AbstractPath secondParent = copyContext.second.parent;
     if (firstParent == null || secondParent == null) {
       throw new FileSystemException(toStringOrNull(firstParent), toStringOrNull(secondParent), "can't move ore copy the file system root");
     }
 
     MemoryDirectory firstRoot = sourceFileSystem.getRootDirectory(copyContext.first.path);
-    final MemoryDirectory secondRoot = targetFileSystem.getRootDirectory(copyContext.second.path);
+    MemoryDirectory secondRoot = targetFileSystem.getRootDirectory(copyContext.second.path);
     copyContext.first.path.getMemoryFileSystem().withWriteLockOnLastDo(firstRoot, firstParent, copyContext.firstFollowSymLinks, firstDirectory -> {
       copyContext.second.path.getMemoryFileSystem().withWriteLockOnLastDo(secondRoot, secondParent, copyContext.secondFollowSymLinks, secondDirectory -> {
         handleTwoPathOperation(copyContext, firstDirectory, secondDirectory);
@@ -1043,15 +1039,15 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
   }
 
 
-  void delete(final AbstractPath abstractPath) throws IOException {
+  void delete(AbstractPath abstractPath) throws IOException {
     try (AutoRelease autoRelease = autoRelease(this.pathOrderingLock.readLock())) {
       AbstractPath absolutePath = (AbstractPath) abstractPath.toAbsolutePath().normalize();
       if (absolutePath.isRoot()) {
         throw new FileSystemException(abstractPath.toString(), null, "can not delete root");
       }
-      final ElementPath elementPath = (ElementPath) absolutePath;
+      ElementPath elementPath = (ElementPath) absolutePath;
 
-      final AbstractPath parent = (AbstractPath) elementPath.getParent();
+      AbstractPath parent = (AbstractPath) elementPath.getParent();
       this.accessDirectoryWriting(parent, true, directory -> {
         String fileName = elementPath.getLastNameElement();
         String key = MemoryFileSystem.this.lookUpTransformer.transform(fileName);
@@ -1267,7 +1263,7 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
     }
   }
 
-  Path readSymbolicLink(final AbstractPath path) throws IOException {
+  Path readSymbolicLink(AbstractPath path) throws IOException {
     // look up the parent following symlinks
     // then look up the child not following symlinks
     AbstractPath parent = (AbstractPath) path.toAbsolutePath().getParent();
