@@ -20,12 +20,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.AccessMode;
-import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -61,11 +59,7 @@ class PosixPermissionMemoryFileSystemTest {
     Files.setAttribute(directory, "posix:permissions", asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_READ, OTHERS_WRITE));
     UserPrincipal user = fileSystem.getUserPrincipalLookupService().lookupPrincipalByName(PosixPermissionFileSystemExtension.OTHER);
     CurrentUser.useDuring(user, () -> {
-      try (DirectoryStream<?> stream = Files.newDirectoryStream(directory)) {
-        fail("should not be allowd to open a directory stram");
-      } catch (AccessDeniedException e) {
-        // should reach here
-      }
+      assertThrows(AccessDeniedException.class, () ->  Files.newDirectoryStream(directory), "should not be allowd to open a directory stram");
     });
 
   }

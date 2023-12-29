@@ -32,7 +32,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -145,17 +144,9 @@ class MemoryFileSystemTest {
         assertNull(secondChannel.tryLock(1L, 8L, true));
         assertNull(secondChannel.tryLock(1L, 8L, false));
 
-        try {
-          secondChannel.lock(1L, 8L, true);
-        } catch (OverlappingFileLockException e) {
-          // should reach here
-        }
+        assertThrows(OverlappingFileLockException.class, () -> secondChannel.lock(1L, 8L, true));
 
-        try {
-          secondChannel.lock(1L, 8L, false);
-        } catch (OverlappingFileLockException e) {
-          // should reach here
-        }
+        assertThrows(OverlappingFileLockException.class, () -> secondChannel.lock(1L, 8L, false));
 
         FileLock secondLock = secondChannel.lock(0L, 2L, true);
         assertNotNull(secondLock);
@@ -2033,11 +2024,7 @@ class MemoryFileSystemTest {
   void channelWriteTruncateExisting() throws IOException {
     Path file = this.extension.getFileSystem().getPath("/file.txt");
     Files.createFile(file);
-    try (SeekableByteChannel channel = Files.newByteChannel(file, WRITE, APPEND, TRUNCATE_EXISTING)) {
-      fail("APPEND and TRUNCATE_EXISTING and should not work");
-    } catch (IllegalArgumentException e) {
-      // should reach here
-    }
+    assertThrows(IllegalArgumentException.class, () -> Files.newByteChannel(file, WRITE, APPEND, TRUNCATE_EXISTING), "APPEND and TRUNCATE_EXISTING and should not work");
   }
 
   @Test
@@ -2053,11 +2040,7 @@ class MemoryFileSystemTest {
   void outputStreamWriteTruncateExisting() throws IOException {
     Path file = this.extension.getFileSystem().getPath("/file.txt");
     Files.createFile(file);
-    try (OutputStream outputStream = Files.newOutputStream(file, APPEND, TRUNCATE_EXISTING)) {
-      fail("APPEND and TRUNCATE_EXISTING and should not work");
-    } catch (IllegalArgumentException e) {
-      // should reach here
-    }
+    assertThrows(IllegalArgumentException.class, () -> Files.newOutputStream(file, APPEND, TRUNCATE_EXISTING), "APPEND and TRUNCATE_EXISTING and should not work");
   }
 
   @Test
