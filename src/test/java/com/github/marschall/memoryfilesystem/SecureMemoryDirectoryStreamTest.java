@@ -4,6 +4,7 @@ import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;
@@ -16,7 +17,6 @@ import java.nio.file.SecureDirectoryStream;
 import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -35,7 +35,7 @@ class SecureMemoryDirectoryStreamTest {
     Files.createFile(fileSystem.getPath("child"));
 
     try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(originalFolder)) {
-      Assumptions.assumeTrue(directoryStream instanceof SecureDirectoryStream);
+      assumeTrue(directoryStream instanceof SecureDirectoryStream);
       SecureDirectoryStream<Path> secure = (SecureDirectoryStream<Path>) directoryStream;
 
       secure.deleteFile(fileSystem.getPath("child"));
@@ -56,7 +56,7 @@ class SecureMemoryDirectoryStreamTest {
     Files.createFile(fileSystem.getPath("child"));
 
     try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(originalFolder)) {
-      Assumptions.assumeTrue(directoryStream instanceof SecureDirectoryStream);
+      assumeTrue(directoryStream instanceof SecureDirectoryStream);
       SecureDirectoryStream<Path> secure = (SecureDirectoryStream<Path>) directoryStream;
 
       secure.deleteFile(fileSystem.getPath("child").toAbsolutePath());
@@ -75,7 +75,7 @@ class SecureMemoryDirectoryStreamTest {
     Files.createDirectory(originalFolder);
 
     try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(originalFolder)) {
-      Assumptions.assumeTrue(directoryStream instanceof SecureDirectoryStream);
+      assumeTrue(directoryStream instanceof SecureDirectoryStream);
       SecureDirectoryStream<Path> secure = (SecureDirectoryStream<Path>) directoryStream;
 
       assertThrows(ClosedDirectoryStreamException.class,
@@ -96,7 +96,7 @@ class SecureMemoryDirectoryStreamTest {
     Files.createDirectory(fileSystem.getPath("child"));
 
     try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(originalFolder)) {
-      Assumptions.assumeTrue(directoryStream instanceof SecureDirectoryStream);
+      assumeTrue(directoryStream instanceof SecureDirectoryStream);
       SecureDirectoryStream<Path> secure = (SecureDirectoryStream<Path>) directoryStream;
 
       secure.deleteDirectory(fileSystem.getPath("child"));
@@ -117,7 +117,7 @@ class SecureMemoryDirectoryStreamTest {
     Files.createDirectory(fileSystem.getPath("child"));
 
     try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(originalFolder)) {
-      Assumptions.assumeTrue(directoryStream instanceof SecureDirectoryStream);
+      assumeTrue(directoryStream instanceof SecureDirectoryStream);
       SecureDirectoryStream<Path> secure = (SecureDirectoryStream<Path>) directoryStream;
 
       secure.deleteDirectory(fileSystem.getPath("child").toAbsolutePath());
@@ -136,7 +136,7 @@ class SecureMemoryDirectoryStreamTest {
     Files.createDirectory(originalFolder);
 
     try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(originalFolder)) {
-      Assumptions.assumeTrue(directoryStream instanceof SecureDirectoryStream);
+      assumeTrue(directoryStream instanceof SecureDirectoryStream);
       SecureDirectoryStream<Path> secure = (SecureDirectoryStream<Path>) directoryStream;
 
       assertThrows(ClosedDirectoryStreamException.class,
@@ -163,7 +163,7 @@ class SecureMemoryDirectoryStreamTest {
     FileUtility.setContents(absolutePath, "absolute");
 
     try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(originalFolder)) {
-      Assumptions.assumeTrue(directoryStream instanceof SecureDirectoryStream);
+      assumeTrue(directoryStream instanceof SecureDirectoryStream);
       SecureDirectoryStream<Path> secure = (SecureDirectoryStream<Path>) directoryStream;
 
       try (SeekableByteChannel channel = secure.newByteChannel(absolutePath, Collections.singleton(StandardOpenOption.READ))) {
