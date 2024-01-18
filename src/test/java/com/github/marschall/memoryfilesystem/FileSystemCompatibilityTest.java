@@ -40,7 +40,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -277,6 +279,10 @@ class FileSystemCompatibilityTest {
 
   @CompatibilityTest
   void newDirectoryStreamFollowSymlinks(boolean useDefault) throws IOException {
+    Assumptions.assumeFalse(
+      useDefault && OS.current().equals(OS.WINDOWS),
+      "skip symbolic link test on Windows default file system"
+    );
     FileSystem fileSystem = this.getFileSystem(useDefault);
     Path target = fileSystem.getPath("target");
     if (!useDefault) {
@@ -326,6 +332,11 @@ class FileSystemCompatibilityTest {
 
   @CompatibilityTest
   void relativeSymlinks(boolean useDefault) throws IOException {
+    Assumptions.assumeFalse(
+      useDefault && OS.current().equals(OS.WINDOWS),
+      "skip symbolic link test on Windows default file system"
+    );
+
     FileSystem fileSystem = this.getFileSystem(useDefault);
     Path target = fileSystem.getPath("target");
     if (!useDefault) {
