@@ -280,8 +280,8 @@ class FileSystemCompatibilityTest {
   @CompatibilityTest
   void newDirectoryStreamFollowSymlinks(boolean useDefault) throws IOException {
     Assumptions.assumeFalse(
-      useDefault && OS.current().equals(OS.WINDOWS),
-      "skip symbolic link test on Windows default file system"
+      useDefault && OS.current().equals(OS.WINDOWS) && !AdminChecker.IS_ADMIN,
+      "skip symbolic link test on Windows default file system, if not admin"
     );
     FileSystem fileSystem = this.getFileSystem(useDefault);
     Path target = fileSystem.getPath("target");
@@ -333,8 +333,8 @@ class FileSystemCompatibilityTest {
   @CompatibilityTest
   void relativeSymlinks(boolean useDefault) throws IOException {
     Assumptions.assumeFalse(
-      useDefault && OS.current().equals(OS.WINDOWS),
-      "skip symbolic link test on Windows default file system"
+      useDefault && OS.current().equals(OS.WINDOWS) && !AdminChecker.IS_ADMIN,
+      "skip symbolic link test on Windows default file system, if not admin"
     );
 
     FileSystem fileSystem = this.getFileSystem(useDefault);

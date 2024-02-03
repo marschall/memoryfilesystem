@@ -47,7 +47,7 @@
       <distribution>repo</distribution>
     </license>
   </licenses>
-  
+
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -360,7 +360,7 @@
       </plugins>
     </pluginManagement>
   </build>
-  
+
   <reporting>
     <excludeDefaults>true</excludeDefaults>
     <plugins>
@@ -433,7 +433,7 @@
             <configuration>
               <name>com.github.marschall.memoryfilesystem</name>
               <exports>com.github.marschall.memoryfilesystem,com.github.marschall.memoryfilesystem.memory</exports>
-              <static-requires>java.annotation,jakarta.annotation</static-requires>
+              <static-requires>java.annotation,jakarta.annotation,java.prefs</static-requires>
               <provides>
                 <provide>
                   <services>java.nio.file.spi.FileSystemProvider</services>
