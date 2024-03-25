@@ -1,7 +1,9 @@
 package com.github.marschall.memoryfilesystem;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.FileSystem;
@@ -35,7 +37,19 @@ class PathTests {
       e = assertThrows(IllegalArgumentException.class, () -> absolutePath.subpath(2, 1));
       assertEquals("beginIndex must be smaller than 2 but was 2", e.getMessage());
     }
+  }
 
+  @Test
+  void endsWithString() throws IOException {
+    try (FileSystem fileSystem = this.extension.getFileSystem()) {
+      Path absolutePath = fileSystem.getPath("/parent/child.txt");
+      assertTrue(absolutePath.endsWith("/parent/child.txt"));
+      assertTrue(absolutePath.endsWith("parent/child.txt"));
+      assertTrue(absolutePath.endsWith("child.txt"));
+      assertTrue(absolutePath.endsWith("child.txt/"));
+      assertFalse(absolutePath.endsWith("/child.txt"));
+      assertFalse(absolutePath.endsWith("txt"));
+    }
   }
 
 }
