@@ -358,4 +358,11 @@ class FileSystemCompatibilityTest {
     }
   }
 
+  @CompatibilityTest
+  void subPath(boolean useDefault) {
+    FileSystem fileSystem = this.getFileSystem(useDefault);
+    Path target = fileSystem.getPath("target");
+    assertThrows(IllegalArgumentException.class, () -> target.subpath(0, 0));
+  }
+
 }

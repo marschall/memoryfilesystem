@@ -112,13 +112,13 @@ abstract class NonEmptyPath extends ElementPath {
       throw new IllegalArgumentException("beginIndex must not be negative but was " + beginIndex);
     }
     if (beginIndex >= nameCount) {
-      throw new IllegalArgumentException("beginIndex must not be bigger than " + nameCount + " but was " + beginIndex);
+      throw new IllegalArgumentException("beginIndex must be smaller than " + nameCount + " but was " + beginIndex);
     }
-    if (endIndex <= beginIndex) {
-      throw new IllegalArgumentException("endIndex must not be smaller than or equal to " + beginIndex + " but was " + beginIndex);
+    if (beginIndex >= endIndex) {
+      throw new IllegalArgumentException("beginIndex must be smaller than " + beginIndex + " but was " + beginIndex);
     }
     if (endIndex > nameCount) {
-      throw new IllegalArgumentException("endIndex must not be bigger than " + nameCount + " but was " + beginIndex);
+      throw new IllegalArgumentException("endIndex must be smaller than or equal to " + nameCount + " but was " + endIndex);
     }
   }
 
@@ -212,14 +212,14 @@ abstract class NonEmptyPath extends ElementPath {
           }
         } else {
           if (nameElementsSize == 1) {
-          // path is just "/.."
-          normalized = this.handleSingleDotDot(normalized);
-          modified = normalized != nameElements;
-          break;
-        } else {
-          normalized = this.handleDotDotNormalizationNotYetModified(nameElements, nameElementsSize, i);
-          modified = normalized != nameElements;
-        }
+            // path is just "/.."
+            normalized = this.handleSingleDotDot(normalized);
+            modified = normalized != nameElements;
+            break;
+          } else {
+            normalized = this.handleDotDotNormalizationNotYetModified(nameElements, nameElementsSize, i);
+            modified = normalized != nameElements;
+          }
         }
         continue;
       }
