@@ -143,5 +143,4 @@ final class MemoryDirectoryStream implements DirectoryStream<Path> {
 
   }
 
-
 }
