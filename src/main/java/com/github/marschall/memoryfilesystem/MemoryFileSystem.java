@@ -344,6 +344,7 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
           MemoryFile file = this.createEntryOnAccess(path, newAttributes, directory, elementPath, creationContext);
           return new GetEntryResult(file);
         } else {
+          directory.checkAccess(AccessMode.EXECUTE);
           MemoryEntry storedEntry = directory.getEntry(key);
           if (storedEntry == null) {
             boolean isCreate = options.contains(CREATE);

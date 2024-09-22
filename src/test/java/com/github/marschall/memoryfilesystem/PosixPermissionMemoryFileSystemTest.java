@@ -352,4 +352,18 @@ class PosixPermissionMemoryFileSystemTest {
     }
   }
 
+  @Test
+  void issue159() throws IOException {
+    FileSystem fileSystem = this.extension.getFileSystem();
+    Path path = fileSystem.getPath("/", "sub1", "sub2", "test.txt");
+    Path parent = path.getParent();
+    FileUtility.createAndSetContents(path, "Hello World");
+    Set<PosixFilePermission> previousPermissions = Files.getPosixFilePermissions(parent);
+    EnumSet<PosixFilePermission> noExecute = EnumSet.copyOf(previousPermissions);
+    noExecute.removeAll(EnumSet.of(PosixFilePermission.GROUP_EXECUTE, PosixFilePermission.OTHERS_EXECUTE, PosixFilePermission.OWNER_EXECUTE));
+    Files.setPosixFilePermissions(parent, noExecute); // removes execute permission
+    assertEquals(noExecute, Files.getPosixFilePermissions(parent));
+    assertThrows(AccessDeniedException.class, () -> Files.readAllBytes(path));
+  }
+
 }
