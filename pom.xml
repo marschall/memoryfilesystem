@@ -143,6 +143,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-jul</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.openjdk.jol</groupId>
       <artifactId>jol-core</artifactId>
       <version>0.17</version>
@@ -448,6 +453,8 @@
               <argLine>--add-opens com.github.marschall.memoryfilesystem/com.github.marschall.memoryfilesystem=ALL-UNNAMED</argLine>
               <systemPropertyVariables>
                 <java.protocol.handler.pkgs>com.github.marschall.memoryfilesystem</java.protocol.handler.pkgs>
+                <java.util.logging.manager>org.apache.logging.log4j.jul.LogManager</java.util.logging.manager>
+                <jdk.attach.allowAttachSelf/>
               </systemPropertyVariables>
             </configuration>
           </plugin>
