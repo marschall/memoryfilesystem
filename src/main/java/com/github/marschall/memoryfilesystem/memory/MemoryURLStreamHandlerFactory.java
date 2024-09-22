@@ -14,6 +14,9 @@ import com.github.marschall.memoryfilesystem.MemoryFileSystemProvider;
  */
 public final class MemoryURLStreamHandlerFactory implements URLStreamHandlerFactory {
 
+  /**
+   * Default constructor called by the JDK.
+   */
   public MemoryURLStreamHandlerFactory() {
     super();
   }
@@ -21,8 +24,8 @@ public final class MemoryURLStreamHandlerFactory implements URLStreamHandlerFact
   @Override
   public URLStreamHandler createURLStreamHandler(String protocol) {
     return MemoryFileSystemProvider.SCHEME.equals(protocol)
-        ? new Handler()
-        : null;
+            ? new Handler()
+                    : null;
   }
 
 }
