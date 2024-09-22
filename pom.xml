@@ -287,41 +287,41 @@
       <plugins>
         <plugin>
           <artifactId>maven-clean-plugin</artifactId>
-          <version>3.3.2</version>
+          <version>3.4.0</version>
         </plugin>
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.12.1</version>
+          <version>3.13.0</version>
         </plugin>
         <plugin>
           <artifactId>maven-deploy-plugin</artifactId>
-          <version>3.1.1</version>
+          <version>3.1.3</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>flatten-maven-plugin</artifactId>
-          <version>1.5.0</version>
+          <version>1.6.0</version>
         </plugin>
         <plugin>
           <artifactId>maven-gpg-plugin</artifactId>
-          <version>3.1.0</version>
+          <version>3.2.6</version>
         </plugin>
         <plugin>
           <artifactId>maven-install-plugin</artifactId>
-          <version>3.1.1</version>
+          <version>3.1.3</version>
         </plugin>
         <plugin>
           <groupId>io.smallrye</groupId>
           <artifactId>jandex-maven-plugin</artifactId>
-          <version>3.1.6</version>
+          <version>3.2.2</version>
         </plugin>
         <plugin>
           <artifactId>maven-jar-plugin</artifactId>
-          <version>3.3.0</version>
+          <version>3.4.2</version>
         </plugin>
         <plugin>
           <artifactId>maven-javadoc-plugin</artifactId>
-          <version>3.6.3</version>
+          <version>3.10.0</version>
         </plugin>
         <plugin>
           <groupId>com.github.ferstl</groupId>
@@ -331,11 +331,11 @@
         <plugin>
           <groupId>codes.rafael.modulemaker</groupId>
           <artifactId>modulemaker-maven-plugin</artifactId>
-          <version>1.9</version>
+          <version>1.11</version>
         </plugin>
         <plugin>
           <artifactId>maven-release-plugin</artifactId>
-          <version>3.0.1</version>
+          <version>3.1.1</version>
         </plugin>
         <plugin>
           <artifactId>maven-resources-plugin</artifactId>
@@ -343,19 +343,19 @@
         </plugin>
         <plugin>
           <artifactId>maven-scm-plugin</artifactId>
-          <version>2.0.1</version>
+          <version>2.1.0</version>
         </plugin>
         <plugin>
           <artifactId>maven-site-plugin</artifactId>
-          <version>3.12.1</version>
+          <version>3.20.0</version>
         </plugin>
         <plugin>
           <artifactId>maven-source-plugin</artifactId>
-          <version>3.3.0</version>
+          <version>3.3.1</version>
         </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>3.2.3</version>
+          <version>3.5.0</version>
         </plugin>
       </plugins>
     </pluginManagement>
