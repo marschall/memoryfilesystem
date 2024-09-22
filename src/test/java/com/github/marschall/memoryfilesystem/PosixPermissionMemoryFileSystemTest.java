@@ -59,7 +59,25 @@ class PosixPermissionMemoryFileSystemTest {
     Files.setAttribute(directory, "posix:permissions", asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_READ, OTHERS_WRITE));
     UserPrincipal user = fileSystem.getUserPrincipalLookupService().lookupPrincipalByName(PosixPermissionFileSystemExtension.OTHER);
     CurrentUser.useDuring(user, () -> {
-      assertThrows(AccessDeniedException.class, () ->  Files.newDirectoryStream(directory), "should not be allowd to open a directory stram");
+      assertThrows(AccessDeniedException.class, () ->  Files.newDirectoryStream(directory), "should not be allowed to open a directory stream");
+    });
+
+  }
+
+  @Test
+  void symlinkRead() throws IOException {
+    FileSystem fileSystem = this.extension.getFileSystem();
+    final Path directory = fileSystem.getPath("directory");
+    Path link = directory.resolve("link");
+    Path target = directory.resolve("target");
+    Files.createDirectory(directory);
+    Files.createFile(target);
+    Files.createSymbolicLink(link, target);
+
+    Files.setAttribute(directory, "posix:permissions", asSet(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, OTHERS_READ, OTHERS_WRITE));
+    UserPrincipal user = fileSystem.getUserPrincipalLookupService().lookupPrincipalByName(PosixPermissionFileSystemExtension.OTHER);
+    CurrentUser.useDuring(user, () -> {
+      assertThrows(AccessDeniedException.class, () ->  Files.readSymbolicLink(link), "should not be allowed to read a symbolic link");
     });
 
   }
@@ -84,8 +102,6 @@ class PosixPermissionMemoryFileSystemTest {
     this.checkPermission(WRITE, OTHERS_WRITE, PosixPermissionFileSystemExtension.OTHER);
     this.checkPermission(EXECUTE, OTHERS_EXECUTE, PosixPermissionFileSystemExtension.OTHER);
   }
-
-
 
   /**
    * Only the file owner can chmod
@@ -167,7 +183,6 @@ class PosixPermissionMemoryFileSystemTest {
     assertEquals(0b100000000, MemoryEntryAttributes.toMask(asSet(OTHERS_EXECUTE)));
     assertEquals(0b100000001, MemoryEntryAttributes.toMask(asSet(OWNER_READ, OTHERS_EXECUTE)));
   }
-
 
   private void checkPermission(AccessMode mode, PosixFilePermission permission, String userName) throws IOException {
     FileSystem fileSystem = this.extension.getFileSystem();
