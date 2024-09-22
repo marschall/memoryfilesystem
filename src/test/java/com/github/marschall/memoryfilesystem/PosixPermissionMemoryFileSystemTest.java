@@ -360,7 +360,7 @@ class PosixPermissionMemoryFileSystemTest {
     FileUtility.createAndSetContents(path, "Hello World");
     Set<PosixFilePermission> previousPermissions = Files.getPosixFilePermissions(parent);
     EnumSet<PosixFilePermission> noExecute = EnumSet.copyOf(previousPermissions);
-    noExecute.removeAll(EnumSet.of(PosixFilePermission.GROUP_EXECUTE, PosixFilePermission.OTHERS_EXECUTE, PosixFilePermission.OWNER_EXECUTE));
+    noExecute.removeAll(EnumSet.of(GROUP_EXECUTE, OTHERS_EXECUTE, OWNER_EXECUTE));
     Files.setPosixFilePermissions(parent, noExecute); // removes execute permission
     assertEquals(noExecute, Files.getPosixFilePermissions(parent));
     assertThrows(AccessDeniedException.class, () -> Files.readAllBytes(path));
