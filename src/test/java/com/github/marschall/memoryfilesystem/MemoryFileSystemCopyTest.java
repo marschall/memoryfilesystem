@@ -11,12 +11,14 @@ import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileAlreadyExistsException;
@@ -25,6 +27,7 @@ import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
@@ -363,6 +366,7 @@ class MemoryFileSystemCopyTest {
     assertThrows(FileSystemException.class, () -> Files.move(dir, sub));
   }
 
+  @Test
   void moveRoot() {
     Path root = this.extension.getFileSystem().getPath("/");
     Path path = this.extension.getFileSystem().getPath("/a");
@@ -459,6 +463,28 @@ class MemoryFileSystemCopyTest {
       }
     }
     assertEquals(Collections.singletonList(ac), aKids);
+  }
+
+  @Test
+  void moveFileInUse() throws IOException {
+    FileSystem fileSystem = this.extension.getFileSystem();
+
+    // move /a/c to /b/c
+
+    Path a = fileSystem.getPath("/a");
+    Files.createDirectory(a);
+    Path ab = fileSystem.getPath("/a/b");
+    Files.createFile(ab);
+    Path ac = fileSystem.getPath("/a/c");
+
+    assertThat(a, exists());
+    assertThat(ab, exists());
+    assertThat(ac, not(exists()));
+
+    try (FileChannel ignored = FileChannel.open(ab, StandardOpenOption.WRITE)) {
+      FileSystemException e = assertThrows(FileSystemException.class, () -> Files.move(ab, ac));
+      assertThat(e.getMessage(), is("/a/b: Device or resource busy."));
+    }
   }
 
   @Test
