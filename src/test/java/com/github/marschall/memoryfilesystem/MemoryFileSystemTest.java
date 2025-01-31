@@ -20,6 +20,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
@@ -888,8 +889,10 @@ class MemoryFileSystemTest {
     FileSystem fileSystem = this.extension.getFileSystem();
     Path path = fileSystem.getPath("test");
     try (SeekableByteChannel channel = Files.newByteChannel(path, CREATE_NEW, WRITE)) {
-      assertThrows(FileSystemException.class , () -> Files.delete(path), "you shound't be able to delete a file wile it's open");
-      assertThrows(FileSystemException.class , () -> Files.deleteIfExists(path), "you shound't be able to delete a file wile it's open");
+      FileSystemException deleteException = assertThrows(FileSystemException.class , () -> Files.delete(path), "you shouldn't be able to delete a file while it's open");
+      assertThat(deleteException.getMessage(), is(path + ": Device or resource busy."));
+      FileSystemException deleteIfExistsException = assertThrows(FileSystemException.class , () -> Files.deleteIfExists(path), "you shouldn't be able to delete a file while it's open");
+      assertThat(deleteIfExistsException.getMessage(), is(path + ": Device or resource busy."));
     }
   }
 
