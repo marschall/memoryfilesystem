@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.nio.channels.NonReadableChannelException;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.DirectoryStream;
@@ -34,6 +36,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -363,6 +366,43 @@ class FileSystemCompatibilityTest {
     FileSystem fileSystem = this.getFileSystem(useDefault);
     Path target = fileSystem.getPath("target");
     assertThrows(IllegalArgumentException.class, () -> target.subpath(0, 0));
+  }
+
+  @CompatibilityTest
+  void moveWhileOpen(boolean useDefault) throws IOException {
+    FileSystem fileSystem = this.getFileSystem(useDefault);
+    Path folder = fileSystem.getPath("target");
+    if (!useDefault) {
+      Files.createDirectory(folder);
+    }
+    Path originalFileName = Files.createTempFile(folder, "locked", ".txt");
+    Path newFileName = folder.resolve("new_name.txt");
+    try (FileChannel channel = FileChannel.open(originalFileName, StandardOpenOption.WRITE)) {
+      Files.move(originalFileName, newFileName);
+    } finally {
+      Files.deleteIfExists(originalFileName);
+      Files.deleteIfExists(newFileName);
+    }
+  }
+
+  @CompatibilityTest
+  void moveWhileLocked(boolean useDefault) throws IOException {
+    FileSystem fileSystem = this.getFileSystem(useDefault);
+    Path folder = fileSystem.getPath("target");
+    if (!useDefault) {
+      Files.createDirectory(folder);
+    }
+    Path originalFileName = Files.createTempFile(folder, "locked", ".txt");
+    Path newFileName = folder.resolve("new_name.txt");
+    try (FileChannel channel = FileChannel.open(originalFileName, StandardOpenOption.WRITE)) {
+      try (FileLock lock = channel.tryLock()) {
+        assertNotNull(lock);
+        Files.move(originalFileName, newFileName);
+      }
+    } finally {
+      Files.deleteIfExists(originalFileName);
+      Files.deleteIfExists(newFileName);
+    }
   }
 
 }
