@@ -271,7 +271,7 @@ Guidelines for Testable File Code
 
 The following guidelines are designed to help you write code that can easily be tested using this project. In general code using the old `File` API has to moved over to the new Java 7 API.
 
-* Inject a `Path` or `FileSystem` instance into the object doing the file handling. This allows you to pass in an instance of a memory file system when testing and an instance of the default file system when running in production. You can always the the file system of a path by using `Path#getFileSystem()`.
+* Inject a `Path` or `FileSystem` instance into the object doing the file handling. This allows you to pass in an instance of a memory file system when testing and an instance of the default file system when running in production. You can always get the file system of a path by using `Path#getFileSystem()`.
 * Don't use `File`, `FileInputStream`, `FileOutputStream`, `RandomAccessFile` and `Path#toFile()`. These classes are hard wired to the default file system.
   * Use `Path` instead of `File`.
   * Use `SeekableByteChannel` instead of `RandomAccessFile`. Use `Files#newByteChannel` to create an instance of `SeekableByteChannel`.
