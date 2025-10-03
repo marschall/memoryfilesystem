@@ -175,6 +175,7 @@ class MacOsMemoryFileSystemTest {
           assertTrue(regexMatcher.matches(path));
           assertTrue(globMatcher.matches(path));
           found = true;
+          break;
         }
       }
       assertTrue(found);

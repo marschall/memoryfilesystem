@@ -1,5 +1,6 @@
 package com.github.marschall.memoryfilesystem;
 
+import static com.github.marschall.memoryfilesystem.DirectoryHasEntry.hasEntry;
 import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isAbsolute;
 import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isRelative;
@@ -360,19 +361,37 @@ class WindowsMemoryFileSystemTest {
     Path originalPath = fileSystem.getPath("C:\\File0.txt");
     Files.createFile(originalPath);
     assertThat(fileSystem.getPath("C:\\file0.txt"), exists());
-    boolean found = false;
-    try (DirectoryStream<Path> stream = Files.newDirectoryStream(originalPath.getParent())) {
-      for (Path each : stream) {
-        if ("File0.txt".equals(each.getFileName().toString())) {
-          found = true;
-          break;
-        }
-      }
-    }
-    assertTrue(found);
+    assertThat(originalPath.getParent(), hasEntry("File0.txt"));
   }
 
+  @Test
+  void preserveCaseInCopy() throws IOException {
+    FileSystem fileSystem = this.extension.getFileSystem();
+    Path originalPath = fileSystem.getPath("C:\\File0.txt");
+    Files.createFile(originalPath);
+    String copyName = "filE1.txt";
+    Files.copy(originalPath, originalPath.resolveSibling(copyName));
 
+    assertThat(fileSystem.getPath("C:\\file1.txt"), exists());
+    assertThat(fileSystem.getPath("C:\\File1.txt"), exists());
+
+    assertThat(originalPath.getParent(), hasEntry(copyName));
+  }
+
+  @Test
+  void preserveCaseInMove() throws IOException {
+    FileSystem fileSystem = this.extension.getFileSystem();
+    Path originalPath = fileSystem.getPath("C:\\File0.txt");
+    Files.createFile(originalPath);
+    String moveName = "filE1.txt";
+    Files.move(originalPath, originalPath.resolveSibling(moveName));
+
+    assertThat(fileSystem.getPath("C:\\file1.txt"), exists());
+    assertThat(fileSystem.getPath("C:\\File1.txt"), exists());
+
+    assertThat(originalPath.getParent(), hasEntry(moveName));
+    assertThat(originalPath.getParent(), not(hasEntry("File0.txt")));
+  }
 
   @Test
   void testPathMatherGlob() {

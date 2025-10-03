@@ -1471,14 +1471,14 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
       targetParent.removeEntry(targetElementName);
     }
 
+    String newOriginalName = targetContext.path.getMemoryFileSystem().storeTransformer.transform(targetContext.elementName);
     if (copyContext.operation.isMove()) {
       sourceParent.removeEntry(sourceElementName);
       targetParent.addEntry(targetElementName, sourceEntry, copyContext.target.path);
-      String newOriginalName = targetContext.path.getMemoryFileSystem().storeTransformer.transform(targetContext.elementName);
       sourceEntry.setOriginalName(newOriginalName);
     } else {
       MemoryEntry toCopy = getCopySource(copyContext, sourceEntry);
-      MemoryEntry copy = targetContext.path.getMemoryFileSystem().copyEntry(targetContext.path, toCopy, targetElementName);
+      MemoryEntry copy = targetContext.path.getMemoryFileSystem().copyEntry(targetContext.path, toCopy, newOriginalName);
       if (copyContext.copyAttributes) {
         copy.initializeAttributes(toCopy);
       }
