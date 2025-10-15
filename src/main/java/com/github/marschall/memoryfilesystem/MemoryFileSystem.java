@@ -125,6 +125,8 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
 
   private final boolean supportFileChannelOnDirectory;
 
+  private static final String DEVICE_OR_RESOURCE_BUSY_MESSAGE = "Device or resource busy.";
+
   static {
     Set<String> unsupported = new HashSet<>(3);
     unsupported.add("lastAccessTime");
@@ -1174,7 +1176,7 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
           if (child instanceof MemoryFile) {
             MemoryFile file = (MemoryFile) child;
             if (file.openCount() > 0) {
-              throw new FileSystemException(abstractPath.toString(), null, "file still open");
+              throwResourceBusyException(abstractPath);
             }
             file.markForDeletion();
           }
@@ -1208,7 +1210,7 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
             if (child instanceof MemoryFile) {
               MemoryFile file = (MemoryFile) child;
               if (file.openCount() > 0) {
-                throw new FileSystemException(abstractPath.toString(), null, "file still open");
+                throwResourceBusyException(abstractPath);
               }
               file.markForDeletion();
             }
@@ -1473,6 +1475,12 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
 
     String newOriginalName = targetContext.path.getMemoryFileSystem().storeTransformer.transform(targetContext.elementName);
     if (copyContext.operation.isMove()) {
+      if (sourceEntry instanceof MemoryFile) {
+        MemoryFile sourceFile = (MemoryFile) sourceEntry;
+        if (sourceFile.openCount() > 0) {
+          throwResourceBusyException(copyContext.source.path);
+        }
+      }
       sourceParent.removeEntry(sourceElementName);
       targetParent.addEntry(targetElementName, sourceEntry, copyContext.target.path);
       sourceEntry.setOriginalName(newOriginalName);
@@ -1503,6 +1511,10 @@ class MemoryFileSystem extends FileSystem implements FileSystemContext {
       toCopy = sourceEntry;
     }
     return toCopy;
+  }
+
+  private static void throwResourceBusyException(AbstractPath abstractPath) throws FileSystemException {
+    throw new FileSystemException(abstractPath.toString(), null, DEVICE_OR_RESOURCE_BUSY_MESSAGE);
   }
 
   @Override
