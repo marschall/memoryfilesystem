@@ -67,7 +67,9 @@ final class BlockInputStream extends InputStream {
   @Override
   public long skip(long n) throws IOException {
     this.checker.check(this.path);
-    long fileSize = this.memoryContents.size();
+    if (n <= 0L) {
+      return 0L;
+    }
     long skipped = 0L;
     boolean success = false;
     while (!success) {
@@ -75,12 +77,8 @@ final class BlockInputStream extends InputStream {
       // do not skip more than MAX_SKIP_SIZE
       // this intentionally introduces a subtle bug in code that doesn't check
       // for the return value of #skip
-      skipped = min(min(n, fileSize - positionBefore), MAX_SKIP_SIZE);
-      if (skipped < 0L) {
-        // file size changed due to concurrent access
-        fileSize = this.memoryContents.size();
-        continue;
-      }
+      long remaining = Math.max(0L, this.memoryContents.size() - positionBefore);
+      skipped = min(min(n, remaining), MAX_SKIP_SIZE);
       success = POSITION_UPDATER.compareAndSet(this, positionBefore, positionBefore + skipped);
     }
     return skipped;
@@ -89,7 +87,7 @@ final class BlockInputStream extends InputStream {
   @Override
   public int available() throws IOException {
     this.checker.check(this.path);
-    long available = this.memoryContents.size() - POSITION_UPDATER.get(this);
+    long available = Math.max(0L, this.memoryContents.size() - POSITION_UPDATER.get(this));
     if (available > Integer.MAX_VALUE) {
       return Integer.MAX_VALUE;
     } else if (available > 1L) {
