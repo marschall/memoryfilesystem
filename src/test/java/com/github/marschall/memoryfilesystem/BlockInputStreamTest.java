@@ -21,6 +21,37 @@ class BlockInputStreamTest {
   final FileSystemExtension extension = new FileSystemExtension();
 
   @Test
+  void skipNonPositiveCount() throws IOException {
+    Path path = this.extension.getFileSystem().getPath("file.txt");
+    Files.write(path, new byte[]{1, 2, 3});
+
+    try (InputStream inputStream = Files.newInputStream(path)) {
+      assertEquals(0L, inputStream.skip(-1L));
+      assertEquals(0L, inputStream.skip(Long.MIN_VALUE));
+      assertEquals(0L, inputStream.skip(0L));
+      assertEquals(1, inputStream.read());
+    }
+  }
+
+  @Test
+  void skipAfterTruncation() throws IOException {
+    Path path = this.extension.getFileSystem().getPath("file.txt");
+    Files.write(path, new byte[]{1, 2, 3});
+
+    try (InputStream inputStream = Files.newInputStream(path)) {
+      assertEquals(3L, inputStream.skip(3L));
+      Files.write(path, new byte[0]);
+
+      assertEquals(0, inputStream.available());
+      assertEquals(0L, inputStream.skip(1L));
+      assertEquals(-1, inputStream.read());
+
+      Files.write(path, new byte[]{1, 2, 3, 4});
+      assertEquals(4, inputStream.read());
+    }
+  }
+
+  @Test
   void skipMoreThanAvailable() throws IOException {
     FileSystem fileSystem = this.extension.getFileSystem();
 
