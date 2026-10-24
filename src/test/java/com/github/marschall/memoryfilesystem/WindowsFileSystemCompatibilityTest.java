@@ -1,16 +1,12 @@
 package com.github.marschall.memoryfilesystem;
 
-import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
-import static com.github.marschall.memoryfilesystem.IsSameFileMatcher.isSameFile;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static java.util.Arrays.asList;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.not;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -151,7 +147,7 @@ class WindowsFileSystemCompatibilityTest {
       assertEquals("tesT", testFile.toRealPath().getFileName().toString());
 
       Path testFile2 = fileSystem.getPath("Test");
-      assertThat(testFile2, exists());
+      assertThat(testFile2).exists();
 
       assertEquals("tesT", testFile2.toRealPath().getFileName().toString());
 
@@ -167,13 +163,13 @@ class WindowsFileSystemCompatibilityTest {
     Map<String, Object> attributes = Files.readAttributes(root, "dos:*");
     Set<String> keys = attributes.keySet();
 
-    assertThat(keys, hasItem("hidden"));
-    assertThat(keys, hasItem("archive"));
-    assertThat(keys, hasItem("system"));
+    assertThat(keys).contains("hidden");
+    assertThat(keys).contains("archive");
+    assertThat(keys).contains("system");
 
-    assertThat(keys, not(hasItem("isHidden")));
-    assertThat(keys, not(hasItem("isArchive")));
-    assertThat(keys, not(hasItem("isSystem")));
+    assertThat(keys).doesNotContain("isHidden");
+    assertThat(keys).doesNotContain("isArchive");
+    assertThat(keys).doesNotContain("isSystem");
   }
 
   @CompatibilityTest
@@ -193,11 +189,11 @@ class WindowsFileSystemCompatibilityTest {
       // REVIEW ??
       assertEquals(2, createdFile.toRealPath().getFileName().toString().length());
 
-      assertThat(aPath, not(exists()));
-      assertThat(nPath, exists());
+      assertThat(aPath).doesNotExist();
+      assertThat(nPath).exists();
       //assertTrue(Files.isSameFile(aPath, nPath));
       //assertTrue(Files.isSameFile(nPath, aPath));
-      assertThat(aPath, not(equalTo(nPath)));
+      assertNotEquals(aPath, nPath);
     } finally {
       if (createdFile != null) {
         Files.delete(createdFile);
@@ -227,17 +223,17 @@ class WindowsFileSystemCompatibilityTest {
       assertEquals(1, nfcFile.toAbsolutePath().getFileName().toString().length());
       assertEquals(1, nfcFile.toRealPath().getFileName().toString().length());
 
-      assertThat(nfcPath, exists());
-      assertThat(nfdPath, not(exists()));
+      assertThat(nfcPath).exists();
+      assertThat(nfdPath).doesNotExist();
 
       nfdFile = Files.createFile(nfdPath);
       assertEquals(2, nfdFile.getFileName().toString().length());
       assertEquals(2, nfdFile.toAbsolutePath().getFileName().toString().length());
       assertEquals(2, nfdFile.toRealPath().getFileName().toString().length());
 
-      assertThat(nfcPath, not(equalTo(nfdPath)));
-      assertThat(nfcPath, not(isSameFile(nfdPath)));
-      assertThat(nfdPath, not(isSameFile(nfcPath)));
+      assertNotEquals(nfcPath, nfdPath);
+      AdditionalPathAssert.assertThat(nfcPath).isNotSameFileAs(nfdPath);
+      AdditionalPathAssert.assertThat(nfdPath).isNotSameFileAs(nfcPath);
     } finally {
       if (nfcFile != null) {
         Files.delete(nfcFile);

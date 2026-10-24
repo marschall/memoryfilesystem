@@ -1,12 +1,8 @@
 package com.github.marschall.memoryfilesystem;
 
-import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
-import static com.github.marschall.memoryfilesystem.IsSameFileMatcher.isSameFile;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.not;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -90,11 +86,11 @@ class MacOsMemoryFileSystemTest {
       assertEquals(1, createdFile.toAbsolutePath().getFileName().toString().length());
       assertEquals(1, createdFile.toRealPath().getFileName().toString().length());
 
-      assertThat(aPath, exists());
-      assertThat(nPath, exists());
-      assertThat(aPath, isSameFile(nPath));
-      assertThat(nPath, isSameFile(aPath));
-      assertThat(aPath, equalTo(nPath));
+      assertThat(aPath).exists();
+      assertThat(nPath).exists();
+      AdditionalPathAssert.assertThat(aPath).isSameFileAs(nPath);
+      AdditionalPathAssert.assertThat(nPath).isSameFileAs(aPath);
+      assertThat(aPath).isEqualTo(nPath);
     } finally {
       if (createdFile != null) {
         Files.delete(createdFile);
@@ -107,13 +103,13 @@ class MacOsMemoryFileSystemTest {
     FileSystem fileSystem = this.getFileSystem(useDefault);
     Path aLower = fileSystem.getPath("a");
     Path aUpper = fileSystem.getPath("A");
-    assertThat(aLower, not(equalTo(aUpper)));
+    assertThat(aLower).isNotEqualTo(aUpper);
     Path createdFile = null;
     try {
       createdFile = Files.createFile(aLower);
-      assertThat(aLower, exists());
-      assertThat(aUpper, exists());
-      assertThat(aLower, isSameFile(aUpper));
+      assertThat(aLower).exists();
+      assertThat(aUpper).exists();
+      AdditionalPathAssert.assertThat(aLower).isSameFileAs(aUpper);
     } finally {
       if (createdFile != null) {
         Files.delete(createdFile);
@@ -156,7 +152,7 @@ class MacOsMemoryFileSystemTest {
     Path aPath = fileSystem.getPath("/" + aUmlaut);
     Path nPath = fileSystem.getPath("/" + normalized);
     assertEquals(1, aPath.getName(0).toString().length());
-    assertThat(aPath, equalTo(nPath));
+    assertThat(aPath).isEqualTo(nPath);
   }
 
   @CompatibilityTest

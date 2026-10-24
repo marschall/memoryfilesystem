@@ -1,9 +1,6 @@
 package com.github.marschall.memoryfilesystem;
 
-import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isAbsolute;
-import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isRelative;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.everyItem;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -45,7 +42,7 @@ class MemoryDirectoryStreamTest {
     Files.createDirectory(fileSystem.getPath("d2"));
 
     try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(fileSystem.getPath("/"))) {
-      assertThat(directoryStream, everyItem(isAbsolute()));
+      directoryStream.forEach(entry -> assertThat(entry).isAbsolute());
     }
 
     try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(fileSystem.getPath("/"))) {
@@ -103,7 +100,7 @@ class MemoryDirectoryStreamTest {
     FileSystem fileSystem = this.extension.getFileSystem();
 
     Path parent = Files.createDirectory(fileSystem.getPath("src"));
-    assertThat(parent, isRelative());
+    assertThat(parent).isRelative();
 
     Files.createFile(parent.resolve("a.java"));
     Files.createDirectory(parent.resolve("d1"));
@@ -111,7 +108,7 @@ class MemoryDirectoryStreamTest {
     try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(parent)) {
       List<String> actual = new ArrayList<>(2);
       for (Path each : directoryStream) {
-        assertThat(each, isRelative());
+        assertThat(each).isRelative();
         actual.add(each.toString());
       }
       List<String> expected = Arrays.asList("src/a.java", "src/d1");

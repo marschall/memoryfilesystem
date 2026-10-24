@@ -1,17 +1,10 @@
 package com.github.marschall.memoryfilesystem;
 
-import static com.github.marschall.memoryfilesystem.EmptyDirectory.emptyDirectory;
-import static com.github.marschall.memoryfilesystem.FileContentsMatcher.hasContents;
-import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static com.github.marschall.memoryfilesystem.FileUtility.setContents;
-import static com.github.marschall.memoryfilesystem.IsSameFileMatcher.isSameFile;
-import static com.github.marschall.memoryfilesystem.IsSymbolicLinkMatcher.isSymbolicLink;
 import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.not;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -57,8 +50,8 @@ class MemoryFileSystemCopyTest {
     Files.createSymbolicLink(link, file);
     Files.copy(link, copy, NOFOLLOW_LINKS);
 
-    assertThat(copy, exists());
-    assertThat(copy, isSymbolicLink());
+    assertThat(copy).exists();
+    assertThat(copy).isSymbolicLink();
 
     assertEquals("/file", copy.toRealPath().toString());
   }
@@ -78,8 +71,8 @@ class MemoryFileSystemCopyTest {
     Files.createSymbolicLink(link, file);
     Files.copy(link, copy);
 
-    assertThat(copy, exists());
-    assertThat(copy, not(isSymbolicLink()));
+    assertThat(copy).exists();
+    assertThat(copy).isRegularFile();
   }
 
   @Test
@@ -99,8 +92,8 @@ class MemoryFileSystemCopyTest {
 
     Files.copy(file2, target, REPLACE_EXISTING);
 
-    assertThat(target, exists());
-    assertThat(target, not(isSymbolicLink()));
+    assertThat(target).exists();
+    assertThat(target).isRegularFile();
 
     assertEquals("/target", target.toRealPath().toString());
   }
@@ -122,8 +115,8 @@ class MemoryFileSystemCopyTest {
 
     Files.copy(link, target, REPLACE_EXISTING, NOFOLLOW_LINKS);
 
-    assertThat(target, exists(NOFOLLOW_LINKS));
-    assertThat(target, isSymbolicLink());
+    assertThat(target).existsNoFollowLinks();
+    assertThat(target).isSymbolicLink();
 
     assertEquals("/file1", target.toRealPath().toString());
   }
@@ -136,16 +129,16 @@ class MemoryFileSystemCopyTest {
     Path b = fileSystem.getPath("./b/../a");
 
     FileUtility.createAndSetContents(a, "aaa");
-    assertThat(a, exists());
-    assertThat(b, exists());
-    assertThat(a, isSameFile(b));
+    assertThat(a).exists();
+    assertThat(b).exists();
+    AdditionalPathAssert.assertThat(a).isSameFileAs(b);
 
     Files.copy(a, b);
-    assertThat(a, exists());
-    assertThat(b, exists());
+    assertThat(a).exists();
+    assertThat(b).exists();
 
-    assertThat(a, hasContents("aaa"));
-    assertThat(b, hasContents("aaa"));
+    assertThat(a).hasContent("aaa");
+    assertThat(b).hasContent("aaa");
   }
 
   @Test
@@ -227,8 +220,8 @@ class MemoryFileSystemCopyTest {
     assertEquals(targetTime, Files.getLastModifiedTime(target));
 
     Files.copy(source, target, REPLACE_EXISTING, COPY_ATTRIBUTES);
-    assertThat(source, exists());
-    assertThat(target, exists());
+    assertThat(source).exists();
+    assertThat(target).exists();
 
     assertEquals(sourceTime, Files.getLastModifiedTime(source));
     assertEquals(sourceTime, Files.getLastModifiedTime(target));
@@ -271,20 +264,20 @@ class MemoryFileSystemCopyTest {
     Files.createDirectories(b.toAbsolutePath().getParent());
 
     FileUtility.createAndSetContents(a, "aaa");
-    assertThat(a, exists());
-    assertThat(b, not(exists()));
+    assertThat(a).exists();
+    assertThat(b).doesNotExist();
 
     Files.copy(a, b);
-    assertThat(a, exists());
-    assertThat(b, exists());
+    assertThat(a).exists();
+    assertThat(b).exists();
 
-    assertThat(a, hasContents("aaa"));
-    assertThat(b, hasContents("aaa"));
+    assertThat(a).hasContent("aaa");
+    assertThat(b).hasContent("aaa");
 
     setContents(a, "a1");
 
-    assertThat(a, hasContents("a1"));
-    assertThat(b, hasContents("aaa"));
+    assertThat(a).hasContent("a1");
+    assertThat(b).hasContent("aaa");
   }
 
   @Test
@@ -295,20 +288,20 @@ class MemoryFileSystemCopyTest {
       Path b = target.getPath("b");
 
       FileUtility.createAndSetContents(a, "aaa");
-      assertThat(a, exists());
-      assertThat(b, not(exists()));
+      assertThat(a).exists();
+      assertThat(b).doesNotExist();
 
       Files.copy(a, b);
-      assertThat(a, exists());
-      assertThat(b, exists());
+      assertThat(a).exists();
+      assertThat(b).exists();
 
-      assertThat(a, hasContents("aaa"));
-      assertThat(b, hasContents("aaa"));
+      assertThat(a).hasContent("aaa");
+      assertThat(b).hasContent("aaa");
 
       setContents(a, "a1");
 
-      assertThat(a, hasContents("a1"));
-      assertThat(b, hasContents("aaa"));
+      assertThat(a).hasContent("a1");
+      assertThat(b).hasContent("aaa");
     }
   }
 
@@ -320,20 +313,20 @@ class MemoryFileSystemCopyTest {
 
     FileUtility.createAndSetContents(a, "aaa");
     FileUtility.createAndSetContents(b, "bbb");
-    assertThat(a, exists());
-    assertThat(b, exists());
+    assertThat(a).exists();
+    assertThat(b).exists();
 
     Files.copy(a, b, StandardCopyOption.REPLACE_EXISTING);
-    assertThat(a, exists());
-    assertThat(b, exists());
+    assertThat(a).exists();
+    assertThat(b).exists();
 
-    assertThat(a, hasContents("aaa"));
-    assertThat(b, hasContents("aaa"));
+    assertThat(a).hasContent("aaa");
+    assertThat(b).hasContent("aaa");
 
     setContents(a, "a1");
 
-    assertThat(a, hasContents("a1"));
-    assertThat(b, hasContents("aaa"));
+    assertThat(a).hasContent("a1");
+    assertThat(b).hasContent("aaa");
   }
 
   @Test
@@ -346,8 +339,8 @@ class MemoryFileSystemCopyTest {
     Files.createFile(sourceDir.resolve("a_file")); // Key to triggering
 
     Files.copy(sourceDir, targetDir, COPY_ATTRIBUTES, REPLACE_EXISTING);
-    assertThat(targetDir, exists());
-    assertThat(targetDir, emptyDirectory());
+    assertThat(targetDir).exists();
+    assertThat(targetDir).isEmptyDirectory();
   }
 
   @Test
@@ -406,14 +399,14 @@ class MemoryFileSystemCopyTest {
     Files.createFile(ac);
     Path bc = fileSystem.getPath("/b/c");
 
-    assertThat(a, exists());
-    assertThat(b, exists());
-    assertThat(ac, exists());
-    assertThat(bc, not(exists()));
+    assertThat(a).exists();
+    assertThat(b).exists();
+    assertThat(ac).exists();
+    assertThat(bc).doesNotExist();
 
     Files.move(ac, bc);
-    assertThat(ac, not(exists()));
-    assertThat(bc, exists());
+    assertThat(ac).doesNotExist();
+    assertThat(bc).exists();
 
     List<Path> aKids = new ArrayList<>(1);
     try (DirectoryStream<Path> stream = Files.newDirectoryStream(a)) {
@@ -421,7 +414,7 @@ class MemoryFileSystemCopyTest {
         aKids.add(path);
       }
     }
-    assertThat(aKids, empty());
+    assertThat(aKids).isEmpty();
 
     List<Path> bKids = new ArrayList<>(1);
     try (DirectoryStream<Path> stream = Files.newDirectoryStream(b)) {
@@ -444,13 +437,13 @@ class MemoryFileSystemCopyTest {
     Files.createFile(ab);
     Path ac = fileSystem.getPath("/a/c");
 
-    assertThat(a, exists());
-    assertThat(ab, exists());
-    assertThat(ac, not(exists()));
+    assertThat(a).exists();
+    assertThat(ab).exists();
+    assertThat(ac).doesNotExist();
 
     Files.move(ab, ac);
-    assertThat(ab, not(exists()));
-    assertThat(ac, exists());
+    assertThat(ab).doesNotExist();
+    assertThat(ac).exists();
 
     List<Path> aKids = new ArrayList<>(1);
     try (DirectoryStream<Path> stream = Files.newDirectoryStream(a)) {
@@ -469,15 +462,15 @@ class MemoryFileSystemCopyTest {
     Path b = fileSystem.getPath("./b/../a");
 
     FileUtility.createAndSetContents(a, "aaa");
-    assertThat(a, exists());
-    assertThat(b, exists());
+    assertThat(a).exists();
+    assertThat(b).exists();
 
     Files.move(a, b);
-    assertThat(a, exists());
-    assertThat(b, exists());
+    assertThat(a).exists();
+    assertThat(b).exists();
 
-    assertThat(a, hasContents("aaa"));
-    assertThat(b, hasContents("aaa"));
+    assertThat(a).hasContent("aaa");
+    assertThat(b).hasContent("aaa");
   }
 
   @Test
@@ -533,8 +526,8 @@ class MemoryFileSystemCopyTest {
     assertEquals(targetTime, Files.getLastModifiedTime(target));
 
     Files.move(source, target, REPLACE_EXISTING);
-    assertThat(source, not(exists()));
-    assertThat(target, exists());
+    assertThat(source).doesNotExist();
+    assertThat(target).exists();
 
     assertEquals(sourceTime, Files.getLastModifiedTime(target));
   }
@@ -547,14 +540,14 @@ class MemoryFileSystemCopyTest {
       Path b = target.getPath("b");
 
       FileUtility.createAndSetContents(a, "aaa");
-      assertThat(a, exists());
-      assertThat(b, not(exists()));
+      assertThat(a).exists();
+      assertThat(b).doesNotExist();
 
       Files.move(a, b);
-      assertThat(a, not(exists()));
-      assertThat(b, exists());
+      assertThat(a).doesNotExist();
+      assertThat(b).exists();
 
-      assertThat(b, hasContents("aaa"));
+      assertThat(b).hasContent("aaa");
     }
   }
 
@@ -566,14 +559,14 @@ class MemoryFileSystemCopyTest {
     Files.createDirectories(b.toAbsolutePath().getParent());
 
     FileUtility.createAndSetContents(a, "aaa");
-    assertThat(a, exists());
-    assertThat(b, not(exists()));
+    assertThat(a).exists();
+    assertThat(b).doesNotExist();
 
     Files.move(a, b);
-    assertThat(a, not(exists()));
-    assertThat(b, exists());
+    assertThat(a).doesNotExist();
+    assertThat(b).exists();
 
-    assertThat(b, hasContents("aaa"));
+    assertThat(b).hasContent("aaa");
   }
 
   @Test
@@ -584,14 +577,14 @@ class MemoryFileSystemCopyTest {
 
     FileUtility.createAndSetContents(a, "aaa");
     FileUtility.createAndSetContents(b, "bbb");
-    assertThat(a, exists());
-    assertThat(b, exists());
+    assertThat(a).exists();
+    assertThat(b).exists();
 
     Files.move(a, b, StandardCopyOption.REPLACE_EXISTING);
-    assertThat(a, not(exists()));
-    assertThat(b, exists());
+    assertThat(a).doesNotExist();
+    assertThat(b).exists();
 
-    assertThat(b, hasContents("aaa"));
+    assertThat(b).hasContent("aaa");
   }
 
   @Test
@@ -604,8 +597,8 @@ class MemoryFileSystemCopyTest {
     Files.createFile(src.resolve("file"));
 
     Files.move(src, target);
-    assertThat(src.resolve("file"), not(exists()));
-    assertThat(target.resolve("file"), exists());
+    assertThat(src.resolve("file")).doesNotExist();
+    assertThat(target.resolve("file")).exists();
   }
 
   @Test
@@ -619,7 +612,7 @@ class MemoryFileSystemCopyTest {
     Path to = fileSystem.getPath("/to");
 
     Files.move(from, to);
-    assertThat(to, isSymbolicLink());
+    assertThat(to).isSymbolicLink();
     assertEquals(target, to.toRealPath());
   }
 

@@ -1,6 +1,5 @@
 package com.github.marschall.memoryfilesystem;
 
-import static com.github.marschall.memoryfilesystem.IsWritableMatcher.isWritable;
 import static java.nio.file.AccessMode.EXECUTE;
 import static java.nio.file.AccessMode.READ;
 import static java.nio.file.AccessMode.WRITE;
@@ -13,8 +12,7 @@ import static java.nio.file.attribute.PosixFilePermission.OTHERS_WRITE;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.not;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -114,15 +112,15 @@ class PosixPermissionMemoryFileSystemTest {
     Path path = this.extension.getFileSystem().getPath("readable-at-first");
     Files.createFile(path,  PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("r--r--r--")));
 
-    assertTrue(Files.isReadable(path));
-    assertThat(path, not(isWritable()));
-    assertFalse(Files.isExecutable(path));
+    assertThat(path).isReadable();
+    AdditionalPathAssert.assertThat(path).isNotWritable();
+    AdditionalPathAssert.assertThat(path).isNotExecutable();
 
     Files.setPosixFilePermissions(path, PosixFilePermissions.fromString("rw-r--r--")); // FAIL.
 
     assertTrue(Files.isReadable(path)); // ok
-    assertThat(path, isWritable()); // (should be) ok
-    assertFalse(Files.isExecutable(path)); // ok
+    assertThat(path).isWritable(); // (should be) ok
+    AdditionalPathAssert.assertThat(path).isNotExecutable(); // ok
   }
 
   /**
@@ -133,15 +131,15 @@ class PosixPermissionMemoryFileSystemTest {
     Path path = this.extension.getFileSystem().getPath("readable-at-first");
     Files.createFile(path,  PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("---------")));
 
-    assertFalse(Files.isReadable(path));
-    assertThat(path, not(isWritable()));
-    assertFalse(Files.isExecutable(path));
+    AdditionalPathAssert.assertThat(path).isNotReadable();
+    AdditionalPathAssert.assertThat(path).isNotWritable();
+    AdditionalPathAssert.assertThat(path).isNotExecutable();
 
     Files.setPosixFilePermissions(path, PosixFilePermissions.fromString("rw-r--r--")); // FAIL.
 
-    assertTrue(Files.isReadable(path)); // ok
-    assertThat(path, isWritable()); // (should be) ok
-    assertFalse(Files.isExecutable(path)); // ok
+    assertThat(path).isReadable(); // ok
+    assertThat(path).isWritable(); // (should be) ok
+    AdditionalPathAssert.assertThat(path).isNotExecutable(); // ok
   }
 
   /**
@@ -361,7 +359,7 @@ class PosixPermissionMemoryFileSystemTest {
 
       // double check that writing not allowed
       // check passed
-      assertThat(path, not(isWritable()));
+      AdditionalPathAssert.assertThat(path).isNotWritable();
 
       assertThrows(AccessDeniedException.class, () -> Files.newOutputStream(path));
     }

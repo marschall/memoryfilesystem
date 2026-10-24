@@ -1,7 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
-import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
-import static org.hamcrest.MatcherAssert.assertThat;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.FileSystem;
@@ -27,7 +27,7 @@ class MemoryFileSystemFactoryBeanTypeTest implements ApplicationContextAware {
   @Test
   void isOpen() {
     assertTrue(this.fileSystem.isOpen());
-    assertThat(this.fileSystem.getPath("C:"), exists());
+    assertThat(this.fileSystem.getPath("C:")).exists();
   }
 
 }

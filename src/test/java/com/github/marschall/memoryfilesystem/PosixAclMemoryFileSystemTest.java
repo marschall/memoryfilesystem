@@ -1,8 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.not;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
@@ -33,7 +32,7 @@ class PosixAclMemoryFileSystemTest {
 
     AclFileAttributeView aclFileAttributeView = Files.getFileAttributeView(file, AclFileAttributeView.class);
     List<AclEntry> acl = aclFileAttributeView.getAcl();
-    assertThat(acl, not(empty()));
+    assertThat(acl).isNotEmpty();
 
     UserPrincipal owner = aclFileAttributeView.getOwner();
     assertEquals("", owner.getName());

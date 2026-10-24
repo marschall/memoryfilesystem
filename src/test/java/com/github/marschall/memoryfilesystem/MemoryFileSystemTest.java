@@ -1,12 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_ENV;
-import static com.github.marschall.memoryfilesystem.FileContentsMatcher.hasContents;
-import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static com.github.marschall.memoryfilesystem.FileUtility.setContents;
-import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isAbsolute;
-import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isRelative;
-import static com.github.marschall.memoryfilesystem.IsSameFileMatcher.isSameFile;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
@@ -16,16 +11,12 @@ import static java.nio.file.StandardOpenOption.DELETE_ON_CLOSE;
 import static java.nio.file.StandardOpenOption.READ;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.isA;
-import static org.hamcrest.Matchers.lessThan;
-import static org.hamcrest.Matchers.not;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -179,7 +170,7 @@ class MemoryFileSystemTest {
       outputStream.write(data, 1, 2);
     }
 
-    assertThat(path, hasContents("zbc"));
+    assertThat(path).hasContent("zbc");
   }
 
   @Test
@@ -193,7 +184,7 @@ class MemoryFileSystemTest {
       outputStream.write(data, 1, 2);
     }
 
-    assertThat(path, hasContents("bc"));
+    assertThat(path).hasContent("bc");
   }
 
   @Test
@@ -276,7 +267,7 @@ class MemoryFileSystemTest {
       long written = channel.write(new ByteBuffer[]{a, b, c, d}, 1, 2);
       assertEquals(2L, written, "byte written");
     }
-    assertThat(path, hasContents("bc"));
+    assertThat(path).hasContent("bc");
   }
 
   @Test
@@ -296,7 +287,7 @@ class MemoryFileSystemTest {
       long written = channel.write(new ByteBuffer[]{a, b, c, d}, 1, 2);
       assertEquals(2L, written, "byte written");
     }
-    assertThat(path, hasContents("zbc"));
+    assertThat(path).hasContent("zbc");
   }
 
   @Test
@@ -312,7 +303,7 @@ class MemoryFileSystemTest {
       assertSame(channel, result);
       assertEquals(2L, channel.size());
     }
-    assertThat(path, hasContents("ab"));
+    assertThat(path).hasContent("ab");
   }
 
   @Test
@@ -328,7 +319,7 @@ class MemoryFileSystemTest {
       assertSame(channel, result);
       assertEquals(2L, channel.size());
     }
-    assertThat(path, hasContents("ab"));
+    assertThat(path).hasContent("ab");
   }
 
   @Test
@@ -411,7 +402,7 @@ class MemoryFileSystemTest {
       assertEquals(2, handler.getResult().intValue(), "bytes written");
     }
 
-    assertThat(path, hasContents("zab"));
+    assertThat(path).hasContent("zab");
   }
 
   @Test
@@ -440,7 +431,7 @@ class MemoryFileSystemTest {
       assertArrayEquals(new byte[]{'b', 'c'}, data);
     }
 
-    assertThat(path, hasContents("abcd"));
+    assertThat(path).hasContent("abcd");
   }
 
   @Test
@@ -464,11 +455,10 @@ class MemoryFileSystemTest {
       assertTrue(handler.isFailed(), "failed");
 
       assertSame(attachment, handler.getAttachment(), "attachment");
-      // TODO fix Hamcrest
-      assertThat(handler.getException(), isA((Class<Throwable>) (Object) NonWritableChannelException.class));
+      assertInstanceOf(NonWritableChannelException.class, handler.getException());
     }
 
-    assertThat(path, hasContents("z"));
+    assertThat(path).hasContent("z");
   }
 
   @Test
@@ -487,7 +477,7 @@ class MemoryFileSystemTest {
       assertEquals(2, written.intValue());
     }
 
-    assertThat(path, hasContents("zab"));
+    assertThat(path).hasContent("zab");
   }
 
   @Test
@@ -508,7 +498,7 @@ class MemoryFileSystemTest {
       assertArrayEquals(new byte[]{'b', 'c'},  data);
     }
 
-    assertThat(path, hasContents("abcd"));
+    assertThat(path).hasContent("abcd");
   }
 
   @Test
@@ -528,10 +518,9 @@ class MemoryFileSystemTest {
               "write to reading channel should fail");
       Throwable cause = e.getCause();
 
-      // TODO fix Hamcrest
-      assertThat(cause, isA((Class<Throwable>) (Object) NonWritableChannelException.class));
+      assertInstanceOf(NonWritableChannelException.class, cause);
     }
-    assertThat(path, hasContents("z"));
+    assertThat(path).hasContent("z");
   }
 
   @Test
@@ -550,17 +539,17 @@ class MemoryFileSystemTest {
   void deleteOnCloseInputStream() throws IOException {
     Path path = this.extension.getFileSystem().getPath("/sample.txt");
     Files.createFile(path);
-    assertThat(path, exists());
+    assertThat(path).exists();
 
     try (InputStream inputStream = Files.newInputStream(path)) {
       // nothing
     }
-    assertThat(path, exists());
+    assertThat(path).exists();
 
     try (InputStream inputStream = Files.newInputStream(path, DELETE_ON_CLOSE)) {
       // nothing
     }
-    assertThat(path, not(exists()));
+    assertThat(path).doesNotExist();
   }
 
   @Test
@@ -572,49 +561,49 @@ class MemoryFileSystemTest {
     try (BufferedWriter writer = Files.newBufferedWriter(path, US_ASCII)) {
       writer.write("world");
     }
-    assertThat(path, exists());
-    assertThat(path, hasContents("world"));
+    assertThat(path).exists();
+    assertThat(path).hasContent("world");
 
     // file should be truncated
     try (BufferedWriter writer = Files.newBufferedWriter(path, US_ASCII)) {
       writer.write("h");
     }
-    assertThat(path, exists());
-    assertThat(path, hasContents("h"));
+    assertThat(path).exists();
+    assertThat(path).hasContent("h");
   }
 
   @Test
   void deleteOnCloseOutputStream() throws IOException {
     Path path = this.extension.getFileSystem().getPath("/sample.txt");
     Files.createFile(path);
-    assertThat(path, exists());
+    assertThat(path).exists();
 
     try (OutputStream outputStream = Files.newOutputStream(path)) {
       // nothing
     }
-    assertThat(path, exists());
+    assertThat(path).exists();
 
     try (OutputStream outputStream = Files.newOutputStream(path, DELETE_ON_CLOSE)) {
       // nothing
     }
-    assertThat(path, not(exists()));
+    assertThat(path).doesNotExist();
   }
 
   @Test
   void deleteOnCloseByteChannelStream() throws IOException {
     Path path = this.extension.getFileSystem().getPath("/sample.txt");
     Files.createFile(path);
-    assertThat(path, exists());
+    assertThat(path).exists();
 
     try (SeekableByteChannel byteChannel = Files.newByteChannel(path)) {
       // nothing
     }
-    assertThat(path, exists());
+    assertThat(path).exists();
 
     try (SeekableByteChannel byteChannel = Files.newByteChannel(path, DELETE_ON_CLOSE)) {
       // nothing
     }
-    assertThat(path, not(exists()));
+    assertThat(path).doesNotExist();
   }
 
   @Test
@@ -721,7 +710,7 @@ class MemoryFileSystemTest {
     Files.createSymbolicLink(link, target);
 
     Path readBack = Files.readSymbolicLink(link);
-    assertThat(readBack, not(exists()));
+    assertThat(readBack).doesNotExist();
     assertEquals("/target", readBack.toString());
   }
 
@@ -736,8 +725,12 @@ class MemoryFileSystemTest {
     Files.createSymbolicLink(b, c);
 
     Path readBack = Files.readSymbolicLink(a);
-    assertThat(readBack, exists(NOFOLLOW_LINKS));
-    assertThat(readBack, not(exists()));
+    assertThat(readBack).existsNoFollowLinks();
+
+    assertFalse(Files.exists(readBack));
+    assertTrue(Files.notExists(readBack));
+    // TODO assertj assertDoesNotExist sets NOFOLLOW_LINKS by default
+    //assertThat(readBack).doesNotExist();
     assertTrue(Files.isSymbolicLink(readBack));
     assertEquals("/b", readBack.toString());
   }
@@ -904,11 +897,11 @@ class MemoryFileSystemTest {
     assertThrows(DirectoryNotEmptyException.class, () -> Files.delete(directory), "you shound't be able to delete a non-emtpy directory");
 
     Files.delete(path);
-    assertThat(path, not(exists()));
+    assertThat(path).doesNotExist();
     assertThrows(NoSuchFileException.class, () -> Files.delete(path), "you shound't be able to delete a non-existing file");
 
     Files.delete(directory);
-    assertThat(directory, not(exists()));
+    assertThat(directory).doesNotExist();
     assertThrows(NoSuchFileException.class, () -> Files.delete(directory), "you shound't be able to delete a non-existing directory");
   }
 
@@ -923,11 +916,11 @@ class MemoryFileSystemTest {
     assertThrows(DirectoryNotEmptyException.class, () -> Files.delete(directory), "you shound't be able to delete a non-emtpy directory");
 
     assertTrue(Files.deleteIfExists(path));
-    assertThat(path, not(exists()));
+    assertThat(path).doesNotExist();
     assertFalse(Files.deleteIfExists(path));
 
     assertTrue(Files.deleteIfExists(directory));
-    assertThat(directory, not(exists()));
+    assertThat(directory).doesNotExist();
     assertFalse(Files.deleteIfExists(directory));
   }
 
@@ -1026,9 +1019,9 @@ class MemoryFileSystemTest {
     Path defaultPath = Paths.get("/foo/bar");
 
     //    assertTrue(Files.isSameFile(defaultPath, defaultPath));
-    assertThat(memoryPath, isSameFile(memoryPath));
-    assertThat(memoryPath, not(isSameFile(defaultPath)));
-    assertThat(defaultPath, not(isSameFile( memoryPath)));
+    AdditionalPathAssert.assertThat(memoryPath).isSameFileAs(memoryPath);
+    AdditionalPathAssert.assertThat(memoryPath).isNotSameFileAs(defaultPath);
+    AdditionalPathAssert.assertThat(defaultPath).isNotSameFileAs(memoryPath);
   }
 
   @Test
@@ -1036,11 +1029,11 @@ class MemoryFileSystemTest {
     FileSystem fileSystem = this.extension.getFileSystem();
     Path path = fileSystem.getPath("/foo/bar");
 
-    assertThat(path, not(exists()));
+    assertThat(path).doesNotExist();
     Files.isSameFile(path, path);
 
     Path path2 = fileSystem.getPath("/foo/bar/zork");
-    assertThat(path2, not(exists()));
+    assertThat(path2).doesNotExist();
     assertThrows(NoSuchFileException.class,
             () -> Files.isSameFile(path, path2),
             "file does not exist");
@@ -1379,7 +1372,7 @@ class MemoryFileSystemTest {
       Path expectedPath = fileSystem.getPath(expectedName);
 
       assertEquals(expectedPath, actualPath);
-      assertThat(actualPath, isRelative());
+      assertThat(actualPath).isRelative();
     }
     assertFalse(expectedIterator.hasNext());
   }
@@ -1481,7 +1474,7 @@ class MemoryFileSystemTest {
     assertNotNull(fileName);
 
     assertEquals(fileName, bin);
-    assertThat(fileName, isRelative());
+    assertThat(fileName).isRelative();
   }
 
   @Test
@@ -1491,10 +1484,10 @@ class MemoryFileSystemTest {
     Path usr = fileSystem.getPath("/usr");
 
     assertEquals(usr, usrBin.getParent());
-    assertThat(usrBin.getParent(), isAbsolute());
+    assertThat(usrBin.getParent()).isAbsolute();
     Path root = fileSystem.getRootDirectories().iterator().next();
     assertEquals(root, usr.getParent());
-    assertThat(usr.getParent(), isAbsolute());
+    assertThat(usr.getParent()).isAbsolute();
   }
 
   @Test
@@ -1504,7 +1497,7 @@ class MemoryFileSystemTest {
     Path usr = fileSystem.getPath("usr");
 
     assertEquals(usr, usrBin.getParent());
-    assertThat(usrBin.getParent(), isRelative());
+    assertThat(usrBin.getParent()).isRelative();
     assertNull(usr.getParent());
   }
 
@@ -1568,7 +1561,7 @@ class MemoryFileSystemTest {
   void emptyPath() {
     FileSystem fileSystem = this.extension.getFileSystem();
     Path path = fileSystem.getPath("");
-    assertThat(path, isRelative());
+    assertThat(path).isRelative();
     assertNull(path.getRoot());
   }
 
@@ -1577,7 +1570,7 @@ class MemoryFileSystemTest {
   void jdk8043208() {
     FileSystem fileSystem = this.extension.getFileSystem();
     Path path = fileSystem.getPath("").normalize();
-    assertThat(path, isRelative());
+    assertThat(path).isRelative();
     assertNull(path.getRoot());
   }
 
@@ -1587,7 +1580,7 @@ class MemoryFileSystemTest {
   void jdk8066943() {
     FileSystem fileSystem = this.extension.getFileSystem();
     Path path = fileSystem.getPath("..").relativize(fileSystem.getPath("x"));
-    assertThat(path, isRelative());
+    assertThat(path).isRelative();
     assertEquals("../x", path.toString());
   }
 
@@ -1620,11 +1613,11 @@ class MemoryFileSystemTest {
   void absolutePaths() {
     FileSystem fileSystem = this.extension.getFileSystem();
     Path path = fileSystem.getPath("/");
-    assertThat(path, isAbsolute());
+    assertThat(path).isAbsolute();
     assertSame(path, path.toAbsolutePath());
 
     path = fileSystem.getPath("/", "sample");
-    assertThat(path, isAbsolute());
+    assertThat(path).isAbsolute();
     assertSame(path, path.toAbsolutePath());
     assertNotNull(path.getRoot());
     assertSame(this.getRoot(fileSystem), path.getRoot());
@@ -1634,7 +1627,7 @@ class MemoryFileSystemTest {
   void relativePaths() {
     FileSystem fileSystem = this.extension.getFileSystem();
     Path path = fileSystem.getPath("sample");
-    assertThat(path, isRelative());
+    assertThat(path).isRelative();
     assertNull(path.getRoot());
   }
 
@@ -1692,7 +1685,7 @@ class MemoryFileSystemTest {
   void createDirectoryNoParent() {
     FileSystem fileSystem = this.extension.getFileSystem();
     Path homePmarscha = fileSystem.getPath("/home/pmarscha");
-    assertThat(homePmarscha, not(exists()));
+    assertThat(homePmarscha).doesNotExist();
     assertThrows(IOException.class, () -> Files.createDirectory(homePmarscha));
   }
 
@@ -1705,17 +1698,17 @@ class MemoryFileSystemTest {
     Path slashA = fileSystem.getPath("/a");
     Path slashAA = fileSystem.getPath("/a/a");
 
-    assertThat(empty, lessThan(a));
-    assertThat(a, greaterThan(empty));
+    assertThat(empty).isLessThan(a);
+    assertThat(a).isGreaterThan(empty);
 
-    assertThat(root, lessThan(empty));
-    assertThat(root, lessThan(a));
-    assertThat(root, lessThan(slashA));
-    assertThat(root, lessThan(slashAA));
-    assertThat(empty, greaterThan(root));
-    assertThat(a, greaterThan(root));
-    assertThat(slashA, greaterThan(root));
-    assertThat(slashAA, greaterThan(root));
+    assertThat(root).isLessThan(empty);
+    assertThat(root).isLessThan(a);
+    assertThat(root).isLessThan(slashA);
+    assertThat(root).isLessThan(slashAA);
+    assertThat(empty).isGreaterThan(root);
+    assertThat(a).isGreaterThan(root);
+    assertThat(slashA).isGreaterThan(root);
+    assertThat(slashAA).isGreaterThan(root);
 
     assertEquals(0, root.compareTo(root));
     assertEquals(0, empty.compareTo(empty));
@@ -1723,13 +1716,13 @@ class MemoryFileSystemTest {
     assertEquals(0, slashA.compareTo(slashA));
     assertEquals(0, slashA.compareTo(slashA));
 
-    assertThat(a, greaterThan(slashA));
-    assertThat(a, greaterThan(slashAA));
-    assertThat(slashA, lessThan(a));
-    assertThat(slashAA, lessThan(a));
+    assertThat(a).isGreaterThan(slashA);
+    assertThat(a).isGreaterThan(slashAA);
+    assertThat(slashA).isLessThan(a);
+    assertThat(slashAA).isLessThan(a);
 
-    assertThat(slashA, lessThan(slashAA));
-    assertThat(slashAA, greaterThan(slashA));
+    assertThat(slashA).isLessThan(slashAA);
+    assertThat(slashAA).isGreaterThan(slashA);
   }
 
   @Test
@@ -1741,7 +1734,7 @@ class MemoryFileSystemTest {
       Path path = fileSystem.getPath("meta");
       Files.createFile(path);
       UserDefinedFileAttributeView userAttributes = Files.getFileAttributeView(path, UserDefinedFileAttributeView.class);
-      assertThat(userAttributes.list(), empty());
+      assertThat(userAttributes.list()).isEmpty();
 
       userAttributes.write("meta-key", ByteBuffer.wrap(new byte[]{1, 2, 3}));
       assertEquals(Collections.singletonList("meta-key"), userAttributes.list());
@@ -1755,7 +1748,7 @@ class MemoryFileSystemTest {
 
 
       userAttributes.delete("meta-key");
-      assertThat(userAttributes.list(), empty());
+      assertThat(userAttributes.list()).isEmpty();
 
       assertThrows(IOException.class,
               () -> userAttributes.read("wrong-key", buffer),
@@ -1770,34 +1763,34 @@ class MemoryFileSystemTest {
       Path root1 = fileSystem1.getPath("/");
       Path root2 = fileSystem2.getPath("/");
 
-      assertThat(root1, not(equalTo(root2)));
-      assertThat(root2, not(equalTo(root1)));
-      assertThat(root1, lessThan(root2));
-      assertThat(root2, greaterThan(root1));
+      assertNotEquals(root1, root2);
+      assertNotEquals(root2, root1);
+      assertThat(root1).isLessThan(root2);
+      assertThat(root2).isGreaterThan(root1);
 
       Path empty1 = fileSystem1.getPath("");
       Path empty2 = fileSystem2.getPath("");
 
-      assertThat(empty1, not(equalTo(empty2)));
-      assertThat(empty2, not(equalTo(empty1)));
-      assertThat(empty1, lessThan(empty2));
-      assertThat(empty2, greaterThan(empty1));
+      assertNotEquals(empty1, empty2);
+      assertNotEquals(empty2, empty1);
+      assertThat(empty1).isLessThan(empty2);
+      assertThat(empty2).isGreaterThan(empty1);
 
       Path relative1 = fileSystem1.getPath("a");
       Path relative2 = fileSystem2.getPath("a");
 
-      assertThat(relative1, not(equalTo(relative2)));
-      assertThat(relative2, not(equalTo(relative1)));
-      assertThat(relative1, lessThan(relative2));
-      assertThat(relative2, greaterThan(relative1));
+      assertNotEquals(relative1, relative2);
+      assertNotEquals(relative2, relative1);
+      assertThat(relative1).isLessThan(relative2);
+      assertThat(relative2).isGreaterThan(relative1);
 
       Path absolute1 = fileSystem1.getPath("/a");
       Path absolute2 = fileSystem2.getPath("/a");
 
-      assertThat(absolute1, not(equalTo(absolute2)));
-      assertThat(absolute2, not(equalTo(absolute1)));
-      assertThat(absolute1, lessThan(absolute2));
-      assertThat(absolute2, greaterThan(absolute1));
+      assertNotEquals(absolute1, absolute2);
+      assertNotEquals(absolute2, absolute1);
+      assertThat(absolute1).isLessThan(absolute2);
+      assertThat(absolute2).isGreaterThan(absolute1);
     }
 
   }
@@ -1814,9 +1807,9 @@ class MemoryFileSystemTest {
   void createDirectories() throws IOException {
     FileSystem fileSystem = this.extension.getFileSystem();
     Path homePmarscha = fileSystem.getPath("/home/pmarscha");
-    assertThat(homePmarscha, not(exists()));
+    assertThat(homePmarscha).doesNotExist();
     Files.createDirectories(homePmarscha);
-    assertThat(homePmarscha, exists());
+    assertThat(homePmarscha).exists();
   }
 
 
@@ -1824,9 +1817,9 @@ class MemoryFileSystemTest {
   void createDirectory() throws IOException {
     FileSystem fileSystem = this.extension.getFileSystem();
     Path home = fileSystem.getPath("/home");
-    assertThat(home, not(exists()));
+    assertThat(home).doesNotExist();
     Files.createDirectory(home);
-    assertThat(home, exists());
+    assertThat(home).exists();
     assertTrue(Files.isDirectory(home));
     assertFalse(Files.isRegularFile(home));
   }
@@ -1835,9 +1828,9 @@ class MemoryFileSystemTest {
   void createDirectoryAlreadyExists() throws IOException {
     FileSystem fileSystem = this.extension.getFileSystem();
     Path home = fileSystem.getPath("/home");
-    assertThat(home, not(exists()));
+    assertThat(home).doesNotExist();
     Files.createDirectory(home);
-    assertThat(home, exists());
+    assertThat(home).exists();
     assertThrows(FileAlreadyExistsException.class, () -> Files.createDirectory(home));
   }
 
@@ -1864,7 +1857,7 @@ class MemoryFileSystemTest {
   void createDirectoriesWithRoot() throws IOException {
     FileSystem fileSystem = this.extension.getFileSystem();
     Path root = fileSystem.getPath("/");
-    assertThat(root, exists());
+    assertThat(root).exists();
     assertEquals(Files.createDirectories(root), root);
   }
 
@@ -2097,8 +2090,8 @@ class MemoryFileSystemTest {
     Path singleSlash = Paths.get(URI.create("memory:name:/root"));
     Path doubleSlash = Paths.get(URI.create("memory:name:///root"));
 
-    assertThat(singleSlash, isSameFile(root));
-    assertThat(doubleSlash, isSameFile(root));
+    AdditionalPathAssert.assertThat(singleSlash).isSameFileAs(root);
+    AdditionalPathAssert.assertThat(doubleSlash).isSameFileAs(root);
   }
 
   @Test

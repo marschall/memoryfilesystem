@@ -1,19 +1,13 @@
 package com.github.marschall.memoryfilesystem;
 
-import static com.github.marschall.memoryfilesystem.FileContentsMatcher.hasContents;
-import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static com.github.marschall.memoryfilesystem.FileUtility.setContents;
-import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isAbsolute;
-import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isRelative;
-import static com.github.marschall.memoryfilesystem.PathMatchesMatcher.matches;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.READ;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.not;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -145,7 +139,7 @@ class FileSystemCompatibilityTest {
   void emptyPath(boolean useDefault) {
     FileSystem fileSystem = this.getFileSystem(useDefault);
     Path path = fileSystem.getPath("");
-    assertThat(path, isRelative());
+    assertThat(path).isRelative();
     assertNull(path.getRoot());
     assertEquals(path, path.getFileName());
     assertEquals(path, path.getName(0));
@@ -203,7 +197,7 @@ class FileSystemCompatibilityTest {
       assertEquals(originalContent.length() + appended.length, channel.position(), "position");
 
       channel.truncate(0L);
-      assertThat(path, hasContents(""));
+      assertThat(path).isEmptyFile();
     } finally {
       Files.delete(path);
     }
@@ -249,7 +243,7 @@ class FileSystemCompatibilityTest {
   void root(boolean useDefault) {
     FileSystem fileSystem = this.getFileSystem(useDefault);
     for (Path root : fileSystem.getRootDirectories()) {
-      assertThat(root, isAbsolute());
+      assertThat(root).isAbsolute();
       assertEquals(root, root.getRoot());
       assertNull(root.getFileName());
       assertNull(root.getParent());
@@ -275,7 +269,7 @@ class FileSystemCompatibilityTest {
     Path child = fileSystem.getPath(".gitignore");
 
     PathMatcher matcher = fileSystem.getPathMatcher("glob:**/.gitignore");
-    assertThat(matcher, not(matches(child)));
+    PathMatcherAssert.assertThat(matcher).doesNotMatch(child);
   }
 
   @CompatibilityTest
@@ -323,7 +317,7 @@ class FileSystemCompatibilityTest {
     int dotDotCount = target.toAbsolutePath().getNameCount() + 1;
     String lotsOfDotDot = String.join("/", ParentReferenceList.create(dotDotCount));
     Path shouldBeRoot = target.resolve(lotsOfDotDot);
-    assertThat(shouldBeRoot, exists());
+    assertThat(shouldBeRoot).exists();
     assertEquals(target.toAbsolutePath().getRoot(), shouldBeRoot.toAbsolutePath().normalize());
   }
 
@@ -338,8 +332,8 @@ class FileSystemCompatibilityTest {
     Path root = Files.createDirectory(symlinktests.resolve("root"));
     Path directory1 = Files.createDirectory(root.resolve("directory1"));
     Path directory2 = Files.createDirectory(root.resolve("directory2"));
-    assertThat(directory1, exists());
-    assertThat(directory2, exists());
+    assertThat(directory1).exists();
+    assertThat(directory2).exists();
 
     Path link = null;
     try {
@@ -347,7 +341,7 @@ class FileSystemCompatibilityTest {
       link = Files.createSymbolicLink(symlinktests.resolve("link"), originalLinkTarget);
       Path actualLinkTarget = Files.readSymbolicLink(link);
       assertEquals(originalLinkTarget, actualLinkTarget);
-      assertThat(link, exists());
+      assertThat(link).exists();
       assertEquals(directory2.toAbsolutePath(), link.toRealPath());
       //      Files.delete(link);
     } finally {

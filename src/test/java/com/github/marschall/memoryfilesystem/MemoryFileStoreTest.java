@@ -1,9 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_URI;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.lessThan;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -73,12 +71,12 @@ class MemoryFileStoreTest {
     long unallocatedSpace = fileStore.getUnallocatedSpace();
     long usableSpace = fileStore.getUsableSpace();
 
-    assertThat("total space", totalSpace, greaterThan(0L));
-    assertThat("unallocated space", unallocatedSpace, greaterThan(0L));
-    assertThat("usable space", usableSpace, greaterThan(0L));
+    assertThat(totalSpace).describedAs("total space").isPositive();
+    assertThat(unallocatedSpace).describedAs("unallocated space").isPositive();
+    assertThat(usableSpace).describedAs("usable space").isPositive();
 
-    assertThat("usable space", usableSpace, lessThan(totalSpace));
-    assertThat("unallocated space", unallocatedSpace, lessThan(totalSpace));
+    assertThat(usableSpace).describedAs("usable space").isLessThan(totalSpace);
+    assertThat(unallocatedSpace).describedAs("unallocated space").isLessThan(totalSpace);
   }
 
   @Test
@@ -96,7 +94,7 @@ class MemoryFileStoreTest {
   void getBlockSize() {
     MemoryFileStore fileStore = (MemoryFileStore) this.extension.getFileStore();
     long blockSize = fileStore.getBlockSize();
-    assertThat(blockSize, greaterThan(0L));
+    assertThat(blockSize).isPositive();
   }
 
 }

@@ -1,10 +1,10 @@
 package com.github.marschall.memoryfilesystem;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.junit.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -41,7 +40,7 @@ class URLConnectionTest {
 
   @RegisterExtension
   final FileSystemExtension extension = new FileSystemExtension();
-  
+
   @Test
   void getUrl() throws IOException {
     Path root = this.extension.getFileSystem().getPath("/");
@@ -122,7 +121,7 @@ class URLConnectionTest {
     assertNotNull(urlConnection);
 
     Object actualContent = urlConnection.getContent();
-    assertThat(actualContent, CoreMatchers.instanceOf(InputStream.class));
+    assertInstanceOf(InputStream.class, actualContent);
     try (InputStream inputStream = (InputStream) actualContent) {
       assertArrayEquals(content.getBytes(US_ASCII), StreamUtility.readFully(inputStream));
     }
@@ -134,12 +133,12 @@ class URLConnectionTest {
     URL url = path.toUri().toURL();
     URLConnection urlConnection = url.openConnection();
 
-    assertThat(urlConnection.getContentLengthLong(), greaterThan(0L));
-    assertThat(urlConnection.getLastModified(), greaterThan(0L));
+    assertThat(urlConnection.getContentLengthLong()).isPositive();
+    assertThat(urlConnection.getLastModified()).isPositive();
 
     urlConnection.connect();
-    assertThat(urlConnection.getContentLengthLong(), greaterThan(0L));
-    assertThat(urlConnection.getLastModified(), greaterThan(0L));
+    assertThat(urlConnection.getContentLengthLong()).isPositive();
+    assertThat(urlConnection.getLastModified()).isPositive();
   }
 
   @Test

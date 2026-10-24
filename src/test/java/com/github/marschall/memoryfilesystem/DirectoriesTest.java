@@ -1,12 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
-import static com.github.marschall.memoryfilesystem.FileContentsMatcher.hasContents;
-import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
-import static java.util.Arrays.asList;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.anyOf;
-import static org.hamcrest.Matchers.equalTo;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 import java.io.IOException;
@@ -31,11 +26,11 @@ class DirectoriesTest {
 
         Directories.copyRecursive(sourceFileSystem.getPath("/"), targetFileSystem.getPath("/"));
 
-        assertThat(targetFileSystem.getPath("aaa"), exists());
-        assertThat(targetFileSystem.getPath("aaa"), hasContents("bbb"));
+        assertThat(targetFileSystem.getPath("aaa")).exists();
+        assertThat(targetFileSystem.getPath("aaa")).hasContent("bbb");
 
-        assertThat(targetFileSystem.getPath("sub/ccc"), exists());
-        assertThat(targetFileSystem.getPath("sub/ccc"), hasContents("ddd"));
+        assertThat(targetFileSystem.getPath("sub/ccc")).exists();
+        assertThat(targetFileSystem.getPath("sub/ccc")).hasContent("ddd");
       }
     }
   }
@@ -49,14 +44,14 @@ class DirectoriesTest {
         UserDefinedFileAttributeView attributeView = Files.getFileAttributeView(sourceFile, UserDefinedFileAttributeView.class);
         attributeView.write("1", ByteBuffer.wrap(new byte[]{1}));
         attributeView.write("2", ByteBuffer.wrap(new byte[]{2, 2}));
-        assertThat(attributeView.list(), anyOf(equalTo(asList("1", "2")), equalTo(asList("2", "1"))));
+        assertThat(attributeView.list()).containsExactlyInAnyOrder("1", "2");
 
         Directories.copyRecursive(sourceFileSystem.getPath("/"), targetFileSystem.getPath("/"), COPY_ATTRIBUTES);
 
         Path targetFile = targetFileSystem.getPath("file");
         attributeView = Files.getFileAttributeView(targetFile, UserDefinedFileAttributeView.class);
 
-        assertThat(attributeView.list(), anyOf(equalTo(asList("1", "2")), equalTo(asList("2", "1"))));
+        assertThat(attributeView.list()).containsExactlyInAnyOrder("1", "2");
         assertArrayEquals(new byte[]{1}, readAttribute("1", attributeView));
         assertArrayEquals(new byte[]{2, 2}, readAttribute("2", attributeView));
       }

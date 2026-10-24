@@ -2,10 +2,7 @@ package com.github.marschall.memoryfilesystem;
 
 import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_ENV;
 import static com.github.marschall.memoryfilesystem.Constants.SAMPLE_URI;
-import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isAbsolute;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.anyOf;
-import static org.hamcrest.Matchers.equalTo;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -50,7 +47,7 @@ class RootTest {
     assertEquals(root, root.normalize());
     assertEquals(root, root.toAbsolutePath());
 
-    assertThat(root, isAbsolute());
+    assertThat(root).isAbsolute();
     assertEquals(root, root.getRoot());
     assertNull(root.getFileName());
     assertNull(root.getParent());
@@ -119,7 +116,7 @@ class RootTest {
         assertCommonRootProperties(currentRoot);
 
         // don't assume order
-        assertThat(currentRoot.toString(), anyOf(equalTo("C:\\"), equalTo("D:\\")));
+        assertTrue(currentRoot.toString().equals("C:\\") || currentRoot.toString().equals("D:\\"));
         assertFalse(currentRoot.startsWith(""));
         assertFalse(currentRoot.startsWith("/"));
         assertTrue(currentRoot.startsWith(currentRoot.toString()));

@@ -1,21 +1,13 @@
 package com.github.marschall.memoryfilesystem;
 
-import static com.github.marschall.memoryfilesystem.FileContentsMatcher.hasContents;
-import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
-import static com.github.marschall.memoryfilesystem.IsSameFileMatcher.isSameFile;
-import static com.github.marschall.memoryfilesystem.IsWritableMatcher.isWritable;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.lessThan;
-import static org.hamcrest.Matchers.not;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -186,7 +178,7 @@ class UnixFileSystemCompatibilityTest {
 
   @CompatibilityTest
   void supportsOwner(boolean useDefault) {
-    assertThat(this.getFileSystem(useDefault).supportedFileAttributeViews(), hasItem("owner"));
+    assertThat(this.getFileSystem(useDefault).supportedFileAttributeViews()).contains("owner");
   }
 
   @CompatibilityTest
@@ -209,7 +201,7 @@ class UnixFileSystemCompatibilityTest {
       try (OutputStream output = Files.newOutputStream(path, StandardOpenOption.WRITE)) {
         output.write("22".getBytes(US_ASCII));
       }
-      assertThat(path, hasContents("22111"));
+      assertThat(path).hasContent("22111");
     } finally {
       Files.deleteIfExists(path);
     }
@@ -228,7 +220,7 @@ class UnixFileSystemCompatibilityTest {
       try (OutputStream output = Files.newOutputStream(path, StandardOpenOption.APPEND)) {
         output.write("22".getBytes(US_ASCII));
       }
-      assertThat(path, hasContents("1111122"));
+      assertThat(path).hasContent("1111122");
     } finally {
       Files.deleteIfExists(path);
     }
@@ -247,7 +239,7 @@ class UnixFileSystemCompatibilityTest {
       try (OutputStream output = Files.newOutputStream(path)) {
         output.write("22".getBytes(US_ASCII));
       }
-      assertThat(path, hasContents("22"));
+      assertThat(path).hasContent("22");
     } finally {
       Files.deleteIfExists(path);
     }
@@ -456,11 +448,11 @@ class UnixFileSystemCompatibilityTest {
     assertTrue(root.compareTo(a) < 0);
     assertTrue(root.compareTo(slashA) < 0);
     assertTrue(a.compareTo(slashA) > 0);
-    assertThat(a, greaterThan(slashA));
-    assertThat(slashA, lessThan(a));
+    assertThat(a).isGreaterThan(slashA);
+    assertThat(slashA).isLessThan(a);
     assertTrue(slashA.compareTo(slashAA) < 0);
 
-    assertThat(a, greaterThan(empty));
+    assertThat(a).isGreaterThan(empty);
   }
 
   @CompatibilityTest
@@ -520,17 +512,17 @@ class UnixFileSystemCompatibilityTest {
       assertEquals(1, nfcFile.toAbsolutePath().getFileName().toString().length());
       assertEquals(1, nfcFile.toRealPath().getFileName().toString().length());
 
-      assertThat(nfcPath, exists());
-      assertThat(nfdPath, not(exists()));
+      assertThat(nfcPath).exists();
+      assertThat(nfdPath).doesNotExist();
 
       nfdFile = Files.createFile(nfdPath);
       assertEquals(2, nfdFile.getFileName().toString().length());
       assertEquals(2, nfdFile.toAbsolutePath().getFileName().toString().length());
       assertEquals(2, nfdFile.toRealPath().getFileName().toString().length());
 
-      assertThat(nfcPath, not(equalTo(nfdPath)));
-      assertThat(nfcPath, not(isSameFile(nfdPath)));
-      assertThat(nfdPath, not(isSameFile(nfcPath)));
+      assertNotEquals(nfcPath, nfdPath);
+      AdditionalPathAssert.assertThat(nfcPath).isNotSameFileAs(nfdPath);
+      AdditionalPathAssert.assertThat(nfdPath).isNotSameFileAs(nfcPath);
     } finally {
       if (nfcFile != null) {
         Files.delete(nfcFile);
@@ -555,7 +547,7 @@ class UnixFileSystemCompatibilityTest {
     Path nPath = fileSystem.getPath("/" + normalized);
     assertEquals(1, aPath.getName(0).toString().length());
     // verify a NFC path is not equal to a NFD path
-    assertThat(aPath, not(equalTo(nPath)));
+    assertNotEquals(aPath, nPath);
   }
 
   @CompatibilityTest
@@ -630,15 +622,17 @@ class UnixFileSystemCompatibilityTest {
     Path path = fileSystem.getPath("readable-at-first");
     Files.createFile(path,  PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("r--r--r--")));
     try {
-      assertTrue(Files.isReadable(path));
-      assertThat("path: " + path + " should not be writable on " + (useDefault ? "default" : "in-memory") + " filesystem", path, not(isWritable()));
-      assertFalse(Files.isExecutable(path));
+      assertThat(path).isReadable();
+      AdditionalPathAssert.assertThat(path)
+      .describedAs(() -> "path: " + path + " should not be writable on " + (useDefault ? "default" : "in-memory") + " filesystem")
+      .isNotWritable();
+      AdditionalPathAssert.assertThat(path).isNotExecutable();
 
       Files.setPosixFilePermissions(path, PosixFilePermissions.fromString("rw-r--r--")); // FAIL.
 
-      assertTrue(Files.isReadable(path)); // ok
-      assertThat(path, isWritable()); // (should be) ok
-      assertFalse(Files.isExecutable(path)); // ok
+      assertThat(path).isReadable(); // ok
+      assertThat(path).isWritable(); // (should be) ok
+      AdditionalPathAssert.assertThat(path).isNotExecutable(); // ok
     } finally {
       if (useDefault) {
         Files.delete(path);
@@ -653,14 +647,14 @@ class UnixFileSystemCompatibilityTest {
     Files.createFile(path,  PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("---------")));
     try {
       assertFalse(Files.isReadable(path), () -> "path: " + path + " should not be readable on " + (useDefault ? "default" : "in-memory") + " filesystem");
-      assertThat(path, not(isWritable()));
-      assertFalse(Files.isExecutable(path));
+      AdditionalPathAssert.assertThat(path).isNotWritable();
+      AdditionalPathAssert.assertThat(path).isNotExecutable();
 
       Files.setPosixFilePermissions(path, PosixFilePermissions.fromString("rw-r--r--")); // FAIL.
 
       assertTrue(Files.isReadable(path)); // ok
-      assertThat(path, isWritable()); // (should be) ok
-      assertFalse(Files.isExecutable(path)); // ok
+      assertThat(path).isWritable(); // (should be) ok
+      AdditionalPathAssert.assertThat(path).isNotExecutable(); // ok
     } finally {
       if (useDefault) {
         Files.delete(path);

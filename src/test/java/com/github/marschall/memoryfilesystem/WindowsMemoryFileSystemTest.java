@@ -1,21 +1,12 @@
 package com.github.marschall.memoryfilesystem;
 
-import static com.github.marschall.memoryfilesystem.DirectoryHasEntry.hasEntry;
-import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
-import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isAbsolute;
-import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isRelative;
-import static com.github.marschall.memoryfilesystem.IsHiddenMatcher.isHidden;
-import static com.github.marschall.memoryfilesystem.PathMatchesMatcher.matches;
 import static java.nio.file.AccessMode.EXECUTE;
 import static java.nio.file.AccessMode.READ;
 import static java.nio.file.AccessMode.WRITE;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.lessThan;
-import static org.hamcrest.Matchers.not;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -170,12 +161,12 @@ class WindowsMemoryFileSystemTest {
       Path c1 = fileSystem1.getPath("C:\\");
       Path c2 = fileSystem2.getPath("C:\\\\");
 
-      assertThat(c1, equalTo(c1));
-      assertThat(c2, equalTo(c2));
+      assertEquals(c1, c1);
+      assertEquals(c2, c2);
 
       // different file systems
-      assertThat(c1, not(equalTo(c2)));
-      assertThat(c2, not(equalTo(c1)));
+      assertNotEquals(c1, c2);
+      assertNotEquals(c2, c1);
     }
   }
 
@@ -298,10 +289,10 @@ class WindowsMemoryFileSystemTest {
     DosFileAttributeView attributeView = Files.getFileAttributeView(hidden, DosFileAttributeView.class);
     attributeView.setHidden(true);
 
-    assertThat(hidden, isHidden());
+    AdditionalPathAssert.assertThat(hidden).isHidden();
 
     hidden = fileSystem.getPath("hidden.txt/.././hidden.txt");
-    assertThat(hidden, isHidden());
+    AdditionalPathAssert.assertThat(hidden).isHidden();
   }
 
   @Test
@@ -322,8 +313,8 @@ class WindowsMemoryFileSystemTest {
 
     Path c = fileSystem.getPath("C:\\");
     Path d = fileSystem.getPath("D:\\");
-    assertThat(c, lessThan(d));
-    assertThat(d, greaterThan(c));
+    assertThat(c).isLessThan(d);
+    assertThat(d).isGreaterThan(c);
   }
 
 
@@ -360,8 +351,8 @@ class WindowsMemoryFileSystemTest {
     FileSystem fileSystem = this.extension.getFileSystem();
     Path originalPath = fileSystem.getPath("C:\\File0.txt");
     Files.createFile(originalPath);
-    assertThat(fileSystem.getPath("C:\\file0.txt"), exists());
-    assertThat(originalPath.getParent(), hasEntry("File0.txt"));
+    assertThat(fileSystem.getPath("C:\\file0.txt")).exists();
+    AdditionalPathAssert.assertThat(originalPath.getParent()).hasEntryNamed("File0.txt");
   }
 
   @Test
@@ -372,10 +363,10 @@ class WindowsMemoryFileSystemTest {
     String copyName = "filE1.txt";
     Files.copy(originalPath, originalPath.resolveSibling(copyName));
 
-    assertThat(fileSystem.getPath("C:\\file1.txt"), exists());
-    assertThat(fileSystem.getPath("C:\\File1.txt"), exists());
+    assertThat(fileSystem.getPath("C:\\file1.txt")).exists();
+    assertThat(fileSystem.getPath("C:\\File1.txt")).exists();
 
-    assertThat(originalPath.getParent(), hasEntry(copyName));
+    AdditionalPathAssert.assertThat(originalPath.getParent()).hasEntryNamed(copyName);
   }
 
   @Test
@@ -386,11 +377,11 @@ class WindowsMemoryFileSystemTest {
     String moveName = "filE1.txt";
     Files.move(originalPath, originalPath.resolveSibling(moveName));
 
-    assertThat(fileSystem.getPath("C:\\file1.txt"), exists());
-    assertThat(fileSystem.getPath("C:\\File1.txt"), exists());
+    assertThat(fileSystem.getPath("C:\\file1.txt")).exists();
+    assertThat(fileSystem.getPath("C:\\File1.txt")).exists();
 
-    assertThat(originalPath.getParent(), hasEntry(moveName));
-    assertThat(originalPath.getParent(), not(hasEntry("File0.txt")));
+    AdditionalPathAssert.assertThat(originalPath.getParent()).hasEntryNamed(moveName);
+    AdditionalPathAssert.assertThat(originalPath.getParent()).doesNotHaveEntryNamed("File0.txt");
   }
 
   @Test
@@ -398,14 +389,14 @@ class WindowsMemoryFileSystemTest {
     FileSystem fileSystem = this.extension.getFileSystem();
 
     PathMatcher matcher = fileSystem.getPathMatcher("glob:*.{java,class}");
-    assertThat(matcher, matches(fileSystem.getPath("Test.java")));
-    assertThat(matcher, matches(fileSystem.getPath("Test.class")));
-    assertThat(matcher, not(matches(fileSystem.getPath("Test.cpp"))));
+    PathMatcherAssert.assertThat(matcher).matches(fileSystem.getPath("Test.java"));
+    PathMatcherAssert.assertThat(matcher).matches(fileSystem.getPath("Test.class"));
+    PathMatcherAssert.assertThat(matcher).doesNotMatch(fileSystem.getPath("Test.cpp"));
 
     matcher = fileSystem.getPathMatcher("glob:*");
-    assertThat(matcher, matches(fileSystem.getPath("Test.java")));
-    assertThat(matcher, matches(fileSystem.getPath("Test.class")));
-    assertThat(matcher, matches(fileSystem.getPath("Test.cpp")));
+    PathMatcherAssert.assertThat(matcher).matches(fileSystem.getPath("Test.java"));
+    PathMatcherAssert.assertThat(matcher).matches(fileSystem.getPath("Test.class"));
+    PathMatcherAssert.assertThat(matcher).matches(fileSystem.getPath("Test.cpp"));
   }
 
   @Test
@@ -429,8 +420,8 @@ class WindowsMemoryFileSystemTest {
     Path relative = fileSystem.getPath("C:folder\\file.txt");
     Path absolute = fileSystem.getPath("C:\\folder\\file.txt");
 
-    assertThat(relative, isRelative());
-    assertThat(absolute, isAbsolute());
+    assertThat(relative).isRelative();
+    assertThat(absolute).isAbsolute();
   }
 
   @Test

@@ -1,14 +1,10 @@
 package com.github.marschall.memoryfilesystem;
 
-import static com.github.marschall.memoryfilesystem.FileContentsMatcher.hasContents;
-import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static com.github.marschall.memoryfilesystem.FileUtility.setContents;
-import static com.github.marschall.memoryfilesystem.IsSameFileMatcher.isSameFile;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.DELETE_ON_CLOSE;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.not;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -41,10 +37,10 @@ class MemoryHardLinkTest {
 
     Path link = Files.createLink(fileSystem.getPath("link"), target);
 
-    assertThat(target, hasContents(initialContents));
-    assertThat(link, hasContents(initialContents));
-    assertThat(target, isSameFile(link));
-    assertThat(link, isSameFile(target));
+    assertThat(target).hasContent(initialContents);
+    assertThat(link).hasContent(initialContents);
+    AdditionalPathAssert.assertThat(target).isSameFileAs(link);
+    AdditionalPathAssert.assertThat(link).isSameFileAs(target);
 
     try (Writer writer = Files.newBufferedWriter(link, US_ASCII, APPEND)) {
       writer.write(" first");
@@ -56,8 +52,8 @@ class MemoryHardLinkTest {
 
     String expected = "initial first second";
 
-    assertThat(target, hasContents(expected));
-    assertThat(link, hasContents(expected));
+    assertThat(target).hasContent(expected);
+    assertThat(link).hasContent(expected);
   }
 
   @Test
@@ -70,10 +66,10 @@ class MemoryHardLinkTest {
     Path link = Files.createLink(fileSystem.getPath("link"), target);
 
     Files.delete(target);
-    assertThat(target, not(exists()));
-    assertThat(link, exists());
+    assertThat(target).doesNotExist();
+    assertThat(link).exists();
 
-    assertThat(link, hasContents(initialContents));
+    assertThat(link).hasContent(initialContents);
   }
 
   @Test
@@ -88,10 +84,10 @@ class MemoryHardLinkTest {
     try (OutputStream outputStream = Files.newOutputStream(target, DELETE_ON_CLOSE)) {
       // nothing
     }
-    assertThat(target, not(exists()));
-    assertThat(link, exists());
+    assertThat(target).doesNotExist();
+    assertThat(link).exists();
 
-    assertThat(link, hasContents(initialContents));
+    assertThat(link).hasContent(initialContents);
   }
 
   @Test

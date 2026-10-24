@@ -1,7 +1,5 @@
 package com.github.marschall.memoryfilesystem;
 
-import static com.github.marschall.memoryfilesystem.PathMatchesMatcher.matches;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -65,8 +63,8 @@ class MemoryFileSystemMatcherTest {
     FileSystem fileSystem = this.extension.getFileSystem();
 
     PathMatcher matcher = fileSystem.getPathMatcher("glob:{,**/}.gitignore");
-    assertThat(matcher, matches(fileSystem.getPath(".gitignore")));
-    assertThat(matcher, matches(fileSystem.getPath("src/.gitignore")));
+    PathMatcherAssert.assertThat(matcher).matches(fileSystem.getPath(".gitignore"));
+    PathMatcherAssert.assertThat(matcher).matches(fileSystem.getPath("src/.gitignore"));
   }
 
   @Test
@@ -80,7 +78,7 @@ class MemoryFileSystemMatcherTest {
     Files.createFile(child);
 
     PathMatcher matcher = fileSystem.getPathMatcher("glob:**/.gitignore");
-    assertThat(matcher, matches(child));
+    PathMatcherAssert.assertThat(matcher).matches(child);
   }
 
 }

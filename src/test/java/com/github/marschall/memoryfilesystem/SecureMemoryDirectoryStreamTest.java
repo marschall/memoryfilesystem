@@ -1,8 +1,6 @@
 package com.github.marschall.memoryfilesystem;
 
-import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.not;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -40,8 +38,8 @@ class SecureMemoryDirectoryStreamTest {
 
       secure.deleteFile(fileSystem.getPath("child"));
 
-      assertThat(fileSystem.getPath("child"), exists());
-      assertThat(originalFolder.resolve("child"), not(exists()));
+      assertThat(fileSystem.getPath("child")).exists();
+      assertThat(originalFolder.resolve("child")).doesNotExist();
     }
 
   }
@@ -61,8 +59,8 @@ class SecureMemoryDirectoryStreamTest {
 
       secure.deleteFile(fileSystem.getPath("child").toAbsolutePath());
 
-      assertThat(fileSystem.getPath("child"), not(exists()));
-      assertThat(originalFolder.resolve("child"), exists());
+      assertThat(fileSystem.getPath("child")).doesNotExist();
+      assertThat(originalFolder.resolve("child")).exists();
     }
 
   }
@@ -101,8 +99,8 @@ class SecureMemoryDirectoryStreamTest {
 
       secure.deleteDirectory(fileSystem.getPath("child"));
 
-      assertThat(fileSystem.getPath("child"), exists());
-      assertThat(originalFolder.resolve("child"), not(exists()));
+      assertThat(fileSystem.getPath("child")).exists();
+      assertThat(originalFolder.resolve("child")).doesNotExist();
     }
 
   }
@@ -122,8 +120,8 @@ class SecureMemoryDirectoryStreamTest {
 
       secure.deleteDirectory(fileSystem.getPath("child").toAbsolutePath());
 
-      assertThat(fileSystem.getPath("child"), not(exists()));
-      assertThat(originalFolder.resolve("child"), exists());
+      assertThat(fileSystem.getPath("child")).exists();
+      assertThat(originalFolder.resolve("child")).doesNotExist();
     }
 
   }

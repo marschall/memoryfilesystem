@@ -1,8 +1,6 @@
 package com.github.marschall.memoryfilesystem;
 
-import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isAbsolute;
-import static com.github.marschall.memoryfilesystem.IsAbsoluteMatcher.isRelative;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -53,8 +51,8 @@ class FileSystemCompatibility {
     FileSystem fileSystem = FileSystems.getDefault();
     Path path = fileSystem.getPath("/Users/marschall/Documents");
     for (Path next : path) {
-      assertThat(next, isRelative());
-      assertThat(next, isRelative());
+      assertThat(next).isRelative();
+      assertThat(next).isRelative();
     }
   }
 
@@ -63,7 +61,7 @@ class FileSystemCompatibility {
     FileSystem fileSystem = FileSystems.getDefault();
     Path path = fileSystem.getPath("/Users/marschall/Documents");
     for (Path element : path) {
-      assertThat(element, isRelative());
+      assertThat(element).isRelative();
     }
   }
 
@@ -79,14 +77,14 @@ class FileSystemCompatibility {
 
     Path fileName = usrBin.getFileName();
     assertEquals(fileName, bin);
-    assertThat(fileName, isRelative());
+    assertThat(fileName).isRelative();
   }
 
   @Test
   void relativePath() {
     FileSystem fileSystem = FileSystems.getDefault();
     Path path = fileSystem.getPath("Documents");
-    assertThat(path, isRelative());
+    assertThat(path).isRelative();
     assertNull(path.getRoot());
   }
 
@@ -94,7 +92,7 @@ class FileSystemCompatibility {
   void absolutePath() {
     FileSystem fileSystem = FileSystems.getDefault();
     Path path = fileSystem.getPath("/Documents");
-    assertThat(path, isAbsolute());
+    assertThat(path).isRelative();
     assertNotNull(path.getRoot());
   }
 

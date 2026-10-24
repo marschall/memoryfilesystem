@@ -1,7 +1,7 @@
 package com.github.marschall.memoryfilesystem;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
@@ -18,7 +18,7 @@ class MemoryInodeTest {
   @Test
   void indirectBlock() {
     byte[][] array = new byte[MemoryInode.NUMBER_OF_BLOCKS][];
-    assertThat(VM.current().sizeOf(array), lessThanOrEqualTo(16384L));
+    assertThat(VM.current().sizeOf(array)).isLessThanOrEqualTo(16384L);
   }
 
 }

@@ -1,18 +1,18 @@
 package com.github.marschall.memoryfilesystem;
 
-import static com.github.marschall.memoryfilesystem.FileExistsMatcher.exists;
 import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 import static java.nio.file.StandardOpenOption.READ;
 import static java.nio.file.StandardOpenOption.WRITE;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.junit.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.FileSystem;
@@ -163,12 +163,12 @@ class PosixMemoryFileSystemTest {
     FileUtility.createAndSetContents(realFile, "Test");
     Path symLink = Files.createSymbolicLink(fileSystem.getPath("symLink"), realFile);
 
-    assertThat("Real file should exist", realFile, exists());
-    assertThat("Symlink file should exist without following links", symLink, exists(NOFOLLOW_LINKS));
-    assertThat("Target of symlink file should exist", Files.readSymbolicLink(symLink), exists());
+    assertThat(realFile).describedAs("Real file should exist").exists();
+    assertThat(symLink).describedAs("Symlink file should exist without following links").existsNoFollowLinks();
+    assertThat(Files.readSymbolicLink(symLink)).describedAs("Target of symlink file should exist").exists();
     assertEquals(realFile, Files.readSymbolicLink(symLink), "Target of symlink file should be real file");
 
-    assertThat("Symlink file target should exist when following links", symLink, exists());
+    assertThat(symLink).describedAs("Symlink file target should exist when following links").exists();
   }
 
   /**
@@ -186,10 +186,10 @@ class PosixMemoryFileSystemTest {
     Path symLinkDirectory = Files.createSymbolicLink(fileSystem.getPath("symLink"), realDirectory);
     Path symLinkFile = symLinkDirectory.resolve("realFile");
 
-    assertThat("Real file should exist", realFile, exists());
-    assertThat("Symlink file should not exist without following links", symLinkFile, not(exists(NOFOLLOW_LINKS)));
+    assertThat(realFile).describedAs("Real file should exist").exists();
+    assertFalse(Files.exists(symLinkFile, NOFOLLOW_LINKS), "Symlink file should not exist without following links");
 
-    assertThat("Symlink file target should exist when following links", symLinkFile, exists());
+    assertThat(symLinkFile).describedAs("Symlink file target should exist when following links").exists();
   }
 
   @Test
@@ -238,15 +238,18 @@ class PosixMemoryFileSystemTest {
     Path symLink = Files.createSymbolicLink(dir.resolve("symLink"), realFile);
 
     // dir/realFile
-    assertThat("Real file should exist", realFile, exists());
+    assertThat(realFile).describedAs("Real file should exist").exists();
     // dir/symLink
-    assertThat("Symlink file should exist without following links", symLink, exists(NOFOLLOW_LINKS));
+    assertThat(symLink).describedAs("Symlink file should exist without following links").existsNoFollowLinks();
     // dir/realFile
-    assertThat("Target of symlink file should exist", Files.readSymbolicLink(symLink), exists());
+    assertThat(Files.readSymbolicLink(symLink)).describedAs("Target of symlink file should exist").exists();
     assertEquals(realFile, Files.readSymbolicLink(symLink), "Target of symlink file should be a real file");
 
     // dir/dir/symLink
-    assertThat("Symlink file target in subfolder should exist when following links", symLink, not(exists()));
+    assertFalse(Files.exists(symLink), "Symlink file target in subfolder should exist when following links");
+    assertTrue(Files.notExists(symLink), "Symlink file target in subfolder should exist when following links");
+    // TODO assertj assertDoesNotExist sets NOFOLLOW_LINKS by default
+    //assertThat(symLink).describedAs("Symlink file target in subfolder should exist when following links").doesNotExist();
   }
 
 }
