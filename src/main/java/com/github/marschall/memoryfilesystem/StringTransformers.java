@@ -28,6 +28,10 @@ public final class StringTransformers {
    */
   public static final StringTransformer NFC = new NFC();
 
+  private StringTransformers() {
+    throw new AssertionError("not instantiable");
+  }
+
   /**
    * Creates a case insensitive transformer for the current locale.
    *

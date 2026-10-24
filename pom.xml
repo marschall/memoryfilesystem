@@ -233,9 +233,6 @@
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
         <configuration>
-          <links>
-            <link>https://docs.oracle.com/javase/8/docs/api/</link>
-          </links>
           <sourcepath>src/main/java</sourcepath>
           <notimestamp>true</notimestamp>
         </configuration>
@@ -427,6 +424,12 @@
         <plugins>
           <plugin>
             <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <release>8</release>
+            </configuration>
+          </plugin>
+          <plugin>
+            <artifactId>maven-javadoc-plugin</artifactId>
             <configuration>
               <release>8</release>
             </configuration>
