@@ -235,6 +235,7 @@
         <configuration>
           <sourcepath>src/main/java</sourcepath>
           <notimestamp>true</notimestamp>
+          <doclint>-html</doclint>
         </configuration>
         <executions>
           <execution>
