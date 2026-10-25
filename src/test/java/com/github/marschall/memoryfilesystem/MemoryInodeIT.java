@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 import org.openjdk.jol.vm.VM;
 
-class MemoryInodeTest {
+class MemoryInodeIT {
 
   @Test
   void directBlock() {

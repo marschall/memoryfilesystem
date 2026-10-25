@@ -24,13 +24,7 @@ final class MemoryInode {
    * and the other is a write lock. So I "think" we're fine for now.
    */
 
-  /**
-   * The object header size of an array. Two words (flags &amp; class oop)
-   * plus array size (2 *64 bit + 32 bit on 64 bit, 2 *32 bit + 32 bit on 32 bit).
-   */
-  private static final int ARRAY_HEADER = 8 + 8 + 4;
-
-  static final int BLOCK_SIZE = 4096 - ARRAY_HEADER; //make sure it fits into a 4k memory region
+  static final int BLOCK_SIZE = 4096 - OpenJdk.arrayHeaderSize(); //make sure it fits into a 4k memory region
   static final int NUMBER_OF_BLOCKS = BLOCK_SIZE;
 
   // lazily allocated, most files probably won't need this

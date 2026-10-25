@@ -309,6 +309,10 @@
           <version>3.1.4</version>
         </plugin>
         <plugin>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>3.6.0</version>
+        </plugin>
+        <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>flatten-maven-plugin</artifactId>
           <version>1.8.0</version>
@@ -429,6 +433,23 @@
             <configuration>
               <release>8</release>
             </configuration>
+            <executions>
+              <execution>
+                <id>compile-java-27</id>
+                <phase>compile</phase>
+                <goals>
+                  <goal>compile</goal>
+                </goals>
+                <configuration>
+                  <!-- just a constant -->
+                  <release>8</release>
+                  <compileSourceRoots>
+                    <compileSourceRoot>${project.basedir}/src/main/java27</compileSourceRoot>
+                  </compileSourceRoots>
+                  <multiReleaseOutput>true</multiReleaseOutput>
+                </configuration>
+              </execution>
+            </executions>
           </plugin>
           <plugin>
             <artifactId>maven-javadoc-plugin</artifactId>
@@ -458,6 +479,23 @@
                 </provide>
               </provides>
             </configuration>
+          </plugin>
+          <plugin>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <configuration>
+              <systemPropertyVariables>
+                <java.protocol.handler.pkgs>com.github.marschall.memoryfilesystem</java.protocol.handler.pkgs>
+                <jdk.attach.allowAttachSelf />
+              </systemPropertyVariables>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
+                </goals>
+              </execution>
+            </executions>
           </plugin>
           <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
