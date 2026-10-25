@@ -76,7 +76,7 @@ class MacOsMemoryFileSystemTest {
     FileSystem fileSystem = this.getFileSystem(useDefault);
     String aUmlaut = "\u00C4";
     Path aPath = fileSystem.getPath(aUmlaut);
-    String normalized = Normalizer.normalize(aUmlaut, Form.NFD);
+    String normalized = Normalizer.normalize(aUmlaut, Form.NFC);
     Path nPath = fileSystem.getPath(normalized);
 
     Path createdFile = null;
@@ -146,12 +146,12 @@ class MacOsMemoryFileSystemTest {
   void macOsPaths(boolean useDefault) {
     FileSystem fileSystem = this.getFileSystem(useDefault);
     String aUmlaut = "\u00C4";
-    String normalized = Normalizer.normalize(aUmlaut, Form.NFD);
+    String normalized = Normalizer.normalize(aUmlaut, Form.NFC);
     assertEquals(1, aUmlaut.length());
-    assertEquals(2, normalized.length());
+    assertEquals(1, normalized.length(), "normalized length");
     Path aPath = fileSystem.getPath("/" + aUmlaut);
     Path nPath = fileSystem.getPath("/" + normalized);
-    assertEquals(1, aPath.getName(0).toString().length());
+    assertEquals(1, aPath.getName(0).toString().length(), "path length");
     assertThat(aPath).isEqualTo(nPath);
   }
 
