@@ -506,7 +506,6 @@
             <configuration>
               <argLine>
                 -javaagent:@{com.github.marschall:jol-agent:jar}
-                --sun-misc-unsafe-memory-access=allow
               </argLine>
               <classpathDependencyExcludes>
                 <classpathDependencyExclude>com.github.marschall:jol-agent</classpathDependencyExclude>
@@ -537,6 +536,25 @@
                 <java.util.logging.manager>org.apache.logging.log4j.jul.LogManager</java.util.logging.manager>
                 <jdk.attach.allowAttachSelf />
               </systemPropertyVariables>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>jdk-25-plus</id>
+      <activation>
+        <jdk>[25,</jdk>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <configuration>
+              <argLine>
+                -javaagent:@{com.github.marschall:jol-agent:jar}
+                --sun-misc-unsafe-memory-access=allow
+              </argLine>
             </configuration>
           </plugin>
         </plugins>
