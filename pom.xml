@@ -19,8 +19,8 @@
   </scm>
 
   <ciManagement>
-    <system>Travis</system>
-    <url>https://travis-ci.org/marschall/memoryfilesystem</url>
+    <system>GitHub Actions</system>
+    <url>https://github.com/marschall/memoryfilesystem/actions</url>
   </ciManagement>
 
   <issueManagement>
