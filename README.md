@@ -1,4 +1,4 @@
-Memory File System [![Maven Central](https://img.shields.io/maven-central/v/com.github.marschall/memoryfilesystem?color=31c653&label=maven%20central)](https://central.sonatype.com/artifact/com.github.marschall/memoryfilesystem)  [![Javadocs](https://www.javadoc.io/badge/com.github.marschall/memoryfilesystem.svg)](https://www.javadoc.io/doc/com.github.marschall/memoryfilesystem)
+Memory File System [![Build Status](https://github.com/marschall/spring-batch-inmemory/actions/workflows/maven.yml/badge.svg?branch=master)](https://github.com/marschall/spring-batch-inmemory/actions?query=branch%3Amaster) [![Maven Central](https://img.shields.io/maven-central/v/com.github.marschall/memoryfilesystem?color=31c653&label=maven%20central)](https://central.sonatype.com/artifact/com.github.marschall/memoryfilesystem)  [![Javadocs](https://www.javadoc.io/badge/com.github.marschall/memoryfilesystem.svg)](https://www.javadoc.io/doc/com.github.marschall/memoryfilesystem)
 ==================
 An in memory implementation of a [JSR-203](http://jcp.org/en/jsr/detail?id=203) (Java 7) file system for testing purposes.
 
