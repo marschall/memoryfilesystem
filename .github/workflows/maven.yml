@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     strategy:
       matrix:
         java: ['11', '17', '21', '25', 'latest']
