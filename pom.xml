@@ -512,7 +512,6 @@
               </classpathDependencyExcludes>
               <systemPropertyVariables>
                 <java.protocol.handler.pkgs>com.github.marschall.memoryfilesystem</java.protocol.handler.pkgs>
-                <jdk.attach.allowAttachSelf />
               </systemPropertyVariables>
             </configuration>
             <executions>
@@ -534,7 +533,6 @@
               <systemPropertyVariables>
                 <java.protocol.handler.pkgs>com.github.marschall.memoryfilesystem</java.protocol.handler.pkgs>
                 <java.util.logging.manager>org.apache.logging.log4j.jul.LogManager</java.util.logging.manager>
-                <jdk.attach.allowAttachSelf />
               </systemPropertyVariables>
             </configuration>
           </plugin>
@@ -553,7 +551,6 @@
             <configuration>
               <argLine>
                 -javaagent:@{com.github.marschall:jol-agent:jar}
-                --sun-misc-unsafe-memory-access=allow
               </argLine>
             </configuration>
           </plugin>
