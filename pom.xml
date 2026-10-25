@@ -446,7 +446,8 @@
                   <compileSourceRoots>
                     <compileSourceRoot>${project.basedir}/src/main/java27</compileSourceRoot>
                   </compileSourceRoots>
-                  <multiReleaseOutput>true</multiReleaseOutput>
+                  <outputDirectory>${project.build.outputDirectory}/META-INF/versions/27</outputDirectory>
+                  <multiReleaseOutput>false</multiReleaseOutput>
                 </configuration>
               </execution>
             </executions>
