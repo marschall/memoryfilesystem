@@ -89,6 +89,12 @@
       <optional>true</optional>
     </dependency>
     <dependency>
+      <groupId>com.github.marschall</groupId>
+      <artifactId>jol-agent</artifactId>
+      <version>0.17.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-engine</artifactId>
       <scope>test</scope>
@@ -187,6 +193,16 @@
         <configuration>
           <publishingServerId>central</publishingServerId>
         </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>properties</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -303,6 +319,10 @@
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.16.0</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>3.11.0</version>
         </plugin>
         <plugin>
           <artifactId>maven-deploy-plugin</artifactId>
@@ -484,6 +504,13 @@
           <plugin>
             <artifactId>maven-failsafe-plugin</artifactId>
             <configuration>
+              <argLine>
+                -javaagent:@{com.github.marschall:jol-agent:jar}
+                --sun-misc-unsafe-memory-access=allow
+              </argLine>
+              <classpathDependencyExcludes>
+                <classpathDependencyExclude>com.github.marschall:jol-agent</classpathDependencyExclude>
+              </classpathDependencyExcludes>
               <systemPropertyVariables>
                 <java.protocol.handler.pkgs>com.github.marschall.memoryfilesystem</java.protocol.handler.pkgs>
                 <jdk.attach.allowAttachSelf />
@@ -502,6 +529,9 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <argLine>--add-opens com.github.marschall.memoryfilesystem/com.github.marschall.memoryfilesystem=ALL-UNNAMED</argLine>
+              <classpathDependencyExcludes>
+                <classpathDependencyExclude>com.github.marschall:jol-agent</classpathDependencyExclude>
+              </classpathDependencyExcludes>
               <systemPropertyVariables>
                 <java.protocol.handler.pkgs>com.github.marschall.memoryfilesystem</java.protocol.handler.pkgs>
                 <java.util.logging.manager>org.apache.logging.log4j.jul.LogManager</java.util.logging.manager>
