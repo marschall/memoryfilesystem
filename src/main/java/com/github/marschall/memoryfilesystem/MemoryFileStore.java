@@ -88,6 +88,15 @@ class MemoryFileStore extends FileStore {
   @Override
   public Object getAttribute(String attribute) {
     this.checker.check();
+    if ("totalSpace".equals(attribute)) {
+      return this.getTotalSpace();
+    }
+    if ("usableSpace".equals(attribute)) {
+      return this.getUsableSpace();
+    }
+    if ("unallocatedSpace".equals(attribute)) {
+      return this.getUnallocatedSpace();
+    }
     throw new UnsupportedOperationException();
   }
 
